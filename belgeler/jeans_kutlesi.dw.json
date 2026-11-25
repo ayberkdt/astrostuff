@@ -1,0 +1,191 @@
+{
+ "surum": 1,
+ "ad": "jeans_kutlesi",
+ "boyut_pt": [
+  479.9,
+  297.5
+ ],
+ "metin_kutusu_pt": [
+  4.5,
+  4.5,
+  473.9,
+  293.0
+ ],
+ "hedef": "web-640",
+ "ortam": "web",
+ "boyut_mm": [
+  169.3,
+  105.0
+ ],
+ "yazi_tipleri": [
+  "Source Sans 3"
+ ],
+ "punto": {
+  "tik": [
+   9.0
+  ],
+  "eksen_adi": [
+   10.0
+  ],
+  "baslik": [],
+  "lejant": [],
+  "panel": [],
+  "metin": [
+   9.0
+  ]
+ },
+ "punto_tepe": {
+  "tik": 9.0,
+  "eksen_adi": 10.0,
+  "metin": 9.0
+ },
+ "panel_harfleri": [],
+ "eksenler": [
+  {
+   "konum_pt": [
+    25.7,
+    30.1,
+    462.2,
+    275.7
+   ],
+   "baslik": "",
+   "seriler": [
+    {
+     "etiket": "10 K",
+     "tur": "cizgi",
+     "renk": "#066cab",
+     "isaret": null,
+     "cizgi": "-",
+     "kalinlik": 1.9,
+     "isaret_boyu": null
+    },
+    {
+     "etiket": "20 K",
+     "tur": "cizgi",
+     "renk": "#e16b2d",
+     "isaret": null,
+     "cizgi": "-",
+     "kalinlik": 1.9,
+     "isaret_boyu": null
+    },
+    {
+     "etiket": "50 K",
+     "tur": "cizgi",
+     "renk": "#008d85",
+     "isaret": null,
+     "cizgi": "-",
+     "kalinlik": 1.9,
+     "isaret_boyu": null
+    }
+   ],
+   "eksen_turu": "rectilinear",
+   "sabit_oran": false,
+   "x": {
+    "ham": "Gaz parçacık yoğunluğu (cm⁻³)",
+    "nicelik": "Gaz parçacık yoğunluğu",
+    "birim": "cm⁻³",
+    "bicim": "parantez",
+    "anahtar": "gazparçacıkyoğunluğu",
+    "harf": "cumle",
+    "olcek": "log",
+    "tarih": false,
+    "ters": false,
+    "sinir": [
+     7.5857757502918375,
+     13182567.385564074
+    ],
+    "gorunur": true,
+    "kategorik": true,
+    "kategoriler": [
+     "10",
+     "10²",
+     "10³",
+     "10⁴",
+     "10⁵",
+     "10⁶",
+     "10⁷"
+    ],
+    "ondaliklar": [
+     0
+    ],
+    "ondalik_isareti": null,
+    "tikler": [
+     "10",
+     "10²",
+     "10³",
+     "10⁴",
+     "10⁵",
+     "10⁶",
+     "10⁷"
+    ],
+    "eksi": null,
+    "e_gosterimi": false,
+    "ofset": "",
+    "etiket_pt": [
+     179.8,
+     4.5,
+     308.1,
+     14.6
+    ]
+   },
+   "y": {
+    "ham": "Jeans kütlesi (Güneş kütlesi)",
+    "nicelik": "Jeans kütlesi",
+    "birim": "Güneş kütlesi",
+    "bicim": "parantez",
+    "anahtar": "jeanskütlesi",
+    "harf": "cumle",
+    "olcek": "log",
+    "tarih": false,
+    "ters": false,
+    "sinir": [
+     0.05699066125631304,
+     1618.4683211689212
+    ],
+    "gorunur": true,
+    "kategorik": false,
+    "kategoriler": [],
+    "ondaliklar": [
+     0,
+     1
+    ],
+    "ondalik_isareti": ",",
+    "tikler": [
+     "0,1",
+     "1",
+     "10",
+     "100",
+     "1000"
+    ],
+    "eksi": null,
+    "e_gosterimi": false,
+    "ofset": "",
+    "etiket_pt": [
+     25.7,
+     283.1,
+     144.2,
+     293.0
+    ]
+   },
+   "lejant": [],
+   "dogrudan_etiket": [
+    "10 K",
+    "20 K",
+    "50 K"
+   ],
+   "izgara": {
+    "x": true,
+    "y": true
+   },
+   "cerceve": [
+    "bottom",
+    "left"
+   ],
+   "alan": false,
+   "cerceve_kalinlik": 0.6,
+   "tik_yonu": 3,
+   "haritalar": []
+  }
+ ],
+ "renk_cubuklari": []
+}

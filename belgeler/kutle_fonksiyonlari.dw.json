@@ -1,0 +1,187 @@
+{
+ "surum": 1,
+ "ad": "kutle_fonksiyonlari",
+ "boyut_pt": [
+  479.9,
+  297.5
+ ],
+ "metin_kutusu_pt": [
+  4.5,
+  4.5,
+  470.0,
+  293.0
+ ],
+ "hedef": "web-640",
+ "ortam": "web",
+ "boyut_mm": [
+  169.3,
+  105.0
+ ],
+ "yazi_tipleri": [
+  "Source Sans 3"
+ ],
+ "punto": {
+  "tik": [
+   9.0
+  ],
+  "eksen_adi": [
+   10.0
+  ],
+  "baslik": [],
+  "lejant": [
+   9.0
+  ],
+  "panel": [],
+  "metin": [
+   9.0
+  ]
+ },
+ "punto_tepe": {
+  "tik": 9.0,
+  "eksen_adi": 10.0,
+  "lejant": 9.0,
+  "metin": 9.0
+ },
+ "panel_harfleri": [],
+ "eksenler": [
+  {
+   "konum_pt": [
+    30.6,
+    30.0,
+    475.4,
+    275.6
+   ],
+   "baslik": "",
+   "seriler": [
+    {
+     "etiket": "Salpeter (1955)",
+     "tur": "cizgi",
+     "renk": "#066cab",
+     "isaret": null,
+     "cizgi": "-",
+     "kalinlik": 1.9,
+     "isaret_boyu": null
+    },
+    {
+     "etiket": "Kroupa (2001)",
+     "tur": "cizgi",
+     "renk": "#e16b2d",
+     "isaret": null,
+     "cizgi": "-",
+     "kalinlik": 1.9,
+     "isaret_boyu": null
+    },
+    {
+     "etiket": "Chabrier (2003)",
+     "tur": "cizgi",
+     "renk": "#008d85",
+     "isaret": null,
+     "cizgi": "-",
+     "kalinlik": 1.9,
+     "isaret_boyu": null
+    }
+   ],
+   "eksen_turu": "rectilinear",
+   "sabit_oran": false,
+   "x": {
+    "ham": "Yıldız kütlesi (Güneş kütlesi)",
+    "nicelik": "Yıldız kütlesi",
+    "birim": "Güneş kütlesi",
+    "bicim": "parantez",
+    "anahtar": "yıldızkütlesi",
+    "harf": "cumle",
+    "olcek": "log",
+    "tarih": false,
+    "ters": false,
+    "sinir": [
+     0.08831217885879236,
+     56.61733256513576
+    ],
+    "gorunur": true,
+    "kategorik": false,
+    "kategoriler": [],
+    "ondaliklar": [
+     0,
+     1
+    ],
+    "ondalik_isareti": ",",
+    "tikler": [
+     "0,1",
+     "0,3",
+     "1",
+     "3",
+     "10",
+     "30"
+    ],
+    "eksi": null,
+    "e_gosterimi": false,
+    "ofset": "",
+    "etiket_pt": [
+     194.8,
+     4.5,
+     311.1,
+     14.5
+    ]
+   },
+   "y": {
+    "ham": "Logaritmik kütle aralığı başına yıldız sayısı, m dN/dm",
+    "nicelik": "Logaritmik kütle aralığı başına yıldız sayısı, m dN/dm",
+    "birim": null,
+    "bicim": "yok",
+    "anahtar": "logaritmikkütlearalığıbaşınayıldızsayısı,mdn/dm",
+    "harf": "cumle",
+    "olcek": "log",
+    "tarih": false,
+    "ters": false,
+    "sinir": [
+     0.0002016705423381619,
+     2.054059041168607
+    ],
+    "gorunur": true,
+    "kategorik": true,
+    "kategoriler": [
+     "mathdefault10^-3",
+     "mathdefault10^-2",
+     "mathdefault10^-1",
+     "mathdefault10^0"
+    ],
+    "ondaliklar": [],
+    "ondalik_isareti": null,
+    "tikler": [
+     "mathdefault10^-3",
+     "mathdefault10^-2",
+     "mathdefault10^-1",
+     "mathdefault10^0"
+    ],
+    "eksi": "unicode",
+    "e_gosterimi": false,
+    "ofset": "",
+    "etiket_pt": [
+     30.6,
+     283.0,
+     251.1,
+     293.0
+    ]
+   },
+   "lejant": [
+    "Salpeter (1955)",
+    "Kroupa (2001)",
+    "Chabrier (2003)"
+   ],
+   "dogrudan_etiket": [],
+   "izgara": {
+    "x": true,
+    "y": true
+   },
+   "cerceve": [
+    "bottom",
+    "left"
+   ],
+   "alan": false,
+   "cerceve_kalinlik": 0.6,
+   "tik_yonu": 3,
+   "haritalar": []
+  }
+ ],
+ "renk_cubuklari": []
+}

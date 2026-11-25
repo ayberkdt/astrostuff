@@ -1,6 +1,6 @@
-"""kozmos: her fonksiyonu kaynağına bağlı gökbilim ve astrofizik hesap kitaplığı."""
+"""kozmos: an astronomy and astrophysics library in which every function cites its published source."""
 
-from kozmos._kaynak import kaynak, kaynakca_raporu, kaynaklar, kutuk, ters_dizin
+from kozmos._sources import bibliography_report, registry, reverse_index, source, sources_of
 
-__version__ = "0.1.0"
-__all__ = ["kaynak", "kaynakca_raporu", "kaynaklar", "kutuk", "ters_dizin", "__version__"]
+__version__ = "0.2.0"
+__all__ = ["bibliography_report", "registry", "reverse_index", "source", "sources_of", "__version__"]

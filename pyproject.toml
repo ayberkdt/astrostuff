@@ -4,8 +4,8 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "kozmos"
-version = "0.1.0"
-description = "Her fonksiyonu kaynağına bağlı gökbilim ve astrofizik hesap kitaplığı"
+version = "0.2.0"
+description = "Astronomy and astrophysics library in which every function cites its published source"
 readme = "README.md"
 requires-python = ">=3.12"
 license = { file = "LICENSE" }
@@ -13,9 +13,9 @@ authors = [{ name = "Ayberk" }]
 dependencies = ["numpy>=2.0", "scipy>=1.13"]
 
 [project.optional-dependencies]
-dogrulama = ["astropy>=7", "pyerfa>=2.0.1"]
-gelistirme = ["pytest>=8", "hypothesis>=6", "ruff", "mypy"]
-gorsel = ["matplotlib>=3.9"]
+verification = ["astropy>=7", "pyerfa>=2.0.1"]
+dev = ["pytest>=8", "hypothesis>=6", "ruff", "mypy"]
+plotting = ["matplotlib>=3.9"]
 
 [tool.setuptools.packages.find]
 where = ["src"]
@@ -24,9 +24,9 @@ where = ["src"]
 testpaths = ["tests"]
 addopts = "-q -ra"
 markers = [
-    "kahin: bağımsız bir kütüphaneye (astropy, erfa) karşı karşılaştırma",
-    "ag: ağ erişimi gerektirir",
-    "yavas: uzun süren test",
+    "oracle: comparison against an independent library (astropy, erfa)",
+    "network: requires network access",
+    "slow: long-running test",
 ]
 
 [tool.ruff]
@@ -35,9 +35,9 @@ target-version = "py312"
 
 [tool.ruff.lint]
 select = ["E", "F", "I", "B", "UP", "NPY"]
-# Biçimi ruff format belirler; E501 yalnızca bölünemeyen uzun dizgilerde (kaynak notları) tetiklenir.
+# ruff format decides layout; E501 only fires on long strings that cannot be split (source notes).
 ignore = ["E501"]
 
 [tool.ruff.lint.per-file-ignores]
-"kaynakca/**" = ["E501"]
-"projeler/**" = ["E501"]
+"bibliography/**" = ["E501"]
+"projects/**" = ["E501"]

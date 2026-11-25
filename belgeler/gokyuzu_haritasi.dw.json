@@ -1,0 +1,153 @@
+{
+ "surum": 1,
+ "ad": "gokyuzu_haritasi",
+ "boyut_pt": [
+  479.9,
+  268.7
+ ],
+ "metin_kutusu_pt": [
+  4.5,
+  9.0,
+  454.9,
+  243.7
+ ],
+ "hedef": "web-640",
+ "ortam": "web",
+ "boyut_mm": [
+  169.3,
+  94.8
+ ],
+ "yazi_tipleri": [
+  "Source Sans 3"
+ ],
+ "punto": {
+  "tik": [
+   9.0
+  ],
+  "eksen_adi": [
+   10.0
+  ],
+  "baslik": [],
+  "lejant": [],
+  "panel": [],
+  "metin": [
+   10.0
+  ]
+ },
+ "punto_tepe": {
+  "tik": 9.0,
+  "eksen_adi": 10.0,
+  "metin": 10.0
+ },
+ "panel_harfleri": [],
+ "eksenler": [
+  {
+   "konum_pt": [
+    32.2,
+    23.6,
+    475.4,
+    245.2
+   ],
+   "baslik": "",
+   "seriler": [
+    {
+     "etiket": "",
+     "tur": "sacilim",
+     "renk": "#374151",
+     "isaret": "?",
+     "cizgi": null,
+     "kalinlik": null,
+     "isaret_boyu": 3.77
+    }
+   ],
+   "eksen_turu": "hammer",
+   "sabit_oran": true,
+   "x": {
+    "ham": "Galaktik boylam (merkez ortada, sola doğru artar)",
+    "nicelik": "Galaktik boylam",
+    "birim": "merkez ortada, sola doğru artar",
+    "bicim": "parantez",
+    "anahtar": "galaktikboylam",
+    "harf": "cumle",
+    "olcek": "linear",
+    "tarih": false,
+    "ters": false,
+    "sinir": [
+     -3.141592653589793,
+     3.141592653589793
+    ],
+    "gorunur": false,
+    "kategorik": false,
+    "kategoriler": [],
+    "ondaliklar": [],
+    "ondalik_isareti": null,
+    "tikler": [],
+    "eksi": null,
+    "e_gosterimi": false,
+    "ofset": "",
+    "etiket_pt": [
+     149.4,
+     9.0,
+     358.1,
+     19.1
+    ]
+   },
+   "y": {
+    "ham": "Galaktik enlem",
+    "nicelik": "Galaktik enlem",
+    "birim": null,
+    "bicim": "yok",
+    "anahtar": "galaktikenlem",
+    "harf": "cumle",
+    "olcek": "linear",
+    "tarih": false,
+    "ters": false,
+    "sinir": [
+     -1.5707963267948966,
+     1.5707963267948966
+    ],
+    "gorunur": true,
+    "kategorik": true,
+    "kategoriler": [
+     "-60°",
+     "-30°",
+     "0°",
+     "30°",
+     "60°"
+    ],
+    "ondaliklar": [],
+    "ondalik_isareti": null,
+    "tikler": [
+     "-60°",
+     "-30°",
+     "0°",
+     "30°",
+     "60°"
+    ],
+    "eksi": "unicode",
+    "e_gosterimi": false,
+    "ofset": "",
+    "etiket_pt": [
+     4.5,
+     102.9,
+     14.3,
+     165.9
+    ]
+   },
+   "lejant": [],
+   "dogrudan_etiket": [],
+   "izgara": {
+    "x": true,
+    "y": true
+   },
+   "cerceve": [
+    "geo"
+   ],
+   "alan": false,
+   "cerceve_kalinlik": 0.6,
+   "tik_yonu": 3,
+   "haritalar": []
+  }
+ ],
+ "renk_cubuklari": []
+}

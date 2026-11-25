@@ -1,0 +1,5 @@
+Analiz 1 (yalnızca SN, N=1580): Ωm = 0.332 ± 0.018   χ²/sd = 1387.1/1578
+Analiz 2 (SN + Sefeid, N=1657, kalibratör=77): H0 = 73.53 ± 1.00   Ωm = 0.331 ± 0.018
+  tanılar: {'adim': 2000, 'yuruyucu': 32, 'atilan_isinma': 180, 'oz_ilinti_suresi': [35.39134016770967, 32.398968083221746, 36.00405188067358], 'etkin_ornek_sayisi': [1645.6003000738858, 1797.58811609066, 1617.5957137552714], 'bolunmus_rhat': [1.0159625956752063, 1.0274705220863194, 1.018083392249459], 'rhat_sira_normallestirilmis': [1.0159674221147579, 1.027397756483555, 1.0180720694128493], 'ortalama_kabul_orani': 0.65190625, 'zincir_yeterince_uzun': True}
+kayıt: D:\Tasinan\Astronomy-and-Astrophysics\projeler\hubble\sonuc.json  (690.9 s)
+yayımlananla fark: Ωm -0.07σ, H0 -0.05σ
