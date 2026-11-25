@@ -8,14 +8,14 @@ Her açık fonksiyon, uyguladığı denklemin ya da algoritmanın yayımlanmış
 
 Bütün kaynaklar `kaynakca/kaynaklar.bib` dosyasında BibTeX biçiminde durur. Anahtar biçimi `İlkYazarSoyadıYıl` (`Hogg1999`), aynı yazar ve yılda `Hogg1999a`; kurum belgelerinde kısa ad ve yıl (`IERS2010`, `SOFA2021`). Kod, belge ve test bu anahtarı kullanır; başka yerde künye yazılmaz.
 
-Her girişte `doi`, yoksa `eprint` (arXiv) ya da `isbn` bulunur. `plan/kaynakca/dogrula.py` DOI'leri Crossref'ten sorgular, başlığı ve yılı karşılaştırır ve sonucu `dogrulama_kaydi.json` dosyasına yazar. Kayıtta doğrulanmamış görünen bir giriş kodda kullanılabilir, ama künyesi doğrulanmış sayılmaz.
+Her girişte `doi`, yoksa `eprint` (arXiv) ya da `isbn` bulunur. `kaynakca/dogrula.py` DOI'leri Crossref'ten sorgular, başlığı ve yılı karşılaştırır ve sonucu `dogrulama_kaydi.json` dosyasına yazar. Kayıtta doğrulanmamış görünen bir giriş kodda kullanılabilir, ama künyesi doğrulanmış sayılmaz.
 
 ### Belge dizgisi
 
 NumPy belge dizgisi biçimi kullanılır. `Kaynaklar` bölümü zorunludur ve yalnızca anahtar değil, kaynağın içindeki yeri de verir: denklem numarası, bölüm, sayfa ya da tablo.
 
 ```python
-@kaynak("Hogg1999", denklem="15", not_="düz evren için; eğrilikli durumda Denk. 16")
+@kaynak("Hogg1999", yer="Denk. 15", teyit="okundu")
 def esyuruyen_uzaklik_mpc(z, kozmoloji):
     """Bakış doğrultusundaki eşyürüyen uzaklığı hesaplar.
 
@@ -51,7 +51,7 @@ Bölümlerin sırası sabittir: tek satırlık özet, denklem, `Parametreler`, `
 
 ### `@kaynak` dekoratörü
 
-`kozmos/_kaynak.py` içindeki dekoratör fonksiyonu değiştirmez; yalnızca `(modül, fonksiyon, anahtar, yer, not)` kaydını bir kütüğe ekler. Kütükten üç şey üretilir:
+`kozmos/_kaynak.py` içindeki dekoratör fonksiyonu değiştirmez; yalnızca `(modül, fonksiyon, anahtar, yer, teyit, not)` kaydını bir kütüğe ekler. `yer` kaynağın içindeki konumdur (denklem numarası, bölüm, tablo, dosya adı ya da TeX etiketi). `teyit` kaydın kanıt statüsüdür: `okundu` denklemin kod yazılırken kaynağın metninden alındığını, `bekliyor` kaynağın henüz açılmadığını bildirir. Kütükten üç şey üretilir:
 
 - `kozmos.kaynaklar(fonksiyon)`: fonksiyonun dayandığı künyeleri döndürür.
 - `kozmos.kaynakca_raporu()`: bir analizde çağrılan fonksiyonların kaynak listesini verir; makale yazarken atıf listesi buradan çıkar.
@@ -64,10 +64,10 @@ Bölümlerin sırası sabittir: tek satırlık özet, denklem, `Parametreler`, `
 1. `kozmos` altında adı alt çizgiyle başlamayan her fonksiyon ve sınıf en az bir `@kaynak` taşır.
 2. Kullanılan her anahtar `kaynaklar.bib` içinde vardır.
 3. Belge dizgisindeki `Kaynaklar` bölümü dekoratördeki anahtarlarla aynı kümeyi içerir.
-4. Her `@kaynak` kaydında `denklem`, `bolum`, `sayfa`, `tablo` alanlarından en az biri doludur.
+4. Her `@kaynak` kaydında `yer` doludur ve `teyit` iki geçerli değerden biridir.
 5. Her açık fonksiyonun `Doğrulama` bölümünde adı geçen test dosyası vardır.
 
-Kaynağı olmayan yardımcılar (dizi biçimlendirme, argüman denetimi) alt çizgiyle adlandırılır ve kuralın dışında kalır. Fonksiyon bir kaynağa değil bu projedeki bir türetime dayanıyorsa türetim `plan/03_matematik` ya da `docs/turetimler` altında yazılır ve `@kaynak("kozmos:turetim/<ad>")` ile gösterilir.
+Kaynağı olmayan yardımcılar (dizi biçimlendirme, argüman denetimi) alt çizgiyle adlandırılır ve kuralın dışında kalır. Açık kalması gereken ama denklem uygulamayan fonksiyonlar `@altyapi("gerekçe")` ile işaretlenir; test bu muafiyetlerin gerekçeli ve en çok beş tane olduğunu denetler. Fonksiyon bir kaynağa değil bu projedeki bir türetime dayanıyorsa türetim `plan/03_matematik` ya da `docs/turetimler` altında yazılır ve `@kaynak("kozmos:turetim/<ad>")` ile gösterilir.
 
 ### Sabitler
 

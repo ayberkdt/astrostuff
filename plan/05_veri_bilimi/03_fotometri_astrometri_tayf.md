@@ -59,7 +59,7 @@ Uzun yarık ve echelle için ortak sıra:
 2. **İz bulma:** dağılma ekseni boyunca tayfın uzamsal merkezinin polinomla izlenmesi.
 3. **Arka plan:** yarık boyunca gökyüzü bölgelerinden dalga boyu sütunu başına model.
 4. **Çıkarım:** kutu toplamı ve en iyi çıkarım. En iyi çıkarım uzamsal profili ağırlık olarak kullanır, S/N'yi artırır ve kozmik ışınları profil uyumsuzluğundan ayıklar [Horne1986].
-5. **Dalga boyu kalibrasyonu:** ark lambası çizgilerinin saptanması, çizgi listesiyle eşleme, piksel → dalga boyu polinomu; artık RMS'i kalite ölçütüdür. Gökyüzü çizgileriyle sıfır noktası düzeltmesi. Hava ve boşluk dalga boyu dönüşümünün künyesi kaynakçaya eklenecek.
+5. **Dalga boyu kalibrasyonu:** ark lambası çizgilerinin saptanması, çizgi listesiyle eşleme, piksel → dalga boyu polinomu; artık RMS'i kalite ölçütüdür. Gökyüzü çizgileriyle sıfır noktası düzeltmesi. Hava ve boşluk dalga boyu dönüşümü havanın kırılma indisi formülüne dayanır [Ciddor1996].
 6. **Akı kalibrasyonu:** tayfsal standart yıldızla duyarlılık fonksiyonu; atmosferik sönümleme düzeltmesi [OkeGunn1983].
 7. **Tellürik düzeltme** ve barisentrik düzeltme [WrightEastman2014].
 

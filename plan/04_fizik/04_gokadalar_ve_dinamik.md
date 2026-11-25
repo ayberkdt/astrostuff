@@ -46,7 +46,7 @@ Kâhinler: `galpy` ve `gala`.
 
 ## 6. Büyük ölçekli yapı (ileri aşama)
 
-- İki nokta ilinti fonksiyonu ve Landy-Szalay kestiricisi; güç tayfı. Künye kaynakçaya eklenecek.
+- İki nokta ilinti fonksiyonu ve Landy-Szalay kestiricisi; güç tayfı [LandySzalay1993].
 - Baryon akustik salınımları: ilinti fonksiyonunda ses ufku ölçeği [Eisenstein2005]; aktarım fonksiyonu için uydurma formülü [EisensteinHu1998].
 - Hale kütle fonksiyonu ve hale modeli [MoBoschWhite2010, Böl. 7].
 

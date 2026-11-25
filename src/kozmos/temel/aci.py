@@ -68,9 +68,9 @@ def yaysaniye_den_radyan(aci_yaysaniye: ArrayLike) -> Dizi:
 
 @kaynak(
     "ERFA2024",
-    yer="erfam.h ERFA_D2PI; anp.c ile aynı aralık",
+    yer="anp.c",
     teyit="okundu",
-    not_="aralık kuralı era00.c içindeki eraAnp çağrısından; anp.c okunmadı",
+    not_="w = fmod(a, 2π); eksi ise 2π eklenir",
 )
 def sifir_iki_pi(aci_rad: ArrayLike) -> Dizi:
     """Açıyı [0, 2π) aralığına indirger.
@@ -88,7 +88,7 @@ def sifir_iki_pi(aci_rad: ArrayLike) -> Dizi:
     return np.where(w >= IKI_PI, 0.0, w)
 
 
-@kaynak("ERFA2024", yer="erfam.h ERFA_D2PI", teyit="okundu")
+@kaynak("ERFA2024", yer="anpm.c", teyit="okundu", not_="ERFA aralığı (−π, π]; burada [−π, π)")
 def eksi_pi_arti_pi(aci_rad: ArrayLike) -> Dizi:
     """Açıyı [−π, π) aralığına indirger.
 
@@ -103,7 +103,7 @@ def eksi_pi_arti_pi(aci_rad: ArrayLike) -> Dizi:
     return sifir_iki_pi(np.asarray(aci_rad, dtype=float) + math.pi) - math.pi
 
 
-@kaynak("ERFA2024", yer="s2c.c kuralı", teyit="bekliyor", not_="küresel → Kartezyen birim vektör; s2c.c okunmadı")
+@kaynak("ERFA2024", yer="s2c.c", teyit="okundu", not_="küresel → Kartezyen birim vektör")
 def kuresel_den_birim_vektor(boylam_rad: ArrayLike, enlem_rad: ArrayLike) -> Dizi:
     """Boylam ve enlemden birim vektör üretir: (cos b cos l, cos b sin l, sin b).
 
@@ -113,7 +113,7 @@ def kuresel_den_birim_vektor(boylam_rad: ArrayLike, enlem_rad: ArrayLike) -> Diz
 
     Kaynaklar
     ---------
-    [ERFA2024] s2c.c kuralı.
+    [ERFA2024] s2c.c.
 
     Doğrulama
     ---------
@@ -125,13 +125,13 @@ def kuresel_den_birim_vektor(boylam_rad: ArrayLike, enlem_rad: ArrayLike) -> Diz
     return np.stack(np.broadcast_arrays(cb * np.cos(boylam), cb * np.sin(boylam), np.sin(enlem)), axis=-1)
 
 
-@kaynak("ERFA2024", yer="c2s.c kuralı", teyit="bekliyor", not_="c2s.c okunmadı")
+@kaynak("ERFA2024", yer="c2s.c", teyit="okundu")
 def birim_vektor_den_kuresel(vektor: ArrayLike) -> tuple[Dizi, Dizi]:
     """Vektörden boylam [0, 2π) ve enlem [−π/2, π/2] üretir.
 
     Kaynaklar
     ---------
-    [ERFA2024] c2s.c kuralı.
+    [ERFA2024] c2s.c.
 
     Doğrulama
     ---------

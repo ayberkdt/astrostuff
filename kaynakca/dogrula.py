@@ -8,8 +8,9 @@ dosyalarına kaydeder:
    Başlık benzerliği ve yıl farkı ölçülür.
 2. ``paketler.txt`` içindeki her paket için PyPI JSON API'sinden son sürümü ve
    yükleme tarihini okur.
-3. ``plan/`` altındaki Markdown dosyalarında geçen ``[Anahtar]`` atıflarının
-   ``kaynaklar.bib`` içinde tanımlı olduğunu denetler.
+3. ``plan/`` altındaki Markdown dosyalarında geçen ``[Anahtar]`` atıflarının ve
+   ``src/`` altındaki ``@kaynak`` kayıtlarının ``kaynaklar.bib`` içinde tanımlı
+   olduğunu denetler.
 
 Kullanım:
     python dogrula.py            # üç denetim
@@ -36,7 +37,8 @@ from difflib import SequenceMatcher
 from pathlib import Path
 
 DIZIN = Path(__file__).resolve().parent
-PLAN = DIZIN.parent
+KOK = DIZIN.parent
+PLAN = KOK / "plan"
 ISTEMCI = "kaynakca-dogrulama/1.0 (python-urllib)"
 BASLIK_ESIGI = 0.80
 YIL_TOLERANSI = 1  # çevrimiçi ve basılı yayın yılı bir yıl ayrışabilir
@@ -244,6 +246,13 @@ def atif_denetle(anahtarlar: set[str]) -> dict:
                 eslesme = anahtar.match(parca.strip())
                 if eslesme and goreli not in kullanim.setdefault(eslesme.group(1), []):
                     kullanim[eslesme.group(1)].append(goreli)
+    # Kaynak kodundaki @kaynak("Anahtar", ...) kayıtları ve Sabit(..., "Anahtar", ...) tanımları.
+    for dosya in sorted((KOK / "src").rglob("*.py")):
+        metin = dosya.read_text(encoding="utf-8")
+        goreli = dosya.relative_to(KOK).as_posix()
+        for a in re.findall(r'kaynak\(\s*"([A-Za-z]+(?:19|20)\d\d[A-Za-z0-9]*)"', metin):
+            if goreli not in kullanim.setdefault(a, []):
+                kullanim[a].append(goreli)
     return {
         "tanimsiz": {a: d for a, d in sorted(kullanim.items()) if a not in anahtarlar},
         "kullanilmayan": sorted(anahtarlar - set(kullanim)),

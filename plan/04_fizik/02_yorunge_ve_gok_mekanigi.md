@@ -31,7 +31,7 @@ Denklemler planlama düzeyindedir; kodlanmadan önce anılan kaynaktan okunur.
 Üç doğruluk düzeyi:
 
 - **Düzey 1:** kısaltılmış seriler. Güneş için yaklaşık 0,01°, Ay için yaklaşık 10″, gezegenler için ortalama elemanlar [Meeus1998, Böl. 25, 31-33, 47]. Planlama ve doğuş-batış için yeter.
-- **Düzey 2:** tam analitik kuramların (VSOP87, ELP) terim tabloları. Künyeleri kaynakçaya eklenecek.
+- **Düzey 2:** tam analitik kuramların (VSOP87, ELP) terim tabloları [Bretagnon1988]; ELP kuramının künyesi eklenecek.
 - **Düzey 3:** JPL DE440 sayısal efemerisinin okunması: SPK dosya biçimi, Chebyshev katsayılarının değerlendirilmesi [Park2021]. DE440 1550-2650 yıllarını kapsar; DE441 daha uzun aralığı daha düşük doğrulukla verir. Bu aralık bilgisi JPL'in `de440_de441` belge sayfasından araştırma sırasında okunmuştur.
 
 Kâhinler: Skyfield ve `jplephem` (aynı DE dosyasıyla bit düzeyine yakın uyum beklenir), JPL Horizons (bağımsız hizmet).

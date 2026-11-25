@@ -42,6 +42,6 @@ Kitaplığı yazan ve kullanan kişi aynıdır: gözlem yapan, veriyi kendi indi
 ## Açık kararlar
 
 - **Paket adı:** `kozmos` (PyPI'da boş).
-- **Tanımlayıcı dili:** Türkçe ASCII ya da İngilizce. Belgelerdeki örnekler Türkçedir.
-- **Lisans:** kod yayımlanacaksa seçilmelidir; kâhin kütüphanelerinin çoğu BSD lisanslıdır. SOFA kendi lisansıyla dağıtılır; koşulları bu çalışmada okunmamıştır ve SOFA kaynak kodundan aktarım yapılmadan önce okunmalıdır. Algoritmalar yayımlanmış makale ve kitaplardan yazılırsa bu sorun doğmaz.
+- **Tanımlayıcı dili:** ilk sürüm Türkçe ASCII tanımlayıcılarla yazılmıştır (`isinim_gucu_uzakligi_mpc`); plan belgeleriyle aynı adlar kullanılır. İngilizceye geçiş istenirse kod tabanı küçükken yapılmalıdır.
+- **Lisans:** depo tüm hakları saklı olarak yayımlanmıştır (`LICENSE`). Zaman, açı ve koordinat fonksiyonları ERFA kaynak kodundaki algoritmaları izler; ERFA'nın telif ve lisans bildirimi `UCUNCU_TARAF_BILDIRIMLERI.md` dosyasındadır ve türetilen bölümlerin yükümlülükleri depo sahibince değerlendirilmelidir. SOFA'nın kendi lisansı bu çalışmada okunmamıştır; SOFA kaynak kodundan doğrudan aktarım yapılmamıştır.
 - **Hızlandırma:** NumPy yeterli olmadığında Numba ya da JAX; karar ölçümle verilir.

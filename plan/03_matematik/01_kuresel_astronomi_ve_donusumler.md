@@ -44,7 +44,7 @@ Her sistem bir temel düzlem ve bir başlangıç doğrultusuyla tanımlanır.
 - **Ufuk (alt-az):** `sin h = sin φ sin δ + cos φ cos δ cos H`; azimut için `atan2` biçimi. Azimutun kuzeyden doğuya ölçülmesi kuralı sabittir; Meeus güneyden ölçer [Meeus1998, Böl. 13], fark notta yazılır.
 - **Ekvatoral (α, δ):** saat açısı `H = LST − α`.
 - **Ekliptik (λ, β):** eğiklik `ε` çevresinde `R1(ε)` dönmesi.
-- **Galaktik (l, b):** ICRS'ten sabit bir dönme matrisi. Matris kuzey galaktik kutbun konumu ve galaktik merkezin konum açısından kurulur; sabitlerin kaynağı Hipparcos kataloğu belgeleridir. Bu künye kaynakçaya eklenmemiştir, eklenmesi yapılacaklar listesindedir.
+- **Galaktik (l, b):** ICRS'ten sabit bir dönme matrisi. Matris kuzey galaktik kutbun konumu ve galaktik merkezin konum açısından kurulur; sabitlerin kaynağı Hipparcos kataloğudur [Perryman1997]; matrisin tam duyarlıklı değerleri ERFA `icrs2g.c` dosyasından okunmuş ve uygulanmıştır [ERFA2024].
 - **Süpergalaktik:** galaktikten sabit dönme.
 
 ## 5. Gözlemciye indirgeme zinciri
@@ -90,13 +90,13 @@ FITS WCS standardının izdüşümleri [GreisenCalabretta2002; CalabrettaGreisen
 - Gnomonik (TAN): `ξ = cos δ sin Δα / cos c`, `η = (cos δ0 sin δ − sin δ0 cos δ cos Δα) / cos c`, `cos c = sin δ0 sin δ + cos δ0 cos δ cos Δα`. Çoğu CCD görüntüsünün izdüşümü budur.
 - SIN, STG, ARC, ZEA (zenital aile); CAR, MER, CEA (silindirik); AIT, MOL (tüm gökyüzü).
 - Piksel → ara koordinat doğrusal dönüşümü: `CRPIX`, `CD` ya da `PC` + `CDELT` matrisi.
-- Bozulma polinomu: SIP kuralı; künyesi kaynakçaya eklenecek.
+- Bozulma polinomu: SIP kuralı [Shupe2005].
 
 Gidiş-dönüş testi her izdüşüm için piksel → gök → piksel hatasının `1e-9` pikselin altında kaldığını sınar.
 
 ## 9. Küre üzerinde ayrıklaştırma
 
-- HEALPix: eşit alanlı, hiyerarşik pikselleme; halka ve iç içe numaralama; `nside`, piksel alanı `4π/(12 nside²)`. Künye kaynakçaya eklenecek.
+- HEALPix: eşit alanlı, hiyerarşik pikselleme; halka ve iç içe numaralama; `nside`, piksel alanı `4π/(12 nside²)` [Gorski2005].
 - Çapraz eşleme: küresel k-d ağacı ya da HEALPix kovalamasıyla yarıçap içi komşu arama.
 
 ## Uygulama sırası

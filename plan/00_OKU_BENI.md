@@ -1,6 +1,6 @@
 # Plan klasörü
 
-Gökbilim ve astrofizik hesap kitaplığının (`kozmos`) planı. Hazırlanma tarihi 25 Kasım 2026.
+Gökbilim ve astrofizik hesap kitaplığının (`kozmos`) planı. Hazırlanma tarihi 25 Kasım 2026. Kitaplığın ilk sürümü aynı gün yazılmıştır; uygulanan fonksiyonların güncel listesi [DURUM.md](DURUM.md) dosyasındadır.
 
 ## Okuma sırası
 
@@ -15,6 +15,7 @@ Gökbilim ve astrofizik hesap kitaplığının (`kozmos`) planı. Hazırlanma ta
    - [02_zaman_olcekleri.md](03_matematik/02_zaman_olcekleri.md)
    - [03_sayisal_yontemler.md](03_matematik/03_sayisal_yontemler.md)
    - [04_istatistik_ve_cikarim.md](03_matematik/04_istatistik_ve_cikarim.md)
+   - [05_goruntu_ve_sinyal_isleme.md](03_matematik/05_goruntu_ve_sinyal_isleme.md)
 4. [04_fizik/](04_fizik/)
    - [01_isinim_ve_fotometri.md](04_fizik/01_isinim_ve_fotometri.md)
    - [02_yorunge_ve_gok_mekanigi.md](04_fizik/02_yorunge_ve_gok_mekanigi.md)
@@ -22,6 +23,7 @@ Gökbilim ve astrofizik hesap kitaplığının (`kozmos`) planı. Hazırlanma ta
    - [04_gokadalar_ve_dinamik.md](04_fizik/04_gokadalar_ve_dinamik.md)
    - [05_kozmoloji.md](04_fizik/05_kozmoloji.md)
    - [06_dedektor_ve_atmosfer.md](04_fizik/06_dedektor_ve_atmosfer.md)
+   - [07_gorelilik_ve_yuksek_enerji.md](04_fizik/07_gorelilik_ve_yuksek_enerji.md)
 5. [05_veri_bilimi/](05_veri_bilimi/)
    - [01_veri_erisimi_ve_formatlar.md](05_veri_bilimi/01_veri_erisimi_ve_formatlar.md)
    - [02_goruntu_indirgeme_hatti.md](05_veri_bilimi/02_goruntu_indirgeme_hatti.md)
@@ -36,7 +38,9 @@ Gökbilim ve astrofizik hesap kitaplığının (`kozmos`) planı. Hazırlanma ta
 8. [08_ornek_projeler/](08_ornek_projeler/)
    - [01_hubble_diyagrami.md](08_ornek_projeler/01_hubble_diyagrami.md)
    - [02_diger_projeler.md](08_ornek_projeler/02_diger_projeler.md)
-9. [kaynakca/](kaynakca/): `kaynaklar.bib`, `paketler.txt`, doğrulama betiği ve kaydı.
+9. [09_islev_envanteri.md](09_islev_envanteri.md): modül modül yazılacak fonksiyonlar, birimleri ve kaynakları.
+10. [DURUM.md](DURUM.md): uygulanan fonksiyonlar, sabitler ve kaynak teyit durumu (kütükten üretilir).
+11. [kaynakca/](../kaynakca/): `kaynaklar.bib`, `paketler.txt`, doğrulama betiği ve kaydı.
 
 ## Atıf kuralı
 
@@ -44,16 +48,16 @@ Köşeli ayraç içindeki anahtarlar (`[Hogg1999]`) `kaynakca/kaynaklar.bib` dos
 
 ## Bilginin güven düzeyi
 
-- Künyeler ve paket sürümleri dış kayıtlara karşı sınanmıştır; sonuç [kaynakca/DOGRULAMA_OZETI.md](kaynakca/DOGRULAMA_OZETI.md) dosyasındadır.
+- Künyeler ve paket sürümleri dış kayıtlara karşı sınanmıştır; sonuç [kaynakca/DOGRULAMA_OZETI.md](../kaynakca/DOGRULAMA_OZETI.md) dosyasındadır.
 - Bakım durumu, arşiv sürümü ve güncel ölçüm değerleri bir web taramasından gelir ve belgelerde işaretlidir.
-- Denklemler, katsayılar ve denklem numaraları hatırlanan bilgidir; kaynak metinlerinden okunmamıştır. Bir fonksiyon yazılmadan önce ilgili kaynak açılır ve denklem oradan alınır.
+- Plan belgelerindeki denklemler, katsayılar ve denklem numaraları hatırlanan bilgidir. Uygulanan fonksiyonlarda durum fonksiyon başına kayıtlıdır: `okundu` işaretli olanların denklemi kod yazılırken kaynağın metninden (arXiv TeX dosyaları, NIST sabit tablosu, ERFA kaynak kodu) alınmıştır; `bekliyor` işaretli olanların kaynağı henüz açılmamıştır.
 
 Ayrıntı: [02_saha_arastirmasi/04_arastirmanin_sinirlari.md](02_saha_arastirmasi/04_arastirmanin_sinirlari.md).
 
 ## Doğrulamayı yeniden koşmak
 
 ```
-python plan/kaynakca/dogrula.py
+python kaynakca/dogrula.py
 ```
 
-Betik künyeleri Crossref, DataCite, arXiv ve Open Library kayıtlarıyla, paket sürümlerini PyPI ile karşılaştırır ve plan belgelerindeki her atıf anahtarının kaynakçada tanımlı olduğunu denetler. Çıkış kodu sıfır değilse uyuşmayan künye ya da tanımsız anahtar vardır.
+Betik künyeleri Crossref, DataCite, arXiv ve Open Library kayıtlarıyla, paket sürümlerini PyPI ile karşılaştırır ve plan belgeleriyle kaynak kodundaki her atıf anahtarının kaynakçada tanımlı olduğunu denetler. Çıkış kodu sıfır değilse uyuşmayan künye ya da tanımsız anahtar vardır.

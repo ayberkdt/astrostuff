@@ -2,17 +2,19 @@
 
 Aşamalar bağımlılık sırasındadır: her aşama yalnızca kendinden öncekilere dayanır ve bir kabul projesiyle kapanır. Süre verilmemiştir; ilerleme kabul ölçütleriyle ölçülür. Projeler [08_ornek_projeler](08_ornek_projeler/) altında tanımlıdır.
 
-## Aşama 0: İskelet
+## Aşama 0: İskelet (tamamlandı)
 
 - Git deposu, `pyproject.toml`, `src/kozmos` yerleşimi, `ruff`, `mypy`, `pytest`, `hypothesis`.
 - `_kaynak.py`: `@kaynak` dekoratörü, kütük, kaynakça okuyucu.
 - `tests/test_kaynak_kurali.py`: kaynak kuralının makine denetimi.
-- `kaynakca/` klasörünün depo köküne taşınması; `dogrula.py` sürekli denetime bağlanır.
+- `kaynakca/` klasörü depo kökündedir; `dogrula.py` sürekli denetime bağlanır.
 - Karar: tanımlayıcıların dili (Türkçe ASCII ya da İngilizce).
 
-Kabul: kaynak göstermeyen örnek bir fonksiyon testi düşürür; gösteren geçirir.
+Kabul: kaynak göstermeyen örnek bir fonksiyon testi düşürür; gösteren geçirir. Bu davranış geliştirme sırasında gözlenmiştir: kaynaksız bırakılan `tum_sabitler` fonksiyonu kural testini düşürmüş ve gerekçeli altyapı muafiyeti bu yüzden eklenmiştir.
 
-## Aşama 1: Temel
+## Aşama 1: Temel (kısmen)
+
+Yazılanlar: `temel/sabitler.py`, `temel/aci.py`, `istatistik/uyum.py`. Kalanlar: `temel/vektor.py`, `temel/sayisal/`, sağlam istatistik, belirsizlik yayılımı, Hubble 1929 tablosu.
 
 - `temel/sabitler.py` [CODATA2022; Prsa2016], `temel/birimler.py`, `temel/aci.py`, `temel/vektor.py`.
 - `temel/sayisal/`: kök bulma, integral, ADD çözücüler, enterpolasyon.
@@ -21,7 +23,9 @@ Kabul: kaynak göstermeyen örnek bir fonksiyon testi düşürür; gösteren ge�
 
 Kabul: Hubble projesi Basamak 0 [Hubble1929].
 
-## Aşama 2: Zaman ve koordinat
+## Aşama 2: Zaman ve koordinat (kısmen)
+
+Yazılanlar: `zaman/julyen.py` (takvim, ERA, GMST, eğiklik), `koordinat/donusum.py` (galaktik, ufuk), `efemeris/kepler.py`. Kalanlar: UTC ve TDB dönüşümleri, presesyon ve nutasyon, kırılma, Güneş ve Ay konumları, planlayıcı.
 
 - `zaman/`: Jülyen tarihi, ölçek dönüşümleri, yıldız zamanı.
 - `koordinat/`: küresel dönüşümler, Düzey 1 presesyon ve nutasyon, ufuk dönüşümü, kırılma.
@@ -30,7 +34,9 @@ Kabul: Hubble projesi Basamak 0 [Hubble1929].
 
 Kabul: P1 (gözlem gecesi planlayıcı). ERFA ile Düzey 1 doğruluk sınırları içinde uyum.
 
-## Aşama 3: Kozmoloji ve çıkarım
+## Aşama 3: Kozmoloji ve çıkarım (tamamlandı)
+
+Yazılanlar: `kozmoloji/uzaklik.py`, `kozmoloji/hubble_diyagrami.py`, `istatistik/mcmc.py`, `arsiv/pantheon.py`, `projeler/hubble/hubble_analizi.py`. Analiz Ωm = 0,332 ± 0,018 ve H0 = 73,53 ± 1,00 km s⁻¹ Mpc⁻¹ vermiştir; yayımlanan değerler 0,334 ± 0,018 ve 73,6 ± 1,1'dir [Brout2022]. Kayıt: `projeler/hubble/sonuc.json`.
 
 - `kozmoloji/friedmann.py`, `kozmoloji/uzaklik.py`.
 - `istatistik/mcmc.py`: Metropolis-Hastings, topluluk örnekleyici, tanılar.
@@ -55,7 +61,9 @@ Kabul: Vega ve Güneş sentetik fotometrisi; sentetik CCD karesinin üretimi.
 
 Kabul: P2 (indirgeme hattı), P3 (açık küme), P4 (Gaia HR diyagramı).
 
-## Aşama 6: Zaman serisi
+## Aşama 6: Zaman serisi (başlandı)
+
+Yazılanlar: `zamanserisi/periyodogram.py` (klasik ve yüzen ortalamalı Lomb-Scargle).
 
 - `zamanserisi/`: periyodogram, katlama, eğilim giderme, BLS ve TLS.
 - Geçiş modeli; barisentrik düzeltme (`zaman` modülünün Düzey 2'ye çıkarılması).
@@ -102,7 +110,10 @@ Her konu başlamadan önce kendi saha taraması yapılır.
 
 ## İlk adımlar
 
-1. Tanımlayıcı dili ve paket adı kararı.
-2. Aşama 0 iskeleti.
-3. [Hogg1999], [Brout2022], [Riess2022] ve Pantheon+SH0ES `README` dosyasının okunması; Aşama 3'ün denklem ve veri tanımlarının bu okumadan yazılması.
-4. `temel/sabitler.py` için CODATA ve IAU değerlerinin kaynaktan aktarılması.
+İlk dört adım (tanımlayıcı dili, iskelet, kaynakların okunması, sabitlerin aktarılması) tamamlanmıştır. Sıradakiler:
+
+1. `bekliyor` durumundaki kaynak kayıtlarının kapatılması ([DURUM.md](DURUM.md) listesi): Kepler bağıntıları, Planck fonksiyonu, öz ilinti süresi, R̂.
+2. Hubble 1929 tablosunun makaleden aktarılması (Basamak 0).
+3. Aşama 1'in kalanı: sayısal yöntemler, sağlam istatistik, belirsizlik yayılımı.
+4. Aşama 2'nin kalanı: UTC ve TDB, presesyon ve nutasyon, gözlem planlayıcı (P1).
+5. Hubble projesinde yayımlanan ve bulunan `H0` belirsizliği arasındaki farkın (1,1 ve 1,0) incelenmesi.

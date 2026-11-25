@@ -14,3 +14,5 @@ veri/ara/
 .claude/
 projeler/hubble/zincir.npy
 projeler/hubble/kosu_gunlugu.txt
+belgeler/*.dw.json
+belgeler/*.cvd.png

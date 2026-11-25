@@ -1,0 +1,5 @@
+figür denetimi: 0 HATA · 1 UYARI · 1 BİLGİ · TESLİM EDİLEBİLİR
+  [UYARI] log-tik-az         x log ekseninde 0 etiketli tik — ölçek okunmaz
+          → dar aralıkta 1-2-5 tikleri (cila bunu kendisi yapar) ya da doğrusal eksen  [Franconeri2021]
+  [BİLGİ] birim              eksen 1: x etiketi birim içermiyor: 'Kırmızıya kayma z'
+          → birimsizse sorun yok; değilse '(birim)' ekle  [Wilke2019 W6]

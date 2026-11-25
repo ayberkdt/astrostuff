@@ -13,7 +13,10 @@ biçimde görüntülenmesi ve çatallanması dışında hiçbir hak ya da lisans
 HAKKI SAHİBİ, İÇERİĞİN KULLANIMINDAN DOĞAN HİÇBİR TALEP, ZARAR YA DA
 YÜKÜMLÜLÜKTEN SORUMLU TUTULAMAZ.
 
-Üçüncü taraf içerik: Bu depo üçüncü taraf verisi ya da kodu barındırmaz.
+Üçüncü taraf içerik: Bu depo üçüncü taraf verisi ya da kodu barındırmaz. Bazı
+fonksiyonların izlediği ERFA algoritmalarına ilişkin telif ve lisans bildirimi
+UCUNCU_TARAF_BILDIRIMLERI.md dosyasındadır; yukarıdaki hak saklama o bildirimin
+kapsamındaki haklara dokunmaz.
 Analizlerin kullandığı veri setleri kendi sahiplerine aittir, çalışma anında
 kaynağından indirilir ve yeniden dağıtılmaz. Algoritmaların dayandığı
 yayınlar kaynakca/kaynaklar.bib dosyasında listelenmiştir.

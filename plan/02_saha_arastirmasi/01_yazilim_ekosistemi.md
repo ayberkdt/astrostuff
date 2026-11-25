@@ -1,6 +1,6 @@
 # Yazılım ekosistemi
 
-Sürüm ve tarih bilgileri 25 Kasım 2026'da PyPI JSON API'sinden `kaynakca/dogrula.py` ile okunmuştur; tam liste [../kaynakca/DOGRULAMA_OZETI.md](../kaynakca/DOGRULAMA_OZETI.md) dosyasındadır. Bakım durumu ve atıf bilgileri altı kollu bir web taramasından gelir; taramanın sayfayı açarak okuduğu bilgi ile yalnızca arama özetinde gördüğü bilgi ayrı işaretlenmiştir. Bu belgede "tarama" sözcüğüyle anılan bilgiler o taramanın bildirimidir ve ayrıca doğrulanmamıştır.
+Sürüm ve tarih bilgileri 25 Kasım 2026'da PyPI JSON API'sinden `kaynakca/dogrula.py` ile okunmuştur; tam liste [../kaynakca/DOGRULAMA_OZETI.md](../../kaynakca/DOGRULAMA_OZETI.md) dosyasındadır. Bakım durumu ve atıf bilgileri altı kollu bir web taramasından gelir; taramanın sayfayı açarak okuduğu bilgi ile yalnızca arama özetinde gördüğü bilgi ayrı işaretlenmiştir. Bu belgede "tarama" sözcüğüyle anılan bilgiler o taramanın bildirimidir ve ayrıca doğrulanmamıştır.
 
 Her paket için projedeki rolü yazılıdır:
 

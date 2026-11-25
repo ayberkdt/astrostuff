@@ -2,7 +2,19 @@
 
 Projenin ilk uçtan uca bilim hedefidir: açık veriden Hubble diyagramını kurmak, kozmolojik parametreleri kestirmek ve yayımlanmış sonucu yeniden üretmek. Fizik: [../04_fizik/05_kozmoloji.md](../04_fizik/05_kozmoloji.md). Veri: [../02_saha_arastirmasi/02_hubble_ve_kozmoloji_verisi.md](../02_saha_arastirmasi/02_hubble_ve_kozmoloji_verisi.md).
 
-Proje dört basamaktır; her basamak bir öncekinin kodunu kullanır ve kendi kabul ölçütü vardır.
+Proje basamaklara ayrılmıştır; her basamak bir öncekinin kodunu kullanır ve kendi kabul ölçütü vardır.
+
+## Durum
+
+Basamak 1, 2 ve 3 uygulanmış ve 25 Kasım 2026'da koşulmuştur (`projeler/hubble/hubble_analizi.py`, kayıt `projeler/hubble/sonuc.json`):
+
+- Basamak 2, yalnızca süpernovalar (N = 1580, `zHD > 0,01`, kalibratörler hariç), düz ΛCDM: Ωm = 0,332 ± 0,018; χ² = 1387,1, serbestlik derecesi 1578. Yayımlanan değer 0,334 ± 0,018 [Brout2022]; fark −0,07σ.
+- Basamak 3, Sefeid kalibratörleriyle (N = 1657, 77 kalibratör satırı): H0 = 73,53 ± 1,00 km s⁻¹ Mpc⁻¹, Ωm = 0,331 ± 0,018, M = −19,244 ± 0,029. Yayımlanan değer 73,6 ± 1,1 [Brout2022]; fark −0,05σ.
+- Zincir: 32 yürüyücü, 2000 adım, öz ilinti süresi en çok 36 adım, etkin örnek sayısı yaklaşık 1600, bölünmüş R̂ en çok 1,03.
+
+Yayımlanan değerler makalenin arXiv TeX kaynağındaki makrolardan okunmuştur. Bulunan `H0` belirsizliği yayımlanandan küçüktür (1,00 ve 1,1); nedeni incelenmemiştir. Basamak 0 (Hubble 1929) ve Basamak 4-5 yazılmamıştır.
+
+Uygulamada iki sadeleştirme vardır: model uzaklığı [Brout2022] denklemindeki gibi tek kırmızıya kaymayla (`zHD`) hesaplanır, güneş merkezli kırmızıya kayma çarpanı uygulanmaz; alt kırmızıya kayma eşiği 0,01 alınmıştır, makale bunu "~0.01" diye verir.
 
 ## Basamak 0: Hubble 1929
 

@@ -7,7 +7,7 @@ Gözlemden fiziksel parametreye giden her adım bir çıkarım problemidir: Hubb
 ## 1. Olasılık temelleri
 
 - Dağılımlar: Gauss, Poisson, binom, `χ²`, Student-t, log-normal, üstel, Cauchy. Her biri için yoğunluk, birikimli dağılım, momentler ve örnekleme [Ivezic2020, Böl. 3].
-- Poisson istatistiği: foton sayımında `σ = √N`; düşük sayımlarda Gauss yaklaşımının bozulması ve Cash istatistiği. Cash istatistiğinin künyesi kaynakçaya eklenecek.
+- Poisson istatistiği: foton sayımında `σ = √N`; düşük sayımlarda Gauss yaklaşımının bozulması ve Cash istatistiği [Cash1979].
 - Merkezi limit teoremi ve geçerli olmadığı durumlar (ağır kuyruk).
 - Bayes teoremi: `p(θ|D) ∝ p(D|θ) p(θ)` [SiviaSkilling2006, Böl. 1].
 
@@ -36,7 +36,7 @@ Gözlemden fiziksel parametreye giden her adım bir çıkarım problemidir: Hubb
 
 - **Metropolis-Hastings:** öneri dağılımı, kabul oranı, ayrıntılı denge [Metropolis1953; Hastings1970].
 - **Afin değişmez topluluk örnekleyici:** gerdirme hamlesi [GoodmanWeare2010]; `emcee`'nin algoritması [ForemanMackey2013]. Yeniden yazılır ve `emcee` ile aynı hedef dağılımda momentleri karşılaştırılır.
-- **Hamilton Monte Carlo ve NUTS:** gradyan gerektirir; yüksek boyutta verimlidir. NUTS künyesi kaynakçaya eklenecek. İlk aşamada yazılmaz; NumPyro ya da PyMC kâhin ve üretim aracı olarak kullanılır.
+- **Hamilton Monte Carlo ve NUTS:** gradyan gerektirir; yüksek boyutta verimlidir [HoffmanGelman2014]. İlk aşamada yazılmaz; NumPyro ya da PyMC kâhin ve üretim aracı olarak kullanılır.
 - **İç içe örnekleme:** kanıt hesabı ve çok tepeli sonsal dağılımlar [Skilling2006; Speagle2020].
 - **Yakınsama tanıları:** sıra-normalleştirilmiş bölünmüş `R̂`, etkin örnek sayısı, öz ilinti süresi [GelmanRubin1992; Vehtari2021; ForemanMackey2013]. Zincir izleri ve köşe grafikleri her analizde üretilir.
 - Uygulama kuralları [HoggForemanMackey2018]: başlatma, ısınma evresinin atılması, önsel dağılımın açıkça yazılması, parametrelemenin etkisi.

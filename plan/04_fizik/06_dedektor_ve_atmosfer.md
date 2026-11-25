@@ -9,15 +9,15 @@ Yer tabanlı gözlemde foton kaynaktan çıkıp sayıya dönüşene kadar atmosf
 - **Hava kütlesi:** düzlem-paralel yaklaşım `X = sec z`; küresel atmosfer için yaklaşım formülleri [KastenYoung1989; Young1994]. `z > 80°` için formüller ayrışır; her birinin geçerlilik aralığı belge dizgisinde yazılır.
 - **Sönümleme:** Bouguer yasası `m_gözlenen = m_0 + k_λ X`. `k_λ` Rayleigh saçılması (`∝ λ⁻⁴`), aerosol ve ozon bileşenlerinden oluşur; gece içinde standart yıldızlardan ölçülür. İkinci mertebe renk terimi geniş bantlarda gerekir.
 - **Kırılma ve dağılma:** [../03_matematik/01_kuresel_astronomi_ve_donusumler.md](../03_matematik/01_kuresel_astronomi_ve_donusumler.md).
-- **Görüş (seeing):** Kolmogorov türbülansı, Fried parametresi `r0 ∝ λ^(6/5)`, görüş diski `FWHM ≈ 0,98 λ/r0`; `X^0,6` ile hava kütlesi bağımlılığı. Künye kaynakçaya eklenecek.
-- **Gökyüzü parlaklığı:** hava ışıması, burçlar ışığı, Ay'ın katkısı (evre ve açısal uzaklık), ışık kirliliği. Ay parlaklığı modelinin künyesi eklenecek.
+- **Görüş (seeing):** Kolmogorov türbülansı, Fried parametresi `r0 ∝ λ^(6/5)`, görüş diski `FWHM ≈ 0,98 λ/r0`; `X^0,6` ile hava kütlesi bağımlılığı [Fried1966].
+- **Gökyüzü parlaklığı:** hava ışıması, burçlar ışığı, Ay'ın katkısı (evre ve açısal uzaklık), ışık kirliliği; Ay parlaklığı modeli [KrisciunasSchaefer1991].
 - **Tellürik soğurma:** O₂ ve H₂O bantları; tayfta düzeltme.
 
 ## 2. Teleskop ve optik
 
 - Toplama alanı, odak oranı, plaka ölçeği: `ölçek [″/mm] = 206265 / f [mm]`; piksel ölçeği.
 - Kırınım: Airy deseni, `θ = 1,22 λ/D`; merkezi engel etkisi.
-- Nokta dağılım fonksiyonu modelleri: Gauss, Moffat, Airy; görüş + optik + izleme bileşimi [King1971]. Moffat profilinin künyesi eklenecek.
+- Nokta dağılım fonksiyonu modelleri: Gauss, Moffat, Airy; görüş + optik + izleme bileşimi [King1971; Moffat1969].
 - Örnekleme: Nyquist ölçütü `FWHM ≳ 2 piksel`; eksik örneklemenin fotometri ve astrometriye etkisi.
 - Geçirgenlik zinciri: atmosfer × aynalar × filtre × dedektör kuantum verimi; sistem sıfır noktası bu zincirden öngörülür ve ölçülenle karşılaştırılır.
 

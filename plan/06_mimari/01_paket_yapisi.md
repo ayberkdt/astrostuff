@@ -67,11 +67,11 @@ Astronomy-and-Astrophysics/
 │   └── ozellik/              hypothesis ile değişmezler
 ├── projeler/                 hubble_diyagrami/, hr_diyagrami/, gecis_egrisi/ ...
 ├── veri/                     ham/ (sürüm denetimi dışı), referans/ (küçük, sürüm denetiminde)
-├── kaynakca/                 kaynaklar.bib ve doğrulama araçları (plan/kaynakca'dan taşınır)
+├── kaynakca/                 kaynaklar.bib ve doğrulama araçları 
 └── pyproject.toml
 ```
 
-Modül ve fonksiyon adlarının dili açık bir karardır. Bu belgedeki Türkçe adlar ASCII'ye indirgenmiştir (`ı`, `ş`, `ğ` kullanılmaz). Seçenek İngilizce tanımlayıcı ve Türkçe belge dizgisidir; karar ilk modül yazılmadan verilmeli ve sonradan değiştirilmemelidir.
+Modül ve fonksiyon adları Türkçedir ve ASCII'ye indirgenmiştir (`ı`, `ş`, `ğ` kullanılmaz). İlk sürüm bu kuralla yazılmıştır.
 
 ## Veri tipleri
 

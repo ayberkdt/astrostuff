@@ -6,7 +6,7 @@ Arşivlerin güncel sürüm durumu [../02_saha_arastirmasi/03_veri_arsivleri.md]
 
 ## 1. FITS
 
-Astronomi verisinin ortak dosya biçimidir. Güncel standart sürüm 4.0'dır; dergide yayımlanmış tanım sürüm 3.0'ı anlatır [Pence2010]. Sürüm 4.0'ın dergi künyesi yoktur, NASA FITS destek bürosunun belgesi anılır.
+Astronomi verisinin ortak dosya biçimidir. Güncel standart sürüm 4.0'dır; dergide yayımlanmış tanım sürüm 3.0'ı anlatır [Pence2010]. Sürüm 4.0'ın dergi künyesi yoktur; NASA FITS destek bürosunun belgesi anılır [FITS2018].
 
 - Yapı: 2880 baytlık bloklar; başlık (80 karakterlik kartlar: anahtar, değer, yorum) ve veri birimi; birincil HDU ve uzantılar (görüntü, ikili tablo, ASCII tablo).
 - Zorunlu anahtarlar: `SIMPLE`, `BITPIX`, `NAXIS`, `NAXISn`, `END`. Ölçekleme: `BSCALE`, `BZERO` (işaretsiz 16 bit tamsayının saklanma yolu).

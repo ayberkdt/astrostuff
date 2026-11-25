@@ -8,6 +8,7 @@ Planın hangi bölümüne ne kadar güvenilebileceği bilginin nasıl elde edild
 - **Paket sürümleri.** `paketler.txt` içindeki 100 paketin sürümü ve yükleme tarihi PyPI JSON API'sinden okunmuştur.
 - **Pantheon+SH0ES veri sürümü.** Dosya listesi, satır sayısı, sütun adları, kovaryans boyutu ve lisans durumu GitHub'dan okunmuştur.
 - **Paket adı.** `kozmos` adının PyPI'da boş olduğu sorgulanmıştır.
+- **Uygulanan fonksiyonların denklemleri.** Aşağıdaki kaynakların metni açılmış ve kodlanan denklemler oradan alınmıştır: Hogg 1999, Brout ve ark. 2022, Hogg, Bovy ve Lang 2010, Foreman-Mackey ve ark. 2013, VanderPlas 2018, Prša ve ark. 2016 ve Mamajek ve ark. 2015 (arXiv TeX kaynakları); CODATA 2022 (NIST `allascii.txt`); ERFA kaynak dosyaları (`cal2jd.c`, `jd2cal.c`, `era00.c`, `gmst06.c`, `obl06.c`, `sepp.c`, `s2c.c`, `c2s.c`, `anp.c`, `anpm.c`, `icrs2g.c`, `hd2ae.c`, `ae2hd.c`, `erfam.h`); Pantheon+SH0ES veri deposunun `README` dosyası. Fonksiyon başına durum [../DURUM.md](../DURUM.md) dosyasındadır.
 
 ## 2. Web taramasının sayfayı açarak bildirdiği
 
@@ -19,7 +20,7 @@ Union3, DES-SN5YR yeniden kalibrasyonu, CosmoVerse raporu, SH0ES HST+JWST birle�
 
 ## 4. Hatırlanan bilgi
 
-Matematik, fizik ve veri bilimi bölümlerindeki denklemler, algoritma adımları, sayısal katsayılar, denklem ve bölüm numaraları, tipik büyüklükler ve yöntemlerin birbirine göre üstünlükleri planı yazanın bilgisinden gelir; bu çalışmada kaynak metinleri açılıp okunmamıştır. Atıflar denklemin hangi kaynakta aranacağını gösterir, denklemin o kaynaktan aktarıldığını göstermez.
+Matematik, fizik ve veri bilimi bölümlerindeki denklemler, algoritma adımları, sayısal katsayılar, denklem ve bölüm numaraları, tipik büyüklükler ve yöntemlerin birbirine göre üstünlükleri planı yazanın bilgisinden gelir; yukarıda sayılan kaynaklar dışında kaynak metinleri açılıp okunmamıştır. Atıflar denklemin hangi kaynakta aranacağını gösterir, denklemin o kaynaktan aktarıldığını göstermez.
 
 Bu nedenle bir fonksiyon yazılmadan önce atıf verilen kaynağın ilgili bölümü açılır, denklem oradan alınır ve `@kaynak` kaydına denklem numarası o okumadan yazılır. Plandaki denklem ile kaynaktaki farklıysa kaynak geçerlidir ve plan düzeltilir.
 
@@ -32,14 +33,14 @@ Bu nedenle bir fonksiyon yazılmadan önce atıf verilen kaynağın ilgili böl�
 
 ## Künyesi eksik kaynaklar
 
-Belgelerde "künyesi kaynakçaya eklenecek" diye geçen konular: galaktik koordinat sisteminin tanımı (Hipparcos kataloğu), SIP bozulma kuralı, HEALPix, Cash istatistiği, NUTS örnekleyici, VSOP87 ve ELP kuramları, atmosferik türbülans ve görüş, Ay'ın gökyüzü parlaklığı modeli, Moffat profili, hava-boşluk dalga boyu dönüşümü, Landy-Szalay kestiricisi, FITS 4.0 belgesi. Bunlar ilgili modül yazılmadan önce kaynakçaya eklenir ve `dogrula.py` ile sınanır.
+İlk taramada künyesi eksik kalan konuların çoğu sonradan kaynakçaya eklenmiş ve sınanmıştır (Hipparcos kataloğu, SIP kuralı, HEALPix, Cash istatistiği, NUTS, VSOP87, görüş, Ay parlaklığı modeli, Moffat profili, havanın kırılma indisi, Landy-Szalay kestiricisi, FITS 4.0). ELP Ay kuramının künyesi hâlâ eksiktir.
 
-DOI'si olmayan dört kaynağın künyesi elle doğrulanacaktır: [LeavittPickering1912], [Tripp1998], [TullyFisher1977], [SOFA2023]. [IERS2010] künyesinin ISBN'i Open Library'de bulunamamıştır.
+DOI, arXiv kimliği ya da ISBN taşımayan kaynakların künyesi elle doğrulanacaktır; güncel liste `kaynakca/DOGRULAMA_OZETI.md` dosyasının "Elle doğrulanacak" bölümündedir. [IERS2010] künyesinin ISBN'i Open Library'de bulunamamıştır.
 
 ## Yeniden doğrulama
 
 ```
-python plan/kaynakca/dogrula.py
+python kaynakca/dogrula.py
 ```
 
 Betik üç denetimi yeniden koşar ve kaydı günceller. Paket sürümleri ve arşiv durumları zamanla değişir; bu belgelerdeki tarihli bilgiler yeni bir koşuyla yenilenmeden güncel sayılmaz.
