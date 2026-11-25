@@ -595,6 +595,9 @@ def standart_olc(desen: str, duz: np.ndarray) -> dict:
     k_m = katalog["k_m"][e.indis][iyi]
     dit = float(b0["ESO DET DIT"])
     sifir_buyuk = k_m + 2.5 * np.log10(buyuk[iyi] / dit)  # saniye başına, 10 piksellik açıklık
+    # Gevşek seçim: K belirsizliği 0,10 kadire kadar olan yıldızlar da (kalibratörü az olan alan için).
+    gevsek = e.eslesti & (katalog["k_cmsig"][e.indis] < 0.10) & (kucuk > 0) & (buyuk > 0) & (tepe < 15000.0)
+    sifir_gevsek = katalog["k_m"][e.indis][gevsek] + 2.5 * np.log10(buyuk[gevsek] / dit)
     return {
         "hedef": str(b0.get("ESO OBS TARG NAME", b0["OBJECT"])).strip(),
         "kare_sayisi": len(kareler),
@@ -607,6 +610,13 @@ def standart_olc(desen: str, duz: np.ndarray) -> dict:
         "sifir_noktasi_1s_10piksel": float(np.median(sifir_buyuk)) if iyi.any() else None,
         "sifir_noktasi_sacilimi": float(saglam.mad_olcek(sifir_buyuk)) if iyi.sum() > 2 else None,
         "tek_tek_sifir_noktalari": np.sort(sifir_buyuk).round(3).tolist(),
+        "gevsek_secim": {
+            "yildiz_sayisi": int(gevsek.sum()),
+            "sifir_noktasi_1s_10piksel": float(np.median(sifir_gevsek)) if gevsek.any() else None,
+            "sacilim": float(saglam.mad_olcek(sifir_gevsek)) if gevsek.sum() > 2 else None,
+            "tek_tek": np.sort(sifir_gevsek).round(3).tolist(),
+            "alandaki_2mass_yildizi": int(e.eslesti.sum()),
+        },
         "aciklik_duzeltmesi_kadir": float(np.median(2.5 * np.log10(buyuk[iyi] / kucuk[iyi]))) if iyi.any() else None,
     }
 
