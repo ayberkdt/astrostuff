@@ -291,7 +291,7 @@ def lookback_time_gyr(z: ArrayLike, cosmology: Cosmology) -> Array:
 
 
 @source("Hogg1999", where="Eq. 28", status="read")
-def comoving_volume_element_mpc3(z: ArrayLike, cosmology: Cosmology) -> Array:
+def comoving_volume_element_mpc3_sr(z: ArrayLike, cosmology: Cosmology) -> Array:
     """Compute the comoving volume per unit solid angle and per unit z.
 
     dV_C / (dΩ dz) = D_H (1+z)² D_A² / E(z)

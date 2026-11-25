@@ -6,8 +6,8 @@
 
 At run time the library uses only NumPy and SciPy. Astropy and ERFA exist to compare results, not to compute them.
 
-- 262 functions, 35 constants, 2213 tests; the tests run on every push ([CI](.github/workflows/ci.yml): Linux and Windows, Python 3.12 and 3.13)
-- In all 306 source records the equation was read from the text of the source; no record marked "pending" is left
+- 263 functions, 35 constants, 2215 tests; the tests run on every push ([CI](.github/workflows/ci.yml): Linux and Windows, Python 3.12 and 3.13)
+- In all 307 source records the equation was read from the text of the source; no record marked "pending" is left
 - Current numbers: [plan/STATUS.md](plan/STATUS.md) (generated from the code)
 
 ## Results produced with the library
@@ -239,7 +239,7 @@ The figures in the repository were produced with a local figure-audit tool (`dat
 - Cosmic-ray cleaning against Astro-SCRAPPY 1.3.0 on the two STIS frames, same parameters and same truth ([figures/cosmic_rays_real_data.json](figures/cosmic_rays_real_data.json)): ours finds 77% and 84% of the true pixels, Astro-SCRAPPY 95% and 97% (both 97-98% above 20σ); ours takes 10-15 s per 1024 × 1024 frame, Astro-SCRAPPY 1-3 s. In the crowded M5 field ours flags 545 pixels that show no excess between the two exposures, Astro-SCRAPPY about 22,000; in the sparse field 353 against 1,424.
 - PSF photometry uses analytic profiles only: on a real 2MASS image the Gaussian recovers the 1-FWHM aperture flux to 0.6% but the reduced χ² is 9, because the real PSF has wider wings. There is no empirical PSF and no comparison with another PSF-fitting code.
 - The spectroscopy functions were tested on synthetic spectra and on the numbers printed in their sources, not on observed spectra. The cross-correlation error estimate of Tonry & Davis holds at a signal-to-noise ratio of about 20-50 and is 2-3 times too small above 100.
-- Unit checking is opt-in (`with_units`); the library functions themselves still take plain numbers in the unit named by the suffix. Three existing names contradict the suffix convention and are recorded in [tests/unit/test_unit_conventions.py](tests/unit/test_unit_conventions.py): `time_above_horizon_hr` returns sidereal hours, `comoving_volume_element_mpc3` is per steradian, and `luminosity_w` of `sfr_calibration_msun_yr` is W/Hz for the radio band.
+- Unit checking is opt-in (`with_units`); the library functions themselves still take plain numbers in the unit named by the suffix.
 - SkyView cutouts are resampled images; photometric calibration needs the original archive data.
 
 ## Plan

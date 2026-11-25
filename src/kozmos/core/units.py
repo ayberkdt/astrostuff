@@ -1003,8 +1003,7 @@ def with_units[F: Callable[..., Any]](
     ``Quantity`` must be dimensionless (an angle is not) or the call raises. Parameters with an unsupported
     suffix (``_c``, ``_jd``, ``_mag``, ``_cgs``, ``_rg``, ``_si``) refuse a ``Quantity``. The suffix says
     what the function expects, not what it computes: a name that contradicts its docstring is wrapped
-    wrongly (see tests/unit/test_unit_conventions.py: ``time_above_horizon_hr`` is in sidereal hours,
-    ``comoving_volume_element_mpc3`` is per steradian, ``sfr_calibration_msun_yr`` takes W/Hz for one band).
+    wrongly (tests/unit/test_unit_conventions.py compares the suffixes with the docstrings).
     Not modelled: temperature offsets (no degree Celsius), logarithmic units (magnitude, dex), uncertainty
     propagation, ``Quantity`` inside containers, defaults (they stay plain numbers), NumPy ufuncs on a
     ``Quantity``. Cost, measured on Python 3.12.1 / numpy 2.2.6 (Windows 11, median of 7 repeats of 20 000

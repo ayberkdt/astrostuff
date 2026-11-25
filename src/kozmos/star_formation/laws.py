@@ -36,9 +36,9 @@ _LOG_C = {
     "TIR": 43.41,
     "24um": 42.69,
     "70um": 43.23,
-    "1.4GHz": 28.20,
     "2-10keV": 39.77,
 }
+_LOG_C_1P4GHZ = 28.20  # same table; the luminosity is per unit frequency
 
 
 def _positive(**values: ArrayLike) -> list[Array]:
@@ -366,7 +366,8 @@ def life_cycle_sfr_surface_density(
     status="read",
     note="Kroupa IMF (Kroupa and Weidner 2003), Starburst99, solar metallicity. IR bands are for continuous star formation "
     "(0-100 Myr) and full attenuation; factor of 0.68 for Hα and 0.86 for TIR relative to K98. "
-    "Units: erg/s for FUV, NUV, Hα, TIR, 24 µm, 70 µm, 2-10 keV; erg/s/Hz for 1.4 GHz",
+    "Units: erg/s for FUV, NUV, Hα, TIR, 24 µm, 70 µm, 2-10 keV. The 1.4 GHz row of the table, in erg/s/Hz, is "
+    "in sfr_radio_1p4ghz_msun_yr",
 )
 def sfr_calibration_msun_yr(luminosity_w: ArrayLike, band: str) -> Array:
     """Compute the star formation rate from luminosity: log SFR = log L_x − log C_x.
@@ -374,10 +375,10 @@ def sfr_calibration_msun_yr(luminosity_w: ArrayLike, band: str) -> Array:
     Parameters
     ----------
     luminosity_w : float or ndarray
-        Luminosity [W] (W/Hz for the 1.4 GHz band), positive. Converted to the cgs
-        units of the source with 1 erg/s = 10⁻⁷ W.
+        Luminosity [W], positive. Converted to the cgs units of the source with
+        1 erg/s = 10⁻⁷ W.
     band : str
-        "FUV", "NUV", "Halpha", "TIR", "24um", "70um", "1.4GHz", or "2-10keV".
+        "FUV", "NUV", "Halpha", "TIR", "24um", "70um", or "2-10keV".
         L_x = ν L_ν for FUV and NUV; the 3-1100 µm integral is used for TIR.
 
     Returns
@@ -404,3 +405,40 @@ def sfr_calibration_msun_yr(luminosity_w: ArrayLike, band: str) -> Array:
     (l_w,) = _positive(luminosity=luminosity_w)
     l_erg = l_w * 1e7
     return l_erg / 10.0 ** _LOG_C[band]
+
+
+@source(
+    "Kennicutt2012",
+    where="Table 1 (TeX label sfrequations), 1.4 GHz row, and the equation log SFR = log L_x − log C_x",
+    status="read",
+    note="log C = 28.20 with the luminosity in erg/s/Hz; Kroupa IMF, as for the other rows of the table",
+)
+def sfr_radio_1p4ghz_msun_yr(spectral_power_w_hz: ArrayLike) -> Array:
+    """Compute the star formation rate from the 1.4 GHz radio continuum: log SFR = log L_ν − 28.20.
+
+    Parameters
+    ----------
+    spectral_power_w_hz : float or ndarray
+        Luminosity per unit frequency at 1.4 GHz [W Hz⁻¹], positive. Converted to the cgs
+        units of the source with 1 erg/s/Hz = 10⁻⁷ W/Hz.
+
+    Returns
+    -------
+    float or ndarray
+        Star formation rate [M☉ yr⁻¹].
+
+    References
+    ----------
+    [Kennicutt2012] Table 1.
+
+    Validity
+    --------
+    Solar metallicity; the coefficient rests on the radio-infrared correlation and
+    inherits its limits. The age range of the tracer is in Table 1, second column.
+
+    Verification
+    ------------
+    tests/unit/test_star_formation.py: SFR = 1 at L_ν = 10^28.20 erg/s/Hz, linearity.
+    """
+    (l_w_hz,) = _positive(spectral_power=spectral_power_w_hz)
+    return l_w_hz * 1e7 / 10.0**_LOG_C_1P4GHZ

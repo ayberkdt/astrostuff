@@ -2,9 +2,9 @@
 
 This file is generated from the source registry by `python bibliography/registry_report.py`; do not edit it by hand.
 
-- Public functions tied to a source: 262
-- Functions whose records were all read from the source text: 262
-- Source records: 306 (read: 306, pending: 0)
+- Public functions tied to a source: 263
+- Functions whose records were all read from the source text: 263
+- Source records: 307 (read: 307, pending: 0)
 - Constants with a source: 35 (awaiting verification: 0)
 - Test functions: 512 (parametrized and property tests count as one)
 - Infrastructure functions exempt from the source rule: 4
@@ -145,7 +145,7 @@ was written as remembered and tested, but the text of the source has not been op
 - `angular_diameter_distance_mpc`: [Hogg1999] Eq. 18 (read)
 - `angular_diameter_distance_z1_z2_mpc`: [Hogg1999] Eq. 19 (read)
 - `comoving_distance_mpc`: [Hogg1999] Eq. 15 (read)
-- `comoving_volume_element_mpc3`: [Hogg1999] Eq. 28 (read)
+- `comoving_volume_element_mpc3_sr`: [Hogg1999] Eq. 28 (read)
 - `comoving_volume_mpc3`: [Hogg1999] Eq. 29 (read)
 - `distance_modulus`: [Hogg1999] Eq. 25 (read)
 - `doppler_redshift`: [Hogg1999] Eq. 9 (read)
@@ -317,6 +317,7 @@ was written as remembered and tested, but the text of the source has not been op
 - `kennicutt_schmidt_sfr_surface_density`: [McKee2007] TeX label eq:ks (read); [Kennicutt1998] Eq. 4 (order in the text; referred to as 'equation (4)') (read)
 - `life_cycle_sfr_surface_density`: [McKee2007] TeX label SFR-lc (read)
 - `sfr_calibration_msun_yr`: [Kennicutt2012] Table 1 (TeX label sfrequations) and the equation log SFR = log L_x − log C_x in the subsection 'An Updated Compendium of Integrated SFR Calibrations' (read)
+- `sfr_radio_1p4ghz_msun_yr`: [Kennicutt2012] Table 1 (TeX label sfrequations), 1.4 GHz row, and the equation log SFR = log L_x − log C_x (read)
 - `toomre_q_gas`: [McKee2007] TeX label Qdef (read)
 - `two_dimensional_jeans_mass_msun`: [McKee2007] TeX label MJ2D (MJ2Ddef) (read)
 
@@ -489,7 +490,7 @@ was written as remembered and tested, but the text of the source has not been op
 - [IRSA2026]: 3
 - [Inayoshi2020]: 5
 - [Kennicutt1998]: 2
-- [Kennicutt2012]: 1
+- [Kennicutt2012]: 2
 - [Komossa2015]: 2
 - [Kroupa2001]: 8
 - [Krumholz2015]: 17

@@ -336,11 +336,7 @@ def _return_doc(doc: str) -> str:
     return summary + "\n" + returns
 
 
-DOCSTRING_DISAGREEMENTS: dict[tuple[str, str], str] = {
-    ("cosmology.distances.comoving_volume_element_mpc3", "return"): (
-        "the suffix says Mpc^3 but the docstring (and the formula dV/dOmega/dz) gives Mpc^3 sr^-1 per unit redshift"
-    ),
-}
+DOCSTRING_DISAGREEMENTS: dict[tuple[str, str], str] = {}
 
 
 def _docstring_scan():
@@ -486,17 +482,6 @@ def test_the_number_and_column_density_exception_is_used_only_where_listed():
 # --------------------------------------------------------------------------------------
 
 KNOWN_FINDINGS = [
-    (
-        "observing.planning.time_above_horizon_hr",
-        "sidereal hours",
-        "suffix _hr is the SI hour (3600 s) everywhere else; the docstring says the duration is in sidereal hours "
-        "(1 sidereal hour = 0.99727 h), so a unit-aware caller converting 'hr' would be off by 0.27 percent",
-    ),
-    (
-        "star_formation.laws.sfr_calibration_msun_yr",
-        "(W/Hz for the 1.4 GHz band)",
-        "parameter luminosity_w is in W for seven bands and in W/Hz for the 1.4 GHz band: one suffix, two dimensions",
-    ),
     (
         "radiation.magnitudes.distance_modulus_from_pc",
         "def distance_modulus_from_pc",

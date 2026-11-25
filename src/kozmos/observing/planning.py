@@ -148,17 +148,18 @@ def transit_jd(
     "ERFA2023",
     where="hd2ae.c (altitude component)",
     status="read",
-    note="solution for H of the equation sin h = sin φ sin δ + cos φ cos δ cos H (derivation in this project)",
+    note="solution for H of the equation sin h = sin φ sin δ + cos φ cos δ cos H (derivation in this project); the hour angle is converted to time with the rotation rate of era00.c, 1.00273781191135448 turns per UT1 day (the precession of the equinox, about 1e-7 of the rate, is neglected)",
 )
 def time_above_horizon_hr(dec_rad: ArrayLike, latitude_rad: float, altitude_limit_rad: float = 0.0) -> Array:
     """Compute the time per day a target stays above a given altitude limit.
 
-    cos H₀ = (sin h₀ − sin φ sin δ) / (cos φ cos δ); duration = 2 H₀ (in sidereal time).
+    cos H₀ = (sin h₀ − sin φ sin δ) / (cos φ cos δ); duration = 2 H₀ / (2π · 1.00273781191135448) days.
 
     Returns
     -------
     float or ndarray
-        Duration [sidereal hours]; 0 if the target never rises, 24 if it never sets.
+        Duration during one rotation of the Earth [hr, 3600 s each]; 0 if the target never rises, one full
+        rotation (23.9345 hr) if it never sets.
 
     References
     ----------
@@ -170,8 +171,8 @@ def time_above_horizon_hr(dec_rad: ArrayLike, latitude_rad: float, altitude_limi
 
     Verification
     ------------
-    tests/oracle/test_planning_oracle.py: every star is up for 12 hours at the equator; circumpolar stars for 24 hours.
+    tests/oracle/test_planning_oracle.py: every star is up for half a rotation (11.9672 hr) at the equator; circumpolar stars for a full rotation.
     """
     d = np.asarray(dec_rad, dtype=float)
     cosine = (np.sin(altitude_limit_rad) - np.sin(latitude_rad) * np.sin(d)) / (np.cos(latitude_rad) * np.cos(d))
-    return 2.0 * np.arccos(np.clip(cosine, -1.0, 1.0)) / TWO_PI * 24.0
+    return 2.0 * np.arccos(np.clip(cosine, -1.0, 1.0)) / TWO_PI * 24.0 / SIDEREAL_RATE

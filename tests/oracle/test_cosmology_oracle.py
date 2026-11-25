@@ -51,7 +51,7 @@ def test_distances(ours, astropy_model):
 def test_time_and_volume(ours, astropy_model):
     assert _relative(distances.lookback_time_gyr(Z, ours), astropy_model.lookback_time(Z).to_value(u.Gyr)) < 1e-8
     volume = astropy_model.differential_comoving_volume(Z).to_value(u.Mpc**3 / u.sr)
-    assert _relative(distances.comoving_volume_element_mpc3(Z, ours), volume) < 1e-8
+    assert _relative(distances.comoving_volume_element_mpc3_sr(Z, ours), volume) < 1e-8
     assert abs(distances.hubble_distance_mpc(ours) / astropy_model.hubble_distance.value - 1) < 1e-12
     assert abs(distances.hubble_time_gyr(ours) / astropy_model.hubble_time.to_value(u.Gyr) - 1) < 1e-9
 

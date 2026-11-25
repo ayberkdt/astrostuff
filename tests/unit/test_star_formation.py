@@ -379,11 +379,15 @@ def test_sfr_calibration_table():
         ("TIR", 43.41),
         ("24um", 42.69),
         ("70um", 43.23),
-        ("1.4GHz", 28.20),
         ("2-10keV", 39.77),
     ]:
         l_w = 10.0**logc * 1e-7
         assert laws.sfr_calibration_msun_yr(l_w, band) == pytest.approx(1.0, rel=1e-12)
+    # 1.4 GHz: per unit frequency, its own function
+    assert laws.sfr_radio_1p4ghz_msun_yr(10.0**28.20 * 1e-7) == pytest.approx(1.0, rel=1e-12)
+    assert laws.sfr_radio_1p4ghz_msun_yr(3e22) == pytest.approx(3.0 * laws.sfr_radio_1p4ghz_msun_yr(1e22), rel=1e-13)
+    with pytest.raises(ValueError):
+        laws.sfr_calibration_msun_yr(1e22, "1.4GHz")
     # Hα: 1e42 erg/s = 1e35 W ⇒ SFR = 10^(42 − 41.27) = 5.37 M☉/yr
     assert laws.sfr_calibration_msun_yr(1e35, "Halpha") == pytest.approx(10 ** (42 - 41.27), rel=1e-12)
     # Linear

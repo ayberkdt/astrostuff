@@ -34,6 +34,7 @@ from kozmos.star_formation.laws import (
     kennicutt_schmidt_sfr_surface_density,
     life_cycle_sfr_surface_density,
     sfr_calibration_msun_yr,
+    sfr_radio_1p4ghz_msun_yr,
     toomre_q_gas,
     two_dimensional_jeans_mass_msun,
 )
@@ -67,6 +68,7 @@ __all__ = [
     "normalized_mass_to_flux_ratio",
     "number_density_m3",
     "sfr_calibration_msun_yr",
+    "sfr_radio_1p4ghz_msun_yr",
     "sound_speed_m_s",
     "surface_density_kg_m2",
     "toomre_q_gas",
