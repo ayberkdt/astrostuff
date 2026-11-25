@@ -1,10 +1,10 @@
 # Doğrulama özeti
 
-Üretim: `dogrula.py`, 2026-11-25 13:10 UTC. Ayrıntı: `dogrulama_kaydi.json`.
+Üretim: `dogrula.py`, 2026-11-25 13:46 UTC. Ayrıntı: `dogrulama_kaydi.json`.
 
 ## Künyeler
 
-BULUNAMADI: 1, DOGRULANDI: 186, ELLE: 10 (toplam 197).
+BULUNAMADI: 1, DOGRULANDI: 209, ELLE: 15 (toplam 225).
 
 ### Dış kaydı okunamayan
 
@@ -22,6 +22,11 @@ BULUNAMADI: 1, DOGRULANDI: 186, ELLE: 10 (toplam 197).
 - `Bretagnon1988` (https://ui.adsabs.harvard.edu/abs/1988A&A...202..309B): DOI, arXiv ya da ISBN yok; elle doğrulanacak
 - `Perryman1997` (https://ui.adsabs.harvard.edu/abs/1997ESASP1200.....E): DOI, arXiv ya da ISBN yok; elle doğrulanacak
 - `FITS2018` (https://fits.gsfc.nasa.gov/fits_standard.html): DOI, arXiv ya da ISBN yok; elle doğrulanacak
+- `CraigChambers2026` (https://github.com/astropy/ccd-reduction-and-photometry-guide): DOI, arXiv ya da ISBN yok; elle doğrulanacak
+- `IRAF2026` (https://github.com/iraf-community/iraf): DOI, arXiv ya da ISBN yok; elle doğrulanacak
+- `TAP2019` (https://www.ivoa.net/documents/TAP/20190927/REC-TAP-1.1.html): DOI, arXiv ya da ISBN yok; elle doğrulanacak
+- `SkyView2026` (https://skyview.gsfc.nasa.gov/current/docs/batchpage.html): DOI, arXiv ya da ISBN yok; elle doğrulanacak
+- `SExtractorBelge2026` (https://sextractor.readthedocs.io/en/latest/Background.html): DOI, arXiv ya da ISBN yok; elle doğrulanacak
 
 ### Doğrulanan
 
@@ -245,6 +250,30 @@ BULUNAMADI: 1, DOGRULANDI: 186, ELLE: 10 (toplam 197).
 - `Carroll2019`: Carroll 2019, «Spacetime and Geometry». Cambridge University Press [Crossref, doi:10.1017/9781108770385]
 - `ShapiroTeukolsky1983`: Shapiro 1983, «Black Holes, White Dwarfs, and Neutron Stars». Wiley [Crossref, doi:10.1002/9783527617661]
 - `Longair2011`: Longair 2011, «High Energy Astrophysics». Cambridge University Press [Crossref, doi:10.1017/CBO9780511778346]
+- `MurrayCorreia2010`: Murray 2010, «Keplerian Orbits and Dynamics of Exoplanets». Exoplanets, 2010, 526 pp., p.15-23 [arXiv, arXiv:1009.1738]
+- `Babusiaux2018`: Gaia Collaboration 2018, «<i>Gaia</i>
+                    Data Release 2». Astronomy &amp; Astrophysics, 616, A10 [Crossref, doi:10.1051/0004-6361/201832843]
+- `Lupton2004`: Lupton 2004, «Preparing Red‐Green‐Blue Images from CCD Data». Publications of the Astronomical Society of the Pacific, 116, 133-137 [Crossref, doi:10.1086/382245]
+- `Cohen2003`: Cohen 2003, «Spectral Irradiance Calibration in the Infrared. XIV. The Absolute Calibration of 2MASS». The Astronomical Journal, 126, 1090-1096 [Crossref, doi:10.1086/376474]
+- `Wright2010`: Wright 2010, «THE WIDE-FIELD INFRARED SURVEY EXPLORER (WISE): MISSION DESCRIPTION AND INITIAL ON-ORBIT PERFORMANCE». The Astronomical Journal, 140, 1868-1881 [Crossref, doi:10.1088/0004-6256/140/6/1868]
+- `Abramowicz2013`: Abramowicz 2011, «Foundations of Black Hole Accretion Disk Theory». Living Reviews in Relativity, 16, 1 (2013) [arXiv, arXiv:1104.5499]
+- `Sathyaprakash2009`: Sathyaprakash 2009, «Physics, Astrophysics and Cosmology with Gravitational Waves». Living Rev. Relativity 12, (2009), 2 [arXiv, arXiv:0903.0338]
+- `Page2005`: Page 2004, «Hawking Radiation and Black Hole Thermodynamics». New J.Phys.7:203,2005 [arXiv, arXiv:hep-th/0409024]
+- `EHT2019`: The Event Horizon Telescope Collaboration 2019, «First M87 Event Horizon Telescope Results. I. The Shadow of the Supermassive Black Hole». The Astrophysical Journal Letters, 875, L1 [Crossref, doi:10.3847/2041-8213/ab0ec7]
+- `Komossa2015`: Komossa 2015, «Tidal disruption of stars by supermassive black holes: Status of observations».  [arXiv, arXiv:1505.01093]
+- `Armitage2011`: Armitage 2010, «Dynamics of Protoplanetary Disks». Annual Review Astronomy Astrophysics 49: 195-236 (2011) [arXiv, arXiv:1011.1496]
+- `Inayoshi2020`: Inayoshi 2019, «The Assembly of the First Massive Black Holes».  [arXiv, arXiv:1911.05791]
+- `Bardeen1972`: Bardeen 1972, «Rotating Black Holes: Locally Nonrotating Frames, Energy Extraction, and Scalar Synchrotron Radiation». The Astrophysical Journal, 178, 347 [Crossref, doi:10.1086/151796]
+- `Page1976`: Page 1976, «Particle emission rates from a black hole: Massless particles from an uncharged, nonrotating hole». Physical Review D, 13, 198-206 [Crossref, doi:10.1103/PhysRevD.13.198]
+- `Liu1995`: Liu 1995, «Polytropic gas spheres: An approximate analytic solution of the Lane-Emden equation». Mon.Not.Roy.Astron.Soc. 281 (1996) 1197 [arXiv, arXiv:astro-ph/9512061]
+- `Bludman2010`: Bludman 2010, «Scale invariant stellar structure».  [arXiv, arXiv:1008.4281]
+- `Araujo2011`: Araujo 2011, «Newtonian and relativistic polytropes». PoS CRASchool2010:020,2010 [arXiv, arXiv:1102.2393]
+- `Paxton2013`: Paxton 2013, «Modules for Experiments in Stellar Astrophysics (MESA): Giant Planets, Oscillations, Rotation, and Massive Stars».  [arXiv, arXiv:1301.0319]
+- `Zinnecker2007`: Zinnecker 2007, «Toward Understanding Massive Star Formation». Ann.Rev.Astron.Astrophys.45:481-563,2007 [arXiv, arXiv:0707.1279]
+- `McKee2007`: McKee 2007, «Theory of Star Formation». Ann.Rev.Astron.Astrophys.45:565-687,2007 [arXiv, arXiv:0707.3514]
+- `Krumholz2015`: Krumholz 2015, «Notes on Star Formation».  [arXiv, arXiv:1511.03457]
+- `Kennicutt1998`: Kennicutt, 1997, «The Global Schmidt Law in Star Forming Galaxies». Astrophys.J.498:541,1998 [arXiv, arXiv:astro-ph/9712213]
+- `Kennicutt2012`: Kennicutt 2012, «Star Formation in the Milky Way and Nearby Galaxies».  [arXiv, arXiv:1204.3552]
 
 ## Paketler (PyPI)
 
@@ -351,7 +380,7 @@ BULUNAMADI: 1, DOGRULANDI: 186, ELLE: 10 (toplam 197).
 
 ## Atıf denetimi
 
-Plan belgelerinde kullanılan tanımlı anahtar: 188.
+Plan belgelerinde kullanılan tanımlı anahtar: 216.
 
 Tanımsız anahtar yok.
 

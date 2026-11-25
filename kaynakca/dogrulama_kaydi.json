@@ -1,5 +1,5 @@
 {
- "zaman": "2026-11-25 13:10 UTC",
+ "zaman": "2026-11-25 13:46 UTC",
  "kunyeler": [
   {
    "anahtar": "SOFA2023",
@@ -3400,6 +3400,444 @@
    "kimlik": "https://fits.gsfc.nasa.gov/fits_standard.html",
    "durum": "ELLE",
    "aciklama": "DOI, arXiv ya da ISBN yok; elle doğrulanacak"
+  },
+  {
+   "anahtar": "MurrayCorreia2010",
+   "bib_baslik": "Keplerian Orbits and Dynamics of Exoplanets",
+   "bib_yil": "2010",
+   "kimlik": "arXiv:1009.1738",
+   "dis": {
+    "kaynak": "arXiv",
+    "baslik": "Keplerian Orbits and Dynamics of Exoplanets",
+    "yil": 2010,
+    "ilk_yazar": "Murray",
+    "yayin": "Exoplanets, 2010, 526 pp., p.15-23",
+    "doi": null
+   },
+   "baslik_benzerligi": 1.0,
+   "yil_farki": 0,
+   "durum": "DOGRULANDI"
+  },
+  {
+   "anahtar": "CraigChambers2026",
+   "bib_baslik": "A guide to CCD data reduction and stellar photometry using astropy and affiliated packages (main dalı, 25 Kasım 2026'da okundu; son gönderim 2026-03-01)",
+   "bib_yil": "2026",
+   "kimlik": "https://github.com/astropy/ccd-reduction-and-photometry-guide",
+   "durum": "ELLE",
+   "aciklama": "DOI, arXiv ya da ISBN yok; elle doğrulanacak"
+  },
+  {
+   "anahtar": "IRAF2026",
+   "bib_baslik": "IRAF community distribution v2.18.2: noao.obsutil.findgain görev belgesi (findgain.hlp)",
+   "bib_yil": "2026",
+   "kimlik": "https://github.com/iraf-community/iraf",
+   "durum": "ELLE",
+   "aciklama": "DOI, arXiv ya da ISBN yok; elle doğrulanacak"
+  },
+  {
+   "anahtar": "TAP2019",
+   "bib_baslik": "Table Access Protocol Version 1.1",
+   "bib_yil": "2019",
+   "kimlik": "https://www.ivoa.net/documents/TAP/20190927/REC-TAP-1.1.html",
+   "durum": "ELLE",
+   "aciklama": "DOI, arXiv ya da ISBN yok; elle doğrulanacak"
+  },
+  {
+   "anahtar": "SkyView2026",
+   "bib_baslik": "SkyView Batch Page: running SkyView queries from scripts (25 Kasım 2026'da okundu)",
+   "bib_yil": "2026",
+   "kimlik": "https://skyview.gsfc.nasa.gov/current/docs/batchpage.html",
+   "durum": "ELLE",
+   "aciklama": "DOI, arXiv ya da ISBN yok; elle doğrulanacak"
+  },
+  {
+   "anahtar": "SExtractorBelge2026",
+   "bib_baslik": "SExtractor documentation: Modeling the background (25 Kasım 2026'da okundu)",
+   "bib_yil": "2026",
+   "kimlik": "https://sextractor.readthedocs.io/en/latest/Background.html",
+   "durum": "ELLE",
+   "aciklama": "DOI, arXiv ya da ISBN yok; elle doğrulanacak"
+  },
+  {
+   "anahtar": "Babusiaux2018",
+   "bib_baslik": "Gaia Data Release 2: Observational Hertzsprung-Russell diagrams",
+   "bib_yil": "2018",
+   "kimlik": "doi:10.1051/0004-6361/201832843",
+   "dis": {
+    "kaynak": "Crossref",
+    "baslik": "<i>Gaia</i>\n                    Data Release 2",
+    "yil": 2018,
+    "ilk_yazar": "Gaia Collaboration",
+    "yayin": "Astronomy &amp; Astrophysics",
+    "cilt": "616",
+    "sayfa": "A10"
+   },
+   "baslik_benzerligi": 1.0,
+   "yil_farki": 0,
+   "durum": "DOGRULANDI"
+  },
+  {
+   "anahtar": "Lupton2004",
+   "bib_baslik": "Preparing Red-Green-Blue Images from CCD Data",
+   "bib_yil": "2004",
+   "kimlik": "doi:10.1086/382245",
+   "dis": {
+    "kaynak": "Crossref",
+    "baslik": "Preparing Red‐Green‐Blue Images from CCD Data",
+    "yil": 2004,
+    "ilk_yazar": "Lupton",
+    "yayin": "Publications of the Astronomical Society of the Pacific",
+    "cilt": "116",
+    "sayfa": "133-137"
+   },
+   "baslik_benzerligi": 0.977,
+   "yil_farki": 0,
+   "durum": "DOGRULANDI"
+  },
+  {
+   "anahtar": "Cohen2003",
+   "bib_baslik": "Spectral Irradiance Calibration in the Infrared. XIV. The Absolute Calibration of 2MASS",
+   "bib_yil": "2003",
+   "kimlik": "doi:10.1086/376474",
+   "dis": {
+    "kaynak": "Crossref",
+    "baslik": "Spectral Irradiance Calibration in the Infrared. XIV. The Absolute Calibration of 2MASS",
+    "yil": 2003,
+    "ilk_yazar": "Cohen",
+    "yayin": "The Astronomical Journal",
+    "cilt": "126",
+    "sayfa": "1090-1096"
+   },
+   "baslik_benzerligi": 1.0,
+   "yil_farki": 0,
+   "durum": "DOGRULANDI"
+  },
+  {
+   "anahtar": "Wright2010",
+   "bib_baslik": "The Wide-field Infrared Survey Explorer (WISE): Mission Description and Initial On-orbit Performance",
+   "bib_yil": "2010",
+   "kimlik": "doi:10.1088/0004-6256/140/6/1868",
+   "dis": {
+    "kaynak": "Crossref",
+    "baslik": "THE WIDE-FIELD INFRARED SURVEY EXPLORER (WISE): MISSION DESCRIPTION AND INITIAL ON-ORBIT PERFORMANCE",
+    "yil": 2010,
+    "ilk_yazar": "Wright",
+    "yayin": "The Astronomical Journal",
+    "cilt": "140",
+    "sayfa": "1868-1881"
+   },
+   "baslik_benzerligi": 1.0,
+   "yil_farki": 0,
+   "durum": "DOGRULANDI"
+  },
+  {
+   "anahtar": "Abramowicz2013",
+   "bib_baslik": "Foundations of Black Hole Accretion Disk Theory",
+   "bib_yil": "2013",
+   "kimlik": "arXiv:1104.5499",
+   "dis": {
+    "kaynak": "arXiv",
+    "baslik": "Foundations of Black Hole Accretion Disk Theory",
+    "yil": 2011,
+    "ilk_yazar": "Abramowicz",
+    "yayin": "Living Reviews in Relativity, 16, 1 (2013)",
+    "doi": "10.12942/lrr-2013-1"
+   },
+   "baslik_benzerligi": 1.0,
+   "yil_farki": 2,
+   "durum": "DOGRULANDI"
+  },
+  {
+   "anahtar": "Sathyaprakash2009",
+   "bib_baslik": "Physics, Astrophysics and Cosmology with Gravitational Waves",
+   "bib_yil": "2009",
+   "kimlik": "arXiv:0903.0338",
+   "dis": {
+    "kaynak": "arXiv",
+    "baslik": "Physics, Astrophysics and Cosmology with Gravitational Waves",
+    "yil": 2009,
+    "ilk_yazar": "Sathyaprakash",
+    "yayin": "Living Rev. Relativity 12, (2009), 2",
+    "doi": "10.12942/lrr-2009-2"
+   },
+   "baslik_benzerligi": 1.0,
+   "yil_farki": 0,
+   "durum": "DOGRULANDI"
+  },
+  {
+   "anahtar": "Page2005",
+   "bib_baslik": "Hawking Radiation and Black Hole Thermodynamics",
+   "bib_yil": "2005",
+   "kimlik": "arXiv:hep-th/0409024",
+   "dis": {
+    "kaynak": "arXiv",
+    "baslik": "Hawking Radiation and Black Hole Thermodynamics",
+    "yil": 2004,
+    "ilk_yazar": "Page",
+    "yayin": "New J.Phys.7:203,2005",
+    "doi": "10.1088/1367-2630/7/1/203"
+   },
+   "baslik_benzerligi": 1.0,
+   "yil_farki": 1,
+   "durum": "DOGRULANDI"
+  },
+  {
+   "anahtar": "EHT2019",
+   "bib_baslik": "First M87 Event Horizon Telescope Results. I. The Shadow of the Supermassive Black Hole",
+   "bib_yil": "2019",
+   "kimlik": "doi:10.3847/2041-8213/ab0ec7",
+   "dis": {
+    "kaynak": "Crossref",
+    "baslik": "First M87 Event Horizon Telescope Results. I. The Shadow of the Supermassive Black Hole",
+    "yil": 2019,
+    "ilk_yazar": "The Event Horizon Telescope Collaboration",
+    "yayin": "The Astrophysical Journal Letters",
+    "cilt": "875",
+    "sayfa": "L1"
+   },
+   "baslik_benzerligi": 1.0,
+   "yil_farki": 0,
+   "durum": "DOGRULANDI"
+  },
+  {
+   "anahtar": "Komossa2015",
+   "bib_baslik": "Tidal disruption of stars by supermassive black holes: Status of observations",
+   "bib_yil": "2015",
+   "kimlik": "arXiv:1505.01093",
+   "dis": {
+    "kaynak": "arXiv",
+    "baslik": "Tidal disruption of stars by supermassive black holes: Status of observations",
+    "yil": 2015,
+    "ilk_yazar": "Komossa",
+    "yayin": null,
+    "doi": null
+   },
+   "baslik_benzerligi": 1.0,
+   "yil_farki": 0,
+   "durum": "DOGRULANDI"
+  },
+  {
+   "anahtar": "Armitage2011",
+   "bib_baslik": "Dynamics of Protoplanetary Disks",
+   "bib_yil": "2011",
+   "kimlik": "arXiv:1011.1496",
+   "dis": {
+    "kaynak": "arXiv",
+    "baslik": "Dynamics of Protoplanetary Disks",
+    "yil": 2010,
+    "ilk_yazar": "Armitage",
+    "yayin": "Annual Review Astronomy Astrophysics 49: 195-236 (2011)",
+    "doi": "10.1146/annurev-astro-081710-102521"
+   },
+   "baslik_benzerligi": 1.0,
+   "yil_farki": 1,
+   "durum": "DOGRULANDI"
+  },
+  {
+   "anahtar": "Inayoshi2020",
+   "bib_baslik": "The Assembly of the First Massive Black Holes",
+   "bib_yil": "2020",
+   "kimlik": "arXiv:1911.05791",
+   "dis": {
+    "kaynak": "arXiv",
+    "baslik": "The Assembly of the First Massive Black Holes",
+    "yil": 2019,
+    "ilk_yazar": "Inayoshi",
+    "yayin": null,
+    "doi": "10.1146/annurev-astro-120419-014455"
+   },
+   "baslik_benzerligi": 1.0,
+   "yil_farki": 1,
+   "durum": "DOGRULANDI"
+  },
+  {
+   "anahtar": "Bardeen1972",
+   "bib_baslik": "Rotating Black Holes: Locally Nonrotating Frames, Energy Extraction, and Scalar Synchrotron Radiation",
+   "bib_yil": "1972",
+   "kimlik": "doi:10.1086/151796",
+   "dis": {
+    "kaynak": "Crossref",
+    "baslik": "Rotating Black Holes: Locally Nonrotating Frames, Energy Extraction, and Scalar Synchrotron Radiation",
+    "yil": 1972,
+    "ilk_yazar": "Bardeen",
+    "yayin": "The Astrophysical Journal",
+    "cilt": "178",
+    "sayfa": "347"
+   },
+   "baslik_benzerligi": 1.0,
+   "yil_farki": 0,
+   "durum": "DOGRULANDI"
+  },
+  {
+   "anahtar": "Page1976",
+   "bib_baslik": "Particle emission rates from a black hole: Massless particles from an uncharged, nonrotating hole",
+   "bib_yil": "1976",
+   "kimlik": "doi:10.1103/PhysRevD.13.198",
+   "dis": {
+    "kaynak": "Crossref",
+    "baslik": "Particle emission rates from a black hole: Massless particles from an uncharged, nonrotating hole",
+    "yil": 1976,
+    "ilk_yazar": "Page",
+    "yayin": "Physical Review D",
+    "cilt": "13",
+    "sayfa": "198-206"
+   },
+   "baslik_benzerligi": 1.0,
+   "yil_farki": 0,
+   "durum": "DOGRULANDI"
+  },
+  {
+   "anahtar": "Liu1995",
+   "bib_baslik": "Polytropic gas spheres: An approximate analytic solution of the Lane-Emden equation",
+   "bib_yil": "1995",
+   "kimlik": "arXiv:astro-ph/9512061",
+   "dis": {
+    "kaynak": "arXiv",
+    "baslik": "Polytropic gas spheres: An approximate analytic solution of the Lane-Emden equation",
+    "yil": 1995,
+    "ilk_yazar": "Liu",
+    "yayin": "Mon.Not.Roy.Astron.Soc. 281 (1996) 1197",
+    "doi": "10.1093/mnras/281.4.1197"
+   },
+   "baslik_benzerligi": 1.0,
+   "yil_farki": 0,
+   "durum": "DOGRULANDI"
+  },
+  {
+   "anahtar": "Bludman2010",
+   "bib_baslik": "Scale invariant stellar structure",
+   "bib_yil": "2010",
+   "kimlik": "arXiv:1008.4281",
+   "dis": {
+    "kaynak": "arXiv",
+    "baslik": "Scale invariant stellar structure",
+    "yil": 2010,
+    "ilk_yazar": "Bludman",
+    "yayin": null,
+    "doi": null
+   },
+   "baslik_benzerligi": 1.0,
+   "yil_farki": 0,
+   "durum": "DOGRULANDI"
+  },
+  {
+   "anahtar": "Araujo2011",
+   "bib_baslik": "Newtonian and relativistic polytropes",
+   "bib_yil": "2011",
+   "kimlik": "arXiv:1102.2393",
+   "dis": {
+    "kaynak": "arXiv",
+    "baslik": "Newtonian and relativistic polytropes",
+    "yil": 2011,
+    "ilk_yazar": "Araujo",
+    "yayin": "PoS CRASchool2010:020,2010",
+    "doi": null
+   },
+   "baslik_benzerligi": 1.0,
+   "yil_farki": 0,
+   "durum": "DOGRULANDI"
+  },
+  {
+   "anahtar": "Paxton2013",
+   "bib_baslik": "Modules for Experiments in Stellar Astrophysics (MESA): Planets, Oscillations, Rotation, and Massive Stars",
+   "bib_yil": "2013",
+   "kimlik": "arXiv:1301.0319",
+   "dis": {
+    "kaynak": "arXiv",
+    "baslik": "Modules for Experiments in Stellar Astrophysics (MESA): Giant Planets, Oscillations, Rotation, and Massive Stars",
+    "yil": 2013,
+    "ilk_yazar": "Paxton",
+    "yayin": null,
+    "doi": "10.1088/0067-0049/208/1/4"
+   },
+   "baslik_benzerligi": 0.971,
+   "yil_farki": 0,
+   "durum": "DOGRULANDI"
+  },
+  {
+   "anahtar": "Zinnecker2007",
+   "bib_baslik": "Toward Understanding Massive Star Formation",
+   "bib_yil": "2007",
+   "kimlik": "arXiv:0707.1279",
+   "dis": {
+    "kaynak": "arXiv",
+    "baslik": "Toward Understanding Massive Star Formation",
+    "yil": 2007,
+    "ilk_yazar": "Zinnecker",
+    "yayin": "Ann.Rev.Astron.Astrophys.45:481-563,2007",
+    "doi": "10.1146/annurev.astro.44.051905.092549"
+   },
+   "baslik_benzerligi": 1.0,
+   "yil_farki": 0,
+   "durum": "DOGRULANDI"
+  },
+  {
+   "anahtar": "McKee2007",
+   "bib_baslik": "Theory of Star Formation",
+   "bib_yil": "2007",
+   "kimlik": "arXiv:0707.3514",
+   "dis": {
+    "kaynak": "arXiv",
+    "baslik": "Theory of Star Formation",
+    "yil": 2007,
+    "ilk_yazar": "McKee",
+    "yayin": "Ann.Rev.Astron.Astrophys.45:565-687,2007",
+    "doi": "10.1146/annurev.astro.45.051806.110602"
+   },
+   "baslik_benzerligi": 1.0,
+   "yil_farki": 0,
+   "durum": "DOGRULANDI"
+  },
+  {
+   "anahtar": "Krumholz2015",
+   "bib_baslik": "Notes on Star Formation",
+   "bib_yil": "2015",
+   "kimlik": "arXiv:1511.03457",
+   "dis": {
+    "kaynak": "arXiv",
+    "baslik": "Notes on Star Formation",
+    "yil": 2015,
+    "ilk_yazar": "Krumholz",
+    "yayin": null,
+    "doi": null
+   },
+   "baslik_benzerligi": 1.0,
+   "yil_farki": 0,
+   "durum": "DOGRULANDI"
+  },
+  {
+   "anahtar": "Kennicutt1998",
+   "bib_baslik": "The Global Schmidt Law in Star Forming Galaxies",
+   "bib_yil": "1998",
+   "kimlik": "arXiv:astro-ph/9712213",
+   "dis": {
+    "kaynak": "arXiv",
+    "baslik": "The Global Schmidt Law in Star Forming Galaxies",
+    "yil": 1997,
+    "ilk_yazar": "Kennicutt,",
+    "yayin": "Astrophys.J.498:541,1998",
+    "doi": "10.1086/305588"
+   },
+   "baslik_benzerligi": 1.0,
+   "yil_farki": 1,
+   "durum": "DOGRULANDI"
+  },
+  {
+   "anahtar": "Kennicutt2012",
+   "bib_baslik": "Star Formation in the Milky Way and Nearby Galaxies",
+   "bib_yil": "2012",
+   "kimlik": "arXiv:1204.3552",
+   "dis": {
+    "kaynak": "arXiv",
+    "baslik": "Star Formation in the Milky Way and Nearby Galaxies",
+    "yil": 2012,
+    "ilk_yazar": "Kennicutt",
+    "yayin": null,
+    "doi": "10.1146/annurev-astro-081811-125610"
+   },
+   "baslik_benzerligi": 1.0,
+   "yil_farki": 0,
+   "durum": "DOGRULANDI"
   }
  ],
  "paketler": [
@@ -4317,6 +4755,6 @@
    "Springel2005",
    "WallJenkins2012"
   ],
-  "kullanilan_sayisi": 188
+  "kullanilan_sayisi": 216
  }
 }

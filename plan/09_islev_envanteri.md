@@ -185,6 +185,22 @@ Eklenecek:
 
 Eklenecek: `onbellek` (genel indirme ve özet kaydı), `tap` (eşzamanlı ve eşzamansız sorgu), `gaia`, `mast`, `horizons`; `io.fits` (başlık, görüntü, ikili tablo) [Pence2010; FITS2018], `io.votable`.
 
+## İkinci sürümde eklenen modüller
+
+25 Kasım 2026'daki ikinci çalışmada yazılan ve bu envanterin ilk hâlinde "eklenecek" görünen ya da hiç yer almayan modüller:
+
+- `karadelik.temel`, `karadelik.yigilma` (uygulandı): yarıçaplar, Kerr yörüngeleri, gölge, yığılma, Hawking ışınımı, birleşen çiftler [Abramowicz2013; EHT2019; Page2005; Inayoshi2020; Armitage2011; Komossa2015; Sathyaprakash2009].
+- `yildiz.yapi`, `yildiz.olcekleme`, `yildiz.imf` (uygulandı): politroplar, ölçekleme bağıntıları, Chandrasekhar kütlesi, kütle fonksiyonları [Liu1995; Bludman2010; Paxton2013; Kroupa2001; Chabrier2003].
+- `yildizolusumu.bulut`, `yildizolusumu.yasalar` (uygulandı): Jeans, Bonnor-Ebert, viryal parametre, Kennicutt-Schmidt, Toomre Q [McKee2007; Krumholz2015; Kennicutt1998; Kennicutt2012].
+- `arsiv.onbellek`, `arsiv.tap`, `arsiv.gaia`, `arsiv.skyview` (uygulandı) [TAP2019; Babusiaux2018; SkyView2026].
+- `io.fits` (uygulandı: birincil görüntü birimi) [FITS2018].
+- `fotometri.kaynak` (uygulandı: arka plan, saptama, açıklık fotometrisi) [SExtractorBelge2026].
+- `gorsel.germe` (uygulandı) [Lupton2004].
+- `isinim.kizilotesi` (uygulandı) [Cohen2003; Wright2010].
+- `gozlem.planlama` (uygulandı: görünürlük, meridyen geçişi, ufuk üstü süresi) [ERFA2023].
+
+Bu modüllerin fonksiyon listesi [DURUM.md](DURUM.md) dosyasındadır; kapsam, sınırlar ve yapılacaklar [04_fizik/08_kara_delik_yildiz_ve_yildiz_olusumu.md](04_fizik/08_kara_delik_yildiz_ve_yildiz_olusumu.md) ve [05_veri_bilimi/06_optik_ve_kizilotesi_gozlem.md](05_veri_bilimi/06_optik_ve_kizilotesi_gozlem.md) belgelerindedir.
+
 ## Sıra
 
 Yol haritasındaki aşamalar bu envanterin okunma sırasını verir ([07_yol_haritasi.md](07_yol_haritasi.md)). Bir fonksiyon yazılmadan önce kaynağı açılır; kaynağa erişilemiyorsa fonksiyon `teyit="bekliyor"` ile yazılır ve [DURUM.md](DURUM.md) dosyasının bekleyenler listesine düşer.
