@@ -162,6 +162,9 @@
       "en_yakin_baska_kaynak_piksel": 30.4
      }
     ],
+    "aciklik_duzeltmesi_kadir": 0.0632877130764283,
+    "aciklik_duzeltmesi_yildiz_sayisi": 8,
+    "aciklik_duzeltmesi_sacilimi": 0.09244854245050066,
     "ortanca_katalog_belirsizligi_kadir": 0.06
    }
   },
@@ -274,6 +277,9 @@
     "sacilim_kadir": 0.06512932469558239,
     "tek_tek_sifir_noktalari": null,
     "yildiz_tanilari": null,
+    "aciklik_duzeltmesi_kadir": 0.0664211443545284,
+    "aciklik_duzeltmesi_yildiz_sayisi": 8,
+    "aciklik_duzeltmesi_sacilimi": 0.010092726206382591,
     "ortanca_katalog_belirsizligi_kadir": 0.1
    }
   }
@@ -290,5 +296,99 @@
    1.453,
    1.701
   ]
+ },
+ "standart_yildizlar": {
+  "FS14 (13/14 Mart gecesi)": {
+   "hedef": "FS14",
+   "kare_sayisi": 4,
+   "dit_s": 1.5,
+   "hava_kutlesi": 1.188,
+   "astrometri_yildiz_sayisi": 103,
+   "astrometri_artik_rms_yaysaniye": 0.2656136687629804,
+   "kalibrator_yildiz_sayisi": 17,
+   "kalibrator_k_kadirleri": [
+    10.86,
+    11.048,
+    11.452,
+    11.458,
+    11.561,
+    12.1,
+    12.388,
+    12.787,
+    12.973,
+    13.054,
+    13.114,
+    13.24,
+    13.32,
+    13.479,
+    13.519,
+    13.609,
+    13.674
+   ],
+   "sifir_noktasi_1s_10piksel": 22.16235186975093,
+   "sifir_noktasi_sacilimi": 0.05093440656127148,
+   "tek_tek_sifir_noktalari": [
+    21.97,
+    22.074,
+    22.099,
+    22.109,
+    22.142,
+    22.145,
+    22.161,
+    22.162,
+    22.162,
+    22.172,
+    22.183,
+    22.184,
+    22.197,
+    22.207,
+    22.223,
+    22.254,
+    22.448
+   ],
+   "aciklik_duzeltmesi_kadir": 0.05501139840481135
+  },
+  "FS24 (14/15 Mart gecesi)": {
+   "hedef": "FS24",
+   "kare_sayisi": 4,
+   "dit_s": 1.5,
+   "hava_kutlesi": 1.438,
+   "astrometri_yildiz_sayisi": 19,
+   "astrometri_artik_rms_yaysaniye": 0.32279092620244565,
+   "kalibrator_yildiz_sayisi": 2,
+   "kalibrator_k_kadirleri": [
+    13.239,
+    13.58
+   ],
+   "sifir_noktasi_1s_10piksel": 22.097163933199944,
+   "sifir_noktasi_sacilimi": null,
+   "tek_tek_sifir_noktalari": [
+    22.09,
+    22.105
+   ],
+   "aciklik_duzeltmesi_kadir": 0.0672992723279219
+  }
+ },
+ "gece_basina_karsilastirma": {
+  "SN2005at": {
+   "standart": "FS14 (13/14 Mart gecesi)",
+   "bilim_sifir_noktasi_1s_10piksel": 22.181024180087743,
+   "bilim_yildiz_sayisi": 10,
+   "standart_sifir_noktasi_1s_10piksel": 22.16235186975093,
+   "standart_yildiz_sayisi": 17,
+   "fark_kadir": -0.01867231033681449,
+   "hava_kutlesi_farki": 0.2650000000000001,
+   "sonumleme_kadir_hava_kutlesi": -0.07046154844080936
+  },
+  "SN2011bm": {
+   "standart": "FS24 (14/15 Mart gecesi)",
+   "bilim_sifir_noktasi_1s_10piksel": 22.13470106687749,
+   "bilim_yildiz_sayisi": 1,
+   "standart_sifir_noktasi_1s_10piksel": 22.097163933199944,
+   "standart_yildiz_sayisi": 2,
+   "fark_kadir": -0.03753713367754585,
+   "hava_kutlesi_farki": 0.2630000000000001,
+   "sonumleme_kadir_hava_kutlesi": -0.14272674402108682
+  }
  }
 }

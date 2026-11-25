@@ -49,6 +49,11 @@ from kozmos.istatistik import saglam
 KOK = Path(__file__).resolve().parents[1]
 DIZIN = KOK / "veri" / "ham" / "eso"
 ACIKLIK, HALKA = 5.0, (10.0, 15.0)
+BUYUK_ACIKLIK, BUYUK_HALKA = 10.0, (15.0, 20.0)
+STANDARTLAR = {
+    "FS14 (13/14 Mart gecesi)": "standart_SOFI.2012-03-13T23*.fits",
+    "FS24 (14/15 Mart gecesi)": "standart_SOFI.2012-03-15T10*.fits",
+}
 DIZILER = {"SN2011bm": "SOFI.2012-03-15T07*.fits", "SN2005at": "SOFI.2012-03-14T09*.fits"}
 
 
@@ -379,6 +384,13 @@ def indirge(ad: str, desen: str, duz: np.ndarray, basit_duz: np.ndarray) -> tupl
         for i in np.flatnonzero(aday)
     ]
 
+    # Açıklık düzeltmesi: parlak nokta kaynaklarda 10 piksellik açıklığın 5 piksellik açıklığa akı oranı [kadir].
+    buyuk, _ = fk.aciklik_fotometrisi(yigin_g, kx, ky, BUYUK_ACIKLIK, halka=BUYUK_HALKA)
+    parlak_nokta = np.flatnonzero(gaia_es.eslesti & nokta & (aki > 0) & (buyuk > 0) & (tepe < 15000.0))
+    parlak_nokta = parlak_nokta[np.argsort(-aki[parlak_nokta])][:8]
+    duzeltmeler = 2.5 * np.log10(buyuk[parlak_nokta] / aki[parlak_nokta])
+    aciklik_duzeltmesi = float(np.median(duzeltmeler)) if parlak_nokta.size else None
+
     def yinelenebilirlik(dizi: np.ndarray) -> dict:
         """Parlak yıldızların karelerdeki açıklık akısının bağıl sağlam saçılımı ve beklenen gürültüye oranı."""
         olcumler, beklenen = [], []
@@ -471,6 +483,9 @@ def indirge(ad: str, desen: str, duz: np.ndarray, basit_duz: np.ndarray) -> tupl
             "sacilim_kadir": float(saglam.mad_olcek(sifir)) if sifir.size > 2 else None,
             "tek_tek_sifir_noktalari": np.sort(sifir).round(3).tolist() if sifir.size <= 6 else None,
             "yildiz_tanilari": tanilar if aday.sum() <= 6 else None,
+            "aciklik_duzeltmesi_kadir": aciklik_duzeltmesi,
+            "aciklik_duzeltmesi_yildiz_sayisi": int(parlak_nokta.size),
+            "aciklik_duzeltmesi_sacilimi": float(saglam.mad_olcek(duzeltmeler)) if parlak_nokta.size > 2 else None,
             "ortanca_katalog_belirsizligi_kadir": float(np.median(katalog["k_cmsig"][e.indis][k_iyi]))
             if sifir.size
             else None,
@@ -483,6 +498,74 @@ def indirge(ad: str, desen: str, duz: np.ndarray, basit_duz: np.ndarray) -> tupl
         "yigin": (yigin_g[ys.min() : ys.max() + 1, xs.min() : xs.max() + 1], None, 0.0),
     }
     return sonuc, goruntuler
+
+
+def standart_olc(desen: str, duz: np.ndarray) -> dict:
+    """Standart yıldız dizisinden (4 kare, dört köşe) alan yıldızlarıyla sıfır noktası.
+
+    Standart yıldızın kendi kadiri kullanılmaz (UKIRT sönük standartlarının kadirleri bu çalışmada okunmadı);
+    kalibratör, aynı karelerdeki 2MASS yıldızlarıdır (K belirsizliği 0,05 kadirden küçük olanlar).
+    """
+    yollar = sorted(DIZIN.glob(desen))
+    if len(yollar) < 3:
+        raise SystemExit(f"{DIZIN} altında {desen} kareleri yok; kimlikler ornekler/eso_sofi_kareleri.txt içinde")
+    kareler, basliklar = [], []
+    for yol in yollar:
+        veri, baslik = fits.fits_oku(yol)
+        kareler.append(veri)
+        basliklar.append(baslik)
+    kareler = np.array(kareler)
+    b0 = basliklar[0]
+    bozuk = ndimage.binary_dilation((duz < 0.5) | (duz > 1.5), structure=np.ones((3, 3)))
+    cikarilmis, _ = gokyuzu.duragan_gokyuzu_cikar(kareler, en_yuksegi_at=0)
+    cikarilmis = np.where(bozuk[None], np.nan, cikarilmis / np.where(bozuk, 1.0, duz))
+    # Öteleme: bilim dizilerinde veriden bulunan kural (eksen sırası X, Y; işaret +, +), yıldızlarla inceltilir.
+    komut = np.array([[b["ESO SEQ CUMOFFSETX"], b["ESO SEQ CUMOFFSETY"]] for b in basliklar])
+    komut -= komut[0]
+    listeler = [sapta(np.nan_to_num(kare), esik=8.0) for kare in cikarilmis]
+    oteleme = [(0.0, 0.0)]
+    for i in range(1, len(kareler)):
+        dx, dy = eslesen_fark(listeler[0], listeler[i], komut[i])
+        oteleme.append((float(np.median(dx)), float(np.median(dy))) if dx.size else tuple(komut[i]))
+    oteleme = np.array(oteleme)
+    yigin_g, kapsama, koken = yigin(cikarilmis, oteleme)
+    yeterli = kapsama >= 2
+    yigin_g = np.where(yeterli, yigin_g, np.nanmedian(yigin_g[yeterli]))
+    kaynaklar = sapta(yigin_g, esik=6.0)
+    ic_bolge = ndimage.binary_erosion(yeterli, iterations=20)
+    icte = ic_bolge[np.round(kaynaklar.y).astype(int), np.round(kaynaklar.x).astype(int)]
+    kx, ky, tepe = kaynaklar.x[icte], kaynaklar.y[icte], kaynaklar.tepe[icte]
+    baslik_wcs = wcs.basliktan_wcs(b0)
+    baslik_wcs = wcs.Wcs(crpix=baslik_wcs.crpix + koken, crval=baslik_wcs.crval, cd=baslik_wcs.cd)
+    katalog = ikimass.nokta_kaynaklari(float(b0["CRVAL1"]), float(b0["CRVAL2"]), 0.09, KOK / "veri" / "ham" / "2mass")
+    kaymasiz, _ = cozum.kaydirma_bul(
+        baslik_wcs, kx, ky, katalog["ra"], katalog["dec"], en_cok_piksel=320.0, kutu_piksel=4.0
+    )
+    cozulen = cozum.wcs_iyilestir(
+        kaymasiz, kx, ky, katalog["ra"], katalog["dec"], yaricap_yaysaniye=4.0, son_yaricap_yaysaniye=1.5
+    )
+    ra, dec = wcs.piksel_den_gok(cozulen.wcs, kx, ky)
+    e = eslestirme.capraz_esle(ra, dec, katalog["ra"], katalog["dec"], 1.5)
+    kucuk, _ = fk.aciklik_fotometrisi(yigin_g, kx, ky, ACIKLIK, halka=HALKA)
+    buyuk, _ = fk.aciklik_fotometrisi(yigin_g, kx, ky, BUYUK_ACIKLIK, halka=BUYUK_HALKA)
+    iyi = e.eslesti & (katalog["k_cmsig"][e.indis] < 0.05) & (kucuk > 0) & (buyuk > 0) & (tepe < 15000.0)
+    k_m = katalog["k_m"][e.indis][iyi]
+    dit = float(b0["ESO DET DIT"])
+    sifir_buyuk = k_m + 2.5 * np.log10(buyuk[iyi] / dit)  # saniye başına, 10 piksellik açıklık
+    return {
+        "hedef": str(b0.get("ESO OBS TARG NAME", b0["OBJECT"])).strip(),
+        "kare_sayisi": len(kareler),
+        "dit_s": dit,
+        "hava_kutlesi": float(b0["ESO TEL AIRM START"]),
+        "astrometri_yildiz_sayisi": cozulen.yildiz_sayisi,
+        "astrometri_artik_rms_yaysaniye": cozulen.artik_rms_yaysaniye,
+        "kalibrator_yildiz_sayisi": int(iyi.sum()),
+        "kalibrator_k_kadirleri": np.sort(k_m).round(3).tolist(),
+        "sifir_noktasi_1s_10piksel": float(np.median(sifir_buyuk)) if iyi.any() else None,
+        "sifir_noktasi_sacilimi": float(saglam.mad_olcek(sifir_buyuk)) if iyi.sum() > 2 else None,
+        "tek_tek_sifir_noktalari": np.sort(sifir_buyuk).round(3).tolist(),
+        "aciklik_duzeltmesi_kadir": float(np.median(2.5 * np.log10(buyuk[iyi] / kucuk[iyi]))) if iyi.any() else None,
+    }
 
 
 def main() -> None:
@@ -511,6 +594,31 @@ def main() -> None:
         "fark_kadir": float(seyrek["fotometri"]["sifir_noktasi_kadir"] - aktarilan),
         "hava_kutleleri": [zengin["veri"]["hava_kutlesi"], seyrek["veri"]["hava_kutlesi"]],
     }
+    # Standart yıldız alanlarından sıfır noktası ve gece başına karşılaştırma. Bütün sıfır noktaları saniye başına
+    # ve 10 piksellik açıklığa indirgenir: bilim alanında 5 piksellik açıklığın sıfır noktasına o alanın açıklık
+    # düzeltmesi eklenir. Aynı gecede standart ile bilim alanının farkı, hava kütlesi farkına bölünerek sönümleme
+    # katsayısına çevrilir (iki noktadan; yalnızca tutarlılık göstergesidir).
+    sonuc["standart_yildizlar"] = {ad: standart_olc(desen, duz) for ad, desen in STANDARTLAR.items()}
+    gece = {"SN2005at": "FS14 (13/14 Mart gecesi)", "SN2011bm": "FS24 (14/15 Mart gecesi)"}
+    sonuc["gece_basina_karsilastirma"] = {}
+    for alan, standart in gece.items():
+        bilim, std = sonuc["diziler"][alan], sonuc["standart_yildizlar"][standart]
+        f = bilim["fotometri"]
+        if None in (f["sifir_noktasi_kadir"], f["aciklik_duzeltmesi_kadir"], std["sifir_noktasi_1s_10piksel"]):
+            continue
+        bilim_1s = f["sifir_noktasi_kadir"] - 2.5 * np.log10(bilim["veri"]["dit_s"]) + f["aciklik_duzeltmesi_kadir"]
+        fark = std["sifir_noktasi_1s_10piksel"] - bilim_1s
+        hava_farki = bilim["veri"]["hava_kutlesi"] - std["hava_kutlesi"]
+        sonuc["gece_basina_karsilastirma"][alan] = {
+            "standart": standart,
+            "bilim_sifir_noktasi_1s_10piksel": float(bilim_1s),
+            "bilim_yildiz_sayisi": f["yildiz_sayisi"],
+            "standart_sifir_noktasi_1s_10piksel": std["sifir_noktasi_1s_10piksel"],
+            "standart_yildiz_sayisi": std["kalibrator_yildiz_sayisi"],
+            "fark_kadir": float(fark),
+            "hava_kutlesi_farki": float(hava_farki),
+            "sonumleme_kadir_hava_kutlesi": float(fark / hava_farki),
+        }
     cikti = KOK / "belgeler"
     (cikti / "kizilotesi_indirgeme.json").write_text(json.dumps(sonuc, ensure_ascii=False, indent=1), encoding="utf-8")
     print(json.dumps(sonuc, ensure_ascii=False, indent=1))
