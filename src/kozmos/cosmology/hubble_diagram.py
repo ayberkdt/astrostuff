@@ -1,8 +1,9 @@
-"""Süpernova Hubble diyagramı olabilirliği.
+"""Supernova Hubble diagram likelihood.
 
-Olabilirlik tanımları Pantheon+ kozmoloji makalesinin arXiv TeX kaynağından
-(2202.04077) okunmuştur [Brout2022]; denklemler oradaki TeX etiketleriyle
-anılır. Veri sütunlarının anlamı veri deposunun ``README`` dosyasından gelir.
+The likelihood definitions were read from the arXiv TeX source of the Pantheon+
+cosmology paper (2202.04077) [Brout2022]; equations are cited by their TeX
+labels there. The meaning of the data columns comes from the ``README`` file of
+the data repository.
 """
 
 from __future__ import annotations
@@ -22,20 +23,20 @@ Mask = NDArray[np.bool_]
 
 @dataclass(frozen=True, slots=True)
 class HubbleData:
-    """Olabilirlik için hazırlanmış süpernova verisi.
+    """Supernova data prepared for the likelihood.
 
     Attributes
     ----------
     z : ndarray
-        Hubble diyagramı kırmızıya kayması (``zHD``).
-    kadir : ndarray
-        Standartlaştırılmış kadir (``m_b_corr``).
-    kalibrator : ndarray[bool]
-        Sefeid uzaklığı olan konaklardaki süpernovalar (``IS_CALIBRATOR``).
-    sefeid_modulu : ndarray
-        Sefeid konak uzaklık modülü (``CEPH_DIST``); kalibratör olmayanlarda kullanılmaz.
-    cholesky_alt : ndarray
-        Seçilen satırların kovaryansının alt üçgen Cholesky çarpanı.
+        Hubble diagram redshift (``zHD``).
+    magnitude : ndarray
+        Standardized magnitude (``m_b_corr``).
+    calibrator : ndarray[bool]
+        Supernovae in hosts with a Cepheid distance (``IS_CALIBRATOR``).
+    cepheid_modulus : ndarray
+        Cepheid host distance modulus (``CEPH_DIST``); not used for non-calibrators.
+    cholesky_lower : ndarray
+        Lower-triangular Cholesky factor of the covariance of the selected rows.
     """
 
     z: Array
@@ -50,9 +51,9 @@ class HubbleData:
 
 @source(
     "Brout2022",
-    where="Bölüm 4: z < ~0,01 Hubble diyagramı kullanılmaz; eq:dmuprime",
+    where="Section 4: z < ~0.01 is not used in the Hubble diagram; eq:dmuprime",
     status="read",
-    note="eşik 0,01 makalede '~0.01' diye geçer; kesin değer bu projenin seçimidir",
+    note="the threshold 0.01 appears in the paper as '~0.01'; the exact value is this project's choice",
 )
 def prepare_data(
     columns: dict[str, np.ndarray],
@@ -61,43 +62,43 @@ def prepare_data(
     z_min: float = 0.01,
     calibrators: bool,
 ) -> HubbleData:
-    """Satırları seçer ve kovaryans alt matrisinin Cholesky çarpanını hesaplar.
+    """Select rows and compute the Cholesky factor of the covariance submatrix.
 
     Parameters
     ----------
-    sutunlar : dict
-        ``kozmos.archives.pantheon.tablo_oku`` çıktısı.
-    kovaryans : ndarray (N, N)
-    z_alt : float
-        Kalibratör olmayan süpernovalar için alt kırmızıya kayma sınırı.
-    kalibratorler : bool
-        Doğruysa Sefeid konaklarındaki süpernovalar (kırmızıya kaymalarından
-        bağımsız olarak) eklenir; yanlışsa bütünüyle dışarıda bırakılır.
+    columns : dict
+        Output of ``kozmos.archives.pantheon.read_table``.
+    covariance : ndarray (N, N)
+    z_min : float
+        Lower redshift limit for non-calibrator supernovae.
+    calibrators : bool
+        If true, supernovae in Cepheid hosts are included (regardless of their
+        redshift); if false, they are excluded entirely.
 
     References
     ----------
-    [Brout2022] Bölüm 4, eq:dmuprime.
+    [Brout2022] Section 4, eq:dmuprime.
 
     Validity
     --------
-    Özel hızların baskın olduğu yakın süpernovalar yalnızca Sefeid çapası
-    olarak kullanılır; Hubble akışına katılmaz.
+    Nearby supernovae, where peculiar velocities dominate, are used only as
+    Cepheid anchors; they do not enter the Hubble flow.
 
     Verification
     ------------
-    tests/unit/test_hubble_diagram.py (sentetik veri).
+    tests/unit/test_hubble_diagram.py (synthetic data).
     """
     z = np.asarray(columns["zHD"], dtype=float)
-    kal = np.asarray(columns["IS_CALIBRATOR"], dtype=float) == 1.0
-    secim = (z > z_min) & ~kal
+    is_calibrator = np.asarray(columns["IS_CALIBRATOR"], dtype=float) == 1.0
+    selected = (z > z_min) & ~is_calibrator
     if calibrators:
-        secim = secim | kal
-    c = np.asarray(covariance, dtype=float)[np.ix_(secim, secim)]
+        selected = selected | is_calibrator
+    c = np.asarray(covariance, dtype=float)[np.ix_(selected, selected)]
     return HubbleData(
-        z=z[secim],
-        magnitude=np.asarray(columns["m_b_corr"], dtype=float)[secim],
-        calibrator=kal[secim],
-        cepheid_modulus=np.asarray(columns["CEPH_DIST"], dtype=float)[secim],
+        z=z[selected],
+        magnitude=np.asarray(columns["m_b_corr"], dtype=float)[selected],
+        calibrator=is_calibrator[selected],
+        cepheid_modulus=np.asarray(columns["CEPH_DIST"], dtype=float)[selected],
         cholesky_lower=cholesky(c, lower=True),
     )
 
@@ -106,12 +107,12 @@ def prepare_data(
     "Brout2022",
     where="eq:dmu, eq:dmuprime, eq:dl",
     status="read",
-    note="μ_i = m_b_corr,i − M; kalibratörde model yerine Sefeid uzaklık modülü",
+    note="μ_i = m_b_corr,i − M; for calibrators the Cepheid distance modulus replaces the model",
 )
 def residual_vector(data: HubbleData, cosmology: Cosmology, absolute_magnitude: float) -> Array:
-    """Veri eksi model artığını hesaplar.
+    """Compute the data minus model residual.
 
-    Kalibratör: ΔD_i = (m_i − M) − μ_Sefeid,i. Diğerleri: ΔD_i = (m_i − M) − μ_model(z_i).
+    Calibrators: ΔD_i = (m_i − M) − μ_Cepheid,i. Others: ΔD_i = (m_i − M) − μ_model(z_i).
 
     References
     ----------
@@ -119,9 +120,9 @@ def residual_vector(data: HubbleData, cosmology: Cosmology, absolute_magnitude: 
 
     Validity
     --------
-    Model uzaklığı [Brout2022] eq:dl'deki gibi tek kırmızıya kaymayla (``zHD``)
-    hesaplanır; güneş merkezli kırmızıya kaymayla (1 + z_hel) çarpanı düzeltmesi
-    uygulanmaz.
+    As in [Brout2022] eq:dl, the model distance is computed with a single
+    redshift (``zHD``); the correction factor involving the heliocentric
+    redshift (1 + z_hel) is not applied.
 
     Verification
     ------------
@@ -129,8 +130,8 @@ def residual_vector(data: HubbleData, cosmology: Cosmology, absolute_magnitude: 
     """
     mu = data.magnitude - absolute_magnitude
     model = np.where(data.calibrator, data.cepheid_modulus, 0.0)
-    akis = ~data.calibrator
-    model[akis] = distance_modulus(data.z[akis], cosmology)
+    hubble_flow = ~data.calibrator
+    model[hubble_flow] = distance_modulus(data.z[hubble_flow], cosmology)
     return mu - model
 
 
@@ -138,10 +139,10 @@ def residual_vector(data: HubbleData, cosmology: Cosmology, absolute_magnitude: 
     "Brout2022",
     where="eq:likelihood, eq:sh0eslikelihood",
     status="read",
-    note="−2 ln L = ΔDᵀ C⁻¹ ΔD; C veri sürümündeki STAT+SYS matrisi",
+    note="−2 ln L = ΔDᵀ C⁻¹ ΔD; C is the STAT+SYS matrix of the data release",
 )
 def log_likelihood(data: HubbleData, cosmology: Cosmology, absolute_magnitude: float) -> float:
-    """Gauss log olabilirliğini (sabit terim hariç) hesaplar: ln L = −χ²/2.
+    """Compute the Gaussian log likelihood (without the constant term): ln L = −χ²/2.
 
     References
     ----------
@@ -149,7 +150,7 @@ def log_likelihood(data: HubbleData, cosmology: Cosmology, absolute_magnitude: f
 
     Verification
     ------------
-    tests/unit/test_hubble_diagram.py: sentetik veride girilen parametrelerin geri kazanımı.
+    tests/unit/test_hubble_diagram.py: recovery of the injected parameters from synthetic data.
     """
     y = solve_triangular(data.cholesky_lower, residual_vector(data, cosmology, absolute_magnitude), lower=True)
     return -0.5 * float(y @ y)
@@ -159,12 +160,12 @@ def log_likelihood(data: HubbleData, cosmology: Cosmology, absolute_magnitude: f
     "Brout2022",
     where="eq:likelihood",
     status="read",
-    note="M doğrusal parametredir; sabit kozmolojide en iyi M ağırlıklı ortalamadır (türetim bu projede)",
+    note="M is a linear parameter; for a fixed cosmology the best M is a weighted mean (derivation in this project)",
 )
 def best_absolute_magnitude(data: HubbleData, cosmology: Cosmology) -> tuple[float, float, float]:
-    """Sabit kozmolojide χ²'yi en küçükleyen M değerini kapalı biçimde bulur.
+    """Find the M that minimizes χ² for a fixed cosmology, in closed form.
 
-    ΔD = r − M·1 için M̂ = (1ᵀC⁻¹r)/(1ᵀC⁻¹1), σ_M² = 1/(1ᵀC⁻¹1).
+    For ΔD = r − M·1: M̂ = (1ᵀC⁻¹r)/(1ᵀC⁻¹1), σ_M² = 1/(1ᵀC⁻¹1).
 
     Returns
     -------
@@ -176,11 +177,11 @@ def best_absolute_magnitude(data: HubbleData, cosmology: Cosmology) -> tuple[flo
 
     Verification
     ------------
-    tests/unit/test_hubble_diagram.py: sayısal en küçükleme ile karşılaştırma.
+    tests/unit/test_hubble_diagram.py: comparison with numerical minimization.
     """
     r = solve_triangular(data.cholesky_lower, residual_vector(data, cosmology, 0.0), lower=True)
-    bir = solve_triangular(data.cholesky_lower, np.ones(len(data)), lower=True)
-    payda = float(bir @ bir)
-    m = float(bir @ r) / payda
-    kalan = r - m * bir
-    return m, payda**-0.5, float(kalan @ kalan)
+    ones = solve_triangular(data.cholesky_lower, np.ones(len(data)), lower=True)
+    denominator = float(ones @ ones)
+    m = float(ones @ r) / denominator
+    remainder = r - m * ones
+    return m, denominator**-0.5, float(remainder @ remainder)

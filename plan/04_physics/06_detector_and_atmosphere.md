@@ -1,77 +1,77 @@
-# Dedektör, teleskop ve atmosfer fiziği
+# Detector, telescope and atmosphere physics
 
-Hedef modüller: `gozlem/`, `indirgeme/` (model tarafı).
+Target modules: `observing/`, `reduction/` (model side).
 
-Yer tabanlı gözlemde foton kaynaktan çıkıp sayıya dönüşene kadar atmosferden, optikten ve dedektörden geçer. Veri indirgeme bu zincirin tersine çevrilmesidir; zincir modellenmeden indirgeme adımlarının neyi düzelttiği anlaşılmaz. Denklemler kodlanmadan önce anılan kaynaktan okunur.
+In ground-based observation a photon passes through the atmosphere, the optics and the detector between leaving the source and becoming a count. Data reduction is the inversion of this chain; without modeling the chain, it is not clear what the reduction steps correct. The equations are read from the cited source before they are coded.
 
-## 1. Atmosfer
+## 1. Atmosphere
 
-- **Hava kütlesi:** düzlem-paralel yaklaşım `X = sec z`; küresel atmosfer için yaklaşım formülleri [KastenYoung1989; Young1994]. `z > 80°` için formüller ayrışır; her birinin geçerlilik aralığı belge dizgisinde yazılır.
-- **Sönümleme:** Bouguer yasası `m_gözlenen = m_0 + k_λ X`. `k_λ` Rayleigh saçılması (`∝ λ⁻⁴`), aerosol ve ozon bileşenlerinden oluşur; gece içinde standart yıldızlardan ölçülür. İkinci mertebe renk terimi geniş bantlarda gerekir.
-- **Kırılma ve dağılma:** [../03_matematik/01_kuresel_astronomi_ve_donusumler.md](../03_matematik/01_kuresel_astronomi_ve_donusumler.md).
-- **Görüş (seeing):** Kolmogorov türbülansı, Fried parametresi `r0 ∝ λ^(6/5)`, görüş diski `FWHM ≈ 0,98 λ/r0`; `X^0,6` ile hava kütlesi bağımlılığı [Fried1966].
-- **Gökyüzü parlaklığı:** hava ışıması, burçlar ışığı, Ay'ın katkısı (evre ve açısal uzaklık), ışık kirliliği; Ay parlaklığı modeli [KrisciunasSchaefer1991].
-- **Tellürik soğurma:** O₂ ve H₂O bantları; tayfta düzeltme.
+- **Airmass:** plane-parallel approximation `X = sec z`; approximation formulas for a spherical atmosphere [KastenYoung1989; Young1994]. For `z > 80°` the formulas diverge; the validity range of each is written in its docstring.
+- **Extinction:** Bouguer law `m_observed = m_0 + k_λ X`. `k_λ` consists of Rayleigh scattering (`∝ λ⁻⁴`), aerosol and ozone components; it is measured during the night from standard stars. A second-order color term is needed in wide bands.
+- **Refraction and dispersion:** [../03_mathematics/01_spherical_astronomy_and_transforms.md](../03_mathematics/01_spherical_astronomy_and_transforms.md).
+- **Seeing:** Kolmogorov turbulence, Fried parameter `r0 ∝ λ^(6/5)`, seeing disk `FWHM ≈ 0.98 λ/r0`; airmass dependence as `X^0.6` [Fried1966].
+- **Sky brightness:** airglow, zodiacal light, the contribution of the Moon (phase and angular distance), light pollution; Moon brightness model [KrisciunasSchaefer1991].
+- **Telluric absorption:** O₂ and H₂O bands; correction in the spectrum.
 
-## 2. Teleskop ve optik
+## 2. Telescope and optics
 
-- Toplama alanı, odak oranı, plaka ölçeği: `ölçek [″/mm] = 206265 / f [mm]`; piksel ölçeği.
-- Kırınım: Airy deseni, `θ = 1,22 λ/D`; merkezi engel etkisi.
-- Nokta dağılım fonksiyonu modelleri: Gauss, Moffat, Airy; görüş + optik + izleme bileşimi [King1971; Moffat1969].
-- Örnekleme: Nyquist ölçütü `FWHM ≳ 2 piksel`; eksik örneklemenin fotometri ve astrometriye etkisi.
-- Geçirgenlik zinciri: atmosfer × aynalar × filtre × dedektör kuantum verimi; sistem sıfır noktası bu zincirden öngörülür ve ölçülenle karşılaştırılır.
+- Collecting area, focal ratio, plate scale: `scale [″/mm] = 206265 / f [mm]`; pixel scale.
+- Diffraction: Airy pattern, `θ = 1.22 λ/D`; effect of the central obstruction.
+- Point spread function models: Gaussian, Moffat, Airy; combination of seeing + optics + tracking [King1971; Moffat1969].
+- Sampling: Nyquist criterion `FWHM ≳ 2 pixels`; the effect of undersampling on photometry and astrometry.
+- Transmission chain: atmosphere × mirrors × filter × detector quantum efficiency; the system zero point is predicted from this chain and compared with the measured one.
 
-## 3. Dedektör
+## 3. Detector
 
-CCD ve CMOS dedektörün sinyal modeli [Howell2006, Böl. 3-4; Janesick2007]:
+Signal model of a CCD and CMOS detector [Howell2006, Section 3-4; Janesick2007]:
 
 ```
-ham[ADU] = ( akı · t · QE · düz_alan + karanlık_akım · t ) / kazanç + bias + gürültü
+raw[ADU] = ( flux · t · QE · flat_field + dark_current · t ) / gain + bias + noise
 ```
 
-- **Kazanç** [e⁻/ADU], **okuma gürültüsü** [e⁻], **karanlık akım** [e⁻/s] ve sıcaklık bağımlılığı.
-- **Bias** düzeyi ve yapısı; aşırı tarama (overscan) bölgesi.
-- **Düz alan:** pikselden piksele duyarlılık, vinyet, toz gölgeleri; dalga boyuna bağlıdır.
-- **Doğrusallık ve doyma:** tam kuyu sığası, doğrusallıktan sapma eğrisi, taşma (blooming).
-- **Foton aktarım eğrisi:** varyans-ortalama doğrusunun eğiminden kazanç, kesişiminden okuma gürültüsü [Janesick2007].
-- Kusurlar: sıcak ve ölü pikseller, kötü sütunlar, yük aktarım verimsizliği, saçak (fringing), kalıntı görüntü.
-- CMOS farkları: piksel başına kazanç ve gürültü, sabit desen gürültüsü, yuvarlanan perde, amfi parlaması.
-- Kozmik ışınlar: keskin kenarlı, PSF'ten dar izler [vanDokkum2001].
+- **Gain** [e⁻/ADU], **read noise** [e⁻], **dark current** [e⁻/s] and its temperature dependence.
+- **Bias** level and structure; overscan region.
+- **Flat field:** pixel-to-pixel sensitivity, vignetting, dust shadows; it depends on wavelength.
+- **Linearity and saturation:** full well capacity, deviation from linearity curve, blooming.
+- **Photon transfer curve:** gain from the slope of the variance-mean line, read noise from its intercept [Janesick2007].
+- Defects: hot and dead pixels, bad columns, charge transfer inefficiency, fringing, residual image.
+- CMOS differences: per-pixel gain and noise, fixed pattern noise, rolling shutter, amplifier glow.
+- Cosmic rays: sharp-edged tracks narrower than the PSF [vanDokkum2001].
 
-## 4. Sinyal-gürültü oranı
+## 4. Signal-to-noise ratio
 
-CCD denklemi [Howell2006, Böl. 4; MerlineHowell1995]:
+CCD equation [Howell2006, Section 4; MerlineHowell1995]:
 
 ```
 S/N = N* / sqrt( N* + n_pix (1 + n_pix/n_B) (N_S + N_D + N_R² + G² σ_f²) )
 ```
 
-`N*` kaynak elektronları, `n_pix` açıklıktaki piksel sayısı, `n_B` arka plan kestiriminde kullanılan piksel sayısı, `N_S` piksel başına gökyüzü, `N_D` karanlık akım, `N_R` okuma gürültüsü, `G² σ_f²` sayısallaştırma gürültüsü.
+`N*` is the source electrons, `n_pix` the number of pixels in the aperture, `n_B` the number of pixels used in the background estimate, `N_S` the sky per pixel, `N_D` the dark current, `N_R` the read noise, `G² σ_f²` the digitization noise.
 
-- Rejimler: kaynak baskın (`S/N ∝ √t`), gökyüzü baskın, okuma gürültüsü baskın (`S/N ∝ t`).
-- En iyi açıklık yarıçapı: Gauss PSF ve gökyüzü baskın durumda yaklaşık `0,68 FWHM`; türetimi projede yazılır.
-- Poz süresi hesaplayıcı: hedef kadir ve S/N için süre; doyma süresi; poz bölme (kozmik ışın ve okuma gürültüsü dengesi).
-- Tayf için dalga boyu elemanı başına S/N.
+- Regimes: source dominated (`S/N ∝ √t`), sky dominated, read noise dominated (`S/N ∝ t`).
+- Optimal aperture radius: about `0.68 FWHM` for a Gaussian PSF and the sky-dominated case; the derivation is written in the project.
+- Exposure time calculator: time for a target magnitude and S/N; saturation time; exposure splitting (balance of cosmic rays and read noise).
+- For spectra, S/N per wavelength element.
 
-## 5. Tayfçeker
+## 5. Spectrograph
 
-- Kırınım ağı denklemi: `m λ = d (sin α + sin β)`; açısal ve doğrusal dağılma, çözme gücü `R = λ/Δλ`, yarık genişliğinin etkisi.
-- Echelle düzeni, sıra örtüşmesi, parlama fonksiyonu.
-- Aygıt profili; çizgi yayılım fonksiyonu.
-- Kalibrasyon lambaları ve dalga boyu çözümü [../05_veri_bilimi/03_fotometri_astrometri_tayf.md](../05_veri_bilimi/03_fotometri_astrometri_tayf.md).
+- Diffraction grating equation: `m λ = d (sin α + sin β)`; angular and linear dispersion, resolving power `R = λ/Δλ`, effect of the slit width.
+- Echelle format, order overlap, blaze function.
+- Instrument profile; line spread function.
+- Calibration lamps and wavelength solution [../05_data_science/03_photometry_astrometry_spectroscopy.md](../05_data_science/03_photometry_astrometry_spectroscopy.md).
 
-## 6. Gözlem planlama
+## 6. Observation planning
 
-- Hedef görünürlüğü: yükseklik-zaman eğrisi, hava kütlesi sınırı, meridyen geçişi, alacakaranlık sınırları.
-- Ay kısıtı: açısal uzaklık ve aydınlanma oranı.
-- Kısıt tabanlı çizelgeleme: öncelik, zaman penceresi, yönlendirme süresi.
-- Kalibrasyon planı: bias, karanlık, düz alan (alacakaranlık ya da kubbe), standart yıldızlar (hava kütlesi aralığını kapsayacak biçimde), odak dizisi.
+- Target visibility: altitude-time curve, airmass limit, meridian transit, twilight limits.
+- Moon constraint: angular distance and illumination fraction.
+- Constraint-based scheduling: priority, time window, slew time.
+- Calibration plan: bias, dark, flat field (twilight or dome), standard stars (covering the airmass range), focus sequence.
 
-Kâhin: `astroplan` [Morris2018]. PyPI kaydına göre son sürümü Ağustos 2024 tarihlidir; bakım durumu izlenmelidir.
+Oracle: `astroplan` [Morris2018]. According to its PyPI entry, its latest release is dated August 2024; its maintenance status should be monitored.
 
-## Test durumları
+## Test cases
 
-- Sentetik görüntü üreteci bilinen kazanç ve okuma gürültüsüyle üretir; foton aktarım eğrisi bu değerleri geri verir.
-- CCD denklemi üç rejimin limitlerine iner.
-- Hava kütlesi formülleri `z < 60°` için `sec z` ile binde bir düzeyinde uyuşur.
-- Öngörülen sıfır noktası gerçek bir gözlemevinin yayımlanmış değeriyle karşılaştırılır.
+- The synthetic image generator produces frames with a known gain and read noise; the photon transfer curve returns these values.
+- The CCD equation reduces to the limits of the three regimes.
+- The airmass formulas agree with `sec z` to one part in a thousand for `z < 60°`.
+- The predicted zero point is compared with the published value of a real observatory.

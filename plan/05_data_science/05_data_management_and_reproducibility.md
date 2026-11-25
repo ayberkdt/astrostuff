@@ -1,55 +1,55 @@
-# Veri yönetimi ve tekrarlanabilirlik
+# Data management and reproducibility
 
-Bir sonucun, onu üreten veri, kod sürümü ve parametrelerle birlikte yeniden elde edilebilmesi bu projenin kabul ölçütüdür. İlkeler bilimsel hesaplamada yeterince iyi uygulamalar derlemesini ve FAIR ilkelerini izler [Wilson2017; Wilkinson2016].
+The acceptance criterion of this project is that a result can be obtained again together with the data, code version and parameters that produced it. The principles follow the compilation of good enough practices in scientific computing and the FAIR principles [Wilson2017; Wilkinson2016].
 
-## 1. Veri katmanları
+## 1. Data layers
 
-- `data/raw/`: arşivden indirilen ya da teleskoptan gelen dosyalar. Salt okunur; hiçbir kod üzerine yazmaz. Sürüm denetimi dışındadır; her dosyanın SHA-256 özeti ve kaynağı bir kayıt dosyasında tutulur.
-- `data/interim/`: indirgenmiş ama henüz bilim ürünü olmayan dosyalar. Silinip yeniden üretilebilir.
-- `veri/urun/`: kataloglar, ışık eğrileri, tayflar, uyum sonuçları. Her ürünün yanında onu üreten çalıştırmanın kaydı durur.
-- `veri/referans/`: testlerin kullandığı küçük dosyalar; sürüm denetimindedir.
+- `data/raw/`: files downloaded from an archive or coming from the telescope. Read-only; no code overwrites them. They are outside version control; the SHA-256 digest and the source of every file are kept in a record file.
+- `data/interim/`: files that are reduced but not yet science products. They can be deleted and regenerated.
+- `data/products/`: catalogs, light curves, spectra, fit results. Next to every product sits the record of the run that produced it.
+- `data/reference/`: small files used by the tests; they are under version control.
 
-## 2. Çalıştırma kaydı
+## 2. Run record
 
-Her analiz çalıştırması bir kayıt üretir: kod sürümü (git özeti, kirli çalışma ağacı uyarısı), girdi dosyalarının özetleri, bütün parametreler, rastgele tohum, bağımlılık sürümleri, başlangıç ve bitiş zamanı, çıktı dosyalarının özetleri. Kayıt çıktının yanına JSON olarak yazılır.
+Every analysis run produces a record: code version (git digest, a warning for a dirty working tree), digests of the input files, all parameters, random seed, dependency versions, start and end time, digests of the output files. The record is written next to the output as JSON.
 
-Kural: kayıt önce yazılır, ara dosyalar sonra temizlenir. Bir ürünün üzerine yazılmadan önce eski sürümünün özeti kayda geçer.
+Rule: the record is written first, the intermediate files are cleaned afterwards. Before a product is overwritten, the digest of its old version is entered in the record.
 
-## 3. Yapılandırma
+## 3. Configuration
 
-- Parametreler kodda değil, yapılandırma dosyasındadır (TOML); kod varsayılanı figures, dosya çalıştırmayı tanımlar.
-- Aygıt tanımları (kazanç, okuma gürültüsü, piksel ölçeği, başlık anahtarı eşlemesi) ayrı dosyalardır.
-- Sihirli sayı yoktur: eşik, pencere ve tolerans değerlerinin her biri adlandırılır ve gerekçesi yazılır.
+- Parameters are in a configuration file (TOML), not in the code; the code documents the defaults, the file defines the run.
+- Instrument definitions (gain, read noise, pixel scale, header key mapping) are separate files.
+- There are no magic numbers: each threshold, window and tolerance value is named and its justification is written.
 
-## 4. İş akışı
+## 4. Workflow
 
-- Uzun işlem adımlara bölünür; her adım girdisinin özeti değişmediyse yeniden koşmaz.
-- **Pahalı iş öncesi kapı:** saatler süren bir çalıştırma (büyük MCMC, toplu indirgeme, büyük indirme) başlamadan önce küçük bir denetim betiği işin gerçekten gerekli olduğunu veriden doğrular: çıktı zaten var mı, girdi değişti mi, kısa bir deneme koşusu beklenen biçimde sonuç veriyor mu. Denetim çıktı üretir; çıkış kodu sıfır değilse iş başlamaz.
-- Uzun çalıştırmalar ara durum kaydeder ve kaldığı yerden sürer; zincirler diske akıtılır.
-- Önce küçük ölçekli deneme (kısa zincir, veri alt kümesi), sonra tam çalıştırma.
+- A long job is divided into steps; a step does not run again if the digest of its input has not changed.
+- **Gate before expensive work:** before a run that takes hours (a large MCMC, batch reduction, a large download) starts, a small check script verifies from the data that the work is really needed: whether the output already exists, whether the input changed, whether a short trial run gives the expected result. The check produces output; if the exit code is not zero, the job does not start.
+- Long runs save intermediate state and continue from where they stopped; chains are streamed to disk.
+- First a small-scale trial (short chain, data subset), then the full run.
 
-## 5. Ortam
+## 5. Environment
 
-- Bağımlılıklar `pyproject.toml` içinde alt sınırla, kilit dosyasında tam sürümle tanımlanır.
-- Kâhin kütüphanelerinin sürümü referans çıktı dosyalarının başlığına yazılır; kâhin güncellendiğinde fark raporu üretilir.
-- Sayısal sonuçlar işletim sistemi ve BLAS uygulamasına son basamaklarda bağlı olabilir; tolerans buna göre konur.
+- Dependencies are defined in `pyproject.toml` with a lower bound, and in the lock file with the exact version.
+- The version of the oracle libraries is written in the header of the reference output files; when an oracle is updated, a difference report is produced.
+- Numerical results can depend on the operating system and the BLAS implementation in the last digits; tolerances are set accordingly.
 
-## 6. Büyük veri
+## 6. Big data
 
-- Bellek dışı çalışma: bellek eşlemeli FITS, parça parça okuma, Parquet ve tembel sorgular.
-- Gökyüzü bölümleme: HEALPix hücreleriyle paralel işleme ve çapraz eşleme.
-- Arşiv tarafında hesap: mümkün olan süzme ADQL sorgusunda yapılır, yalnızca gereken satır ve sütun indirilir.
-- Hızlandırma sırası: önce doğru ve vektörleştirilmiş NumPy, ölçüm (profil çıkarma), sonra gerekirse Numba ya da JAX. Ölçülmeden iyileştirme yapılmaz.
+- Out-of-core work: memory-mapped FITS, reading in chunks, Parquet and lazy queries.
+- Sky partitioning: parallel processing and cross-matching with HEALPix cells.
+- Computation on the archive side: whatever filtering is possible is done in the ADQL query, and only the needed rows and columns are downloaded.
+- Order of speeding up: first correct and vectorized NumPy, measurement (profiling), then Numba or JAX if needed. No optimization is made without measurement.
 
-## 7. Raporlama
+## 7. Reporting
 
-- Her sonuç değeri kaynağıyla bildirilir: hangi dosyadan, hangi çalıştırmadan okunduğu.
-- Belirsizlik her zaman değerle birlikte verilir; istatistik ve sistematik ayrı.
-- Şekiller betikle üretilir; şeklin verisi ayrıca kaydedilir. Şekil ve tablo üretimi projenin şekil standardına (dergi profili, renk körlüğü güvenli palet, doğrudan etiket) uyar.
-- Olumsuz sonuçlar ve başarısız denemeler de kaydedilir.
+- Every result value is reported with its source: from which file and which run it was read.
+- The uncertainty is always given with the value; statistical and systematic separately.
+- Figures are produced by script; the data of the figure is saved separately. The production of figures and tables follows the figure standard of the project (journal profile, color-blind-safe palette, direct labeling).
+- Negative results and failed attempts are also recorded.
 
-## 8. Atıf ve lisans
+## 8. Citation and license
 
-- Kullanılan her veri setinin atıf koşulu `arsiv` modülünde veriyle birlikte tutulur ve analiz raporuna otomatik eklenir.
-- `kozmos.bibliography_raporu()` bir analizde çağrılan fonksiyonların dayandığı yayınları listeler.
-- Kâhin olarak kullanılan yazılımlar da anılır [Astropy2013; Astropy2018; Astropy2022; Harris2020; Virtanen2020].
+- The citation requirement of every dataset used is kept with the data in the `archives` module and added automatically to the analysis report.
+- `kozmos.bibliography_report()` lists the publications on which the functions called in an analysis rely.
+- Software used as an oracle is also cited [Astropy2013; Astropy2018; Astropy2022; Harris2020; Virtanen2020].

@@ -1,5 +1,5 @@
-# ESO Bilim Arşivi dosya kimlikleri (program 184.D-1152(F)); https://dataportal.eso.org/dataportal_new/file/<kimlik>
-# SN 2011bm, Ks, 16 kare
+# ESO Science Archive file identifiers (program 184.D-1152(F)); https://dataportal.eso.org/dataportal_new/file/<identifier>
+# SN 2011bm, Ks, 16 frames
 SOFI.2012-03-15T07:15:00.783
 SOFI.2012-03-15T07:16:53.872
 SOFI.2012-03-15T07:18:47.284
@@ -16,7 +16,7 @@ SOFI.2012-03-15T07:37:48.142
 SOFI.2012-03-15T07:39:41.265
 SOFI.2012-03-15T07:41:34.245
 SOFI.2012-03-15T07:43:27.413
-# SN 2005at, Ks, 32 kare
+# SN 2005at, Ks, 32 frames
 SOFI.2012-03-14T09:05:15.983
 SOFI.2012-03-14T09:06:58.904
 SOFI.2012-03-14T09:08:41.718
@@ -49,7 +49,7 @@ SOFI.2012-03-14T09:53:32.920
 SOFI.2012-03-14T09:55:15.705
 SOFI.2012-03-14T09:56:58.508
 SOFI.2012-03-14T09:58:41.408
-# Ks kubbe düz alanı, 8 kare (açılmış dosyalar duzalan_ önekiyle kaydedilir)
+# Ks dome flat, 8 frames (uncompressed files are saved with the flat_ prefix)
 SOFI.2012-03-14T12:31:29.397
 SOFI.2012-03-14T12:33:40.024
 SOFI.2012-03-14T12:35:37.509
@@ -58,7 +58,7 @@ SOFI.2012-03-14T12:39:21.468
 SOFI.2012-03-14T12:41:22.348
 SOFI.2012-03-14T12:43:16.462
 SOFI.2012-03-14T12:45:19.253
-# Ks standart yıldız kareleri, 2 × 4 kare (açılmış dosyalar standart_ önekiyle kaydedilir)
+# Ks standard star frames, 2 × 4 frames (uncompressed files are saved with the standard_ prefix)
 SOFI.2012-03-13T23:34:14.642
 SOFI.2012-03-13T23:34:21.670
 SOFI.2012-03-13T23:34:28.737

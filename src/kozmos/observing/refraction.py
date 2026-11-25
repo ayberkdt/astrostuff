@@ -1,9 +1,9 @@
-"""Atmosfer kırılması: A tan Z + B tan³ Z modeli.
+"""Atmospheric refraction: the A tan Z + B tan³ Z model.
 
-Model ve sabitlerin hesabı ERFA kaynak kodundan (``refco.c``) okunmuştur
-[ERFA2023]. Z kırılmadan etkilenmiş ("gözlenen") zenit uzaklığıdır;
-dZ = A tan Z + B tan³ Z, boşluktaki ("toposantrik") zenit uzaklığını bulmak
-için Z'ye eklenir. Kırılma cismi ufka göre yükseltir.
+The model and the computation of its constants were read from the ERFA source
+code (``refco.c``) [ERFA2023]. Z is the refraction-affected ("observed") zenith
+distance; dZ = A tan Z + B tan³ Z is added to Z to obtain the zenith distance
+in vacuum ("topocentric"). Refraction raises an object above the horizon.
 """
 
 from __future__ import annotations
@@ -20,26 +20,26 @@ Array = NDArray[np.float64]
     "ERFA2023",
     where="refco.c",
     status="read",
-    note="su buharı basıncı, kırılma indisi (γ = n − 1) ve β (ölçek yüksekliği / yer merkezi uzaklığı) "
-    "refco.c'deki ifadelerle; A = γ(1 − β), B = −γ(β − γ/2). ERFA bu ifadeleri Gill (1982), Crane (1976), "
-    "Hohenkerk ve Sinclair (1985), Rueger (2002), Stone (1996) ve Green (1987)'ye dayandırır; "
-    "o kaynaklar okunmadı. Yalnızca optik/kızılötesi dalı (λ <= 100 µm) uygulandı",
+    note="water vapor pressure, refractive index (γ = n − 1) and β (scale height / geocentric distance) "
+    "with the expressions in refco.c; A = γ(1 − β), B = −γ(β − γ/2). ERFA bases these expressions on Gill (1982), "
+    "Crane (1976), Hohenkerk and Sinclair (1985), Rueger (2002), Stone (1996) and Green (1987); "
+    "those sources were not read. Only the optical/infrared branch (λ <= 100 µm) was implemented",
 )
 def refraction_constants(
     pressure_hpa: float, temperature_c: float, relative_humidity: float, wavelength_um: float = 0.55
 ) -> tuple[float, float]:
-    """Kırılma modelinin A ve B sabitlerini hesaplar.
+    """Compute the A and B constants of the refraction model.
 
     Parameters
     ----------
-    basinc_hpa : float
-        Gözlemcideki basınç [hPa].
-    sicaklik_c : float
-        Ortam sıcaklığı [°C].
-    bagil_nem : float
-        Bağıl nem, 0-1.
-    dalgaboyu_um : float
-        Dalga boyu [µm]; 0,1-100 aralığı.
+    pressure_hpa : float
+        Pressure at the observer [hPa].
+    temperature_c : float
+        Ambient temperature [°C].
+    relative_humidity : float
+        Relative humidity, 0-1.
+    wavelength_um : float
+        Wavelength [µm]; range 0.1-100.
 
     Returns
     -------
@@ -51,17 +51,17 @@ def refraction_constants(
 
     Validity
     --------
-    Kaynak, ışın izlemeye göre doğruluğu optik/kızılötesinde en kötü 62, karekök ortalama
-    8 miliyay saniyesi verir (zenit uzaklığı 15°-75°). Deniz düzeyinden yükseklik yalnızca
-    basınç üzerinden girer. Radyo dalı uygulanmadı; λ > 100 µm ``ValueError`` verir.
-    Girdiler kaynaktaki güvenli aralıklara kırpılır.
+    Compared with ray tracing, the source gives a worst-case error of 62 and a root-mean-square
+    error of 8 milliarcseconds in the optical/infrared (zenith distance 15°-75°). Height above sea
+    level enters only through the pressure. The radio branch was not implemented; λ > 100 µm raises
+    ``ValueError``. Inputs are clipped to the safe ranges in the source.
 
     Verification
     ------------
-    tests/oracle/test_precession_oracle.py: erfa.refco ile eşitlik; refco.c'deki tabloyla 0,02 yay saniyesi içinde uyum.
+    tests/oracle/test_precession_oracle.py: equality with erfa.refco; agreement within 0.02 arcseconds with the table in refco.c.
     """
     if wavelength_um > 100.0:
-        raise ValueError("yalnızca optik/kızılötesi dal uygulanmıştır (dalga boyu <= 100 µm)")
+        raise ValueError("only the optical/infrared branch is implemented (wavelength <= 100 µm)")
     t = min(max(temperature_c, -150.0), 200.0)
     p = min(max(pressure_hpa, 0.0), 10000.0)
     r = min(max(relative_humidity, 0.0), 1.0)
@@ -80,25 +80,25 @@ def refraction_constants(
 
 @source(
     "ERFA2023",
-    where="refco.c: 'dZ = A tan Z + B tan^3 Z', Z gözlenen zenit uzaklığı",
+    where="refco.c: 'dZ = A tan Z + B tan^3 Z', Z is the observed zenith distance",
     status="read",
-    note="toposantrik → gözlenen yön için denklem Z_gözlenen = Z_topo − dZ(Z_gözlenen) sabit nokta yinelemesiyle "
-    "çözülür (yineleme bu projenin seçimi)",
+    note="for topocentric → observed direction, the equation Z_observed = Z_topo − dZ(Z_observed) is solved by "
+    "fixed-point iteration (the iteration is this project's choice)",
 )
 def observed_altitude(altitude_rad: ArrayLike, a_rad: float, b_rad: float, iterations: int = 4) -> Array:
-    """Boşluktaki (toposantrik) yükseklikten kırılmış (gözlenen) yüksekliği hesaplar.
+    """Compute the refracted (observed) altitude from the altitude in vacuum (topocentric).
 
     Parameters
     ----------
-    yukseklik_rad : float ya da ndarray
-        Kırılmasız yükseklik [rad].
+    altitude_rad : float or ndarray
+        Altitude without refraction [rad].
     a_rad, b_rad : float
-        ``kirilma_sabitleri`` çıktıları.
+        Outputs of ``refraction_constants``.
 
     Returns
     -------
     ndarray
-        Gözlenen yükseklik [rad]; her zaman girdiden büyük ya da ona eşit.
+        Observed altitude [rad]; always greater than or equal to the input.
 
     References
     ----------
@@ -106,13 +106,14 @@ def observed_altitude(altitude_rad: ArrayLike, a_rad: float, b_rad: float, itera
 
     Validity
     --------
-    tan Z modeli ufka yakın geçersizdir: kaynak tablosu 80° zenit uzaklığında ışın izlemeden
-    0,6 yay saniyesi sapar ve fark ufka doğru hızla büyür. Gözlenen zenit uzaklığı 85°'yi
-    aşan yönlerde (yükseklik yaklaşık 5°'nin altı) sonuç ``nan`` döner.
+    The tan Z model is invalid near the horizon: the source table deviates from ray tracing
+    by 0.6 arcseconds at a zenith distance of 80° and the difference grows quickly toward the
+    horizon. For directions with an observed zenith distance above 85° (altitude below about 5°)
+    the result is ``nan``.
 
     Verification
     ------------
-    tests/oracle/test_precession_oracle.py: ileri modelle gidiş-dönüş; refco.c tablosu.
+    tests/oracle/test_precession_oracle.py: round trip with the forward model; refco.c table.
     """
     z_topo = np.pi / 2.0 - np.asarray(altitude_rad, dtype=float)
     z = z_topo.copy()

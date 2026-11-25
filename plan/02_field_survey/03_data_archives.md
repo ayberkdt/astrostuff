@@ -1,58 +1,58 @@
-# Veri arşivleri
+# Data archives
 
-Arşivlerin sürüm durumu web taramasından gelir ve 25 Kasım 2026 tarihlidir. **tarama-sayfa** taramanın sayfayı açarak bildirdiği, **doğrulanmadı** taramanın okuyamadığı ya da ele almadığı bilgidir. Bu belgedeki hiçbir sürüm bilgisi ayrıca doğrulanmamıştır; bir arşive ilk kez bağlanılırken sürüm arşivin kendi sayfasından okunur.
+The release status of the archives comes from a web survey and is dated 25 November 2026. **survey-page** is information the survey reported by opening the page; **not verified** is information the survey could not read or did not cover. None of the release information in this document is verified separately; when connecting to an archive for the first time, the release is read from the archive's own page.
 
-## Astrometri ve yıldız katalogları
+## Astrometry and star catalogs
 
-- **Gaia** (ESA). Güncel sürüm DR3'tür [Vallenari2023]. ESA'nın DR4 sayfası 14 Eylül 2026 güncellemesinde verinin "yayımlanacağını" gelecek zamanla yazmaktadır ve tarih vermemektedir (tarama-sayfa). Erişim: TAP/ADQL ve DataLink, `gea.esac.esa.int/archive`. Projede kullanım: astrometrik ve fotometrik referans katalog, HR diyagramı, küme üyeliği, Sefeid paralaksları. DR4 çıktığında sorgulara gömülü sürüm adı değişir; testler DR3'e sabitlenir.
-- **2MASS, WISE, Pan-STARRS:** doğrulanmadı [Skrutskie2006].
+- **Gaia** (ESA). The current release is DR3 [Vallenari2023]. ESA's DR4 page, in its update of 14 September 2026, says in the future tense that the data "will be released" and gives no date (survey-page). Access: TAP/ADQL and DataLink, `gea.esac.esa.int/archive`. Use in the project: astrometric and photometric reference catalog, HR diagram, cluster membership, Cepheid parallaxes. When DR4 is out, the release name embedded in queries changes; tests are pinned to DR3.
+- **2MASS, WISE, Pan-STARRS:** not verified [Skrutskie2006].
 
-## Tayf taramaları
+## Spectroscopic surveys
 
-- **SDSS.** Tarama `sdss.org/dr20` sayfasında "Data Release 20" adını görmüştür (tarama-sayfa); yayım tarihi ve erişim ayrıntıları okunmamıştır [York2000].
-- **DESI.** DR1 19 Mart 2025, erken veri sürümü 13 Haziran 2023; erişim toplu dosya indirme (tarama-sayfa).
+- **SDSS.** The survey saw the name "Data Release 20" on the page `sdss.org/dr20` (survey-page); the release date and access details were not read [York2000].
+- **DESI.** DR1 19 March 2025, early data release 13 June 2023; access by bulk file download (survey-page).
 
-## Görüntüleme taramaları ve zaman alanı
+## Imaging surveys and the time domain
 
-- **Vera C. Rubin Gözlemevi (LSST).** Data Preview 1: devreye alma verisi, yaklaşık 7 alan, 2024 sonu gözlemleri. "Early Data Preview 2": Nisan 2025-Ocak 2026 gözlemleri (tarama-sayfa). DR1'in durumu doğrulanmadı.
-- **DESI Legacy Imaging Surveys.** Gezinme menüsünde DR11 görülmüştür (tarama-sayfa); yayım ayrıntısı okunmadı.
-- **ZTF.** Açık veri sürümleri sayfası taramada 404 döndü; doğrulanmadı [Bellm2019].
-- **Euclid.** Doğrulanmadı.
+- **Vera C. Rubin Observatory (LSST).** Data Preview 1: commissioning data, about 7 fields, observations from late 2024. "Early Data Preview 2": observations from April 2025 to January 2026 (survey-page). The status of DR1 is not verified.
+- **DESI Legacy Imaging Surveys.** DR11 was seen in the navigation menu (survey-page); the release details were not read.
+- **ZTF.** The open data releases page returned 404 in the survey; not verified [Bellm2019].
+- **Euclid.** Not verified.
 
-## Uzay teleskopları (MAST)
+## Space telescopes (MAST)
 
-- **TESS.** Erişim: `astroquery.mast`, toplu indirme, TESSCut, bulut erişimi; MAST sayfasındaki son veri sürüm notu 12 Kasım 2026 tarihlidir (tarama-sayfa) [Ricker2015].
-- **Kepler, HST, JWST:** doğrulanmadı.
+- **TESS.** Access: `astroquery.mast`, bulk download, TESSCut, cloud access; the latest data release note on the MAST page is dated 12 November 2026 (survey-page) [Ricker2015].
+- **Kepler, HST, JWST:** not verified.
 
-## Ötegezegen ve küçük cisimler
+## Exoplanets and small bodies
 
-- **NASA Exoplanet Archive.** Önerilen arayüz TAP'tır; eski `nstedAPI` arayüzünde tabloların çoğu kaldırılmıştır (tarama-sayfa).
-- **JPL Horizons ve SBDB, Minor Planet Center:** doğrulanmadı (MPC sayfası taramada 403 döndü).
+- **NASA Exoplanet Archive.** The recommended interface is TAP; most tables have been removed from the old `nstedAPI` interface (survey-page).
+- **JPL Horizons and SBDB, Minor Planet Center:** not verified (the MPC page returned 403 in the survey).
 
-## Genel hizmetler
+## General services
 
-- **SIMBAD, VizieR, CDS X-Match, NED, IRSA, HEASARC, ESO arşivi, AAVSO, SkyView:** doğrulanmadı.
-- **GWOSC** (çekimsel dalga açık verisi): taramada sertifika hatası; `gwosc.org` adresi denenecek.
+- **SIMBAD, VizieR, CDS X-Match, NED, IRSA, HEASARC, ESO archive, AAVSO, SkyView:** not verified.
+- **GWOSC** (gravitational wave open data): certificate error in the survey; the address `gwosc.org` will be tried.
 
-## IVOA standartları
+## IVOA standards
 
-Tarama IVOA belge dizininden şu öneri sürümlerini okumuştur (tarama-sayfa): TAP 1.1 (27 Eylül 2019), ADQL 2.1 (15 Aralık 2023), SIA 2.0 (23 Aralık 2015), SSA 1.1 (10 Şubat 2012), Simple Cone Search 1.03 (22 Şubat 2008; 2.0 çalışma taslağı), VOTable 1.5 (16 Ocak 2025; 1.6 önerilen öneri aşamasında), UCD1+ 1.3 (27 Mayıs 2018), HiPS 1.0 (19 Mayıs 2017), MOC 2.0 (27 Temmuz 2022), DataLink 1.1 (15 Aralık 2023).
+The survey read the following recommendation versions from the IVOA document index (survey-page): TAP 1.1 (27 September 2019), ADQL 2.1 (15 December 2023), SIA 2.0 (23 December 2015), SSA 1.1 (10 February 2012), Simple Cone Search 1.03 (22 February 2008; 2.0 working draft), VOTable 1.5 (16 January 2025; 1.6 at the proposed recommendation stage), UCD1+ 1.3 (27 May 2018), HiPS 1.0 (19 May 2017), MOC 2.0 (27 July 2022), DataLink 1.1 (15 December 2023).
 
-`arsiv/tap.py` ve `io/votable.py` TAP 1.1, ADQL 2.1 ve VOTable 1.5'i hedefler.
+`archives/tap.py` and `io/votable.py` target TAP 1.1, ADQL 2.1 and VOTable 1.5.
 
-## 25 Kasım 2026'da denenen uç noktalar
+## Endpoints tried on 25 November 2026
 
-Kod yazılırken şu servisler doğrudan sorgulanmış ve sonuçları gözlenmiştir: IRSA TAP (`gaia_dr3_source` ve 2MASS tabloları; çalışıyor, CSV), NASA SkyView (DSS2, 2MASS, WISE kesitleri; çalışıyor, FITS), Gaia AIP aynası (çalışıyor, VOTable). ESA Gaia arşivinin `tap-server/tap/sync` adresi sorguya HTML açılış sayfası döndürmüştür. CDS'in TAPVizieR ve hips2fits servislerine bağlanılamamıştır. Ayrıntı: [../05_veri_bilimi/06_optik_ve_kizilotesi_gozlem.md](../05_veri_bilimi/06_optik_ve_kizilotesi_gozlem.md).
+While the code was being written, the following services were queried directly and the results observed: IRSA TAP (`gaia_dr3_source` and 2MASS tables; works, CSV), NASA SkyView (DSS2, 2MASS, WISE cutouts; works, FITS), the Gaia AIP mirror (works, VOTable). The `tap-server/tap/sync` address of the ESA Gaia archive returned an HTML landing page in response to a query. The CDS TAPVizieR and hips2fits services could not be reached. Details: [../05_data_science/06_optical_and_infrared_observing.md](../05_data_science/06_optical_and_infrared_observing.md).
 
-## Öncelik sırası
+## Priority order
 
-Yol haritasındaki projectse göre arşiv modülleri şu sırayla yazılır:
+According to the roadmap, the archive modules are written in this order:
 
-1. Pantheon+SH0ES (düz dosya indirme; TAP gerekmez).
-2. Gaia TAP (astrometrik referans ve HR diyagramı).
-3. MAST TESS ışık eğrileri.
-4. SDSS tayfları.
-5. JPL Horizons (efemeris kâhini).
+1. Pantheon+SH0ES (flat file download; TAP not needed).
+2. Gaia TAP (astrometric reference and HR diagram).
+3. MAST TESS light curves.
+4. SDSS spectra.
+5. JPL Horizons (ephemeris oracle).
 6. NASA Exoplanet Archive, SIMBAD, VizieR.
 
-İlk kullanımdan önce her arşivin uç noktası, veri sürümü ve atıf koşulu kendi belgesinden okunur ve modülün başına tarihiyle yazılır.
+Before first use, each archive's endpoint, data release and citation terms are read from its own documentation and written at the top of the module with the date.

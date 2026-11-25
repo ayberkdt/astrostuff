@@ -1,96 +1,96 @@
-# Paket yapısı
+# Package layout
 
-Paketin çalışma adı `kozmos`'tur. Ad 25 Kasım 2026'da PyPI'da sorgulandı ve boş bulundu (`https://pypi.org/pypi/kozmos/json` → 404); `astrokit` ve `astrolab` adları alınmıştır. Ad bir öneridir, ilk kod yazılmadan değiştirilebilir.
+The working name of the package is `kozmos`. The name was queried on PyPI on 25 November 2026 and found free (`https://pypi.org/pypi/kozmos/json` → 404); the names `astrokit` and `astrolab` are taken. The name is a suggestion and can be changed before the first code is written.
 
-## Tasarım ilkeleri
+## Design principles
 
-1. **Çekirdek saf fonksiyonlardan oluşur.** Bir hesap fonksiyonu girdisini değiştirmez, dosya okumaz, ağa çıkmaz, küresel duruma bakmaz. Girdi/çıktı ve ağ erişimi ayrı katmandadır (`kozmos.io`, `kozmos.archives`).
-2. **Çalışma zamanı bağımlılığı yalnızca NumPy ve SciPy'dir.** Astropy, ERFA, Skyfield, photutils gibi kütüphaneler hesap yapmak için değil, test kâhini (oracle) olarak kullanılır ve `dogrulama` adlı isteğe bağlı bağımlılık grubunda durur. Amaç algoritmaları yeniden yazmaktır; `astropy`'yi sarmalayan bir fonksiyon bu amacı karşılamaz.
-3. **Her açık fonksiyon bir kaynağa bağlıdır.** Kural ve denetimi [02_kod_standartlari_ve_kaynak_gosterme.md](02_kod_standartlari_ve_kaynak_gosterme.md) dosyasındadır.
-4. **Birimler adlarda ve tiplerde görünür.** Çekirdek fonksiyonlar SI ya da açıkça adlandırılmış astronomi birimiyle `float`/`ndarray` alır; argüman adı birimi taşır (`uzaklik_pc`, `aci_rad`, `dalga_boyu_m`). Kullanıcıya dönük katmanda hafif bir `Nicelik` tipi birim dönüşümünü yapar. Gerekçe: birim nesnesi iç döngüde yavaştır, adsız `float` ise hata kaynağıdır; argüman adına gömülü birim ikisinin ortasıdır.
-5. **Vektörleştirme varsayılandır.** Her fonksiyon skaler ve dizi girdisinde aynı sonucu verir; yayılım (broadcasting) kuralları NumPy'ninkilerdir.
-6. **Katmanlar aşağıya doğru bağımlıdır.** Bir modül yalnızca kendisinden alt katmandaki modülü içe aktarır; döngüsel içe aktarma testle engellenir.
+1. **The core consists of pure functions.** A calculation function does not modify its input, read files, reach the network or look at global state. Input/output and network access are in separate layers (`kozmos.io`, `kozmos.archives`).
+2. **The only run-time dependencies are NumPy and SciPy.** Libraries such as Astropy, ERFA, Skyfield and photutils are used not to do calculations but as test oracles, and sit in the optional dependency group called `verification`. The aim is to rewrite the algorithms; a function that wraps `astropy` does not meet this aim.
+3. **Every public function is tied to a source.** The rule and its checking are in [02_code_standards_and_source_citation.md](02_code_standards_and_source_citation.md).
+4. **Units are visible in names and types.** Core functions take `float`/`ndarray` in SI or an explicitly named astronomical unit; the argument name carries the unit (`distance_pc`, `angle_rad`, `wavelength_m`). In the user-facing layer a light `Quantity` type does the unit conversion. Rationale: a unit object is slow in an inner loop, and an unnamed `float` is a source of errors; a unit embedded in the argument name is the middle way.
+5. **Vectorization is the default.** Every function gives the same result for scalar and array input; the broadcasting rules are those of NumPy.
+6. **Layers depend downward.** A module imports only modules of lower layers; circular imports are prevented by a test.
 
-## Katmanlar
+## Layers
 
 ```
-Katman 0  temel        sabitler, birimler, açı ve vektör yardımcıları, sayısal yöntemler
-Katman 1  zaman        zaman ölçekleri, Jülyen tarihi, yıldız zamanı
-          koordinat    küresel dönüşümler, presesyon-nutasyon, aberasyon, kırılma
-Katman 2  efemeris     Kepler problemi, yörünge elemanları, gezegen konumları
-          isinim       kara cisim, kadir sistemleri, filtreler, sönümleme
-Katman 3  gozlem       planlama, hava kütlesi, S/N, dedektör modeli
-          indirgeme    bias/dark/flat, kozmik ışın, arka plan
-          fotometri    açıklık ve PSF fotometrisi, kalibrasyon
-          astrometri   kaynak eşleme, WCS çözümü
-          tayf         çıkarım, dalga boyu kalibrasyonu, çizgi ölçümü
-          zamanserisi  periyodogram, katlama, geçiş araması
-Katman 4  yildiz       yıldız yapısı, HR diyagramı, izokronlar
-          gokada       potansiyeller, dönme eğrileri, ışınım profilleri
-          kozmoloji    Friedmann denklemleri, uzaklıklar, Hubble diyagramı
-          istatistik   olabilirlik, MCMC, uyum, belirsizlik yayılımı
-Katman 5  arsiv        TAP/ADQL, katalog ve veri indirme (ağ)
-          io           FITS, VOTable, tablo okuma-yazma (disk)
-          projects     uçtan uca analizler
+Layer 0  core          constants, units, angle and vector helpers, numerical methods
+Layer 1  time          time scales, Julian date, sidereal time
+         coordinates   spherical transforms, precession-nutation, aberration, refraction
+Layer 2  ephemeris     Kepler problem, orbital elements, planet positions
+         radiation     blackbody, magnitude systems, filters, extinction
+Layer 3  observing     planning, airmass, S/N, detector model
+         reduction     bias/dark/flat, cosmic rays, background
+         photometry    aperture and PSF photometry, calibration
+         astrometry    source matching, WCS solution
+         spectroscopy  extraction, wavelength calibration, line measurement
+         timeseries    periodogram, folding, transit search
+Layer 4  stars         stellar structure, HR diagram, isochrones
+         galaxies      potentials, rotation curves, light profiles
+         cosmology     Friedmann equations, distances, Hubble diagram
+         statistics    likelihood, MCMC, fitting, uncertainty propagation
+Layer 5  archives      TAP/ADQL, catalog and data download (network)
+         io            FITS, VOTable, table reading and writing (disk)
+         projects      end-to-end analyses
 ```
 
-`istatistik` Katman 4'te gösterilse de yalnızca Katman 0'a bağımlıdır ve her alan modülü onu kullanabilir.
+Although `statistics` is shown in Layer 4, it depends only on Layer 0, and every field module can use it.
 
-## Dizin yerleşimi
+## Directory layout
 
 ```
 Astronomy-and-Astrophysics/
-├── plan/                     bu klasör
+├── plan/                     this folder
 ├── src/kozmos/
-│   ├── temel/                sabitler.py, birimler.py, aci.py, vektor.py, sayisal/
-│   ├── zaman/                julyen.py, olcekler.py, yildiz_zamani.py
-│   ├── koordinat/            kuresel.py, cerceveler.py, presesyon.py, nutasyon.py,
-│   │                         aberasyon.py, kirilma.py, paralaks.py
-│   ├── efemeris/             kepler.py, elemanlar.py, gunes.py, ay.py, gezegen.py
-│   ├── isinim/               kara_cisim.py, kadir.py, filtre.py, sonumleme.py
-│   ├── gozlem/               planlama.py, hava_kutlesi.py, sinyal_gurultu.py, dedektor.py
-│   ├── indirgeme/            kalibrasyon.py, kozmik_isin.py, arka_plan.py, birlestirme.py
-│   ├── fotometri/            aciklik.py, psf.py, kaynak_bulma.py, kalibrasyon.py
-│   ├── astrometri/           eslestirme.py, wcs.py, izdusum.py
-│   ├── tayf/                 cikarim.py, dalgaboyu.py, cizgi.py, kirmiziya_kayma.py
-│   ├── zamanserisi/          periyodogram.py, katlama.py, gecis.py
-│   ├── yildiz/               yapi.py, hr.py, izokron.py, imf.py
-│   ├── gokada/               potansiyel.py, donme_egrisi.py, profil.py
-│   ├── kozmoloji/            friedmann.py, uzaklik.py, hubble_diyagrami.py, standart_mum.py
-│   ├── istatistik/           olabilirlik.py, mcmc.py, uyum.py, saglam.py, yayilim.py
-│   ├── arsiv/                tap.py, gaia.py, pantheon.py, onbellek.py
-│   ├── io/                   fits.py, votable.py, tablo.py
-│   └── _kaynak.py            kaynak gösterme altyapısı
+│   ├── core/                 constants.py, units.py, angles.py, vectors.py, numerical/
+│   ├── time/                 julian.py, scales.py, sidereal.py
+│   ├── coordinates/          spherical.py, frames.py, precession.py, nutation.py,
+│   │                         aberration.py, refraction.py, parallax.py
+│   ├── ephemeris/            kepler.py, elements.py, sun.py, moon.py, planets.py
+│   ├── radiation/            blackbody.py, magnitudes.py, filters.py, extinction.py
+│   ├── observing/            planning.py, airmass.py, signal_to_noise.py, detector.py
+│   ├── reduction/            calibration.py, cosmic_rays.py, background.py, combining.py
+│   ├── photometry/           aperture.py, psf.py, source_detection.py, calibration.py
+│   ├── astrometry/           matching.py, wcs.py, projections.py
+│   ├── spectroscopy/         extraction.py, wavelength.py, lines.py, redshift.py
+│   ├── timeseries/           periodogram.py, folding.py, transits.py
+│   ├── stars/                structure.py, hr.py, isochrones.py, imf.py
+│   ├── galaxies/             potentials.py, rotation_curves.py, profiles.py
+│   ├── cosmology/            friedmann.py, distances.py, hubble_diagram.py, standard_candles.py
+│   ├── statistics/           likelihood.py, mcmc.py, fitting.py, robust.py, propagation.py
+│   ├── archives/             tap.py, gaia.py, pantheon.py, cache.py
+│   ├── io/                   fits.py, votable.py, table.py
+│   └── _sources.py           source-citation infrastructure
 ├── tests/
-│   ├── birim/                kaynağın çalışılmış örneklerine karşı
-│   ├── kahin/                astropy/erfa/skyfield çıktısına karşı
-│   └── ozellik/              hypothesis ile değişmezler
-├── projects/                 hubble_diyagrami/, hr_diyagrami/, gecis_egrisi/ ...
-├── veri/                     ham/ (sürüm denetimi dışı), referans/ (küçük, sürüm denetiminde)
-├── bibliography/                 kaynaklar.bib ve doğrulama araçları 
+│   ├── unit/                 against the worked examples of the source
+│   ├── oracle/               against the output of astropy/erfa/skyfield
+│   └── property/             invariants with hypothesis
+├── projects/                 hubble_diagram/, hr_diagram/, transit_curve/ ...
+├── data/                     raw/ (outside version control), reference/ (small, under version control)
+├── bibliography/             references.bib and the verification tools
 └── pyproject.toml
 ```
 
-Modül ve fonksiyon adları Türkçedir ve ASCII'ye indirgenmiştir (`ı`, `ş`, `ğ` kullanılmaz). İlk sürüm bu kuralla yazılmıştır.
+Module and function names are English, in snake_case, and the unit is part of the name when the quantity has one. The first version was written with Turkish names reduced to ASCII, with no Turkish letters, and was later renamed to English.
 
-## Veri tipleri
+## Data types
 
-Çekirdek tipler değişmez veri sınıflarıdır (`@dataclass(frozen=True, slots=True)`):
+The core types are immutable data classes (`@dataclass(frozen=True, slots=True)`):
 
-- `Zaman`: iki `float64` ile tutulan Jülyen tarihi (`jd1`, `jd2`) ve ölçek etiketi (`"UTC"`, `"TT"`, `"TDB"` ...). İki parçalı gösterim, tek `float64`'ün J2000 yakınında yaklaşık 40 mikrosaniyede kalan çözünürlüğünü nanosaniye altına indirir; SOFA'nın kullandığı gösterim budur [SOFA2023].
-- `GokKonumu`: çerçeve etiketi (`"ICRS"`, `"FK5"`, `"galaktik"`, `"ekliptik"`), iki açı (radyan), isteğe bağlı uzaklık, öz hareket ve dikine hız.
-- `Gozlemci`: jeodezik enlem, boylam, yükseklik ve referans elipsoidi.
-- `YorungeElemanlari`: `a, e, i, Ω, ω, M0`, devir ve merkez cismin `GM` değeri.
-- `Kozmoloji`: `H0`, `Ωm`, `ΩΛ`, `Ωr`, `Ωk`, `w0`, `wa`.
-- `Olcum`: değer, belirsizlik ve isteğe bağlı kovaryans göstergesi.
+- `Time`: the Julian date held in two `float64` values (`jd1`, `jd2`) and a scale label (`"UTC"`, `"TT"`, `"TDB"` ...). The two-part representation brings the resolution of a single `float64`, about 40 microseconds near J2000, below a nanosecond; this is the representation SOFA uses [SOFA2023].
+- `SkyPosition`: a frame label (`"ICRS"`, `"FK5"`, `"galactic"`, `"ecliptic"`), two angles (radians), and optional distance, proper motion and radial velocity.
+- `Observer`: geodetic latitude, longitude, height and the reference ellipsoid.
+- `OrbitalElements`: `a, e, i, Ω, ω, M0`, the epoch and the `GM` of the central body.
+- `Cosmology`: `H0`, `Ωm`, `ΩΛ`, `Ωr`, `Ωk`, `w0`, `wa`.
+- `Measurement`: value, uncertainty and an optional covariance pointer.
 
-Görüntü, tayf ve ışık eğrisi için kaplar veriyi, maskeyi, belirsizliği ve üstveriyi (başlık, işlem geçmişi) birlikte taşır; her indirgeme adımı yeni bir kap döndürür ve geçmişe bir kayıt ekler.
+For images, spectra and light curves, the containers carry the data, the mask, the uncertainty and the metadata (header, processing history) together; every reduction step returns a new container and adds a record to the history.
 
-## Bağımlılık grupları
+## Dependency groups
 
-- Çekirdek: `numpy`, `scipy`.
-- `dogrulama`: `astropy`, `pyerfa`, `skyfield`, `photutils`, `sep`, `emcee` ve diğer kâhinler.
-- `gelistirme`: `pytest`, `hypothesis`, `ruff`, `mypy`.
-- `arsiv`: ağ erişimi için `httpx` ya da standart kütüphane; karar o modül yazılırken verilir.
+- Core: `numpy`, `scipy`.
+- `verification`: `astropy`, `pyerfa`, `skyfield`, `photutils`, `sep`, `emcee` and the other oracles.
+- `dev`: `pytest`, `hypothesis`, `ruff`, `mypy`.
+- `archives`: `httpx` or the standard library for network access; the decision is made when that module is written.
 
-Sürüm numaraları [../02_saha_arastirmasi](../02_saha_arastirmasi/) altındaki envanterde, okundukları tarihle kayıtlıdır.
+The version numbers are recorded, with the date they were read, in the inventory under [../02_field_survey](../02_field_survey/).

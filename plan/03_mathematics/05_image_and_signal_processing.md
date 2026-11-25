@@ -1,81 +1,81 @@
-# Görüntü ve sinyal işleme matematiği
+# Mathematics of image and signal processing
 
-Hedef modüller: `indirgeme/`, `fotometri/`, `tayf/`, `zamanserisi/`.
+Target modules: `reduction/`, `photometry/`, `spectroscopy/`, `timeseries/`.
 
-Bir CCD karesi, gökyüzünün nokta dağılım fonksiyonuyla evrişip piksel ızgarasında örneklenmiş ve gürültü eklenmiş hâlidir. İndirgeme, fotometri ve tayf çıkarımının hemen her adımı bu üç işlemin (evrişim, örnekleme, gürültü) matematiğine dayanır. Denklemler planlama düzeyindedir; kodlanmadan önce anılan kaynaktan okunur.
+A CCD frame is the sky convolved with the point spread function, sampled on a pixel grid, with noise added. Almost every step of reduction, photometry and spectral extraction rests on the mathematics of these three operations (convolution, sampling, noise). The equations are at planning level; they are read from the cited source before they are coded.
 
-## 1. Evrişim ve doğrusal süzgeçler
+## 1. Convolution and linear filters
 
-- Evrişim tanımı, değişme ve birleşme özelliği; evrişim teoremi: evrişimin Fourier dönüşümü dönüşümlerin çarpımıdır [VanderPlas2018, Böl. 2].
-- Gözlenen görüntü: `G = (K ⊗ PSF) ⊗ piksel + gürültü`; piksel yanıtı da bir evrişimdir.
-- Ayrılabilir çekirdekler: iki boyutlu Gauss evrişimi iki tek boyutlu evrişime ayrılır; yük `O(N k²)`'den `O(N k)`'ye iner.
-- FFT ile evrişim: sıfır doldurma, sarma etkisi, kenar koşulları (yansıtma, sabit, maskeli normalleştirme).
-- Maskeli evrişim: kötü pikseller ağırlık görüntüsüyle birlikte evriştirilir ve sonuç ağırlığın evrişimine bölünür.
+- Definition of convolution, commutativity and associativity; the convolution theorem: the Fourier transform of a convolution is the product of the transforms [VanderPlas2018, Section 2].
+- Observed image: `G = (K ⊗ PSF) ⊗ pixel + noise`; the pixel response is also a convolution.
+- Separable kernels: a two-dimensional Gaussian convolution splits into two one-dimensional convolutions; the cost drops from `O(N k²)` to `O(N k)`.
+- Convolution with the FFT: zero padding, wrap-around effect, boundary conditions (reflect, constant, masked normalization).
+- Masked convolution: bad pixels are convolved together with a weight image, and the result is divided by the convolution of the weights.
 
-## 2. Örnekleme ve enterpolasyon
+## 2. Sampling and interpolation
 
-- Örnekleme teoremi: bant sınırlı sinyal, en yüksek frekansının iki katında örneklenirse tam geri kurulur [Shannon1949].
-- Görüntüde karşılığı: PSF'in yarı yükseklik genişliği yaklaşık iki pikselden darsa görüntü eksik örneklenmiştir; kaydırma ve enterpolasyon bilgi kaybeder, örtüşme oluşur.
-- Enterpolasyon çekirdekleri: en yakın komşu, çift doğrusal, çift kübik, Lanczos-`a`. Her çekirdek bir alçak geçiren süzgeçtir: keskinlik, çınlama ve gürültü ilintisi arasında ödünleşim vardır.
-- Yeniden örneklemede akı korunumu: Jacobian çarpanı; alan koruyan (piksel örtüşmesi) yöntemler.
-- Eksik örneklenmiş karelerin alt piksel kaydırmalarla birleştirilmesi (drizzle): piksel küçültme katsayısı ve çıktı ızgarası; gürültü ilintisi [FruchterHook2002].
-- Enterpolasyon gürültüyü ilintilendirir: komşu piksellerin kovaryansı sıfırdan farklı olur ve açıklık fotometrisinin belirsizliği köşegen varsayımıyla küçük çıkar. Düzeltme çarpanı çekirdekten hesaplanır.
+- Sampling theorem: a band-limited signal is fully recovered if it is sampled at twice its highest frequency [Shannon1949].
+- Its counterpart in images: if the full width at half maximum of the PSF is narrower than about two pixels, the image is undersampled; shifting and interpolation lose information, and aliasing occurs.
+- Interpolation kernels: nearest neighbor, bilinear, bicubic, Lanczos-`a`. Every kernel is a low-pass filter: there is a trade-off between sharpness, ringing and noise correlation.
+- Flux conservation in resampling: the Jacobian factor; area-preserving (pixel overlap) methods.
+- Combining undersampled frames with sub-pixel offsets (drizzle): pixel shrink factor and output grid; noise correlation [FruchterHook2002].
+- Interpolation correlates the noise: the covariance of neighboring pixels becomes nonzero, and the uncertainty of aperture photometry comes out too small under a diagonal assumption. The correction factor is computed from the kernel.
 
-## 3. Gürültü modelleri
+## 3. Noise models
 
-- Poisson sayım gürültüsü ile Gauss okuma gürültüsünün toplamı; varyans `σ² = S/g + R²` (ADU biriminde, `g` kazanç) [Howell2006, Böl. 4; Janesick2007].
-- Varyans kestiriminde yanlılık: varyansı gözlenen sayımdan kestirmek, düşük sayımlı pikselleri fazla ağırlıklandırır ve ağırlıklı ortalamayı aşağı çeker. Çözüm: varyansı modelden (düzgünleştirilmiş görüntüden) hesaplamak [Horne1986].
-- Varyans dengeleyici dönüşüm: Poisson veride `2√(x + 3/8)` dönüşümü varyansı yaklaşık sabitler [Anscombe1948].
-- Düşük sayım rejiminde `χ²` yerine Poisson olabilirliği [Cash1979].
-- Düşük S/N'de kadir: logaritma eksi akıda tanımsızdır; asinh kadiri bu sorunu giderir [Lupton1999].
+- The sum of Poisson counting noise and Gaussian read noise; variance `σ² = S/g + R²` (in ADU, `g` is the gain) [Howell2006, Section 4; Janesick2007].
+- Bias in variance estimation: estimating the variance from the observed counts overweights low-count pixels and pulls the weighted mean down. The remedy: compute the variance from a model (from a smoothed image) [Horne1986].
+- Variance-stabilizing transform: for Poisson data, the transform `2√(x + 3/8)` makes the variance approximately constant [Anscombe1948].
+- In the low-count regime, the Poisson likelihood instead of `χ²` [Cash1979].
+- Magnitudes at low S/N: the logarithm is undefined at negative flux; the asinh magnitude removes this problem [Lupton1999].
 
-## 4. Saptama kuramı
+## 4. Detection theory
 
-- Eşleşmiş süzgeç: bilinen biçimli bir sinyal için beyaz Gauss gürültüsünde en yüksek S/N'yi veren doğrusal süzgeç sinyalin kendisidir. Nokta kaynak saptamada çekirdek PSF'tir [Stetson1987].
-- Saptama eşiği ve yanlış pozitif oranı: `N` bağımsız çözünürlük elemanında `kσ` eşiğinin beklenen yanlış saptama sayısı; evrişimden sonra bağımsız eleman sayısı piksel sayısından küçüktür.
-- Tamlık ve saflık eğrileri; alıcı işletim eğrisi.
-- İlintili gürültüde eşleşmiş süzgeç: gürültü güç tayfıyla ağırlıklandırma (beyazlatma). Çekimsel dalga aramasının temel işlemidir [Allen2012].
-- Görüntü farkında en iyi saptama istatistiği: iki görüntünün PSF ve gürültü düzeylerini birlikte hesaba katan fark [Zackay2016].
+- Matched filter: for a signal of known shape in white Gaussian noise, the linear filter that gives the highest S/N is the signal itself. In point source detection, the kernel is the PSF [Stetson1987].
+- Detection threshold and false positive rate: the expected number of false detections of a `kσ` threshold among `N` independent resolution elements; after convolution, the number of independent elements is smaller than the number of pixels.
+- Completeness and purity curves; receiver operating characteristic.
+- Matched filter in correlated noise: weighting by the noise power spectrum (whitening). It is the basic operation of gravitational wave searches [Allen2012].
+- The optimal detection statistic in image differencing: a difference that takes the PSF and noise levels of the two images into account together [Zackay2016].
 
-## 5. PSF modelleme ve uydurma
+## 5. PSF modeling and fitting
 
-- Analitik profiller: Gauss, Moffat [Moffat1969], Airy; çok bileşenli toplamlar [King1971].
-- Piksel üzerinde integral: profilin piksel merkezindeki değeri yerine piksel alanı üzerindeki integrali; dar PSF'te fark yüzde düzeyine çıkar.
-- Deneysel (piksel tablolu) PSF: alt piksel ızgarasında yıldızlardan birleştirme; alan boyunca polinom değişim [Stetson1987].
-- Akı ve konumun en büyük olabilirlik kestirimi; Cramér-Rao alt sınırı: astrometrik duyarlık yaklaşık `FWHM/(S/N)` mertebesindedir [King1971].
-- PSF eşleme çekirdeği: iki görüntünün PSF'ini eşitleyen evrişim çekirdeğinin taban fonksiyonlarıyla doğrusal en küçük kareler çözümü [AlardLupton1998].
+- Analytic profiles: Gaussian, Moffat [Moffat1969], Airy; multi-component sums [King1971].
+- Integral over the pixel: the integral of the profile over the pixel area instead of its value at the pixel center; for a narrow PSF the difference reaches the percent level.
+- Empirical (pixel-table) PSF: built from stars on a sub-pixel grid; polynomial variation across the field [Stetson1987].
+- Maximum likelihood estimation of flux and position; Cramér-Rao lower bound: astrometric precision is of order `FWHM/(S/N)` [King1971].
+- PSF matching kernel: a linear least squares solution in the basis functions of the convolution kernel that equalizes the PSFs of two images [AlardLupton1998].
 
-## 6. Ters problemler
+## 6. Inverse problems
 
-- Ters evrişim kötü konumlanmıştır: gürültü yüksek frekanslarda büyür.
-- Richardson-Lucy yinelemesi: Poisson olabilirliğinin beklenti-en büyükleme çözümü; akıyı ve artılığı korur, yineleme sayısı düzenlileştirme görevi görür [Richardson1972; Lucy1974].
-- Wiener süzgeci: sinyal ve gürültü güç tayfları bilindiğinde en küçük ortalama kare hatalı doğrusal çözüm.
-- İleri modelleme tercih edilir: görüntüyü ters çevirmek yerine model PSF ile evriştirilip veriyle karşılaştırılır.
+- Deconvolution is ill-posed: noise grows at high frequencies.
+- Richardson-Lucy iteration: the expectation-maximization solution of the Poisson likelihood; it conserves flux and positivity, and the number of iterations acts as regularization [Richardson1972; Lucy1974].
+- Wiener filter: the minimum mean square error linear solution when the signal and noise power spectra are known.
+- Forward modeling is preferred: instead of inverting the image, the model is convolved with the PSF and compared with the data.
 
-## 7. Tayfsal çözümleme
+## 7. Spectral analysis
 
-- Ayrık Fourier dönüşümü, güç tayfı, Parseval eşitliği; frekans çözünürlüğü `1/T`.
-- Pencere fonksiyonları ve sızıntı: dikdörtgen, Hann, Hamming, Blackman; ana lob genişliği ile yan lob düzeyi arasındaki ödünleşim [Harris1978].
-- Eşit aralıklı olmayan örnekleme: gözlem penceresinin Fourier dönüşümü gerçek tayfla evrişir ve takma adlar üretir [VanderPlas2018, Böl. 3-4].
-- Lomb-Scargle periyodogramı ve en küçük kareler yorumu [VanderPlas2018, Böl. 5-6]; yüzen ortalama ve Kepler biçimli genelleme [Zechmeister2009]; tepe anlamlılığı [Baluev2008]. Klasik ve yüzen ortalamalı biçimler `zamanserisi/periyodogram.py` içinde uygulanmıştır.
-- Çapraz ilinti ve faz ilintisi: görüntü hizalama ve dikine hız ölçümü [TonryDavis1979].
+- Discrete Fourier transform, power spectrum, Parseval's identity; frequency resolution `1/T`.
+- Window functions and leakage: rectangular, Hann, Hamming, Blackman; the trade-off between main lobe width and side lobe level [Harris1978].
+- Unevenly spaced sampling: the Fourier transform of the observing window is convolved with the true spectrum and produces aliases [VanderPlas2018, Section 3-4].
+- The Lomb-Scargle periodogram and its least squares interpretation [VanderPlas2018, Section 5-6]; the floating-mean and Keplerian generalization [Zechmeister2009]; peak significance [Baluev2008]. The classical and floating-mean forms are implemented in `timeseries/periodogram.py`.
+- Cross-correlation and phase correlation: image alignment and radial velocity measurement [TonryDavis1979].
 
-## 8. Çok ölçekli yöntemler
+## 8. Multiscale methods
 
-- Dalgacık dönüşümü (à trous algoritması): ölçek ölçek ayrıştırma; yaygın kaynak ve arka plan ayrımı.
-- Medyan ve morfolojik süzgeçler: arka plan haritası, kozmik ışın ve iz ayıklama [vanDokkum2001].
-- Küre üzerinde harmonik çözümleme: küresel harmonikler ve HEALPix pikselleme [Gorski2005].
+- Wavelet transform (à trous algorithm): scale-by-scale decomposition; separating extended sources from background.
+- Median and morphological filters: background map, cosmic ray and trail removal [vanDokkum2001].
+- Harmonic analysis on the sphere: spherical harmonics and HEALPix pixelization [Gorski2005].
 
-## 9. Kalibrasyonun doğrusal cebir olarak kurulması
+## 9. Setting up calibration as linear algebra
 
-- Çok geceli, örtüşen alanlı fotometrinin birlikte çözümü: yıldız kadirleri ve gece ya da kare sıfır noktaları tek bir seyrek doğrusal sistemin bilinmeyenleridir [Padmanabhan2008].
-- Astrometrik blok düzeltmesi: bütün karelerin WCS parametreleri ve yıldız konumları birlikte uydurulur.
-- Bu sistemler seyrek ve büyüktür; seyrek Cholesky ya da eşlenik gradyan ile çözülür.
+- Joint solution of multi-night photometry with overlapping fields: the stellar magnitudes and the per-night or per-frame zero points are the unknowns of a single sparse linear system [Padmanabhan2008].
+- Astrometric block adjustment: the WCS parameters of all frames and the stellar positions are fitted together.
+- These systems are sparse and large; they are solved with a sparse Cholesky or conjugate gradient.
 
-## Doğrulama
+## Verification
 
-- Evrişim: delta fonksiyonuyla evrişim çekirdeği verir; toplam akı korunur; FFT ve doğrudan toplam uyuşur.
-- Enterpolasyon: kaydır ve geri kaydır deneyiyle çekirdek başına artık; ilintili gürültünün kovaryansı öngörülenle uyuşur.
-- Eşleşmiş süzgeç: sentetik veride S/N kazancı kuramsal değere ulaşır; yanlış pozitif oranı eşikle öngörülen orandadır.
-- Richardson-Lucy: bilinen sahnede akı korunumu ve yakınsama eğrisi.
-- Periyodogram: `astropy.timeseries.LombScargle` ile `1e-10` düzeyinde uyum (uygulandı, `tests/oracle/test_periodogram_oracle.py`).
+- Convolution: convolution with a delta function returns the kernel; total flux is conserved; the FFT and the direct sum agree.
+- Interpolation: residual per kernel from a shift and shift back experiment; the covariance of the correlated noise agrees with the predicted one.
+- Matched filter: on synthetic data the S/N gain reaches the theoretical value; the false positive rate is the rate predicted by the threshold.
+- Richardson-Lucy: flux conservation and the convergence curve on a known scene.
+- Periodogram: agreement with `astropy.timeseries.LombScargle` at the `1e-10` level (implemented, `tests/oracle/test_periodogram_oracle.py`).

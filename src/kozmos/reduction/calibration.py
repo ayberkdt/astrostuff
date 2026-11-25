@@ -1,9 +1,9 @@
-"""Görüntü indirgeme: kare birleştirme, bias/karanlık/düz alan düzeltmesi, foton aktarımı.
+"""Image reduction: frame combination, bias/dark/flat-field correction, photon transfer.
 
-İndirgeme denklemi astropy CCD indirgeme rehberinden [CraigChambers2026], kazanç
-ve okuma gürültüsü formülleri IRAF ``findgain`` görevinin belgesinden
-[IRAF2026] okunmuştur. Varyans yayılımı bu projenin modelidir ve sentetik
-karelerle sınanır.
+The reduction equation comes from the astropy CCD reduction guide [CraigChambers2026]; the gain
+and read-noise formulas were read from the documentation of the IRAF ``findgain`` task
+[IRAF2026]. The variance propagation is this project's model and is tested with synthetic
+frames.
 """
 
 from __future__ import annotations
@@ -21,14 +21,14 @@ Array = NDArray[np.float64]
 
 @dataclass(frozen=True, slots=True)
 class ReducedFrame:
-    """İndirgenmiş görüntü ve piksel başına varyansı.
+    """Reduced image and its per-pixel variance.
 
     Attributes
     ----------
-    veri : ndarray (Y, X)
-        Akı [e⁻/s/piksel].
-    varyans : ndarray (Y, X)
-        ``veri``nin varyansı [(e⁻/s)²].
+    data : ndarray (Y, X)
+        Flux [e⁻/s/pixel].
+    variance : ndarray (Y, X)
+        Variance of ``data`` [(e⁻/s)²].
     """
 
     data: Array
@@ -37,48 +37,48 @@ class ReducedFrame:
 
 @source(
     "CraigChambers2026",
-    where="defter 01-05 'Calibration overview': 'Every image has noise'",
+    where="notebook 01-05 'Calibration overview': 'Every image has noise'",
     status="read",
-    note="kalibrasyon kareleri gürültüyü azaltmak için çok sayıda kareden birleştirilir; sigma kırpmalı "
-    "birleştirmenin ayrıntısı (defter 01-06) okunmadı",
+    note="calibration frames are combined from many frames to reduce the noise; the details of combination "
+    "with sigma clipping (notebook 01-06) were not read",
 )
-def combine(frames: ArrayLike, *, method: str = "ortalama", sigma: float | None = 3.0) -> tuple[Array, Array]:
-    """Aynı sahnenin karelerini piksel piksel birleştirir.
+def combine(frames: ArrayLike, *, method: str = "mean", sigma: float | None = 3.0) -> tuple[Array, Array]:
+    """Combine frames of the same scene pixel by pixel.
 
     Parameters
     ----------
-    kareler : ndarray (K, Y, X)
-    yontem : {"ortalama", "ortanca"}
-    sigma : float, isteğe bağlı
-        Verilirse birleştirmeden önce kare ekseninde sigma kırpma uygulanır.
+    frames : ndarray (K, Y, X)
+    method : {"mean", "median"}
+    sigma : float, optional
+        If given, sigma clipping is applied along the frame axis before combining.
 
     Returns
     -------
-    (birleşik, kullanılan) : birleşik kare ve piksel başına kullanılan kare sayısı.
+    (combined, used) : the combined frame and the number of frames used per pixel.
 
     References
     ----------
-    [CraigChambers2026] defter 01-05.
+    [CraigChambers2026] notebook 01-05.
 
     Validity
     --------
-    Kareler aynı düzeyde olmalıdır (aynı poz süresi, aynı aydınlatma); ölçekleme
-    yapılmaz. Gauss gürültüsünde ortancanın varyansı ortalamanınkinin yaklaşık
-    π/2 katıdır.
+    The frames must be at the same level (same exposure time, same illumination); no scaling
+    is applied. For Gaussian noise the variance of the median is about
+    π/2 times that of the mean.
 
     Verification
     ------------
-    tests/unit/test_reduction.py: kozmik ışın eklenmiş karelerde kırpmalı ortalamanın yansızlığı.
+    tests/unit/test_reduction.py: unbiasedness of the clipped mean in frames with added cosmic rays.
     """
     k = np.asarray(frames, dtype=float)
     if k.ndim != 3:
-        raise ValueError("kareler (K, Y, X) biçiminde olmalı")
-    if method not in ("ortalama", "ortanca"):
-        raise ValueError("yöntem 'ortalama' ya da 'ortanca' olmalı")
+        raise ValueError("frames must have shape (K, Y, X)")
+    if method not in ("mean", "median"):
+        raise ValueError("method must be 'mean' or 'median'")
     mask = sigma_clip(k, sigma=sigma, axis=0) if sigma is not None else np.zeros(k.shape, dtype=bool)
-    dolu = np.where(mask, np.nan, k)
-    birlesik = np.nanmean(dolu, axis=0) if method == "ortalama" else np.nanmedian(dolu, axis=0)
-    return birlesik, (~mask).sum(axis=0).astype(float)
+    unmasked = np.where(mask, np.nan, k)
+    combined = np.nanmean(unmasked, axis=0) if method == "mean" else np.nanmedian(unmasked, axis=0)
+    return combined, (~mask).sum(axis=0).astype(float)
 
 
 @source(
@@ -89,14 +89,14 @@ def combine(frames: ArrayLike, *, method: str = "ortalama", sigma: float | None 
     "readnoise = gain · σ(zerodif) / √2",
 )
 def gain_and_read_noise(flat1: ArrayLike, flat2: ArrayLike, bias1: ArrayLike, bias2: ArrayLike) -> tuple[float, float]:
-    """İki düz alan ve iki bias karesinden kazancı ve okuma gürültüsünü ölçer.
+    """Measure the gain and read noise from two flat-field frames and two bias frames.
 
-    Fark görüntüleri sabit desenleri (düz alan yapısı, bias yapısı) götürür;
-    geriye yalnızca rastgele gürültü kalır.
+    The difference images remove fixed patterns (flat-field structure, bias structure);
+    only random noise remains.
 
     Returns
     -------
-    (kazanç [e⁻/ADU], okuma gürültüsü [e⁻ RMS])
+    (gain [e⁻/ADU], read noise [e⁻ RMS])
 
     References
     ----------
@@ -104,26 +104,26 @@ def gain_and_read_noise(flat1: ArrayLike, flat2: ArrayLike, bias1: ArrayLike, bi
 
     Validity
     --------
-    İki düz kare aynı aydınlatma düzeyinde ve doğrusal bölgede olmalıdır.
-    Karanlık akımın katkısı ihmal edilir (kısa poz).
+    The two flat frames must be at the same illumination level and in the linear regime.
+    The dark-current contribution is neglected (short exposure).
 
     Verification
     ------------
-    tests/unit/test_reduction.py: sentetik karelerde girilen değerlerin geri kazanımı.
+    tests/unit/test_reduction.py: recovery of the input values on synthetic frames.
     """
     f1, f2 = np.asarray(flat1, dtype=float), np.asarray(flat2, dtype=float)
     b1, b2 = np.asarray(bias1, dtype=float), np.asarray(bias2, dtype=float)
     var_bias = np.var(b1 - b2, ddof=1)
-    kazanc = ((f1.mean() + f2.mean()) - (b1.mean() + b2.mean())) / (np.var(f1 - f2, ddof=1) - var_bias)
-    return float(kazanc), float(kazanc * np.sqrt(var_bias / 2.0))
+    gain = ((f1.mean() + f2.mean()) - (b1.mean() + b2.mean())) / (np.var(f1 - f2, ddof=1) - var_bias)
+    return float(gain), float(gain * np.sqrt(var_bias / 2.0))
 
 
 @source(
     "CraigChambers2026",
-    where="defter 01-05 'Calibration overview': indirgeme denklemi",
+    where="notebook 01-05 'Calibration overview': reduction equation",
     status="read",
-    note="yıldızlar + gürültü = (ham − bias − karanlık akım)/düz − gökyüzü; karanlık akım = (karanlık kare − bias)/süre. "
-    "Varyans σ² = (sinyal_e + R²)/(düz·t)² bu projenin modelidir (kaynakta okunmadı)",
+    note="stars + noise = (raw − bias − dark current)/flat − sky; dark current = (dark frame − bias)/time. "
+    "The variance σ² = (signal_e + R²)/(flat·t)² is this project's model (not read in the source)",
 )
 def reduce_frame(
     raw_adu: ArrayLike,
@@ -135,45 +135,45 @@ def reduce_frame(
     read_noise_e: float,
     exposure_s: float,
 ) -> ReducedFrame:
-    """Ham kareyi bias, karanlık ve düz alan düzeltmesiyle akıya çevirir.
+    """Convert a raw frame to flux with bias, dark and flat-field correction.
 
-    Sıra: bias çıkar, kazançla elektrona çevir, karanlık akımı çıkar, düz
-    alana ve poz süresine böl.
+    Order: subtract bias, convert to electrons with the gain, subtract dark current, divide
+    by the flat field and the exposure time.
 
     Parameters
     ----------
-    ham_adu : ndarray (Y, X)
-    ana_bias_adu : ndarray (Y, X) ya da float
-    ana_karanlik_e_s : ndarray (Y, X) ya da float
-        Karanlık akım haritası [e⁻/s/piksel].
-    ana_duz : ndarray (Y, X) ya da float
-        Normalleştirilmiş düz alan (ortalaması 1).
-    kazanc_e_adu, okuma_gurultusu_e, poz_s : float
+    raw_adu : ndarray (Y, X)
+    master_bias_adu : ndarray (Y, X) or float
+    master_dark_e_s : ndarray (Y, X) or float
+        Dark-current map [e⁻/s/pixel].
+    master_flat : ndarray (Y, X) or float
+        Normalized flat field (mean 1).
+    gain_e_adu, read_noise_e, exposure_s : float
 
     Returns
     -------
-    IndirgenmisKare
-        Akı [e⁻/s/piksel] ve varyansı.
+    ReducedFrame
+        Flux [e⁻/s/pixel] and its variance.
 
     References
     ----------
-    [CraigChambers2026] defter 01-05.
+    [CraigChambers2026] notebook 01-05.
 
     Validity
     --------
-    Varyans, bias çıkarılmış sinyalin Poisson gürültüsü ile okuma gürültüsünün
-    toplamıdır; ana kalibrasyon karelerinin kendi gürültüsü eklenmez (çok
-    sayıda kareden birleştirildikleri varsayılır). Poisson terimi gözlenen
-    sayımdan kestirildiği için düşük sayımda yanlıdır.
+    The variance is the sum of the Poisson noise of the bias-subtracted signal and the read
+    noise; the noise of the master calibration frames themselves is not added (they are assumed
+    to be combined from many frames). Because the Poisson term is estimated from the observed
+    count, it is biased at low counts.
 
     Verification
     ------------
-    tests/unit/test_reduction.py: indirgenmiş karenin bilinen sahneye göre artığı ve indirgenmiş χ².
+    tests/unit/test_reduction.py: residual of the reduced frame against the known scene and reduced χ².
     """
     if exposure_s <= 0:
-        raise ValueError("poz süresi pozitif olmalı")
-    sinyal_e = (np.asarray(raw_adu, dtype=float) - master_bias_adu) * gain_e_adu
+        raise ValueError("exposure time must be positive")
+    signal_e = (np.asarray(raw_adu, dtype=float) - master_bias_adu) * gain_e_adu
     flat = np.asarray(master_flat, dtype=float)
-    data = (sinyal_e - np.asarray(master_dark_e_s, dtype=float) * exposure_s) / (flat * exposure_s)
-    variance = (np.maximum(sinyal_e, 0.0) + read_noise_e**2) / (flat * exposure_s) ** 2
+    data = (signal_e - np.asarray(master_dark_e_s, dtype=float) * exposure_s) / (flat * exposure_s)
+    variance = (np.maximum(signal_e, 0.0) + read_noise_e**2) / (flat * exposure_s) ** 2
     return ReducedFrame(data, variance)

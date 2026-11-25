@@ -1,18 +1,18 @@
-"""Tek karede kozmik ışın saptama: Laplace kenar saptama (L.A.Cosmic).
+"""Cosmic-ray detection in a single frame: Laplacian edge detection (L.A.Cosmic).
 
-Algoritma van Dokkum'un makalesinin arXiv TeX kaynağından (astro-ph/0108003,
-``cosmic.tex``) okunmuştur [vanDokkum2001]. Adımlar ve denklemler:
+The algorithm was read from the arXiv TeX source of van Dokkum's paper (astro-ph/0108003,
+``cosmic.tex``) [vanDokkum2001]. Steps and equations:
 
-1. Görüntü iki kat alt örneklenir, Laplace çekirdeğiyle (TeX etiketi
-   ``kernel.eq``) evriştirilir, eksi değerler sıfırlanır ve özgün çözünürlüğe
-   geri ortalanır: L⁺.
-2. Gürültü modeli (``noise.eq``): N = g⁻¹ sqrt(g (M₅ ∘ I) + σ_rn²).
-3. Anlamlılık (``sigmap.eq``): S = L⁺ / (f_s N); büyük ölçekli yapı çıkarılır:
+1. The image is subsampled by a factor of two, convolved with the Laplacian kernel (TeX label
+   ``kernel.eq``), negative values are set to zero, and the result is block-averaged
+   back to the original resolution: L⁺.
+2. Noise model (``noise.eq``): N = g⁻¹ sqrt(g (M₅ ∘ I) + σ_rn²).
+3. Significance (``sigmap.eq``): S = L⁺ / (f_s N); large-scale structure is removed:
    S′ = S − (S ∘ M₅).
-4. İnce yapı görüntüsü: F = (M₃ ∘ I) − ([M₃ ∘ I] ∘ M₇).
-5. Kozmik ışın: S′ > σ_lim ve L⁺ / F > f_lim.
-6. İşaretlenen pikseller çevredeki iyi piksellerin ortancasıyla değiştirilir ve
-   işlem yinelenir.
+4. Fine-structure image: F = (M₃ ∘ I) − ([M₃ ∘ I] ∘ M₇).
+5. Cosmic ray: S′ > σ_lim and L⁺ / F > f_lim.
+6. Flagged pixels are replaced by the median of the surrounding good pixels and the
+   procedure is iterated.
 """
 
 from __future__ import annotations
@@ -33,12 +33,13 @@ _SUBSAMPLING = 2  # f_s
 
 @source(
     "vanDokkum2001",
-    where="TeX etiketleri kernel.eq, noise.eq, sigmap.eq ve izleyen denklemler (S′, F, seçim ölçütü)",
+    where="TeX labels kernel.eq, noise.eq, sigmap.eq and the following equations (S′, F, selection criterion)",
     status="read",
-    note="alt örnekleme çarpanı f_s = 2. f_lim: kaynak iyi örneklenmiş veride 2 (varsayılanı), eksik örneklenmiş "
-    "veride daha büyük değer önerir (WFPC2 geniş alan çipleri için yaklaşık 5). Kaynak, işaretlenen piksellerin "
-    "komşularına daha düşük eşik uygulanabildiğini söyler ama oranı vermez; 0,5 oranı ve komşularda da ince "
-    "yapı ölçütünün aranması bu projenin seçimidir (aranmazsa kozmik ışına bitişik yıldız çekirdekleri işaretlenir). σ_lim = 5 varsayılanı da bu projenin seçimidir",
+    note="subsampling factor f_s = 2. f_lim: the source suggests 2 (the default) for well-sampled data and a "
+    "larger value for undersampled data (about 5 for WFPC2 wide-field chips). The source says a lower threshold "
+    "can be applied to the neighbors of flagged pixels but does not give the ratio; the ratio of 0.5 and the "
+    "requirement that neighbors also meet the fine-structure criterion are this project's choice (without it, "
+    "stellar cores adjacent to a cosmic ray get flagged). The default σ_lim = 5 is also this project's choice",
 )
 def detect_cosmic_rays(
     image_adu: ArrayLike,
@@ -50,73 +51,73 @@ def detect_cosmic_rays(
     max_iterations: int = 4,
     neighbor_threshold_ratio: float = 0.5,
 ) -> tuple[Array, Mask]:
-    """Tek karede kozmik ışınları saptar ve temizler.
+    """Detect and clean cosmic rays in a single frame.
 
     Parameters
     ----------
-    goruntu_adu : ndarray (Y, X)
-        Görüntü [ADU]; gökyüzü çıkarılmamış olmalıdır (gürültü modeli toplam sayıma dayanır).
-    kazanc_e_adu : float
-        Kazanç g [e⁻/ADU].
-    okuma_gurultusu_e : float
-        Okuma gürültüsü σ_rn [e⁻].
+    image_adu : ndarray (Y, X)
+        Image [ADU]; the sky must not be subtracted (the noise model relies on the total count).
+    gain_e_adu : float
+        Gain g [e⁻/ADU].
+    read_noise_e : float
+        Read noise σ_rn [e⁻].
     sigma_lim : float
-        Laplace anlamlılık eşiği σ_lim.
+        Laplacian significance threshold σ_lim.
     f_lim : float
-        Laplace görüntüsünün ince yapı görüntüsüne en küçük oranı f_lim; yıldızları kozmik ışınlardan ayırır.
-    en_cok_yineleme : int
-        Yeni piksel işaretlenmeyince erken durur.
-    komsu_esik_orani : float
-        İşaretlenen piksellere bitişik piksellerde eşik ``komsu_esik_orani × sigma_lim`` olur; kozmik ışınların
-        sönük kenarlarını yakalar. 1 verilirse komşulara ayrı eşik uygulanmaz.
+        Smallest ratio of the Laplacian image to the fine-structure image, f_lim; separates stars from cosmic rays.
+    max_iterations : int
+        Stops early when no new pixel is flagged.
+    neighbor_threshold_ratio : float
+        For pixels adjacent to flagged pixels the threshold becomes ``neighbor_threshold_ratio × sigma_lim``;
+        this catches the faint edges of cosmic rays. If 1 is given, no separate threshold is applied to neighbors.
 
     Returns
     -------
-    (temiz görüntü, maske) : işaretlenen pikseller çevredeki iyi piksellerin
-    ortancasıyla değiştirilmiş görüntü ve ``True`` = kozmik ışın maskesi.
+    (clean image, mask) : the image with flagged pixels replaced by the median of the
+    surrounding good pixels, and ``True`` = cosmic-ray mask.
 
     References
     ----------
-    [vanDokkum2001] kernel.eq, noise.eq, sigmap.eq ve izleyen denklemler.
+    [vanDokkum2001] kernel.eq, noise.eq, sigmap.eq and the following equations.
 
     Validity
     --------
-    PSF iyi örneklenmişse (FWHM yaklaşık 2,5 piksel ve üstü) yıldızlar güvenle
-    ayrılır; eksik örneklenmiş veride ``f_lim`` büyütülmelidir. Kaynak, 5σ
-    eşiğinde özgün görüntüdeki 5σ tepelerin yaklaşık yarısının işaretlendiğini
-    belirtir. Gerçek HST STIS karesinde iki pozun farkına karşı ölçülen tamlık ve
-    saflık ``figures/cosmic_rays_real_data.json`` dosyasındadır.
+    If the PSF is well sampled (FWHM about 2.5 pixels or more), stars are separated
+    reliably; for undersampled data ``f_lim`` should be increased. The source states that at
+    the 5σ threshold about half of the 5σ peaks in the original image are flagged. The
+    completeness and purity measured on a real HST STIS frame against the difference of two
+    exposures are in ``figures/cosmic_rays_real_data.json``.
 
     Verification
     ------------
-    tests/unit/test_cosmic_rays.py: sentetik yıldız alanına eklenen kozmik ışınların tamlığı ve yıldızların korunması.
+    tests/unit/test_cosmic_rays.py: completeness of cosmic rays added to a synthetic star field and preservation of the stars.
     """
-    g = np.asarray(image_adu, dtype=float)
-    temiz = g.copy()
-    mask = np.zeros(g.shape, dtype=bool)
-    ny, nx = g.shape
+    image = np.asarray(image_adu, dtype=float)
+    cleaned = image.copy()
+    mask = np.zeros(image.shape, dtype=bool)
+    ny, nx = image.shape
     for _ in range(max_iterations):
-        low = np.repeat(np.repeat(temiz, _SUBSAMPLING, axis=0), _SUBSAMPLING, axis=1)
-        lap = np.clip(ndimage.convolve(low, _LAPLACE, mode="nearest"), 0.0, None)
-        l_arti = lap.reshape(ny, _SUBSAMPLING, nx, _SUBSAMPLING).mean(axis=(1, 3))
-        m5 = ndimage.median_filter(temiz, size=5, mode="nearest")
-        gurultu = np.sqrt(np.clip(gain_e_adu * m5, 0.0, None) + read_noise_e**2) / gain_e_adu
-        s = l_arti / (_SUBSAMPLING * gurultu)
-        s_ussu = s - ndimage.median_filter(s, size=5, mode="nearest")
-        m3 = ndimage.median_filter(temiz, size=3, mode="nearest")
-        ince = np.clip(m3 - ndimage.median_filter(m3, size=7, mode="nearest"), 0.01, None)
-        yeni = (s_ussu > sigma_lim) & (l_arti / ince > f_lim) & ~mask
-        if neighbor_threshold_ratio < 1.0 and (yeni | mask).any():
-            bitisik = ndimage.binary_dilation(yeni | mask, structure=np.ones((3, 3)))
-            yeni |= bitisik & (s_ussu > neighbor_threshold_ratio * sigma_lim) & (l_arti / ince > f_lim) & ~mask
-        if not yeni.any():
+        subsampled = np.repeat(np.repeat(cleaned, _SUBSAMPLING, axis=0), _SUBSAMPLING, axis=1)
+        laplacian = np.clip(ndimage.convolve(subsampled, _LAPLACE, mode="nearest"), 0.0, None)
+        laplacian_pos = laplacian.reshape(ny, _SUBSAMPLING, nx, _SUBSAMPLING).mean(axis=(1, 3))
+        m5 = ndimage.median_filter(cleaned, size=5, mode="nearest")
+        noise = np.sqrt(np.clip(gain_e_adu * m5, 0.0, None) + read_noise_e**2) / gain_e_adu
+        s = laplacian_pos / (_SUBSAMPLING * noise)
+        s_prime = s - ndimage.median_filter(s, size=5, mode="nearest")
+        m3 = ndimage.median_filter(cleaned, size=3, mode="nearest")
+        fine = np.clip(m3 - ndimage.median_filter(m3, size=7, mode="nearest"), 0.01, None)
+        new = (s_prime > sigma_lim) & (laplacian_pos / fine > f_lim) & ~mask
+        if neighbor_threshold_ratio < 1.0 and (new | mask).any():
+            adjacent = ndimage.binary_dilation(new | mask, structure=np.ones((3, 3)))
+            new |= adjacent & (s_prime > neighbor_threshold_ratio * sigma_lim) & (laplacian_pos / fine > f_lim) & ~mask
+        if not new.any():
             break
-        mask |= yeni
-        # Yalnızca maskeli piksellerin çevresinde maskeli ortanca hesaplanır (hız için).
+        mask |= new
+        # The masked median is computed only around masked pixels (for speed).
         ys, xs = np.nonzero(mask)
         for y0, x0 in zip(ys, xs, strict=True):
             y1, y2, x1, x2 = max(0, y0 - 2), min(ny, y0 + 3), max(0, x0 - 2), min(nx, x0 + 3)
-            iyi = ~mask[y1:y2, x1:x2]
-            if iyi.any():
-                temiz[y0, x0] = np.median(g[y1:y2, x1:x2][iyi])
-    return temiz, mask
+            good = ~mask[y1:y2, x1:x2]
+            if good.any():
+                cleaned[y0, x0] = np.median(image[y1:y2, x1:x2][good])
+    return cleaned, mask

@@ -1,62 +1,62 @@
-# Veri erişimi ve biçimler
+# Data access and formats
 
-Hedef modüller: `io/`, `arsiv/`.
+Target modules: `io/`, `archives/`.
 
-Arşivlerin güncel sürüm durumu [../02_saha_arastirmasi/03_veri_arsivleri.md](../02_saha_arastirmasi/03_veri_arsivleri.md) dosyasındadır.
+The current release status of the archives is in [../02_field_survey/03_data_archives.md](../02_field_survey/03_data_archives.md).
 
 ## 1. FITS
 
-Astronomi verisinin ortak dosya biçimidir. Güncel standart sürüm 4.0'dır; dergide yayımlanmış tanım sürüm 3.0'ı anlatır [Pence2010]. Sürüm 4.0'ın dergi künyesi yoktur; NASA FITS destek bürosunun belgesi anılır [FITS2018].
+The common file format of astronomical data. The current standard version is 4.0; the definition published in a journal describes version 3.0 [Pence2010]. Version 4.0 has no journal reference; the document of the NASA FITS support office is cited [FITS2018].
 
-- Yapı: 2880 baytlık bloklar; başlık (80 karakterlik kartlar: anahtar, değer, yorum) ve veri birimi; birincil HDU ve uzantılar (görüntü, ikili tablo, ASCII tablo).
-- Zorunlu anahtarlar: `SIMPLE`, `BITPIX`, `NAXIS`, `NAXISn`, `END`. Ölçekleme: `BSCALE`, `BZERO` (işaretsiz 16 bit tamsayının saklanma yolu).
-- Kurallar: `CONTINUE` uzun dizgiler, `HIERARCH`, çok uzantılı dosyalar, sıkıştırılmış görüntü (tile compression), `CHECKSUM`/`DATASUM`.
-- Zaman anahtarları: `DATE-OBS`, `MJD-OBS`, `TIMESYS`, `EXPTIME`; poz başlangıcı ile orta noktasının ayrımı [Rots2015].
-- Dünya koordinat sistemi: [../03_matematik/01_kuresel_astronomi_ve_donusumler.md](../03_matematik/01_kuresel_astronomi_ve_donusumler.md), Bölüm 8 [GreisenCalabretta2002; CalabrettaGreisen2002; Greisen2006].
+- Structure: 2880-byte blocks; header (80-character cards: key, value, comment) and data unit; primary HDU and extensions (image, binary table, ASCII table).
+- Mandatory keys: `SIMPLE`, `BITPIX`, `NAXIS`, `NAXISn`, `END`. Scaling: `BSCALE`, `BZERO` (the way an unsigned 16-bit integer is stored).
+- Conventions: `CONTINUE` long strings, `HIERARCH`, multi-extension files, compressed images (tile compression), `CHECKSUM`/`DATASUM`.
+- Time keys: `DATE-OBS`, `MJD-OBS`, `TIMESYS`, `EXPTIME`; the distinction between the start and the midpoint of the exposure [Rots2015].
+- World coordinate system: [../03_mathematics/01_spherical_astronomy_and_transforms.md](../03_mathematics/01_spherical_astronomy_and_transforms.md), Section 8 [GreisenCalabretta2002; CalabrettaGreisen2002; Greisen2006].
 
-**Uygulama kapsamı.** Okuyucu ve yazıcı sıfırdan yazılır: başlık ayrıştırma, birincil görüntü, görüntü uzantısı, ikili tablo. Sıkıştırılmış görüntü ve değişken uzunluklu dizi sütunları ikinci aşamadır. Kâhin: `astropy.io.fits` ve `fitsio`. Test: aynı dosyanın iki okuyucuyla bayt düzeyinde aynı diziyi vermesi; yazılan dosyanın `astropy` doğrulayıcısından geçmesi.
+**Implementation scope.** The reader and writer are written from scratch: header parsing, primary image, image extension, binary table. Compressed images and variable-length array columns are the second stage. Oracles: `astropy.io.fits` and `fitsio`. Test: the same file gives a byte-for-byte identical array with both readers; the written file passes the `astropy` verifier.
 
-Gerçek başlıklar standarda uymaz: amatör yazılımlar ve eski aygıtlar eksik ya da hatalı anahtar yazar. Okuyucu hoşgörülü, yazıcı katı olur; her sapma uyarı olarak kaydedilir.
+Real headers do not follow the standard: amateur software and old instruments write missing or faulty keys. The reader is tolerant, the writer is strict; every deviation is logged as a warning.
 
-## 2. Tablo ve katalog biçimleri
+## 2. Table and catalog formats
 
-- VOTable (XML tabanlı; güncel öneri 1.5), CSV/ECSV (üstveri taşıyan CSV), FITS ikili tablo, Parquet (büyük kataloglar), HDF5 (benzetim çıktıları).
-- Sütun üstverisi: birim, UCD (içerik tanımlayıcı), açıklama; birimsiz sütun okunurken uyarı üretir.
-- Büyük kataloglar: HEALPix bölümlü Parquet (HATS biçimi) ve tembel değerlendirme.
+- VOTable (XML based; the current recommendation is 1.5), CSV/ECSV (CSV that carries metadata), FITS binary table, Parquet (large catalogs), HDF5 (simulation output).
+- Column metadata: unit, UCD (content descriptor), description; a column without a unit produces a warning when read.
+- Large catalogs: HEALPix-partitioned Parquet (the HATS format) and lazy evaluation.
 
-## 3. Sanal Gözlemevi protokolleri
+## 3. Virtual Observatory protocols
 
-IVOA standartları arşivlere ortak erişim sağlar. Araştırmada IVOA belge dizininden okunan öneri sürümleri: TAP 1.1 (2019), ADQL 2.1 (2023), SIA 2.0 (2015), SSA 1.1 (2012), Simple Cone Search 1.03 (2008), VOTable 1.5 (2025), HiPS 1.0 (2017), MOC 2.0 (2022), DataLink 1.1 (2023).
+IVOA standards give common access to archives. Recommendation versions read from the IVOA document index during the survey: TAP 1.1 (2019), ADQL 2.1 (2023), SIA 2.0 (2015), SSA 1.1 (2012), Simple Cone Search 1.03 (2008), VOTable 1.5 (2025), HiPS 1.0 (2017), MOC 2.0 (2022), DataLink 1.1 (2023).
 
-- **TAP:** HTTP üzerinden katalog sorgulama; eşzamanlı ve eşzamansız iş modeli (iş oluştur, durumu yokla, sonucu al).
-- **ADQL:** SQL'in astronomi uzantısı; geometrik işlevler (`CONTAINS`, `POINT`, `CIRCLE`, `DISTANCE`), çapraz eşleme.
-- **Cone Search, SIA, SSA:** konuma göre katalog, görüntü ve tayf arama.
-- **DataLink:** bir kayda bağlı veri ürünlerinin bulunması (Gaia tayfları ve ışık eğrileri bu yolla alınır).
-- **HiPS ve MOC:** hiyerarşik görüntü döşemeleri ve gökyüzü kapsama haritaları.
+- **TAP:** catalog queries over HTTP; synchronous and asynchronous job model (create a job, poll the status, fetch the result).
+- **ADQL:** the astronomy extension of SQL; geometric functions (`CONTAINS`, `POINT`, `CIRCLE`, `DISTANCE`), cross-matching.
+- **Cone Search, SIA, SSA:** search for catalogs, images and spectra by position.
+- **DataLink:** finding the data products attached to a record (Gaia spectra and light curves are obtained this way).
+- **HiPS and MOC:** hierarchical image tiles and sky coverage maps.
 
-**Uygulama kapsamı.** `arsiv/tap.py` TAP eşzamanlı ve eşzamansız istemcisini standart kütüphane üzerinde yazar; VOTable ayrıştırıcı `io/votable.py` içindedir. Kâhin: `pyvo` ve `astroquery` [Ginsburg2019].
+**Implementation scope.** `archives/tap.py` writes the synchronous and asynchronous TAP client on top of the standard library; the VOTable parser is in `io/votable.py`. Oracles: `pyvo` and `astroquery` [Ginsburg2019].
 
-## 4. Arşive özgü erişim
+## 4. Archive-specific access
 
-Her arşiv için ince bir modül: uç nokta, tablo adları, kalite bayrakları, önerilen kesimler ve atıf metni.
+A thin module for each archive: endpoint, table names, quality flags, recommended cuts and citation text.
 
-- **Gaia:** TAP; `gaia_source` sütunları, `ruwe` ve diğer kalite ölçütleri, paralaks sıfır noktası [Vallenari2023; Lindegren2021].
-- **Pantheon+SH0ES:** GitHub veri sürümünden uzaklık modülü tablosu ve kovaryans matrisleri [Scolnic2022; Brout2022].
-- **MAST:** TESS ve Kepler ışık eğrileri, hedef piksel dosyaları, tam kare kesitleri [Ricker2015].
-- **SDSS, DESI:** tayflar ve kırmızıya kaymalar [York2000].
-- **ZTF:** ışık eğrileri [Bellm2019].
-- **NASA Exoplanet Archive:** TAP ile gezegen parametreleri. Arşivin figuresine göre eski `nstedAPI` arayüzündeki tabloların çoğu kaldırılmıştır; yeni kod TAP'ı hedefler.
-- **JPL Horizons ve SBDB:** efemeris ve küçük cisim elemanları.
-- **SIMBAD, VizieR, NED:** ad çözümleme, yayımlanmış tablolar, gökada dışı veritabanı.
-- **AAVSO, Minor Planet Center:** değişen yıldız gözlemleri ve astrometri gönderimi.
+- **Gaia:** TAP; `gaia_source` columns, `ruwe` and other quality measures, parallax zero point [Vallenari2023; Lindegren2021].
+- **Pantheon+SH0ES:** the distance modulus table and covariance matrices from the GitHub data release [Scolnic2022; Brout2022].
+- **MAST:** TESS and Kepler light curves, target pixel files, full-frame cutouts [Ricker2015].
+- **SDSS, DESI:** spectra and redshifts [York2000].
+- **ZTF:** light curves [Bellm2019].
+- **NASA Exoplanet Archive:** planet parameters through TAP. According to the archive's documentation, most of the tables in the old `nstedAPI` interface have been removed; new code targets TAP.
+- **JPL Horizons and SBDB:** ephemerides and minor body elements.
+- **SIMBAD, VizieR, NED:** name resolution, published tables, extragalactic database.
+- **AAVSO, Minor Planet Center:** variable star observations and astrometry submission.
 
-## 5. Önbellek ve kaynak kaydı
+## 5. Cache and source record
 
-- Her indirme yerel önbelleğe yazılır; anahtar sorgu metninin özeti, değer veri ile birlikte tutulan üstveridir: URL, sorgu, tarih, dosya özeti (SHA-256), arşivin veri sürümü.
-- Aynı sorgu ikinci kez ağa çıkmaz; yenileme açık bir argümandır.
-- Arşiv veri sürümü (Gaia DR3, SDSS DR-n) sorguya gömülür; "en son" takma adı kullanılmaz, çünkü sonuç zamanla değişir.
-- Ağ katmanı hız sınırına uyar, yeniden dener ve hata durumunda kısmi dosya bırakmaz.
+- Every download is written to a local cache; the key is a digest of the query text, the value is the metadata kept together with the data: URL, query, date, file digest (SHA-256), data release of the archive.
+- The same query does not go to the network a second time; refreshing is an explicit argument.
+- The data release of the archive (Gaia DR3, SDSS DR-n) is embedded in the query; the "latest" alias is not used, because the result changes over time.
+- The network layer obeys rate limits, retries, and leaves no partial file on error.
 
-## 6. Kendi gözlem verisi
+## 6. Own observation data
 
-Gözlem gecesi dizin düzeni ve dosya adlandırma kuralı; başlık anahtarlarının bir aygıt tanım dosyasıyla ortak şemaya eşlenmesi (kazanç, okuma gürültüsü, piksel ölçeği, filtre adları); gece günlüğü. Aygıt tanımı bir kez yazılır, indirgeme hattı her gece ondan okur.
+Directory layout and file naming convention for an observing night; mapping of header keys to a common schema with an instrument definition file (gain, read noise, pixel scale, filter names); night log. The instrument definition is written a single time, and the reduction pipeline reads from it every night.

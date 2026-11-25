@@ -1,14 +1,14 @@
-"""Galaktik ölçekte yıldız oluşum yasaları ve ışınım gücünden hız kalibrasyonları.
+"""Star formation laws on galactic scales and rate calibrations from luminosity.
 
-Denklemler arXiv TeX kaynaklarından okunmuştur (25 Kasım 2026): Kennicutt
-(1998, astro-ph/9712213; denklem numaraları makale metnindeki sıradır),
-Kennicutt ve Evans (2012, arXiv:1204.3552, Tablo 1) ve McKee ve Ostriker
-(2007, arXiv:0707.3514; TeX etiketleri).
+The equations were read from the arXiv TeX sources (25 November 2026): Kennicutt
+(1998, astro-ph/9712213; equation numbers are the order in the text of the paper),
+Kennicutt and Evans (2012, arXiv:1204.3552, Table 1), and McKee and Ostriker
+(2007, arXiv:0707.3514; TeX labels).
 
-Birimler gökbilimcilerin gerçek birimleridir ve bağımsız değişken adlarında
-yazılıdır: yüzey yoğunluğu M☉ pc⁻², yıldız oluşum yüzey yoğunluğu
-M☉ yıl⁻¹ kpc⁻², açısal hız km s⁻¹ kpc⁻¹. Işınım gücü W alınır (1 erg/s = 10⁻⁷ W
-tam çarpandır).
+Units are the real units used by astronomers and are written in the argument
+names: surface density in M☉ pc⁻², star formation surface density in
+M☉ yr⁻¹ kpc⁻², angular velocity in km s⁻¹ kpc⁻¹. Luminosity is taken in W (1 erg/s = 10⁻⁷ W
+is an exact factor).
 """
 
 from __future__ import annotations
@@ -21,18 +21,18 @@ from kozmos.core.constants import GM_SUN, GRAVITATIONAL_CONSTANT, JULIAN_YEAR_SE
 
 Array = NDArray[np.float64]
 
-# Güneş kütlesi: GM_☉ / G; GM_☉ nominal IAU değeridir, G CODATA'dır.
+# Solar mass: GM_☉ / G; GM_☉ is the nominal IAU value, G is the CODATA value.
 _SOLAR_MASS_KG = GM_SUN.value / GRAVITATIONAL_CONSTANT.value
 _PC_M = PARSEC.value
 _YEAR_S = JULIAN_YEAR_SECONDS.value
 
-# Kennicutt ve Evans (2012) Tablo 1: log C_x (Kroupa IMF, Starburst99, güneş metal bolluğu).
-# L_x birimleri: FUV, NUV, TIR, 24 µm, 70 µm, 2-10 keV için erg/s; Hα için erg/s;
-# 1,4 GHz için erg/s/Hz.
+# Kennicutt and Evans (2012) Table 1: log C_x (Kroupa IMF, Starburst99, solar metallicity).
+# L_x units: erg/s for FUV, NUV, TIR, 24 µm, 70 µm, 2-10 keV; erg/s for Hα;
+# erg/s/Hz for 1.4 GHz.
 _LOG_C = {
     "FUV": 43.35,
     "NUV": 43.17,
-    "Halfa": 41.27,
+    "Halpha": 41.27,
     "TIR": 43.41,
     "24um": 42.69,
     "70um": 43.23,
@@ -41,171 +41,174 @@ _LOG_C = {
 }
 
 
-def _positive(**degerler: ArrayLike) -> list[Array]:
-    """Bağımsız değişkenlerin kesin pozitif olduğunu sınar; dizilere çevirip döndürür."""
-    cikti = []
-    for name, d in degerler.items():
+def _positive(**values: ArrayLike) -> list[Array]:
+    """Check that the arguments are strictly positive; convert them to arrays and return them."""
+    out = []
+    for name, d in values.items():
         a = np.asarray(d, dtype=float)
         if np.any(~(a > 0.0)):
-            raise ValueError(f"{name} kesin pozitif olmalı")
-        cikti.append(a)
-    return cikti
+            raise ValueError(f"{name} must be strictly positive")
+        out.append(a)
+    return out
 
 
 @source(
     "Kennicutt1998",
-    where="Denk. 4 (metindeki sıra; 'equation (4)' olarak anılır)",
+    where="Eq. 4 (order in the text; referred to as 'equation (4)')",
     status="read",
-    note="Kaynak: Σ_SFR = (2,5 ± 0,7)e-4 (Σ_gaz / 1 M☉ pc⁻²)^{1,4 ± 0,15} M☉ yıl⁻¹ kpc⁻²; "
-    "McKee2007 TeX etiketi eq:ks aynı değeri aktarır. Kennicutt2012'ye göre bu makale Salpeter IMF (0,1-100 M☉) varsayar",
+    note="Source: Σ_SFR = (2.5 ± 0.7)e-4 (Σ_gas / 1 M☉ pc⁻²)^{1.4 ± 0.15} M☉ yr⁻¹ kpc⁻²; "
+    "McKee2007 TeX label eq:ks quotes the same value. According to Kennicutt2012, this paper assumes a Salpeter IMF (0.1-100 M☉)",
 )
-@source("McKee2007", where="TeX etiketi eq:ks", status="read")
+@source("McKee2007", where="TeX label eq:ks", status="read")
 def kennicutt_schmidt_sfr_surface_density(
     gas_surface_density_msun_pc2: ArrayLike, index: float = 1.4, amplitude: float = 2.5e-4
 ) -> Array:
-    """Kennicutt-Schmidt yasasını hesaplar: Σ_SFR = A (Σ_gaz / 1 M☉ pc⁻²)^N.
+    """Compute the Kennicutt-Schmidt law: Σ_SFR = A (Σ_gas / 1 M☉ pc⁻²)^N.
 
     Parameters
     ----------
-    gaz_yuzey_yogunlugu_gunes_kutlesi_pc2 : float ya da ndarray
-        Toplam (HI + H2) gaz yüzey yoğunluğu [M☉ pc⁻²], pozitif.
-    indis : float
-        Güç yasası indisi N; kaynakta 1,4 ± 0,15.
-    genlik : float
-        Σ_gaz = 1 M☉ pc⁻² için Σ_SFR [M☉ yıl⁻¹ kpc⁻²]; kaynakta (2,5 ± 0,7)e-4.
+    gas_surface_density_msun_pc2 : float or ndarray
+        Total (HI + H2) gas surface density [M☉ pc⁻²], positive.
+    index : float
+        Power-law index N; 1.4 ± 0.15 in the source.
+    amplitude : float
+        Σ_SFR for Σ_gas = 1 M☉ pc⁻² [M☉ yr⁻¹ kpc⁻²]; (2.5 ± 0.7)e-4 in the source.
 
     Returns
     -------
-    float ya da ndarray
-        Yıldız oluşum hızı yüzey yoğunluğu [M☉ yıl⁻¹ kpc⁻²].
+    float or ndarray
+        Star formation rate surface density [M☉ yr⁻¹ kpc⁻²].
 
     References
     ----------
-    [Kennicutt1998] Denk. 4; [McKee2007] eq:ks.
+    [Kennicutt1998] Eq. 4; [McKee2007] eq:ks.
 
     Validity
     --------
-    Kaynak, gaz bakımından fakir spiral disklerden en parlak yıldız patlaması
-    çekirdeklerine kadar tek güç yasasının küresel hızı iyi temsil ettiğini söyler.
-    Tek bir yıldız oluşum bölgesi için değil, gökada ölçeğinde ortalama içindir.
+    The source states that a single power law represents the global rate well, from
+    gas-poor spiral disks to the brightest starburst nuclei.
+    It applies to galaxy-scale averages, not to a single star-forming region.
 
     Verification
     ------------
-    tests/unit/test_star_formation.py: A ve N'nin geri kazanılması; ölçekleme sınaması.
+    tests/unit/test_star_formation.py: recovery of A and N; scaling check.
     """
-    (s,) = _positive(gaz_yuzey_yogunlugu=gas_surface_density_msun_pc2)
+    (s,) = _positive(gas_surface_density=gas_surface_density_msun_pc2)
     if not (amplitude > 0 and index > 0):
-        raise ValueError("genlik ve indis pozitif olmalı")
+        raise ValueError("amplitude and index must be positive")
     return amplitude * s**index
 
 
 @source(
     "Kennicutt1998",
-    where="Denk. 7 (metindeki sıra; 'equation (7)' olarak anılır)",
+    where="Eq. 7 (order in the text; referred to as 'equation (7)')",
     status="read",
-    note="Kaynak Σ_SFR ≃ 0,017 Σ_gaz Ω_gaz yazar; Ω_gaz diskin gaz dönme hızıdır. "
-    "McKee2007 TeX etiketi eq:ks aynı katsayıyı aktarır",
+    note="The source writes Σ_SFR ≃ 0.017 Σ_gas Ω_gas; Ω_gas is the gas rotation rate of the disk. "
+    "McKee2007 TeX label eq:ks quotes the same coefficient",
 )
-@source("McKee2007", where="TeX etiketi eq:ks", status="read")
+@source("McKee2007", where="TeX label eq:ks", status="read")
 def kennicutt_orbital_sfr_surface_density(
     gas_surface_density_msun_pc2: ArrayLike, omega_km_s_kpc: ArrayLike, coefficient: float = 0.017
 ) -> Array:
-    """Yörünge zamanlı yıldız oluşum yasasını hesaplar: Σ_SFR = 0,017 Σ_gaz Ω.
+    """Compute the star formation law with the orbital time: Σ_SFR = 0.017 Σ_gas Ω.
 
-    Gaz kütlesinin yörünge başına yaklaşık %10'u (0,017·2π ≈ 0,107) yıldıza döner.
+    About 10 % of the gas mass per orbit (0.017·2π ≈ 0.107) turns into stars.
 
     Parameters
     ----------
-    gaz_yuzey_yogunlugu_gunes_kutlesi_pc2 : float ya da ndarray
-        Gaz yüzey yoğunluğu [M☉ pc⁻²], pozitif.
-    omega_km_s_kpc : float ya da ndarray
-        Gazın açısal dönme hızı Ω [km s⁻¹ kpc⁻¹], pozitif.
-    katsayi : float
-        Boyutsuz verimlilik katsayısı; kaynakta 0,017.
+    gas_surface_density_msun_pc2 : float or ndarray
+        Gas surface density [M☉ pc⁻²], positive.
+    omega_km_s_kpc : float or ndarray
+        Angular rotation rate of the gas Ω [km s⁻¹ kpc⁻¹], positive.
+    coefficient : float
+        Dimensionless efficiency coefficient; 0.017 in the source.
 
     Returns
     -------
-    float ya da ndarray
-        Yıldız oluşum hızı yüzey yoğunluğu [M☉ yıl⁻¹ kpc⁻²].
+    float or ndarray
+        Star formation rate surface density [M☉ yr⁻¹ kpc⁻²].
 
     References
     ----------
-    [Kennicutt1998] Denk. 7; [McKee2007] eq:ks.
+    [Kennicutt1998] Eq. 7; [McKee2007] eq:ks.
 
     Validity
     --------
-    Kaynak, dış kenarda yörünge başına %21'lik verimi, diskin içindeki ortalama
-    yörünge süresi kenarın yaklaşık yarısı olduğundan ≈ %10'a indirir; 0,017 bu
-    yerel biçimin katsayısıdır.
+    The source lowers the efficiency of 21 % per orbit at the outer edge to ≈ 10 %, because the
+    mean orbital period inside the disk is about half that at the edge; 0.017 is the
+    coefficient of this local form.
 
     Verification
     ------------
-    tests/unit/test_star_formation.py: yörünge başına ~%10 verimlilik.
+    tests/unit/test_star_formation.py: ~10 % efficiency per orbit.
     """
-    s, om = _positive(gaz_yuzey_yogunlugu=gas_surface_density_msun_pc2, omega=omega_km_s_kpc)
+    s, om = _positive(gas_surface_density=gas_surface_density_msun_pc2, omega=omega_km_s_kpc)
     if not coefficient > 0:
-        raise ValueError("katsayı pozitif olmalı")
-    om_yil = om * 1e3 / (1e3 * _PC_M) * _YEAR_S  # km s^-1 kpc^-1 -> yıl^-1
-    return coefficient * (s * 1e6) * om_yil
+        raise ValueError("coefficient must be positive")
+    om_yr = om * 1e3 / (1e3 * _PC_M) * _YEAR_S  # km s^-1 kpc^-1 -> yr^-1
+    return coefficient * (s * 1e6) * om_yr
 
 
 @source(
     "Krumholz2015",
-    where="Bölüm 8 (Giant Molecular Clouds), Depletion Time: t_dep = Σ_gaz / Σ̇_*",
+    where="Section 8 (Giant Molecular Clouds), Depletion Time: t_dep = Σ_gas / Σ̇_*",
     status="read",
-    note="McKee2007 aynı niceliği t_{S*} = M_S / Ṁ_* olarak tanımlar (TeX etiketi eq:epsff öncesi)",
+    note="McKee2007 defines the same quantity as t_{S*} = M_S / Ṁ_* (before TeX label eq:epsff)",
 )
-def depletion_time_yr(
-    gas_surface_density_msun_pc2: ArrayLike, sfr_yuzey_yogunlugu_gunes_kutlesi_yil_kpc2: ArrayLike
-) -> Array:
-    """Gaz tüketme zamanını hesaplar: t_dep = Σ_gaz / Σ_SFR.
+def depletion_time_yr(gas_surface_density_msun_pc2: ArrayLike, sfr_surface_density_msun_yr_kpc2: ArrayLike) -> Array:
+    """Compute the gas depletion time: t_dep = Σ_gas / Σ_SFR.
 
     Parameters
     ----------
-    gaz_yuzey_yogunlugu_gunes_kutlesi_pc2 : float ya da ndarray
-        Gaz yüzey yoğunluğu [M☉ pc⁻²], pozitif.
-    sfr_yuzey_yogunlugu_gunes_kutlesi_yil_kpc2 : float ya da ndarray
-        Yıldız oluşum yüzey yoğunluğu [M☉ yıl⁻¹ kpc⁻²], pozitif.
+    gas_surface_density_msun_pc2 : float or ndarray
+        Gas surface density [M☉ pc⁻²], positive.
+    sfr_surface_density_msun_yr_kpc2 : float or ndarray
+        Star formation surface density [M☉ yr⁻¹ kpc⁻²], positive.
 
     Returns
     -------
-    float ya da ndarray
-        Tüketme zamanı [yıl].
+    float or ndarray
+        Depletion time [yr].
 
     References
     ----------
-    [Krumholz2015] Bölüm 8. Kaynak, Samanyolu için ≈ 1 Gyr, yakın gökada
-    molekül gazı için ≈ 2 Gyr tipik değerini verir.
+    [Krumholz2015] Section 8. The source gives typical values of ≈ 1 Gyr for the
+    Milky Way and ≈ 2 Gyr for the molecular gas of nearby galaxies.
 
     Verification
     ------------
-    tests/unit/test_star_formation.py: Kennicutt-Schmidt yasasıyla Σ^{-0,4} ölçeklemesi.
+    tests/unit/test_star_formation.py: Σ^{-0.4} scaling with the Kennicutt-Schmidt law.
     """
     s, sfr = _positive(
-        gaz_yuzey_yogunlugu=gas_surface_density_msun_pc2,
-        sfr_yuzey_yogunlugu=sfr_yuzey_yogunlugu_gunes_kutlesi_yil_kpc2,
+        gas_surface_density=gas_surface_density_msun_pc2,
+        sfr_surface_density=sfr_surface_density_msun_yr_kpc2,
     )
     return s * 1e6 / sfr
 
 
-@source("McKee2007", where="TeX etiketi Qdef", status="read", note="Kaynak sıvı (gaz) diski için π'li biçimi kullanır")
+@source(
+    "McKee2007",
+    where="TeX label Qdef",
+    status="read",
+    note="The source uses the form with π for a fluid (gas) disk",
+)
 def toomre_q_gas(kappa_km_s_kpc: ArrayLike, sound_speed_km_s: ArrayLike, surface_density_msun_pc2: ArrayLike) -> Array:
-    """Gaz diski için Toomre parametresini hesaplar: Q = κ c_s / (π G Σ).
+    """Compute the Toomre parameter for a gas disk: Q = κ c_s / (π G Σ).
 
     Parameters
     ----------
-    kappa_km_s_kpc : float ya da ndarray
-        Epiciklik frekans κ [km s⁻¹ kpc⁻¹], pozitif.
-    ses_hizi_km_s : float ya da ndarray
-        Gazın ortalama ses hızı (ya da hız dağılımı) [km s⁻¹], pozitif.
-    yuzey_yogunlugu_gunes_kutlesi_pc2 : float ya da ndarray
-        Gaz yüzey yoğunluğu [M☉ pc⁻²], pozitif.
+    kappa_km_s_kpc : float or ndarray
+        Epicyclic frequency κ [km s⁻¹ kpc⁻¹], positive.
+    sound_speed_km_s : float or ndarray
+        Mean sound speed (or velocity dispersion) of the gas [km s⁻¹], positive.
+    surface_density_msun_pc2 : float or ndarray
+        Gas surface density [M☉ pc⁻²], positive.
 
     Returns
     -------
-    float ya da ndarray
-        Boyutsuz Q. Kaynak, gerçekçi kalınlıklı modellerde bağlı bulutların
-        Q < Q_kr ≈ 1,5 iken oluştuğunu aktarır.
+    float or ndarray
+        Dimensionless Q. The source reports that in models with realistic thickness, bound
+        clouds form when Q < Q_cr ≈ 1.5.
 
     References
     ----------
@@ -213,37 +216,39 @@ def toomre_q_gas(kappa_km_s_kpc: ArrayLike, sound_speed_km_s: ArrayLike, surface
 
     Validity
     --------
-    Tek bileşenli, sıvı, ince disk; kalınlık, manyetik alan ve yıldız bileşeni ihmal edilir.
+    One-component, fluid, thin disk; thickness, magnetic field, and the stellar component are neglected.
 
     Verification
     ------------
-    tests/unit/test_star_formation.py: c_s = 7 km/s, κ = 36 km/s/kpc, Σ = 13 M☉/pc² için Q = 1,4.
+    tests/unit/test_star_formation.py: Q = 1.4 for c_s = 7 km/s, κ = 36 km/s/kpc, Σ = 13 M☉/pc².
     """
-    kappa, cs, s = _positive(kappa=kappa_km_s_kpc, ses_hizi=sound_speed_km_s, yuzey_yogunlugu=surface_density_msun_pc2)
+    kappa, cs, s = _positive(
+        kappa=kappa_km_s_kpc, sound_speed=sound_speed_km_s, surface_density=surface_density_msun_pc2
+    )
     kappa_si = kappa * 1e3 / (1e3 * _PC_M)  # s^-1
     cs_si = cs * 1e3
     s_si = s * _SOLAR_MASS_KG / _PC_M**2
     return kappa_si * cs_si / (np.pi * GRAVITATIONAL_CONSTANT.value * s_si)
 
 
-@source("McKee2007", where="TeX etiketi MJ2D (MJ2Ddef)", status="read")
+@source("McKee2007", where="TeX label MJ2D (MJ2Ddef)", status="read")
 def two_dimensional_jeans_mass_msun(sound_speed_km_s: ArrayLike, surface_density_msun_pc2: ArrayLike) -> Array:
-    """İki boyutlu Jeans kütlesini hesaplar: M_J,2D = c_s⁴ / (G² Σ).
+    """Compute the two-dimensional Jeans mass: M_J,2D = c_s⁴ / (G² Σ).
 
-    Düzgün yüzey yoğunluklu gaz disklerinde kütleçekimiyle oluşan bulutların
-    kütlesi, kaynağa göre bunun birkaç ila on katıdır.
+    According to the source, the mass of clouds formed by gravity in gas disks
+    of uniform surface density is a few to ten times this value.
 
     Parameters
     ----------
-    ses_hizi_km_s : float ya da ndarray
-        Gazın ortalama ses hızı [km s⁻¹], pozitif.
-    yuzey_yogunlugu_gunes_kutlesi_pc2 : float ya da ndarray
-        Gaz yüzey yoğunluğu [M☉ pc⁻²], pozitif.
+    sound_speed_km_s : float or ndarray
+        Mean sound speed of the gas [km s⁻¹], positive.
+    surface_density_msun_pc2 : float or ndarray
+        Gas surface density [M☉ pc⁻²], positive.
 
     Returns
     -------
-    float ya da ndarray
-        Kütle [M☉].
+    float or ndarray
+        Mass [M☉].
 
     References
     ----------
@@ -251,43 +256,43 @@ def two_dimensional_jeans_mass_msun(sound_speed_km_s: ArrayLike, surface_density
 
     Validity
     --------
-    Kaynaktaki tanım; disk kalınlığı ve alan etkileri katsayıyı değiştirir.
+    Definition in the source; disk thickness and field effects change the coefficient.
 
     Verification
     ------------
-    tests/unit/test_star_formation.py: c_s = 7 km/s, Σ = 13 M☉/pc² için 1e7 M☉.
+    tests/unit/test_star_formation.py: 1e7 M☉ for c_s = 7 km/s, Σ = 13 M☉/pc².
     """
-    cs, s = _positive(ses_hizi=sound_speed_km_s, yuzey_yogunlugu=surface_density_msun_pc2)
+    cs, s = _positive(sound_speed=sound_speed_km_s, surface_density=surface_density_msun_pc2)
     s_si = s * _SOLAR_MASS_KG / _PC_M**2
     return (cs * 1e3) ** 4 / (GRAVITATIONAL_CONSTANT.value**2 * s_si) / _SOLAR_MASS_KG
 
 
-@source("McKee2007", where="TeX etiketi SFR-ff", status="read")
+@source("McKee2007", where="TeX label SFR-ff", status="read")
 def free_fall_sfr_surface_density(
     gas_surface_density_msun_pc2: ArrayLike,
     free_fall_time_yr: ArrayLike,
     ff_efficiency: float = 0.01,
     cloud_gas_fraction: float = 1.0,
 ) -> Array:
-    """Yıldız oluşum hızı yüzey yoğunluğunu bulut serbest düşme zamanından hesaplar.
+    """Compute the star formation rate surface density from the cloud free-fall time.
 
-    Σ_SFR = ε_ff,GMC Σ_gaz f_GMC / t_ff,GMC.
+    Σ_SFR = ε_ff,GMC Σ_gas f_GMC / t_ff,GMC.
 
     Parameters
     ----------
-    gaz_yuzey_yogunlugu_gunes_kutlesi_pc2 : float ya da ndarray
-        Büyük bir bulut topluluğu üzerinden ortalanmış gaz yüzey yoğunluğu [M☉ pc⁻²], pozitif.
-    serbest_dusme_zamani_yil : float ya da ndarray
-        Dev moleküler bulutların ortalama yoğunluğundan t_ff [yıl], pozitif.
-    ff_verimliligi : float
-        ε_ff,GMC, [0, 1]; gözlenen tipik değer ≈ 0,01.
-    bulut_gazi_orani : float
-        Gazın bulutlarda bulunan kesri f_GMC, (0, 1].
+    gas_surface_density_msun_pc2 : float or ndarray
+        Gas surface density averaged over a large population of clouds [M☉ pc⁻²], positive.
+    free_fall_time_yr : float or ndarray
+        t_ff from the mean density of giant molecular clouds [yr], positive.
+    ff_efficiency : float
+        ε_ff,GMC, [0, 1]; typical observed value ≈ 0.01.
+    cloud_gas_fraction : float
+        Fraction f_GMC of the gas that is in clouds, (0, 1].
 
     Returns
     -------
-    float ya da ndarray
-        Yıldız oluşum hızı yüzey yoğunluğu [M☉ yıl⁻¹ kpc⁻²].
+    float or ndarray
+        Star formation rate surface density [M☉ yr⁻¹ kpc⁻²].
 
     References
     ----------
@@ -295,47 +300,47 @@ def free_fall_sfr_surface_density(
 
     Validity
     --------
-    Yüzey yoğunluğu bir bulut topluluğunun ortalamasıdır; tek bulutun hızı çok değişkendir.
+    The surface density is an average over a population of clouds; the rate of a single cloud varies widely.
 
     Verification
     ------------
-    tests/unit/test_star_formation.py: ε_ff ve f_GMC ile doğrusal ölçekleme; t_ff^-1 ile ters orantı.
+    tests/unit/test_star_formation.py: linear scaling with ε_ff and f_GMC; inverse proportion to t_ff.
     """
-    s, tff = _positive(gaz_yuzey_yogunlugu=gas_surface_density_msun_pc2, serbest_dusme_zamani=free_fall_time_yr)
+    s, tff = _positive(gas_surface_density=gas_surface_density_msun_pc2, free_fall_time=free_fall_time_yr)
     if not 0.0 <= ff_efficiency <= 1.0:
-        raise ValueError("ε_ff [0, 1] aralığında olmalı")
+        raise ValueError("ε_ff must be in the range [0, 1]")
     if not 0.0 < cloud_gas_fraction <= 1.0:
-        raise ValueError("f_GMC (0, 1] aralığında olmalı")
+        raise ValueError("f_GMC must be in the range (0, 1]")
     return ff_efficiency * (s * 1e6) * cloud_gas_fraction / tff
 
 
 @source(
     "McKee2007",
-    where="TeX etiketi SFR-lc",
+    where="TeX label SFR-lc",
     status="read",
-    note="Kaynak, Samanyolu'nda gözlenen ortalama ε_GMC ≈ 0,05 verir (t_GMC/t_ff ≈ 5)",
+    note="The source gives a mean observed ε_GMC ≈ 0.05 for the Milky Way (t_GMC/t_ff ≈ 5)",
 )
 def life_cycle_sfr_surface_density(
     gas_surface_density_msun_pc2: ArrayLike, cloud_lifetime_efficiency: float, life_cycle_time_yr: ArrayLike
 ) -> Array:
-    """Yıldız oluşum hızı yüzey yoğunluğunu gazın yaşam döngüsü süresinden hesaplar.
+    """Compute the star formation rate surface density from the life cycle time of the gas.
 
-    Σ_SFR = ε_GMC Σ_gaz / t_lc; burada t_lc = t_yayılık + t_GMC gazın bulutlara
-    dönüşüp yıldız oluşturarak dağılmasına kadar geçen süredir.
+    Σ_SFR = ε_GMC Σ_gas / t_lc; here t_lc = t_diffuse + t_GMC is the time from the
+    gas turning into clouds until it is dispersed after forming stars.
 
     Parameters
     ----------
-    gaz_yuzey_yogunlugu_gunes_kutlesi_pc2 : float ya da ndarray
-        Gaz yüzey yoğunluğu [M☉ pc⁻²], pozitif.
-    bulut_omru_verimliligi : float
-        Bulutun ömrü boyunca yıldıza dönüşen kütle oranı ε_GMC, [0, 1].
-    yasam_dongusu_zamani_yil : float ya da ndarray
-        Yaşam döngüsü süresi t_lc [yıl], pozitif.
+    gas_surface_density_msun_pc2 : float or ndarray
+        Gas surface density [M☉ pc⁻²], positive.
+    cloud_lifetime_efficiency : float
+        Fraction ε_GMC of the cloud mass that is converted into stars over the lifetime of the cloud, [0, 1].
+    life_cycle_time_yr : float or ndarray
+        Life cycle time t_lc [yr], positive.
 
     Returns
     -------
-    float ya da ndarray
-        Yıldız oluşum hızı yüzey yoğunluğu [M☉ yıl⁻¹ kpc⁻²].
+    float or ndarray
+        Star formation rate surface density [M☉ yr⁻¹ kpc⁻²].
 
     References
     ----------
@@ -343,59 +348,59 @@ def life_cycle_sfr_surface_density(
 
     Validity
     --------
-    Kararlı hâl (oluşum ve yıkım hızları eşit) varsayımı.
+    Assumes a steady state (formation and destruction rates are equal).
 
     Verification
     ------------
-    tests/unit/test_star_formation.py: ε_GMC ve Σ_gaz ile doğrusal, t_lc ile ters orantılı.
+    tests/unit/test_star_formation.py: linear in ε_GMC and Σ_gas, inversely proportional to t_lc.
     """
-    s, tlc = _positive(gaz_yuzey_yogunlugu=gas_surface_density_msun_pc2, yasam_dongusu=life_cycle_time_yr)
+    s, tlc = _positive(gas_surface_density=gas_surface_density_msun_pc2, life_cycle=life_cycle_time_yr)
     if not 0.0 <= cloud_lifetime_efficiency <= 1.0:
-        raise ValueError("ε_GMC [0, 1] aralığında olmalı")
+        raise ValueError("ε_GMC must be in the range [0, 1]")
     return cloud_lifetime_efficiency * (s * 1e6) / tlc
 
 
 @source(
     "Kennicutt2012",
-    where="Tablo 1 (TeX etiketi sfrequations) ve 'An Updated Compendium of Integrated SFR Calibrations' alt bölümündeki log SFR = log L_x − log C_x denklemi",
+    where="Table 1 (TeX label sfrequations) and the equation log SFR = log L_x − log C_x in the subsection 'An Updated Compendium of Integrated SFR Calibrations'",
     status="read",
-    note="Kroupa IMF (Kroupa ve Weidner 2003), Starburst99, güneş metal bolluğu. IR bantları sürekli yıldız oluşumu "
-    "(0-100 Myr) ve tam sönümleme için; Hα için K98'e göre 0,68, TIR için 0,86 çarpanı. "
-    "Birimler: FUV, NUV, Hα, TIR, 24 µm, 70 µm, 2-10 keV için erg/s; 1,4 GHz için erg/s/Hz",
+    note="Kroupa IMF (Kroupa and Weidner 2003), Starburst99, solar metallicity. IR bands are for continuous star formation "
+    "(0-100 Myr) and full attenuation; factor of 0.68 for Hα and 0.86 for TIR relative to K98. "
+    "Units: erg/s for FUV, NUV, Hα, TIR, 24 µm, 70 µm, 2-10 keV; erg/s/Hz for 1.4 GHz",
 )
 def sfr_calibration_msun_yr(luminosity_w: ArrayLike, band: str) -> Array:
-    """Işınım gücünden yıldız oluşum hızını hesaplar: log SFR = log L_x − log C_x.
+    """Compute the star formation rate from luminosity: log SFR = log L_x − log C_x.
 
     Parameters
     ----------
-    isinim_gucu_w : float ya da ndarray
-        Işınım gücü [W] (1,4 GHz bandı için W/Hz), pozitif. Kaynağın cgs
-        birimlerine 1 erg/s = 10⁻⁷ W ile dönüştürülür.
-    bant : str
-        "FUV", "NUV", "Halfa", "TIR", "24um", "70um", "1.4GHz" ya da "2-10keV".
-        FUV ve NUV için L_x = ν L_ν, TIR için 3-1100 µm integrali kullanılır.
+    luminosity_w : float or ndarray
+        Luminosity [W] (W/Hz for the 1.4 GHz band), positive. Converted to the cgs
+        units of the source with 1 erg/s = 10⁻⁷ W.
+    band : str
+        "FUV", "NUV", "Halpha", "TIR", "24um", "70um", "1.4GHz", or "2-10keV".
+        L_x = ν L_ν for FUV and NUV; the 3-1100 µm integral is used for TIR.
 
     Returns
     -------
-    float ya da ndarray
-        Yıldız oluşum hızı [M☉ yıl⁻¹].
+    float or ndarray
+        Star formation rate [M☉ yr⁻¹].
 
     References
     ----------
-    [Kennicutt2012] Tablo 1.
+    [Kennicutt2012] Table 1.
 
     Validity
     --------
-    Bütün katsayılar güneş metal bolluğu içindir ve metal bolluğuna duyarlıdır;
-    IR bantları sönümlemenin tam olduğu yıldız patlaması sınırındadır ve sönük
-    kaynaklarda kopar. Her bandın yaş aralığı farklıdır (Tablo 1, ikinci sütun).
+    All coefficients are for solar metallicity and are sensitive to metallicity;
+    the IR bands are at the starburst limit where attenuation is complete and
+    they break down for faint sources. The age range differs for each band (Table 1, second column).
 
     Verification
     ------------
-    tests/unit/test_star_formation.py: Tablo 1 değerleriyle; Hα için SFR = L / 10^41,27.
+    tests/unit/test_star_formation.py: with the Table 1 values; SFR = L / 10^41.27 for Hα.
     """
     if band not in _LOG_C:
-        raise ValueError(f"bilinmeyen bant {band!r}; geçerli: {sorted(_LOG_C)}")
-    (l_w,) = _positive(isinim_gucu=luminosity_w)
+        raise ValueError(f"unknown band {band!r}; valid: {sorted(_LOG_C)}")
+    (l_w,) = _positive(luminosity=luminosity_w)
     l_erg = l_w * 1e7
     return l_erg / 10.0 ** _LOG_C[band]

@@ -1,65 +1,65 @@
-# Plan klasörü
+# Plan folder
 
-Gökbilim ve astrofizik hesap kitaplığının (`kozmos`) planı. Hazırlanma tarihi 25 Kasım 2026. Kitaplığın ilk sürümü aynı gün yazılmıştır; uygulanan fonksiyonların güncel listesi [DURUM.md](DURUM.md) dosyasındadır.
+The plan of the astronomy and astrophysics calculation library (`kozmos`). Prepared on 25 November 2026. The first version of the library was written the same day; the current list of implemented functions is in [STATUS.md](STATUS.md).
 
-## Okuma sırası
+## Reading order
 
-1. [01_vizyon_ve_kapsam.md](01_vizyon_ve_kapsam.md): amaç, kapsam, açık kararlar.
-2. [02_saha_arastirmasi/](02_saha_arastirmasi/): var olan yazılım, veri ve güncel durum.
-   - [01_yazilim_ekosistemi.md](02_saha_arastirmasi/01_yazilim_ekosistemi.md): alanlara göre kütüphaneler, sürümleri ve projedeki rolleri
-   - [02_hubble_ve_kozmoloji_verisi.md](02_saha_arastirmasi/02_hubble_ve_kozmoloji_verisi.md): Pantheon+SH0ES veri sürümü, diğer veri setleri, `H0` ölçümlerinin durumu
-   - [03_veri_arsivleri.md](02_saha_arastirmasi/03_veri_arsivleri.md): arşivler, erişim protokolleri, IVOA standartları
-   - [04_arastirmanin_sinirlari.md](02_saha_arastirmasi/04_arastirmanin_sinirlari.md): hangi bilginin nasıl elde edildiği ve ne kadar güvenilir olduğu
-3. [03_matematik/](03_matematik/)
-   - [01_kuresel_astronomi_ve_donusumler.md](03_matematik/01_kuresel_astronomi_ve_donusumler.md)
-   - [02_zaman_olcekleri.md](03_matematik/02_zaman_olcekleri.md)
-   - [03_sayisal_yontemler.md](03_matematik/03_sayisal_yontemler.md)
-   - [04_istatistik_ve_cikarim.md](03_matematik/04_istatistik_ve_cikarim.md)
-   - [05_goruntu_ve_sinyal_isleme.md](03_matematik/05_goruntu_ve_sinyal_isleme.md)
-4. [04_fizik/](04_fizik/)
-   - [01_isinim_ve_fotometri.md](04_fizik/01_isinim_ve_fotometri.md)
-   - [02_yorunge_ve_gok_mekanigi.md](04_fizik/02_yorunge_ve_gok_mekanigi.md)
-   - [03_yildiz_astrofizigi.md](04_fizik/03_yildiz_astrofizigi.md)
-   - [04_gokadalar_ve_dinamik.md](04_fizik/04_gokadalar_ve_dinamik.md)
-   - [05_kozmoloji.md](04_fizik/05_kozmoloji.md)
-   - [06_dedektor_ve_atmosfer.md](04_fizik/06_dedektor_ve_atmosfer.md)
-   - [07_gorelilik_ve_yuksek_enerji.md](04_fizik/07_gorelilik_ve_yuksek_enerji.md)
-   - [08_kara_delik_yildiz_ve_yildiz_olusumu.md](04_fizik/08_kara_delik_yildiz_ve_yildiz_olusumu.md): uygulanan üç fizik modülü ve kaynak okumasında bulunanlar
-5. [05_veri_bilimi/](05_veri_bilimi/)
-   - [01_veri_erisimi_ve_formatlar.md](05_veri_bilimi/01_veri_erisimi_ve_formatlar.md)
-   - [02_goruntu_indirgeme_hatti.md](05_veri_bilimi/02_goruntu_indirgeme_hatti.md)
-   - [03_fotometri_astrometri_tayf.md](05_veri_bilimi/03_fotometri_astrometri_tayf.md)
-   - [04_zaman_serisi.md](05_veri_bilimi/04_zaman_serisi.md)
-   - [05_veri_yonetimi_ve_tekrarlanabilirlik.md](05_veri_bilimi/05_veri_yonetimi_ve_tekrarlanabilirlik.md)
-   - [06_optik_ve_kizilotesi_gozlem.md](05_veri_bilimi/06_optik_ve_kizilotesi_gozlem.md): uygulanan gözlem hattı, servislerin durumu, kızılötesi yapılacaklar
-6. [06_mimari/](06_mimari/)
-   - [01_paket_yapisi.md](06_mimari/01_paket_yapisi.md)
-   - [02_kod_standartlari_ve_kaynak_gosterme.md](06_mimari/02_kod_standartlari_ve_kaynak_gosterme.md)
-   - [03_test_ve_dogrulama.md](06_mimari/03_test_ve_dogrulama.md)
-7. [07_yol_haritasi.md](07_yol_haritasi.md): aşamalar ve kabul ölçütleri.
-8. [08_ornek_projects/](08_ornek_projects/)
-   - [01_hubble_diyagrami.md](08_ornek_projects/01_hubble_diyagrami.md)
-   - [02_diger_projects.md](08_ornek_projects/02_diger_projects.md)
-9. [09_islev_envanteri.md](09_islev_envanteri.md): modül modül yazılacak fonksiyonlar, birimleri ve kaynakları.
-10. [DURUM.md](DURUM.md): uygulanan fonksiyonlar, sabitler ve kaynak teyit durumu (kütükten üretilir).
-11. [bibliography/](../bibliography/): `kaynaklar.bib`, `paketler.txt`, doğrulama betiği ve kaydı.
+1. [01_vision_and_scope.md](01_vision_and_scope.md): purpose, scope, open decisions.
+2. [02_field_survey/](02_field_survey/): existing software, data and current state.
+   - [01_software_ecosystem.md](02_field_survey/01_software_ecosystem.md): libraries by field, their versions and their roles in the project
+   - [02_hubble_and_cosmology_data.md](02_field_survey/02_hubble_and_cosmology_data.md): the Pantheon+SH0ES data release, other datasets, the state of `H0` measurements
+   - [03_data_archives.md](02_field_survey/03_data_archives.md): archives, access protocols, IVOA standards
+   - [04_limits_of_the_survey.md](02_field_survey/04_limits_of_the_survey.md): how each piece of information was obtained and how reliable it is
+3. [03_mathematics/](03_mathematics/)
+   - [01_spherical_astronomy_and_transforms.md](03_mathematics/01_spherical_astronomy_and_transforms.md)
+   - [02_time_scales.md](03_mathematics/02_time_scales.md)
+   - [03_numerical_methods.md](03_mathematics/03_numerical_methods.md)
+   - [04_statistics_and_inference.md](03_mathematics/04_statistics_and_inference.md)
+   - [05_image_and_signal_processing.md](03_mathematics/05_image_and_signal_processing.md)
+4. [04_physics/](04_physics/)
+   - [01_radiation_and_photometry.md](04_physics/01_radiation_and_photometry.md)
+   - [02_orbits_and_celestial_mechanics.md](04_physics/02_orbits_and_celestial_mechanics.md)
+   - [03_stellar_astrophysics.md](04_physics/03_stellar_astrophysics.md)
+   - [04_galaxies_and_dynamics.md](04_physics/04_galaxies_and_dynamics.md)
+   - [05_cosmology.md](04_physics/05_cosmology.md)
+   - [06_detector_and_atmosphere.md](04_physics/06_detector_and_atmosphere.md)
+   - [07_relativity_and_high_energy.md](04_physics/07_relativity_and_high_energy.md)
+   - [08_black_holes_stars_and_star_formation.md](04_physics/08_black_holes_stars_and_star_formation.md): the three implemented physics modules and what was found while reading the sources
+5. [05_data_science/](05_data_science/)
+   - [01_data_access_and_formats.md](05_data_science/01_data_access_and_formats.md)
+   - [02_image_reduction_pipeline.md](05_data_science/02_image_reduction_pipeline.md)
+   - [03_photometry_astrometry_spectroscopy.md](05_data_science/03_photometry_astrometry_spectroscopy.md)
+   - [04_time_series.md](05_data_science/04_time_series.md)
+   - [05_data_management_and_reproducibility.md](05_data_science/05_data_management_and_reproducibility.md)
+   - [06_optical_and_infrared_observing.md](05_data_science/06_optical_and_infrared_observing.md): the implemented observing pipeline, the state of the services, infrared to-do items
+6. [06_architecture/](06_architecture/)
+   - [01_package_layout.md](06_architecture/01_package_layout.md)
+   - [02_code_standards_and_source_citation.md](06_architecture/02_code_standards_and_source_citation.md)
+   - [03_testing_and_verification.md](06_architecture/03_testing_and_verification.md)
+7. [07_roadmap.md](07_roadmap.md): phases and acceptance criteria.
+8. [08_example_projects/](08_example_projects/)
+   - [01_hubble_diagram.md](08_example_projects/01_hubble_diagram.md)
+   - [02_other_projects.md](08_example_projects/02_other_projects.md)
+9. [09_function_inventory.md](09_function_inventory.md): the functions to be written, module by module, with their units and sources.
+10. [STATUS.md](STATUS.md): implemented functions, constants and source verification status (generated from the registry).
+11. [bibliography/](../bibliography/): `references.bib`, `packages.txt`, the verification script and its record.
 
-## Atıf kuralı
+## Citation rule
 
-Köşeli ayraç içindeki anahtarlar (`[Hogg1999]`) `bibliography/references.bib` dosyasındaki girişlere işaret eder. Anahtarın ardından kaynağın içindeki yer gelebilir (`[Meeus1998, Böl. 7]`).
+The keys in square brackets (`[Hogg1999]`) point to entries in `bibliography/references.bib`. The key can be followed by the location inside the source (`[Meeus1998, Section 7]`).
 
-## Bilginin güven düzeyi
+## Confidence level of the information
 
-- Künyeler ve paket sürümleri dış kayıtlara karşı sınanmıştır; sonuç [bibliography/VERIFICATION_SUMMARY.md](../bibliography/VERIFICATION_SUMMARY.md) dosyasındadır.
-- Bakım durumu, arşiv sürümü ve güncel ölçüm değerleri bir web taramasından gelir ve figuresde işaretlidir.
-- Plan figuresindeki denklemler, katsayılar ve denklem numaraları hatırlanan bilgidir. Uygulanan fonksiyonlarda durum fonksiyon başına kayıtlıdır: `okundu` işaretli olanların denklemi kod yazılırken kaynağın metninden (arXiv TeX dosyaları, NIST sabit tablosu, ERFA kaynak kodu) alınmıştır; `bekliyor` işaretli olanların kaynağı henüz açılmamıştır.
+- The bibliographic entries and the package versions were tested against external records; the result is in [bibliography/VERIFICATION_SUMMARY.md](../bibliography/VERIFICATION_SUMMARY.md).
+- Maintenance status, archive versions and current measured values come from a web survey and are marked as such in the documents.
+- The equations, coefficients and equation numbers in the plan documents are information recalled from memory. For implemented functions, the status is recorded per function: for those marked `read`, the equation was taken from the text of the source while the code was written (arXiv TeX files, the NIST constants table, ERFA source code); for those marked `pending`, the source has not yet been opened.
 
-Ayrıntı: [02_saha_arastirmasi/04_arastirmanin_sinirlari.md](02_saha_arastirmasi/04_arastirmanin_sinirlari.md).
+Details: [02_field_survey/04_limits_of_the_survey.md](02_field_survey/04_limits_of_the_survey.md).
 
-## Doğrulamayı yeniden koşmak
+## Re-running the verification
 
 ```
 python bibliography/verify.py
 ```
 
-Betik künyeleri Crossref, DataCite, arXiv ve Open Library kayıtlarıyla, paket sürümlerini PyPI ile karşılaştırır ve plan figuresiyle kaynak kodundaki her atıf anahtarının kaynakçada tanımlı olduğunu denetler. Çıkış kodu sıfır değilse uyuşmayan künye ya da tanımsız anahtar vardır.
+The script compares the bibliographic entries with the Crossref, DataCite, arXiv and Open Library records and the package versions with PyPI, and checks that every citation key in the plan documents and the source code is defined in the bibliography. If the exit code is not zero, there is a mismatched entry or an undefined key.

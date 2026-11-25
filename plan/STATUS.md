@@ -1,408 +1,414 @@
-# Uygulama durumu
+# Implementation status
 
-Bu dosya `python bibliography/registry_report.py` ile kaynak kütüğünden üretilir; elle düzenlenmez.
+This file is generated from the source registry by `python bibliography/registry_report.py`; do not edit it by hand.
 
-- Kaynağa bağlı açık fonksiyon: 230
-- Bütün kayıtları kaynak metninden okunmuş fonksiyon: 230
-- Kaynak kaydı: 270 (okundu: 270, bekliyor: 0)
-- Kaynaklı sabit: 35 (teyit bekleyen: 0)
-- Test fonksiyonu: 305 (parametreli ve özellik testleri tek sayılır)
-- Kaynak kuralından muaf altyapı fonksiyonu: 4
+- Public functions tied to a source: 230
+- Functions whose records were all read from the source text: 230
+- Source records: 270 (read: 270, pending: 0)
+- Constants with a source: 35 (awaiting verification: 0)
+- Test functions: 306 (parametrized and property tests count as one)
+- Infrastructure functions exempt from the source rule: 4
 
-`okundu`: denklem kod yazılırken kaynağın metninden okundu. `bekliyor`: denklem hatırlanan biçimiyle
-yazıldı, testlerle sınandı, ama kaynağın metni henüz açılmadı.
+`read`: the equation was read from the text of the source while the code was written. `pending`: the equation
+was written as remembered and tested, but the text of the source has not been opened yet.
 
-## Fonksiyonlar
+## Functions
 
 ### `kozmos.archives.gaia`
 
-- `koni_sorgusu`: [ADQL2023] Bölüm 4.2.11 (CIRCLE), 4.2.12 (CONTAINS), 4.2.18 (POINT) (okundu); [IRSA2026] TAP_SCHEMA.columns, table_name = 'gaia_dr3_source' (okundu)
-- `mutlak_kadir`: [Babusiaux2018] Bölüm 2: M_G = G + 5 + 5 log10(ϖ/1000), ϖ miliyay saniyesi (okundu)
-- `yakin_yildizlar`: [IRSA2026] TAP_SCHEMA.columns, table_name = 'gaia_dr3_source' (okundu); [Babusiaux2018] Ek B: arşiv sorgusu ve süzgeçler; Bölüm 2 (okundu)
+- `absolute_magnitude`: [Babusiaux2018] Section 2: M_G = G + 5 + 5 log10(ϖ/1000), ϖ in milliarcseconds (read)
+- `cone_search`: [ADQL2023] Section 4.2.11 (CIRCLE), 4.2.12 (CONTAINS), 4.2.18 (POINT) (read); [IRSA2026] TAP_SCHEMA.columns, table_name = 'gaia_dr3_source' (read)
+- `nearby_stars`: [IRSA2026] TAP_SCHEMA.columns, table_name = 'gaia_dr3_source' (read); [Babusiaux2018] Appendix B: archive query and filters; Section 2 (read)
 
 ### `kozmos.archives.heasarc`
 
-- `boru_metni_oku`: [TAP2019] Bölüm 2.7.3 (FORMAT) (okundu)
-- `parlak_yildizlar`: [HoffleitWarren1991] HEASARC bsc5p tablo sayfası: Overview, References, Provenance (okundu)
-
-### `kozmos.archives.twomass`
-
-- `nokta_kaynaklari`: [ADQL2023] Bölüm 4.2.11 (CIRCLE), 4.2.12 (CONTAINS), 4.2.18 (POINT) (okundu); [IRSA2026] TAP_SCHEMA.columns, table_name = 'fp_psc' (okundu)
+- `bright_stars`: [HoffleitWarren1991] HEASARC bsc5p table page: Overview, References, Provenance (read)
+- `read_pipe_text`: [TAP2019] Section 2.7.3 (FORMAT) (read)
 
 ### `kozmos.archives.pantheon`
 
-- `indir`: [Scolnic2022] veri deposu, 4_DISTANCES_AND_COVAR (okundu)
-- `kovaryans_oku`: [Brout2022] veri deposu README: .cov biçimi (okundu)
-- `tablo_oku`: [Brout2022] veri deposu README: sütun tanımları (okundu)
-- `yukle`: [Brout2022] veri deposu README (okundu)
+- `download`: [Scolnic2022] data repository, 4_DISTANCES_AND_COVAR (read)
+- `load`: [Brout2022] data repository README (read)
+- `read_covariance`: [Brout2022] data repository README: .cov format (read)
+- `read_table`: [Brout2022] data repository README: column definitions (read)
 
 ### `kozmos.archives.skyview`
 
-- `kesit_indir`: [SkyView2026] Batch Page: runquery.pl örnekleri (Position, Survey, Pixels, Size, Return) (okundu)
+- `download_cutout`: [SkyView2026] Batch Page: runquery.pl examples (Position, Survey, Pixels, Size, Return) (read)
 
 ### `kozmos.archives.tap`
 
-- `csv_oku`: [TAP2019] Bölüm 2.7.3 (FORMAT): text/csv çıktısı (okundu)
-- `sorgula`: [TAP2019] Bölüm 2.1 (TAP-sync), 2.7.1 (LANG), 2.7.2 (QUERY), 2.7.3 (FORMAT) (okundu)
+- `query`: [TAP2019] Section 2.1 (TAP-sync), 2.7.1 (LANG), 2.7.2 (QUERY), 2.7.3 (FORMAT) (read)
+- `read_csv`: [TAP2019] Section 2.7.3 (FORMAT): text/csv output (read)
 
-### `kozmos.astrometry.solve`
+### `kozmos.archives.twomass`
 
-- `kaydirma_bul`: [CalabrettaGreisen2002] TeX etiketi eq:px: CRPIX referans noktanın piksel konumudur (okundu)
-- `wcs_iyilestir`: [CalabrettaGreisen2002] TeX etiketi eq:px (okundu)
-- `wcs_uydur`: [CalabrettaGreisen2002] TeX etiketi eq:px (doğrusal piksel → ara koordinat bağıntısı) (okundu)
+- `point_sources`: [ADQL2023] Section 4.2.11 (CIRCLE), 4.2.12 (CONTAINS), 4.2.18 (POINT) (read); [IRSA2026] TAP_SCHEMA.columns, table_name = 'fp_psc' (read)
 
 ### `kozmos.astrometry.matching`
 
-- `capraz_esle`: [ERFA2023] sepp.c, s2c.c (okundu)
+- `cross_match`: [ERFA2023] sepp.c, s2c.c (read)
+
+### `kozmos.astrometry.solve`
+
+- `find_shift`: [CalabrettaGreisen2002] TeX label eq:px: CRPIX is the pixel position of the reference point (read)
+- `fit_wcs`: [CalabrettaGreisen2002] TeX label eq:px (linear pixel → intermediate coordinate relation) (read)
+- `refine_wcs`: [CalabrettaGreisen2002] TeX label eq:px (read)
 
 ### `kozmos.astrometry.triangles`
 
-- `kor_cozum`: [Groth1986] Bölüm II (algoritma) ve Bölüm III (katalog ile plak listesinin eşlenmesi örneği) (okundu)
-- `ucgen_esle`: [Groth1986] Bölüm II.c (üçgen eşleme, yön), II.d (yanlış eşleşmelerin ayıklanması), II.e (oylama ve atama) (okundu)
-- `ucgenleri_kur`: [Groth1986] Bölüm II.b: köşe sıralaması; Denk. 1-3 (R) ve Denk. 5 (C); oran sınırı (okundu)
+- `blind_solve`: [Groth1986] Section II (algorithm) and Section III (example of matching a catalog and a plate list) (read)
+- `build_triangles`: [Groth1986] Section II.b: vertex ordering; Eq. 1-3 (R) and Eq. 5 (C); ratio limit (read)
+- `match_triangles`: [Groth1986] Section II.c (triangle matching, orientation), II.d (removing false matches), II.e (voting and assignment) (read)
 
 ### `kozmos.astrometry.wcs`
 
-- `basliktan_wcs`: [CalabrettaGreisen2002] TeX etiketi eq:px ve LONPOLE anahtarının tanımı (okundu)
-- `gok_den_piksel`: [CalabrettaGreisen2002] TeX etiketleri eq:std2nat, eq:TANRt, eq:azx, eq:azy, eq:px (ters) (okundu)
-- `piksel_den_gok`: [CalabrettaGreisen2002] TeX etiketleri eq:px, eq:azphi, eq:azrt, eq:TANtheta, eq:nat2std (okundu)
-
-### `kozmos.ephemeris.kepler`
-
-- `dis_merkezli_anomali`: [MurrayCorreia2010] TeX etiketi eq37 (Kepler denklemi), eq38-eq39 (Newton-Raphson) (okundu)
-- `gercek_anomali`: [MurrayCorreia2010] TeX etiketi eq17 ve eq33 (okundu)
-- `yorunge_donemi_s`: [MurrayCorreia2010] TeX etiketi eq19 (okundu)
-- `yorunge_hizi_m_s`: [MurrayCorreia2010] TeX etiketi eq30 (okundu)
-
-### `kozmos.photometry.sources`
-
-- `aciklik_fotometrisi`: [Photutils2026] Kullanım kılavuzu: Aperture Photometry, 'subpixel' yöntemi (okundu)
-- `arka_plan_haritasi`: [SExtractorBelge2026] Modeling the background: Background map (okundu)
-- `arka_plan_kestir`: [SExtractorBelge2026] Modeling the background: Background estimation, Denk. 4 (okundu)
-- `kaynak_bul`: [Photutils2026] Kullanım kılavuzu: Image Segmentation ve Source Deblending (okundu)
-
-### `kozmos.visualization.stretch`
-
-- `asinh_ger`: [Lupton2004] Bölüm 2, dipnot: f(x) = asinh(α Q (x − m)) / Q (okundu)
-- `lupton_rgb`: [Lupton2004] Bölüm 2, TeX etiketi EqIntensityStretch (okundu)
-- `yuzdelik_olcekle`: [Lupton2004] Bölüm 2: doğrusal eşleme ve en büyük değer M (okundu)
-
-### `kozmos.observing.detector`
-
-- `ham_kare_uret`: [CraigChambers2026] defter 01-05 'Calibration overview': ham görüntü denklemi (okundu)
-- `sinyal_gurultu_orani`: [Howell1989] Denk. 1 ('CCD equation') (okundu)
-- `yildiz_alani`: [Photutils2026] API: photutils.psf.GaussianPRF, piksel üzerinde integral denklemi (okundu)
-
-### `kozmos.observing.refraction`
-
-- `gozlenen_yukseklik`: [ERFA2023] refco.c: 'dZ = A tan Z + B tan^3 Z', Z gözlenen zenit uzaklığı (okundu)
-- `kirilma_sabitleri`: [ERFA2023] refco.c (okundu)
-
-### `kozmos.observing.planning`
-
-- `gorunurluk`: [ERFA2023] gmst06.c, hd2ae.c, pmat06.c, refco.c (okundu)
-- `meridyen_gecisi_jd`: [ERFA2023] era00.c (dönme hızı), hd2ae.c (okundu)
-- `ufuk_ustu_suresi_saat`: [ERFA2023] hd2ae.c (yükseklik bileşeni) (okundu)
-
-### `kozmos.reduction.sky`
-
-- `dinamik_gokyuzu_cikar`: [Schirmer2013] 'Static and dynamic background models' bölümü: dinamik model (okundu)
-- `duragan_gokyuzu_cikar`: [Schirmer2013] 'Static and dynamic background models' bölümü: durağan model (okundu)
-
-### `kozmos.reduction.calibration`
-
-- `birlestir`: [CraigChambers2026] defter 01-05 'Calibration overview': 'Every image has noise' (okundu)
-- `kare_indirge`: [CraigChambers2026] defter 01-05 'Calibration overview': indirgeme denklemi (okundu)
-- `kazanc_ve_okuma_gurultusu`: [IRAF2026] noao/obsutil/src/doc/findgain.hlp, ALGORITHM (okundu)
-
-### `kozmos.reduction.cosmic_rays`
-
-- `kozmik_isin_bul`: [vanDokkum2001] TeX etiketleri kernel.eq, noise.eq, sigmap.eq ve izleyen denklemler (S′, F, seçim ölçütü) (okundu)
-
-### `kozmos.io.fits`
-
-- `baslik_coz`: [Hierarch2009] FITS kayıtlı kurallar sayfası: 'The HIERARCH Keyword Convention', Description (okundu); [FITS2018] Bölüm 3.3.1 ve 4.1: başlık blokları, anahtar kaydı bileşenleri; END anahtarı (okundu)
-- `fits_oku`: [FITS2018] Tablo 8 (BITPIX), Denk. 3 (BZERO, BSCALE), Bölüm 5 (büyük uçlu bayt sırası), Şekil 1 (eksen sırası) (okundu)
-- `fits_yaz`: [FITS2018] Bölüm 3.3.1, 4.4.1 (zorunlu anahtarlar), Tablo 8, Bölüm 5 (okundu)
-- `hdu_listesi`: [FITS2018] Denk. 1 ve 2 (veri boyutu), Bölüm 3.3-3.4 (HDU sırası), XTENSION anahtarı (okundu)
-
-### `kozmos.radiation.magnitudes`
-
-- `bolometrik_kadirden_isinim_gucu_w`: [Mamajek2015] M_Bol tanımı; L_0 = 3,0128e28 W (okundu)
-- `kara_cisim_akisi`: [CODATA2022] Stefan-Boltzmann constant (okundu)
-- `mutlak_bolometrik_kadir`: [Mamajek2015] M_Bol tanımı; L_0 = 3,0128e28 W (okundu)
-- `planck_dalgaboyu`: [Astropy2022] modeling/physical_models.py, BlackBody.evaluate (okundu)
-- `planck_frekans`: [Astropy2022] modeling/physical_models.py, BlackBody.evaluate (okundu)
-- `uzaklik_modulu_pc`: [Hogg1999] Denk. 25 (okundu)
-- `uzaklik_modulunden_pc`: [Hogg1999] Denk. 25 (okundu)
-
-### `kozmos.radiation.infrared`
-
-- `akidan_vega_kadiri`: [Wright2010] Bölüm 4.4: F_ν° (okundu); [Cohen2003] Tablo 2: F_ν(iso) (okundu)
-- `tepe_dalgaboyu_um`: [CODATA2022] Wien wavelength displacement law constant (okundu)
-- `tepe_sicakligi_k`: [CODATA2022] Wien wavelength displacement law constant (okundu)
-- `vega_ab_farki`: [Wright2010] Bölüm 4.4: F_ν° (okundu); [Cohen2003] Tablo 2: F_ν(iso) (okundu)
-- `vega_kadirinden_aki_jy`: [Wright2010] Bölüm 4.4: F_ν° (okundu); [Cohen2003] Tablo 2: F_ν(iso) (okundu)
-
-### `kozmos.statistics.mcmc`
-
-- `bolunmus_rhat`: [Vehtari2021] Bölüm 3.1: B, W, var⁺ ve R̂ denklemleri (okundu)
-- `gerdirme_carpani`: [ForemanMackey2013] Denk. goodmanprop (g(z) ∝ 1/√z, z ∈ [1/a, a]) (okundu)
-- `oz_ilinti_suresi`: [ForemanMackey2013] Bölüm 3, 'Autocorrelation time': τ_f ve C_f(T) denklemleri (okundu)
-- `rhat_sira_normallestirilmis`: [Vehtari2021] Bölüm 4.1-4.2: sıra normalleştirme ve katlama denklemleri (okundu)
-- `topluluk_ornekle`: [ForemanMackey2013] Denk. proposal, acceptance; Algoritma 3 (paralel gerdirme hamlesi) (okundu)
-
-### `kozmos.statistics.robust`
-
-- `ciftagirlik_konum`: [Astropy2022] stats/biweight.py, biweight_location belge dizgisi (okundu)
-- `ciftagirlik_olcek`: [Astropy2022] stats/biweight.py, biweight_scale belge dizgisi (okundu)
-- `mad_olcek`: [Astropy2022] stats/funcs.py, median_absolute_deviation ve mad_std (okundu)
-- `sigma_kirp`: [Astropy2022] stats/sigma_clipping.py, SigmaClip belge dizgisi (okundu)
-
-### `kozmos.statistics.fitting`
-
-- `dogru_uydur`: [HoggBovyLang2010] TeX etiketi eq:fofx, eq:lsf (okundu)
-- `dogrusal_en_kucuk_kareler`: [HoggBovyLang2010] TeX etiketi eq:lsf ve parametre kovaryansı denklemi (okundu)
-- `ki_kare`: [HoggBovyLang2010] TeX etiketi eq:chisquared (okundu)
-
-### `kozmos.black_holes.basics`
-
-- `bekenstein_hawking_entropisi`: [Page2005] TeX etiketi eq:2, S_bh = S_BH ≡ A/4 (Planck birimleri); A = 16π M² (Schwarzschild, eq:3 sonrası paragraf) (okundu)
-- `birlesmeye_kalan_sure_s`: [Sathyaprakash2009] §'Coalescing binaries' paragrafı, Newton mertebesi cıvıltı süresi τ0 (etiketsiz denklem) (okundu)
-- `cirp_kutlesi_kg`: [Sathyaprakash2009] TeX etiketi eqn:chirpmassdef, 𝓜 = μ^{3/5} M^{2/5} = ν^{3/5} M (okundu)
-- `ergosfer_yaricapi_kerr_rg`: [Abramowicz2013] 'Summary: characteristic radii and frequencies', r_0 (ergosfer; aynı eqnarray, etiketsiz satır) (okundu)
-- `foton_kuresi_yaricapi_m`: [Abramowicz2013] 'Summary: characteristic radii and frequencies' (TeX etiketi schwarzschild-frequencies), x_ph = 3 (okundu)
-- `foton_yorungesi_yaricapi_kerr_rg`: [Abramowicz2013] 'Summary: characteristic radii and frequencies', TeX etiketi photon-radius-kerr (okundu)
-- `golge_acisal_capi_uas`: [EHT2019] §1 R_c = √27 r_g; §7 'Model Comparison and Parameter Estimation' θ_g ≡ GM/(c² D) (okundu)
-- `gw_frekans_turevi_hz_s`: [Sathyaprakash2009] TeX etiketi eqn:circularPM (Ṗ_b, Peters-Mathews 1963'e atfen), f_gw = 2/P_b (okundu)
-- `gw_frekansi_isco_hz`: [Sathyaprakash2009] paragraf 'Waveform polarizations.' sonrası metin: ışınım en düşük mertebede yörünge frekansının iki katında yayılır (okundu); [Abramowicz2013] 'Summary: characteristic radii and frequencies' (TeX etiketi schwarzschild-frequencies), Ω_K² = GM/r³, x_ms = 6 (okundu)
-- `hawking_buharlasma_suresi_kara_cisim_s`: [Page2005] TeX etiketi eq:3 (A, κ) ve §1 (T = κ/2π) (okundu)
-- `hawking_buharlasma_suresi_s`: [Page2005] TeX etiketi eq:15 (okundu)
-- `hawking_kutle_kaybi_hizi_kg_s`: [Page2005] TeX etiketi eq:15 (okundu)
-- `hawking_sicakligi_k`: [Page2005] §1; T = κ/(2π) ve TeX etiketi eq:3 (Schwarzschild: κ = 1/(4M), Planck birimlerinde) (okundu); [Abramowicz2013] §1 (Giriş), Hawking sıcaklığı dipnotu: T_H = ħc³/(8π G M k_B) (okundu)
-- `isco_isinim_verimliligi`: [Reynolds2021] Bölüm 5: Novikov-Thorne diski için η = 1 − e_isco/c² (okundu); [Abramowicz2013] §1 (Giriş), verim tanımı η ≡ L/(Ṁ c²) (okundu)
-- `isco_ozgul_enerji_kerr`: [Bardeen1972] Denk. 2.20: kararlılık koşulu 1 − (E/μ)² ≥ (2/3)(M/r), eşitlik r = r_ms'de (okundu)
-- `isco_yaricapi_kerr_rg`: [Reynolds2021] Bölüm 2: r_isco denklemi ve Z1, Z2 tanımları (okundu); [Abramowicz2013] 'Summary: characteristic radii and frequencies', TeX etiketi stable-radius-kerr (Bardeen vd. formülü) (okundu)
-- `isco_yaricapi_schwarzschild_m`: [Abramowicz2013] 'Summary: characteristic radii and frequencies' (TeX etiketi schwarzschild-frequencies), x_ms = 6 (okundu)
-- `isco_yorunge_frekansi_hz`: [Abramowicz2013] 'Summary: characteristic radii and frequencies', Ω_K² = GM/r³ (TeX etiketi schwarzschild-frequencies), x_ms = 6 (okundu)
-- `kalan_sureden_gw_frekansi_hz`: [Sathyaprakash2009] §'Coalescing binaries' paragrafı, τ0 (etiketsiz denklem); tersi tarafımdan alındı (okundu)
-- `kritik_carpisma_parametresi_m`: [EHT2019] §1 (Giriş), 'foton yakalama yarıçapı' R_c = √27 r_g, sayfa L1 (okundu)
-- `kutleceken_yaricapi_m`: [EHT2019] §1 (Giriş), r_g ≡ GM/c² tanımı, sayfa L1 (okundu)
-- `schwarzschild_yaricapi_m`: [EHT2019] §1 (Giriş), R_S = 2 r_g, sayfa L1 (okundu)
-- `ufuk_acisal_hizi_rad_s`: [Page2005] TeX etiketi eq:3, Ω = 4π a / A (Q = 0) (okundu)
-- `ufuk_yaricapi_kerr_rg`: [Page2005] TeX etiketi eq:3, r_+ (Q = 0) (okundu); [Abramowicz2013] 'Summary: characteristic radii and frequencies', r_H (aynı eqnarray, etiketsiz satır) (okundu)
-- `yercekimsel_kirmiziya_kayma`: [Carroll1997] Bölüm 7, Denk. 7.58-7.61 (okundu)
+- `pixel_to_sky`: [CalabrettaGreisen2002] TeX labels eq:px, eq:azphi, eq:azrt, eq:TANtheta, eq:nat2std (read)
+- `sky_to_pixel`: [CalabrettaGreisen2002] TeX labels eq:std2nat, eq:TANRt, eq:azx, eq:azy, eq:px (inverse) (read)
+- `wcs_from_header`: [CalabrettaGreisen2002] TeX label eq:px and the definition of the LONPOLE keyword (read)
 
 ### `kozmos.black_holes.accretion`
 
-- `bondi_kutle_akisi_kg_s`: [Inayoshi2020] Tablo 3, Ṁ_B ≡ π e^{3/2} ρ G² M² / c_s³ (okundu)
-- `bondi_yaricapi_m`: [Inayoshi2020] §'Inflow from large scales' (R_B ≡ G M / c_s²) ve Tablo 3 (TeX etiketi tab:phys) (okundu)
-- `eddington_isinim_gucu_w`: [Inayoshi2020] §'Growing BHs by Accretion: Is There an Eddington Limit?', L_Edd = 4π c G M / κ_es (okundu)
-- `eddington_kutle_akisi_kg_s`: [Inayoshi2020] §'Growing BHs by Accretion' ve Tablo 3, Ṁ_Edd ≡ L_Edd / (0,1 c²) (dipnotta L_Edd/c² tanımına da değinilir) (okundu)
-- `gelgit_parcalanma_yaricapi_m`: [Komossa2015] §1 (Giriş), gelgit yarıçapı r_t denklemi (etiketsiz): r_t ≃ 7e12 (M/10⁶ M☉)^{1/3} (m*/M☉)^{-1/3} (r*/R☉) cm (okundu)
-- `hills_kutlesi_kg`: [Komossa2015] §1, r_t denklemi ve devamındaki cümle: Güneş türü yıldızlar ≳ 10⁸ M☉'de bütün yutulur, beyaz cüceler ≲ 10⁵ M☉'de parçalanır (okundu)
-- `ince_disk_azami_sicakligi_k`: [Armitage2011] §2 'Accretion Disk Evolution', T_eff profili; azami değer tarafımdan türetildi (okundu)
-- `ince_disk_azami_sicaklik_yaricapi_m`: [Armitage2011] §2 'Accretion Disk Evolution', T_eff profili; azami konum tarafımdan türetildi (okundu)
-- `ince_disk_etkin_sicakligi_k`: [Armitage2011] §2 'Accretion Disk Evolution', T_eff⁴ = 3 G M Ṁ / (8π σ r³) [1 − √(r_in/r)] (TeX etiketi eq:2_nusigma ile aynı eqnarray, ikinci satır) (okundu)
-- `salpeter_zamani_s`: [Inayoshi2020] §'Growing BHs by Accretion', t_grow ≈ 0,45 ε/(1−ε) f_duty^{-1} ln(M/M_tohum) Gyr; §1 t_Edd ≈ 50 Myr (ε = 0,1) (okundu)
-- `yigilma_isinim_gucu_w`: [Abramowicz2013] §1 (Giriş), verim tanımı η ≡ L/(Ṁ c²) (okundu)
+- `accretion_luminosity_w`: [Abramowicz2013] §1 (Introduction), efficiency definition η ≡ L/(Ṁ c²) (read)
+- `bondi_accretion_rate_kg_s`: [Inayoshi2020] Table 3, Ṁ_B ≡ π e^{3/2} ρ G² M² / c_s³ (read)
+- `bondi_radius_m`: [Inayoshi2020] §'Inflow from large scales' (R_B ≡ G M / c_s²) and Table 3 (TeX label tab:phys) (read)
+- `eddington_accretion_rate_kg_s`: [Inayoshi2020] §'Growing BHs by Accretion' and Table 3, Ṁ_Edd ≡ L_Edd / (0.1 c²) (a footnote also mentions the L_Edd/c² definition) (read)
+- `eddington_luminosity_w`: [Inayoshi2020] §'Growing BHs by Accretion: Is There an Eddington Limit?', L_Edd = 4π c G M / κ_es (read)
+- `hills_mass_kg`: [Komossa2015] §1, the r_t equation and the sentence after it: Sun-like stars are swallowed whole above ≳ 10⁸ M☉, white dwarfs are disrupted below ≲ 10⁵ M☉ (read)
+- `salpeter_time_s`: [Inayoshi2020] §'Growing BHs by Accretion', t_grow ≈ 0.45 ε/(1−ε) f_duty^{-1} ln(M/M_seed) Gyr; §1 t_Edd ≈ 50 Myr (ε = 0.1) (read)
+- `thin_disk_effective_temperature_k`: [Armitage2011] §2 'Accretion Disk Evolution', T_eff⁴ = 3 G M Ṁ / (8π σ r³) [1 − √(r_in/r)] (same eqnarray as TeX label eq:2_nusigma, second line) (read)
+- `thin_disk_peak_temperature_k`: [Armitage2011] §2 'Accretion Disk Evolution', T_eff profile; the maximum value was derived by this project (read)
+- `thin_disk_peak_temperature_radius_m`: [Armitage2011] §2 'Accretion Disk Evolution', T_eff profile; the location of the maximum was derived by this project (read)
+- `tidal_disruption_radius_m`: [Komossa2015] §1 (Introduction), tidal radius equation for r_t (no label): r_t ≃ 7e12 (M/10⁶ M☉)^{1/3} (m*/M☉)^{-1/3} (r*/R☉) cm (read)
 
-### `kozmos.coordinates.transforms`
+### `kozmos.black_holes.basics`
 
-- `galaktik_den_icrs`: [ERFA2023] icrs2g.c (okundu)
-- `hava_kutlesi_duzlem_paralel`: [ERFA2023] hd2ae.c (z bileşeni) (okundu)
-- `icrs_den_galaktik`: [ERFA2023] icrs2g.c (okundu)
-- `saat_acisi_den_ufuk`: [ERFA2023] hd2ae.c (okundu)
-- `ufuk_den_saat_acisi`: [ERFA2023] ae2hd.c (okundu)
+- `bekenstein_hawking_entropy`: [Page2005] TeX label eq:2, S_bh = S_BH ≡ A/4 (Planck units); A = 16π M² (Schwarzschild, paragraph after eq:3) (read)
+- `chirp_mass_kg`: [Sathyaprakash2009] TeX label eqn:chirpmassdef, 𝓜 = μ^{3/5} M^{2/5} = ν^{3/5} M (read)
+- `critical_impact_parameter_m`: [EHT2019] §1 (Introduction), 'photon capture radius' R_c = √27 r_g, page L1 (read)
+- `gravitational_radius_m`: [EHT2019] §1 (Introduction), definition r_g ≡ GM/c², page L1 (read)
+- `gravitational_redshift`: [Carroll1997] Section 7, Eq. 7.58-7.61 (read)
+- `gw_frequency_at_isco_hz`: [Sathyaprakash2009] text after the paragraph 'Waveform polarizations.': at lowest order the radiation is emitted at twice the orbital frequency (read); [Abramowicz2013] 'Summary: characteristic radii and frequencies' (TeX label schwarzschild-frequencies), Ω_K² = GM/r³, x_ms = 6 (read)
+- `gw_frequency_derivative_hz_s`: [Sathyaprakash2009] TeX label eqn:circularPM (Ṗ_b, attributed to Peters-Mathews 1963), f_gw = 2/P_b (read)
+- `gw_frequency_from_time_to_merger_hz`: [Sathyaprakash2009] §'Coalescing binaries' paragraph, τ0 (equation without a label); its inverse was taken by this project (read)
+- `hawking_evaporation_time_blackbody_s`: [Page2005] TeX label eq:3 (A, κ) and §1 (T = κ/2π) (read)
+- `hawking_evaporation_time_s`: [Page2005] TeX label eq:15 (read)
+- `hawking_mass_loss_rate_kg_s`: [Page2005] TeX label eq:15 (read)
+- `hawking_temperature_k`: [Page2005] §1; T = κ/(2π) and TeX label eq:3 (Schwarzschild: κ = 1/(4M), in Planck units) (read); [Abramowicz2013] §1 (Introduction), Hawking temperature footnote: T_H = ħc³/(8π G M k_B) (read)
+- `horizon_angular_velocity_rad_s`: [Page2005] TeX label eq:3, Ω = 4π a / A (Q = 0) (read)
+- `isco_orbital_frequency_hz`: [Abramowicz2013] 'Summary: characteristic radii and frequencies', Ω_K² = GM/r³ (TeX label schwarzschild-frequencies), x_ms = 6 (read)
+- `isco_radiative_efficiency`: [Reynolds2021] Section 5: η = 1 − e_isco/c² for a Novikov-Thorne disk (read); [Abramowicz2013] §1 (Introduction), efficiency definition η ≡ L/(Ṁ c²) (read)
+- `kerr_ergosphere_radius_rg`: [Abramowicz2013] 'Summary: characteristic radii and frequencies', r_0 (ergosphere; same eqnarray, line without a label) (read)
+- `kerr_horizon_radius_rg`: [Page2005] TeX label eq:3, r_+ (Q = 0) (read); [Abramowicz2013] 'Summary: characteristic radii and frequencies', r_H (same eqnarray, line without a label) (read)
+- `kerr_isco_radius_rg`: [Reynolds2021] Section 2: r_isco equation and the definitions of Z1, Z2 (read); [Abramowicz2013] 'Summary: characteristic radii and frequencies', TeX label stable-radius-kerr (formula of Bardeen et al.) (read)
+- `kerr_isco_specific_energy`: [Bardeen1972] Eq. 2.20: stability condition 1 − (E/μ)² ≥ (2/3)(M/r), equality at r = r_ms (read)
+- `kerr_photon_orbit_radius_rg`: [Abramowicz2013] 'Summary: characteristic radii and frequencies', TeX label photon-radius-kerr (read)
+- `photon_sphere_radius_m`: [Abramowicz2013] 'Summary: characteristic radii and frequencies' (TeX label schwarzschild-frequencies), x_ph = 3 (read)
+- `schwarzschild_isco_radius_m`: [Abramowicz2013] 'Summary: characteristic radii and frequencies' (TeX label schwarzschild-frequencies), x_ms = 6 (read)
+- `schwarzschild_radius_m`: [EHT2019] §1 (Introduction), R_S = 2 r_g, page L1 (read)
+- `shadow_angular_diameter_uas`: [EHT2019] §1 R_c = √27 r_g; §7 'Model Comparison and Parameter Estimation' θ_g ≡ GM/(c² D) (read)
+- `time_to_merger_s`: [Sathyaprakash2009] §'Coalescing binaries' paragraph, Newtonian-order chirp time τ0 (equation without a label) (read)
 
 ### `kozmos.coordinates.precession`
 
-- `fukushima_williams_acilari`: [ERFA2023] pfw06.c (okundu)
-- `icrs_den_tarihin_ortalamasina`: [ERFA2023] pmat06.c (matris), s2c.c ve c2s.c (küresel ↔ birim vektör) (okundu)
-- `yanlilik_presesyon_matrisi`: [ERFA2023] pmat06.c, fw2m.c (okundu)
+- `bias_precession_matrix`: [ERFA2023] pmat06.c, fw2m.c (read)
+- `fukushima_williams_angles`: [ERFA2023] pfw06.c (read)
+- `icrs_to_mean_of_date`: [ERFA2023] pmat06.c (matrix), s2c.c and c2s.c (spherical ↔ unit vector) (read)
 
-### `kozmos.cosmology.hubble_diagram`
+### `kozmos.coordinates.transforms`
 
-- `artik_vektoru`: [Brout2022] eq:dmu, eq:dmuprime, eq:dl (okundu)
-- `en_iyi_mutlak_kadir`: [Brout2022] eq:likelihood (okundu)
-- `log_olabilirlik`: [Brout2022] eq:likelihood, eq:sh0eslikelihood (okundu)
-- `veri_hazirla`: [Brout2022] Bölüm 4: z < ~0,01 Hubble diyagramı kullanılmaz; eq:dmuprime (okundu)
-
-### `kozmos.cosmology.distances`
-
-- `acisal_cap_uzakligi_mpc`: [Hogg1999] Denk. 18 (okundu)
-- `acisal_cap_uzakligi_z1_z2_mpc`: [Hogg1999] Denk. 19 (okundu)
-- `doppler_hizi_km_s`: [Hogg1999] Denk. 9 (okundu)
-- `doppler_kirmiziya_kayma`: [Hogg1999] Denk. 9 (okundu)
-- `e_fonksiyonu`: [Brout2022] H(z) denklemi (TeX etiketi eq:hz) (okundu); [Hogg1999] Denk. 14 (okundu)
-- `enine_esyuruyen_uzaklik_mpc`: [Hogg1999] Denk. 16 (okundu)
-- `esyuruyen_hacim_elemani_mpc3`: [Hogg1999] Denk. 28 (okundu)
-- `esyuruyen_hacim_mpc3`: [Hogg1999] Denk. 29 (okundu)
-- `esyuruyen_uzaklik_mpc`: [Hogg1999] Denk. 15 (okundu)
-- `geriye_bakis_zamani_gyr`: [Hogg1999] Denk. 30 (okundu)
-- `hubble_uzakligi_mpc`: [Hogg1999] Denk. 4 (okundu)
-- `hubble_zamani_gyr`: [Hogg1999] Denk. 3 (okundu)
-- `isinim_gucu_uzakligi_mpc`: [Hogg1999] Denk. 21 (okundu)
-- `ozel_hiz_km_s`: [Hogg1999] Denk. 10 (okundu)
-- `uzaklik_modulu`: [Hogg1999] Denk. 25 (okundu)
+- `airmass_plane_parallel`: [ERFA2023] hd2ae.c (z component) (read)
+- `galactic_to_icrs`: [ERFA2023] icrs2g.c (read)
+- `horizontal_to_hour_angle`: [ERFA2023] ae2hd.c (read)
+- `hour_angle_to_horizontal`: [ERFA2023] hd2ae.c (read)
+- `icrs_to_galactic`: [ERFA2023] icrs2g.c (read)
 
 ### `kozmos.core.angles`
 
-- `acisal_ayriklik`: [ERFA2023] sepp.c (okundu)
-- `birim_vektor_den_kuresel`: [ERFA2023] c2s.c (okundu)
-- `derece_den_radyan`: [ERFA2023] erfam.h ERFA_DD2R (okundu)
-- `eksi_pi_arti_pi`: [ERFA2023] anpm.c (okundu)
-- `kuresel_den_birim_vektor`: [ERFA2023] s2c.c (okundu)
-- `radyan_dan_derece`: [ERFA2023] erfam.h ERFA_DD2R (okundu)
-- `sifir_iki_pi`: [ERFA2023] anp.c (okundu)
-- `yaysaniye_den_radyan`: [ERFA2023] erfam.h ERFA_DAS2R (okundu)
+- `angular_separation`: [ERFA2023] sepp.c (read)
+- `arcsec_to_rad`: [ERFA2023] erfam.h ERFA_DAS2R (read)
+- `deg_to_rad`: [ERFA2023] erfam.h ERFA_DD2R (read)
+- `rad_to_deg`: [ERFA2023] erfam.h ERFA_DD2R (read)
+- `spherical_to_unit_vector`: [ERFA2023] s2c.c (read)
+- `unit_vector_to_spherical`: [ERFA2023] c2s.c (read)
+- `wrap_0_2pi`: [ERFA2023] anp.c (read)
+- `wrap_pm_pi`: [ERFA2023] anpm.c (read)
 
-### `kozmos.stars.imf`
+### `kozmos.cosmology.distances`
 
-- `chabrier_dn_dm`: [Chabrier2003] Sec. 'The disk stellar mass function', TeX etiketi IMFdisk ve Tablo 1 (table.diskIMF), 'IMF' satırı (okundu)
-- `chabrier_kutle_orani_ustunde`: [Chabrier2003] Sec. 'The disk stellar mass function', TeX etiketi IMFdisk ve Tablo 1 (okundu)
-- `chabrier_ornekle`: [Chabrier2003] Sec. 'The disk stellar mass function', TeX etiketi IMFdisk ve Tablo 1 (okundu)
-- `chabrier_ortalama_kutle`: [Chabrier2003] Sec. 'The disk stellar mass function', TeX etiketi IMFdisk ve Tablo 1 (okundu)
-- `kroupa_dn_dm`: [Kroupa2001] Sec. 'The universal IMF', TeX etiketleri eq:xi ve eq:imf (okundu)
-- `kroupa_kutle_orani_ustunde`: [Kroupa2001] Sec. 'The universal IMF', TeX etiketi eq:imf ve kütle payları cümleleri (okundu)
-- `kroupa_ornekle`: [Kroupa2001] Sec. 'The universal IMF', TeX etiketi eq:imf (okundu)
-- `kroupa_ortalama_kutle`: [Kroupa2001] Sec. 'The universal IMF', TeX etiketi eq:imf ve ortalama kütle cümlesi (okundu)
-- `salpeter_dn_dm`: [Salpeter1955] Denk. 2 (tanım) ve Denk. 5 (okundu); [Kroupa2001] Sec. '0.1 < m < 1 M_⊙': Salpeter 1955, α = 2,35 (okundu); [Chabrier2003] Sec. 'Mass function' ve 'Functional forms' (TeX etiketi IMF1): α = 2,35, x = 1,35 (okundu)
-- `salpeter_kutle_orani_ustunde`: [Salpeter1955] Denk. 2 (tanım) ve Denk. 5 (okundu); [Kroupa2001] Sec. '0.1 < m < 1 M_⊙': Salpeter 1955, α = 2,35 (okundu); [Chabrier2003] Sec. 'Mass function' ve 'Functional forms' (TeX etiketi IMF1) (okundu)
-- `salpeter_ornekle`: [Salpeter1955] Denk. 2 (tanım) ve Denk. 5 (okundu); [Kroupa2001] Sec. '0.1 < m < 1 M_⊙': Salpeter 1955, α = 2,35 (okundu); [Chabrier2003] Sec. 'Mass function' ve 'Functional forms' (TeX etiketi IMF1) (okundu)
-- `salpeter_ortalama_kutle`: [Salpeter1955] Denk. 2 (tanım) ve Denk. 5 (okundu); [Kroupa2001] Sec. '0.1 < m < 1 M_⊙': Salpeter 1955, α = 2,35 (okundu); [Chabrier2003] Sec. 'Mass function' ve 'Functional forms' (TeX etiketi IMF1) (okundu)
+- `angular_diameter_distance_mpc`: [Hogg1999] Eq. 18 (read)
+- `angular_diameter_distance_z1_z2_mpc`: [Hogg1999] Eq. 19 (read)
+- `comoving_distance_mpc`: [Hogg1999] Eq. 15 (read)
+- `comoving_volume_element_mpc3`: [Hogg1999] Eq. 28 (read)
+- `comoving_volume_mpc3`: [Hogg1999] Eq. 29 (read)
+- `distance_modulus`: [Hogg1999] Eq. 25 (read)
+- `doppler_redshift`: [Hogg1999] Eq. 9 (read)
+- `doppler_velocity_km_s`: [Hogg1999] Eq. 9 (read)
+- `e_function`: [Brout2022] H(z) equation (TeX label eq:hz) (read); [Hogg1999] Eq. 14 (read)
+- `hubble_distance_mpc`: [Hogg1999] Eq. 4 (read)
+- `hubble_time_gyr`: [Hogg1999] Eq. 3 (read)
+- `lookback_time_gyr`: [Hogg1999] Eq. 30 (read)
+- `luminosity_distance_mpc`: [Hogg1999] Eq. 21 (read)
+- `peculiar_velocity_km_s`: [Hogg1999] Eq. 10 (read)
+- `transverse_comoving_distance_mpc`: [Hogg1999] Eq. 16 (read)
 
-### `kozmos.stars.scaling`
+### `kozmos.cosmology.hubble_diagram`
 
-- `beyaz_cuce_k_katsayisi_si`: [Bludman2010] Sec. II.A (göreli dejenere yıldızlar): K_WD = (hc/8)(3/π)^{1/3}(m_H μ_e)^{-4/3} (okundu)
-- `chandrasekhar_kutlesi_kg`: [Bludman2010] Sec. II (giriş) M = 4π 0ω_3 (K/πG)^{3/2}; Sec. II.A M_Ch = 5,83 M_⊙/μ_e² = 1,46 M_⊙ (okundu)
-- `eddington_beta`: [Bludman2010] Sec. II.B, Eddington dördüncü derece denklemi: (1-β)/β⁴ = (M μ²/M_*)² (okundu)
-- `eddington_isinim_gucu_w`: [Bludman2010] Sec. II.B, Eddington standart modeli: L_Edd := 4π c G M/κ_p (okundu); [Paxton2013] Sec. 'Rotationally-Enhanced Mass Loss' (TeX etiketi s.rotation-mass-loss): L_Edd = 4π c G M/κ (okundu)
-- `eddington_olcek_kutlesi_kg`: [Bludman2010] Sec. II.B: M_* := 3√10 0ω_3/π³ (hc/(G m_H^{4/3}))^{3/2} = 18,3 M_⊙ (okundu)
-- `etkin_sicaklik_k`: [Prsa2016] metin: T_eff, Stefan-Boltzmann yasasından; Tablo 'formu', M_Bol satırı (okundu)
-- `isinim_gucu_w`: [Prsa2016] Tablo 'formu', M_Bol satırı (4πσR² terimi); metin: T_eff Stefan-Boltzmann yasasından (okundu)
-- `kelvin_helmholtz_zaman_olcegi_s`: [Zinnecker2007] Sec. 'The Accretion Phase / Formation of the Hydrostatic Core' metni ve GLOSSARY: t_KH = G M²/(R L) (okundu)
-- `kritik_acisal_hiz_rad_s`: [Paxton2013] mdotomega etiketli denklemi izleyen cümle: Ω_crit² = (1 - L/L_Edd) G M / R³ (okundu)
-- `log_yuzey_cekimi_cgs`: [Prsa2016] Tablo 'formu', 'log of surface gravity' satırı: 4,438068... + log M - 2 log R (okundu)
-- `nukleer_zaman_olcegi_yil`: [Pols2011] Bölüm 2.4.2, Denk. 2.37 (okundu)
-- `ortalama_yogunluk_kg_m3`: [Bludman2010] Sec. I, Tablo I öncesi metin: ρ̄_n = 3M/4πR³ (okundu)
-- `serbest_dusme_zamani_s`: [McKee2007] TeX etiketi eq:tff (okundu)
-- `standart_model_isinim_gucu_w`: [Bludman2010] Sec. II.B: L = L_Edd [1 - β(M)] (okundu)
-- `yuzey_cekimi_m_s2`: [Prsa2016] Tablo 'formu', 'log of surface gravity' satırı: log g = log(10^6 GM) - 2 log(100 R) [cgs] (okundu)
+- `best_absolute_magnitude`: [Brout2022] eq:likelihood (read)
+- `log_likelihood`: [Brout2022] eq:likelihood, eq:sh0eslikelihood (read)
+- `prepare_data`: [Brout2022] Section 4: z < ~0.01 is not used in the Hubble diagram; eq:dmuprime (read)
+- `residual_vector`: [Brout2022] eq:dmu, eq:dmuprime, eq:dl (read)
 
-### `kozmos.stars.structure`
+### `kozmos.ephemeris.kepler`
 
-- `lane_emden_analitik`: [Bludman2010] Tablo II (n = 0, 1, 5 satırları) (okundu)
-- `lane_emden_coz`: [Bludman2010] Tablo II (Taylor serisi 1 - ξ²/6 + n ξ⁴/120 ...) (okundu); [Liu1995] Denk. 2, 4, 5 (Lane-Emden denklemi, merkez koşulları, kuvvet serisi) (okundu)
-- `lane_emden_ilk_sifir`: [Liu1995] Denk. 2 (θ'nın ilk sıfırı yıldızın yüzeyidir) (okundu); [Bludman2010] Tablo I, ξ_1n sütunu (okundu)
-- `lane_emden_kutle_katsayisi`: [Bludman2010] Tablo I (0ω_3 = 2,018) ve Sec. II, M = 4π 0ω_3 (K/πG)^{3/2} (okundu); [Liu1995] Denk. 38 (m = 4π ρ_c r³ (-θ'/ξ)) (okundu)
-- `lane_emden_merkez_ortalama_yogunluk_orani`: [Liu1995] Denk. 38 (r = R'de m = M) (okundu); [Bludman2010] Tablo I, ρ_cn/ρ̄_n sütunu; ρ̄_n = 3M/4πR³ tanımı (okundu)
-- `politrop_k_katsayisi_si`: [Liu1995] Denk. 3 (A² tanımı, A = ξ_1/R) (okundu)
-- `politrop_merkez_basinci_pa`: [Liu1995] Denk. 41 (P = K ρ_c^{(n+1)/n} ω^{n+1}, merkezde ω = 1) ve Denk. 3 (okundu)
-- `politrop_merkez_sicakligi_k`: [Liu1995] Denk. 42 (T = μ m_p K ρ_c^{1/n} ω / k, merkezde ω = 1) (okundu)
-- `politrop_merkez_yogunlugu_kg_m3`: [Liu1995] Denk. 38 (r = R'de), ρ̄ tanımı için [Bludman2010] Tablo I (okundu)
-- `politrop_yaricap_m`: [Bludman2010] Tablo I, son sütun (M ~ R^{(n-3)/(n-1)}) (okundu); [Liu1995] Denk. 3 ve Denk. 38 (okundu)
-- `politrop_yercekimi_enerjisi_j`: [Liu1995] Denk. 44 ve 45 (E_g; yüzeyde Φ = 0 ve P = 0) (okundu)
-- `viriyal_ortalama_sicaklik_k`: [Liu1995] Denk. 44 ve 45 (okundu); [McKee2007] TeX etiketleri eq:iddot, eq:calt (viriyal teoremi) (okundu)
+- `eccentric_anomaly`: [MurrayCorreia2010] TeX label eq37 (Kepler's equation), eq38-eq39 (Newton-Raphson) (read)
+- `orbital_period_s`: [MurrayCorreia2010] TeX label eq19 (read)
+- `orbital_speed_m_s`: [MurrayCorreia2010] TeX label eq30 (read)
+- `true_anomaly`: [MurrayCorreia2010] TeX label eq17 and eq33 (read)
+
+### `kozmos.io.fits`
+
+- `list_hdus`: [FITS2018] Eq. 1 and 2 (data size), Section 3.3-3.4 (HDU order), XTENSION keyword (read)
+- `parse_header`: [Hierarch2009] FITS registered conventions page: 'The HIERARCH Keyword Convention', Description (read); [FITS2018] Section 3.3.1 and 4.1: header blocks, header card components; END keyword (read)
+- `read_fits`: [FITS2018] Table 8 (BITPIX), Eq. 3 (BZERO, BSCALE), Section 5 (big-endian byte order), Fig. 1 (axis order) (read)
+- `write_fits`: [FITS2018] Section 3.3.1, 4.4.1 (mandatory keywords), Table 8, Section 5 (read)
+
+### `kozmos.observing.detector`
+
+- `signal_to_noise`: [Howell1989] Eq. 1 ('CCD equation') (read)
+- `simulate_raw_frame`: [CraigChambers2026] notebook 01-05 'Calibration overview': raw image equation (read)
+- `star_field`: [Photutils2026] API: photutils.psf.GaussianPRF, equation for the integral over a pixel (read)
+
+### `kozmos.observing.planning`
+
+- `time_above_horizon_hr`: [ERFA2023] hd2ae.c (altitude component) (read)
+- `transit_jd`: [ERFA2023] era00.c (rotation rate), hd2ae.c (read)
+- `visibility`: [ERFA2023] gmst06.c, hd2ae.c, pmat06.c, refco.c (read)
+
+### `kozmos.observing.refraction`
+
+- `observed_altitude`: [ERFA2023] refco.c: 'dZ = A tan Z + B tan^3 Z', Z is the observed zenith distance (read)
+- `refraction_constants`: [ERFA2023] refco.c (read)
+
+### `kozmos.photometry.aperture`
+
+- `aperture_photometry`: [Photutils2026] User guide: Aperture Photometry, 'subpixel' method (read)
+
+### `kozmos.photometry.background`
+
+- `background_map`: [SExtractorDocs2026] Modeling the background: Background map (read)
+- `estimate_background`: [SExtractorDocs2026] Modeling the background: Background estimation, Eq. 4 (read)
+
+### `kozmos.photometry.detection`
+
+- `detect_sources`: [Photutils2026] User guide: Image Segmentation and Source Deblending (read)
+
+### `kozmos.radiation.infrared`
+
+- `flux_jy_from_vega_magnitude`: [Wright2010] Section 4.4: F_ν° (read); [Cohen2003] Table 2: F_ν(iso) (read)
+- `peak_temperature_k`: [CODATA2022] Wien wavelength displacement law constant (read)
+- `peak_wavelength_um`: [CODATA2022] Wien wavelength displacement law constant (read)
+- `vega_ab_offset`: [Wright2010] Section 4.4: F_ν° (read); [Cohen2003] Table 2: F_ν(iso) (read)
+- `vega_magnitude_from_flux`: [Wright2010] Section 4.4: F_ν° (read); [Cohen2003] Table 2: F_ν(iso) (read)
+
+### `kozmos.radiation.magnitudes`
+
+- `absolute_bolometric_magnitude`: [Mamajek2015] M_Bol definition; L_0 = 3.0128e28 W (read)
+- `blackbody_flux`: [CODATA2022] Stefan-Boltzmann constant (read)
+- `distance_modulus_from_pc`: [Hogg1999] Eq. 25 (read)
+- `luminosity_from_bolometric_magnitude_w`: [Mamajek2015] M_Bol definition; L_0 = 3.0128e28 W (read)
+- `pc_from_distance_modulus`: [Hogg1999] Eq. 25 (read)
+- `planck_frequency`: [Astropy2022] modeling/physical_models.py, BlackBody.evaluate (read)
+- `planck_wavelength`: [Astropy2022] modeling/physical_models.py, BlackBody.evaluate (read)
+
+### `kozmos.reduction.calibration`
+
+- `combine`: [CraigChambers2026] notebook 01-05 'Calibration overview': 'Every image has noise' (read)
+- `gain_and_read_noise`: [IRAF2026] noao/obsutil/src/doc/findgain.hlp, ALGORITHM (read)
+- `reduce_frame`: [CraigChambers2026] notebook 01-05 'Calibration overview': reduction equation (read)
+
+### `kozmos.reduction.cosmic_rays`
+
+- `detect_cosmic_rays`: [vanDokkum2001] TeX labels kernel.eq, noise.eq, sigmap.eq and the following equations (S′, F, selection criterion) (read)
+
+### `kozmos.reduction.sky`
+
+- `subtract_dynamic_sky`: [Schirmer2013] 'Static and dynamic background models' section: dynamic model (read)
+- `subtract_static_sky`: [Schirmer2013] 'Static and dynamic background models' section: static model (read)
 
 ### `kozmos.star_formation.clouds`
 
-- `bonnor_ebert_kritik_katsayilar`: [Krumholz2015] problems/probset2.tex (e) şıkkı (kütle ifadesi); probsol2.tex (c)-(d) şıkları (ODE), (f) şıkkı (m_max = 1,18, ρ_c/ρ_s = 14,0) (okundu)
-- `bonnor_ebert_kritik_kutle_kg`: [Krumholz2015] problems/probsol2.tex, Bonnor-Ebert küresi alıştırmasının (h) şıkkı (okundu); [McKee2007] TeX etiketi MBE_def (okundu)
-- `bonnor_ebert_yaricapi_m`: [McKee2007] TeX etiketi MBE_def, sonraki paragraf: R_BE = 0,486 c_s / sqrt(G ρ_0) (okundu)
-- `bulut_yildiz_olusum_hizi_kg_s`: [McKee2007] TeX etiketi eq:epsff (okundu)
-- `dogrusal_hiz_boyut_km_s`: [Krumholz2015] Bölüm 8 (Giant Molecular Clouds), Scaling Relations: Larson'un ikinci yasası (okundu); [McKee2007] TeX etiketi GMC_lws (Heyer ve Brunt 2004 PCA uyumu) (okundu)
-- `gecis_zamani_s`: [Krumholz2015] Bölüm 8 (Giant Molecular Clouds), Molecular Cloud Timescales: t_cr = R/σ (okundu)
-- `izotermal_cokus_birikim_hizi_kg_s`: [McKee2007] TeX etiketi eq:mdssis (Shu genişleme dalgası çözümü) (okundu)
-- `jeans_boyu_m`: [Krumholz2015] Bölüm 6 (Gravitational Instability and Collapse), λ_J = 2π/k_J (okundu); [McKee2007] TeX etiketi LJeans (okundu)
-- `jeans_kutlesi_kg`: [Krumholz2015] Bölüm 6, Jeans kütlesi tanımı ve dipnotu (okundu); [McKee2007] TeX etiketi LJeans, ardından gelen paragraf (M_J = 2,47 M_BE) (okundu)
-- `kutle_akisi_orani_normlu`: [McKee2007] TeX etiketi eq:mphi sonrası: G^{1/2}(Σ/B)_cr = 1/(2π) (sonsuz soğuk levha) (okundu)
-- `kutle_yogunlugu_kg_m3`: [Krumholz2015] Bölüm 8 (Giant Molecular Clouds), Scaling Relations: n = 3M / (4π R³ μ m_H) (okundu)
-- `mach_sayisi`: [Krumholz2015] Bölüm 4 (Gas Flows and Turbulence), Reynolds ve Mach sayıları alt bölümü: M ~ V/c_s (okundu)
-- `manyetik_kritik_kutle_kg`: [Krumholz2015] Bölüm 6, Magnetic Support and the Magnetic Critical Mass (okundu); [McKee2007] TeX etiketi eq:mphi (okundu)
-- `sayi_yogunlugu_m3`: [Krumholz2015] Bölüm 8 (Giant Molecular Clouds), Scaling Relations: n = 3M / (4π R³ μ m_H) (okundu)
-- `serbest_dusme_verimliligi`: [Krumholz2015] Bölüm 8 (Giant Molecular Clouds), Depletion Time: ε_ff = t_ff / t_dep (okundu); [McKee2007] TeX etiketi eq:epsff (okundu)
-- `serbest_dusme_zamani_s`: [Krumholz2015] Bölüm 6, Jeans analizinden sonra t_ff tanımı; Bölüm 8 zaman ölçekleri (okundu); [McKee2007] TeX etiketi eq:tff (okundu)
-- `ses_hizi_m_s`: [Krumholz2015] Bölüm 4 (Gas Flows and Turbulence), Reynolds ve Mach sayıları alt bölümündeki c_s ifadesi (okundu)
-- `sutun_yogunlugu_m2`: [Krumholz2015] Bölüm 8 (Giant Molecular Clouds), Mass Measurement, Optically Thick Lines: N = M / (μ m_H π R²) (okundu)
-- `viryal_parametresi`: [Krumholz2015] Bölüm 8 (Giant Molecular Clouds), Larson'un üçüncü yasası: α_vir = 5σ²R/(GM) (okundu); [McKee2007] TeX etiketi alpha_vir_def (okundu)
-- `viryal_parametresi_yuzeyden`: [McKee2007] TeX etiketi alpha_vir_def (okundu)
-- `yuzey_yogunlugu_kg_m2`: [Krumholz2015] Bölüm 8 (Giant Molecular Clouds), Mass Measurement, Optically Thick Lines: N = M / (μ m_H π R²) (okundu)
+- `bonnor_ebert_critical_coefficients`: [Krumholz2015] problems/probset2.tex part (e) (mass expression); probsol2.tex parts (c)-(d) (ODE), part (f) (m_max = 1.18, ρ_c/ρ_s = 14.0) (read)
+- `bonnor_ebert_critical_mass_kg`: [Krumholz2015] problems/probsol2.tex, part (h) of the Bonnor-Ebert sphere exercise (read); [McKee2007] TeX label MBE_def (read)
+- `bonnor_ebert_radius_m`: [McKee2007] TeX label MBE_def, the next paragraph: R_BE = 0.486 c_s / sqrt(G ρ_0) (read)
+- `cloud_star_formation_rate_kg_s`: [McKee2007] TeX label eq:epsff (read)
+- `column_density_m2`: [Krumholz2015] Section 8 (Giant Molecular Clouds), Mass Measurement, Optically Thick Lines: N = M / (μ m_H π R²) (read)
+- `crossing_time_s`: [Krumholz2015] Section 8 (Giant Molecular Clouds), Molecular Cloud Timescales: t_cr = R/σ (read)
+- `free_fall_efficiency`: [Krumholz2015] Section 8 (Giant Molecular Clouds), Depletion Time: ε_ff = t_ff / t_dep (read); [McKee2007] TeX label eq:epsff (read)
+- `free_fall_time_s`: [Krumholz2015] Section 6, definition of t_ff after the Jeans analysis; Section 8 timescales (read); [McKee2007] TeX label eq:tff (read)
+- `isothermal_collapse_accretion_rate_kg_s`: [McKee2007] TeX label eq:mdssis (Shu expansion wave solution) (read)
+- `jeans_length_m`: [Krumholz2015] Section 6 (Gravitational Instability and Collapse), λ_J = 2π/k_J (read); [McKee2007] TeX label LJeans (read)
+- `jeans_mass_kg`: [Krumholz2015] Section 6, definition of the Jeans mass and its footnote (read); [McKee2007] TeX label LJeans, the paragraph that follows (M_J = 2.47 M_BE) (read)
+- `linewidth_size_km_s`: [Krumholz2015] Section 8 (Giant Molecular Clouds), Scaling Relations: Larson's second law (read); [McKee2007] TeX label GMC_lws (PCA fit of Heyer and Brunt 2004) (read)
+- `mach_number`: [Krumholz2015] Section 4 (Gas Flows and Turbulence), Reynolds and Mach numbers subsection: M ~ V/c_s (read)
+- `magnetic_critical_mass_kg`: [Krumholz2015] Section 6, Magnetic Support and the Magnetic Critical Mass (read); [McKee2007] TeX label eq:mphi (read)
+- `mass_density_kg_m3`: [Krumholz2015] Section 8 (Giant Molecular Clouds), Scaling Relations: n = 3M / (4π R³ μ m_H) (read)
+- `normalized_mass_to_flux_ratio`: [McKee2007] After TeX label eq:mphi: G^{1/2}(Σ/B)_cr = 1/(2π) (infinite cold sheet) (read)
+- `number_density_m3`: [Krumholz2015] Section 8 (Giant Molecular Clouds), Scaling Relations: n = 3M / (4π R³ μ m_H) (read)
+- `sound_speed_m_s`: [Krumholz2015] Section 4 (Gas Flows and Turbulence), the c_s expression in the Reynolds and Mach numbers subsection (read)
+- `surface_density_kg_m2`: [Krumholz2015] Section 8 (Giant Molecular Clouds), Mass Measurement, Optically Thick Lines: N = M / (μ m_H π R²) (read)
+- `virial_parameter`: [Krumholz2015] Section 8 (Giant Molecular Clouds), Larson's third law: α_vir = 5σ²R/(GM) (read); [McKee2007] TeX label alpha_vir_def (read)
+- `virial_parameter_from_surface_density`: [McKee2007] TeX label alpha_vir_def (read)
 
 ### `kozmos.star_formation.laws`
 
-- `iki_boyutlu_jeans_kutlesi_gunes_kutlesi`: [McKee2007] TeX etiketi MJ2D (MJ2Ddef) (okundu)
-- `kennicutt_schmidt_sfr_yuzey_yogunlugu`: [McKee2007] TeX etiketi eq:ks (okundu); [Kennicutt1998] Denk. 4 (metindeki sıra; 'equation (4)' olarak anılır) (okundu)
-- `kennicutt_yorunge_sfr_yuzey_yogunlugu`: [McKee2007] TeX etiketi eq:ks (okundu); [Kennicutt1998] Denk. 7 (metindeki sıra; 'equation (7)' olarak anılır) (okundu)
-- `serbest_dusme_sfr_yuzey_yogunlugu`: [McKee2007] TeX etiketi SFR-ff (okundu)
-- `sfr_kalibrasyonu_gunes_kutlesi_yil`: [Kennicutt2012] Tablo 1 (TeX etiketi sfrequations) ve 'An Updated Compendium of Integrated SFR Calibrations' alt bölümündeki log SFR = log L_x − log C_x denklemi (okundu)
-- `toomre_q_gaz`: [McKee2007] TeX etiketi Qdef (okundu)
-- `tuketme_zamani_yil`: [Krumholz2015] Bölüm 8 (Giant Molecular Clouds), Depletion Time: t_dep = Σ_gaz / Σ̇_* (okundu)
-- `yasam_dongusu_sfr_yuzey_yogunlugu`: [McKee2007] TeX etiketi SFR-lc (okundu)
+- `depletion_time_yr`: [Krumholz2015] Section 8 (Giant Molecular Clouds), Depletion Time: t_dep = Σ_gas / Σ̇_* (read)
+- `free_fall_sfr_surface_density`: [McKee2007] TeX label SFR-ff (read)
+- `kennicutt_orbital_sfr_surface_density`: [McKee2007] TeX label eq:ks (read); [Kennicutt1998] Eq. 7 (order in the text; referred to as 'equation (7)') (read)
+- `kennicutt_schmidt_sfr_surface_density`: [McKee2007] TeX label eq:ks (read); [Kennicutt1998] Eq. 4 (order in the text; referred to as 'equation (4)') (read)
+- `life_cycle_sfr_surface_density`: [McKee2007] TeX label SFR-lc (read)
+- `sfr_calibration_msun_yr`: [Kennicutt2012] Table 1 (TeX label sfrequations) and the equation log SFR = log L_x − log C_x in the subsection 'An Updated Compendium of Integrated SFR Calibrations' (read)
+- `toomre_q_gas`: [McKee2007] TeX label Qdef (read)
+- `two_dimensional_jeans_mass_msun`: [McKee2007] TeX label MJ2D (MJ2Ddef) (read)
+
+### `kozmos.stars.imf`
+
+- `chabrier_dn_dm`: [Chabrier2003] Section 'The disk stellar mass function', TeX label IMFdisk and Table 1 (table.diskIMF), 'IMF' row (read)
+- `chabrier_mass_fraction_above`: [Chabrier2003] Section 'The disk stellar mass function', TeX label IMFdisk and Table 1 (read)
+- `chabrier_mean_mass`: [Chabrier2003] Section 'The disk stellar mass function', TeX label IMFdisk and Table 1 (read)
+- `chabrier_sample`: [Chabrier2003] Section 'The disk stellar mass function', TeX label IMFdisk and Table 1 (read)
+- `kroupa_dn_dm`: [Kroupa2001] Section 'The universal IMF', TeX labels eq:xi and eq:imf (read)
+- `kroupa_mass_fraction_above`: [Kroupa2001] Section 'The universal IMF', TeX label eq:imf and the mass-fraction sentences (read)
+- `kroupa_mean_mass`: [Kroupa2001] Section 'The universal IMF', TeX label eq:imf and the mean-mass sentence (read)
+- `kroupa_sample`: [Kroupa2001] Section 'The universal IMF', TeX label eq:imf (read)
+- `salpeter_dn_dm`: [Salpeter1955] Eq. 2 (definition) and Eq. 5 (read); [Kroupa2001] Section '0.1 < m < 1 M_⊙': Salpeter 1955, α = 2.35 (read); [Chabrier2003] Section 'Mass function' and 'Functional forms' (TeX label IMF1): α = 2.35, x = 1.35 (read)
+- `salpeter_mass_fraction_above`: [Salpeter1955] Eq. 2 (definition) and Eq. 5 (read); [Kroupa2001] Section '0.1 < m < 1 M_⊙': Salpeter 1955, α = 2.35 (read); [Chabrier2003] Section 'Mass function' and 'Functional forms' (TeX label IMF1) (read)
+- `salpeter_mean_mass`: [Salpeter1955] Eq. 2 (definition) and Eq. 5 (read); [Kroupa2001] Section '0.1 < m < 1 M_⊙': Salpeter 1955, α = 2.35 (read); [Chabrier2003] Section 'Mass function' and 'Functional forms' (TeX label IMF1) (read)
+- `salpeter_sample`: [Salpeter1955] Eq. 2 (definition) and Eq. 5 (read); [Kroupa2001] Section '0.1 < m < 1 M_⊙': Salpeter 1955, α = 2.35 (read); [Chabrier2003] Section 'Mass function' and 'Functional forms' (TeX label IMF1) (read)
+
+### `kozmos.stars.scaling`
+
+- `chandrasekhar_mass_kg`: [Bludman2010] Section II (introduction) M = 4π 0ω_3 (K/πG)^{3/2}; Section II.A M_Ch = 5.83 M_⊙/μ_e² = 1.46 M_⊙ (read)
+- `critical_angular_velocity_rad_s`: [Paxton2013] sentence after the equation labeled mdotomega: Ω_crit² = (1 - L/L_Edd) G M / R³ (read)
+- `eddington_beta`: [Bludman2010] Section II.B, Eddington quartic equation: (1-β)/β⁴ = (M μ²/M_*)² (read)
+- `eddington_luminosity_w`: [Bludman2010] Section II.B, Eddington standard model: L_Edd := 4π c G M/κ_p (read); [Paxton2013] Section 'Rotationally-Enhanced Mass Loss' (TeX label s.rotation-mass-loss): L_Edd = 4π c G M/κ (read)
+- `eddington_scale_mass_kg`: [Bludman2010] Section II.B: M_* := 3√10 0ω_3/π³ (hc/(G m_H^{4/3}))^{3/2} = 18.3 M_⊙ (read)
+- `effective_temperature_k`: [Prsa2016] text: T_eff from the Stefan-Boltzmann law; Table 'formu', M_Bol row (read)
+- `free_fall_time_s`: [McKee2007] TeX etiketi eq:tff (read)
+- `kelvin_helmholtz_timescale_s`: [Zinnecker2007] Section 'The Accretion Phase / Formation of the Hydrostatic Core' text and GLOSSARY: t_KH = G M²/(R L) (read)
+- `log_surface_gravity_cgs`: [Prsa2016] Table 'formu', 'log of surface gravity' row: 4.438068... + log M - 2 log R (read)
+- `luminosity_w`: [Prsa2016] Table 'formu', M_Bol row (4πσR² term); text: T_eff from the Stefan-Boltzmann law (read)
+- `mean_density_kg_m3`: [Bludman2010] Section I, text before Table I: ρ̄_n = 3M/4πR³ (read)
+- `nuclear_timescale_yr`: [Pols2011] Section 2.4.2, Eq. 2.37 (read)
+- `standard_model_luminosity_w`: [Bludman2010] Section II.B: L = L_Edd [1 - β(M)] (read)
+- `surface_gravity_m_s2`: [Prsa2016] Table 'formu', 'log of surface gravity' row: log g = log(10^6 GM) - 2 log(100 R) [cgs] (read)
+- `white_dwarf_k_coefficient_si`: [Bludman2010] Section II.A (relativistic degenerate stars): K_WD = (hc/8)(3/π)^{1/3}(m_H μ_e)^{-4/3} (read)
+
+### `kozmos.stars.structure`
+
+- `lane_emden_analytic`: [Bludman2010] Table II (rows n = 0, 1, 5) (read)
+- `lane_emden_central_to_mean_density`: [Liu1995] Eq. 38 (m = M at r = R) (read); [Bludman2010] Table I, ρ_cn/ρ̄_n column; definition ρ̄_n = 3M/4πR³ (read)
+- `lane_emden_first_zero`: [Liu1995] Eq. 2 (the first zero of θ is the surface of the star) (read); [Bludman2010] Table I, ξ_1n column (read)
+- `lane_emden_mass_coefficient`: [Bludman2010] Table I (0ω_3 = 2.018) and Section II, M = 4π 0ω_3 (K/πG)^{3/2} (read); [Liu1995] Eq. 38 (m = 4π ρ_c r³ (-θ'/ξ)) (read)
+- `lane_emden_solve`: [Bludman2010] Table II (Taylor series 1 - ξ²/6 + n ξ⁴/120 ...) (read); [Liu1995] Eq. 2, 4, 5 (Lane-Emden equation, central conditions, power series) (read)
+- `polytrope_central_density_kg_m3`: [Liu1995] Eq. 38 (at r = R), [Bludman2010] Table I for the definition of ρ̄ (read)
+- `polytrope_central_pressure_pa`: [Liu1995] Eq. 41 (P = K ρ_c^{(n+1)/n} ω^{n+1}, ω = 1 at the center) and Eq. 3 (read)
+- `polytrope_central_temperature_k`: [Liu1995] Eq. 42 (T = μ m_p K ρ_c^{1/n} ω / k, ω = 1 at the center) (read)
+- `polytrope_gravitational_energy_j`: [Liu1995] Eq. 44 and 45 (E_g; Φ = 0 and P = 0 at the surface) (read)
+- `polytrope_k_coefficient_si`: [Liu1995] Eq. 3 (definition of A², A = ξ_1/R) (read)
+- `polytrope_radius_m`: [Bludman2010] Table I, last column (M ~ R^{(n-3)/(n-1)}) (read); [Liu1995] Eq. 3 and Eq. 38 (read)
+- `virial_mean_temperature_k`: [Liu1995] Eq. 44 and 45 (read); [McKee2007] TeX labels eq:iddot, eq:calt (virial theorem) (read)
+
+### `kozmos.statistics.fitting`
+
+- `chi_square`: [HoggBovyLang2010] TeX label eq:chisquared (read)
+- `fit_line`: [HoggBovyLang2010] TeX label eq:fofx, eq:lsf (read)
+- `linear_least_squares`: [HoggBovyLang2010] TeX label eq:lsf and the parameter covariance equation (read)
+
+### `kozmos.statistics.mcmc`
+
+- `autocorrelation_time`: [ForemanMackey2013] Section 3, 'Autocorrelation time': τ_f and C_f(T) equations (read)
+- `ensemble_sample`: [ForemanMackey2013] Eq. proposal, acceptance; Algorithm 3 (parallel stretch move) (read)
+- `rank_normalized_rhat`: [Vehtari2021] Section 4.1-4.2: rank normalization and folding equations (read)
+- `split_rhat`: [Vehtari2021] Section 3.1: B, W, var⁺ and R̂ equations (read)
+- `stretch_factor`: [ForemanMackey2013] Eq. goodmanprop (g(z) ∝ 1/√z, z ∈ [1/a, a]) (read)
+
+### `kozmos.statistics.robust`
+
+- `biweight_location`: [Astropy2022] stats/biweight.py, biweight_location docstring (read)
+- `biweight_scale`: [Astropy2022] stats/biweight.py, biweight_scale docstring (read)
+- `mad_scale`: [Astropy2022] stats/funcs.py, median_absolute_deviation and mad_std (read)
+- `sigma_clip`: [Astropy2022] stats/sigma_clipping.py, SigmaClip docstring (read)
 
 ### `kozmos.time.julian`
 
-- `dunya_donme_acisi`: [ERFA2023] era00.c (okundu)
-- `greenwich_ortalama_yildiz_zamani`: [ERFA2023] gmst06.c (okundu)
-- `jd_den_takvim`: [ERFA2023] jd2cal.c (okundu)
-- `ortalama_egiklik`: [ERFA2023] obl06.c (okundu)
-- `tai_den_tt`: [ERFA2023] erfam.h ERFA_TTMTAI, ERFA_DAYSEC (okundu)
-- `takvim_den_jd`: [ERFA2023] cal2jd.c; erfam.h ERFA_DJM0 (okundu)
-- `takvim_den_mjd`: [ERFA2023] cal2jd.c (okundu)
-- `tt_den_tai`: [ERFA2023] erfam.h ERFA_TTMTAI, ERFA_DAYSEC (okundu)
-- `yerel_ortalama_yildiz_zamani`: [Astropy2022] time/core.py, Time._sid_time_or_earth_rot_ang (okundu); [ERFA2023] gmst06.c (okundu)
+- `calendar_to_jd`: [ERFA2023] cal2jd.c; erfam.h ERFA_DJM0 (read)
+- `calendar_to_mjd`: [ERFA2023] cal2jd.c (read)
+- `earth_rotation_angle`: [ERFA2023] era00.c (read)
+- `greenwich_mean_sidereal_time`: [ERFA2023] gmst06.c (read)
+- `jd_to_calendar`: [ERFA2023] jd2cal.c (read)
+- `local_mean_sidereal_time`: [Astropy2022] time/core.py, Time._sid_time_or_earth_rot_ang (read); [ERFA2023] gmst06.c (read)
+- `mean_obliquity`: [ERFA2023] obl06.c (read)
+- `tai_to_tt`: [ERFA2023] erfam.h ERFA_TTMTAI, ERFA_DAYSEC (read)
+- `tt_to_tai`: [ERFA2023] erfam.h ERFA_TTMTAI, ERFA_DAYSEC (read)
 
 ### `kozmos.time.scales`
 
-- `tai_eksi_utc_s`: [ERFA2023] dat.c (okundu)
-- `tt_eksi_utc_s`: [ERFA2023] dat.c; erfam.h ERFA_TTMTAI (okundu)
+- `tai_minus_utc_s`: [ERFA2023] dat.c (read)
+- `tt_minus_utc_s`: [ERFA2023] dat.c; erfam.h ERFA_TTMTAI (read)
 
 ### `kozmos.timeseries.periodogram`
 
-- `frekans_izgarasi`: [VanderPlas2018] Bölüm 7.1, TeX etiketi eq:n-eval (okundu)
-- `lomb_scargle`: [VanderPlas2018] eq:floating-mean-model, eq:chi2-with-errors, eq:lomb-scargle-normalized (okundu)
-- `lomb_scargle_klasik`: [VanderPlas2018] eq:lomb-scargle-periodogram, eq:tau-def (okundu)
-- `yanlis_alarm_olasiligi`: [Astropy2022] timeseries/periodograms/lombscargle/_statistics.py, fap_single ve fap_naive (okundu); [VanderPlas2018] TeX etiketi eq:FAP-neff ve izleyen paragraf (okundu)
+- `false_alarm_probability`: [Astropy2022] timeseries/periodograms/lombscargle/_statistics.py, fap_single and fap_naive (read); [VanderPlas2018] TeX label eq:FAP-neff and the following paragraph (read)
+- `frequency_grid`: [VanderPlas2018] Section 7.1, TeX label eq:n-eval (read)
+- `lomb_scargle`: [VanderPlas2018] eq:floating-mean-model, eq:chi2-with-errors, eq:lomb-scargle-normalized (read)
+- `lomb_scargle_classical`: [VanderPlas2018] eq:lomb-scargle-periodogram, eq:tau-def (read)
 
-## Sabitler
+### `kozmos.visualization.stretch`
 
-- `ISIK_HIZI` = 299792458 m s^-1 (kesin) [CODATA2022] speed of light in vacuum (okundu)
-- `PLANCK` = 6.62607015e-34 J Hz^-1 (kesin) [CODATA2022] Planck constant (okundu)
-- `BOLTZMANN` = 1.380649e-23 J K^-1 (kesin) [CODATA2022] Boltzmann constant (okundu)
-- `CEKIM` = 6.6743e-11 m^3 kg^-1 s^-2 (± 1.5e-15) [CODATA2022] Newtonian constant of gravitation (okundu)
-- `TEMEL_YUK` = 1.602176634e-19 C (kesin) [CODATA2022] elementary charge (okundu)
-- `ELEKTRON_KUTLESI` = 9.1093837139e-31 kg (± 2.8e-40) [CODATA2022] electron mass (okundu)
-- `PROTON_KUTLESI` = 1.67262192595e-27 kg (± 5.2e-37) [CODATA2022] proton mass (okundu)
-- `ATOMIK_KUTLE_BIRIMI` = 1.66053906892e-27 kg (± 5.2e-37) [CODATA2022] atomic mass constant (okundu)
-- `AVOGADRO` = 6.02214076e+23 mol^-1 (kesin) [CODATA2022] Avogadro constant (okundu)
-- `THOMSON_KESITI` = 6.6524587051e-29 m^2 (± 6.2e-38) [CODATA2022] Thomson cross section (okundu)
-- `STEFAN_BOLTZMANN` = 5.67037441918e-08 W m^-2 K^-4 (kesin) [CODATA2022] Stefan-Boltzmann constant (5.670 374 419... e-8) (okundu; türetim: 2 pi^5 k^4 / (15 h^3 c^2))
-- `WIEN_DALGABOYU` = 0.002897771955 m K (kesin) [CODATA2022] Wien wavelength displacement law constant (2.897 771 955... e-3) (okundu)
-- `IKINCI_ISINIM_SABITI` = 0.014387768775 m K (kesin) [CODATA2022] second radiation constant (1.438 776 877... e-2) (okundu; türetim: h c / k)
-- `GUNES_YARICAPI` = 695700000 m (kesin) [Prsa2016] Tablo 1 (okundu)
-- `GUNES_ISINIM_GUCU` = 3.828e+26 W (kesin) [Prsa2016] Tablo 1 (okundu)
-- `GUNES_ETKIN_SICAKLIGI` = 5772 K (kesin) [Prsa2016] Tablo 1 (okundu)
-- `GUNES_SABITI` = 1361 W m^-2 (kesin) [Prsa2016] Tablo 1 (okundu)
-- `GM_GUNES` = 1.3271244e+20 m^3 s^-2 (kesin) [Prsa2016] Tablo 1 (okundu)
-- `GM_YER` = 3.986004e+14 m^3 s^-2 (kesin) [Prsa2016] Tablo 1 (okundu)
-- `GM_JUPITER` = 1.2668653e+17 m^3 s^-2 (kesin) [Prsa2016] Tablo 1 (okundu)
-- `YER_EKVATOR_YARICAPI` = 6378100 m (kesin) [Prsa2016] Tablo 1 (okundu)
-- `YER_KUTUP_YARICAPI` = 6356800 m (kesin) [Prsa2016] Tablo 1 (okundu)
-- `JUPITER_EKVATOR_YARICAPI` = 71492000 m (kesin) [Prsa2016] Tablo 1 (okundu)
-- `JUPITER_KUTUP_YARICAPI` = 66854000 m (kesin) [Prsa2016] Tablo 1 (okundu)
-- `BOLOMETRIK_SIFIR_ISINIM_GUCU` = 3.0128e+28 W (kesin) [Mamajek2015] L_0 tanımı (okundu)
-- `ASTRONOMIK_BIRIM` = 149597870700 m (kesin) [ERFA2023] erfam.h ERFA_DAU (okundu)
-- `GUN_SANIYE` = 86400 s (kesin) [ERFA2023] erfam.h ERFA_DAYSEC (okundu)
-- `JULYEN_YILI_GUN` = 365.25 gün (kesin) [ERFA2023] erfam.h ERFA_DJY (okundu)
-- `JULYEN_YUZYILI_GUN` = 36525 gün (kesin) [ERFA2023] erfam.h ERFA_DJC (okundu)
-- `J2000_JD` = 2451545 gün (kesin) [ERFA2023] erfam.h ERFA_DJ00 (okundu)
-- `MJD_SIFIR_JD` = 2400000.5 gün (kesin) [ERFA2023] erfam.h ERFA_DJM0 (okundu)
-- `TT_EKSI_TAI` = 32.184 s (kesin) [ERFA2023] erfam.h ERFA_TTMTAI (okundu)
-- `PARSEK` = 3.08567758149e+16 m (kesin) [Mamajek2015] son not: parsek tam olarak (648000/π) au (okundu; türetim: au · 648000 / pi)
-- `MEGAPARSEK` = 3.08567758149e+22 m (kesin) [Mamajek2015] son not: parsek tam olarak (648000/π) au (okundu; türetim: 1e6 · parsek)
-- `JULYEN_YILI_SANIYE` = 31557600 s (kesin) [ERFA2023] erfam.h ERFA_DJY · ERFA_DAYSEC (okundu; türetim: 365.25 · 86400)
+- `asinh_stretch`: [Lupton2004] Section 2, footnote: f(x) = asinh(α Q (x − m)) / Q (read)
+- `lupton_rgb`: [Lupton2004] Section 2, TeX label EqIntensityStretch (read)
+- `percentile_scale`: [Lupton2004] Section 2: linear mapping and the maximum value M (read)
 
-## Kaynak başına fonksiyon sayısı
+## Constants
+
+- `SPEED_OF_LIGHT` = 299792458 m s^-1 (exact) [CODATA2022] speed of light in vacuum (read)
+- `PLANCK` = 6.62607015e-34 J Hz^-1 (exact) [CODATA2022] Planck constant (read)
+- `BOLTZMANN` = 1.380649e-23 J K^-1 (exact) [CODATA2022] Boltzmann constant (read)
+- `GRAVITATIONAL_CONSTANT` = 6.6743e-11 m^3 kg^-1 s^-2 (± 1.5e-15) [CODATA2022] Newtonian constant of gravitation (read)
+- `ELEMENTARY_CHARGE` = 1.602176634e-19 C (exact) [CODATA2022] elementary charge (read)
+- `ELECTRON_MASS` = 9.1093837139e-31 kg (± 2.8e-40) [CODATA2022] electron mass (read)
+- `PROTON_MASS` = 1.67262192595e-27 kg (± 5.2e-37) [CODATA2022] proton mass (read)
+- `ATOMIC_MASS_UNIT` = 1.66053906892e-27 kg (± 5.2e-37) [CODATA2022] atomic mass constant (read)
+- `AVOGADRO` = 6.02214076e+23 mol^-1 (exact) [CODATA2022] Avogadro constant (read)
+- `THOMSON_CROSS_SECTION` = 6.6524587051e-29 m^2 (± 6.2e-38) [CODATA2022] Thomson cross section (read)
+- `STEFAN_BOLTZMANN` = 5.67037441918e-08 W m^-2 K^-4 (exact) [CODATA2022] Stefan-Boltzmann constant (5.670 374 419... e-8) (read; derivation: 2 pi^5 k^4 / (15 h^3 c^2))
+- `WIEN_WAVELENGTH` = 0.002897771955 m K (exact) [CODATA2022] Wien wavelength displacement law constant (2.897 771 955... e-3) (read)
+- `SECOND_RADIATION_CONSTANT` = 0.014387768775 m K (exact) [CODATA2022] second radiation constant (1.438 776 877... e-2) (read; derivation: h c / k)
+- `SOLAR_RADIUS` = 695700000 m (exact) [Prsa2016] Table 1 (read)
+- `SOLAR_LUMINOSITY` = 3.828e+26 W (exact) [Prsa2016] Table 1 (read)
+- `SOLAR_EFFECTIVE_TEMPERATURE` = 5772 K (exact) [Prsa2016] Table 1 (read)
+- `SOLAR_CONSTANT` = 1361 W m^-2 (exact) [Prsa2016] Table 1 (read)
+- `GM_SUN` = 1.3271244e+20 m^3 s^-2 (exact) [Prsa2016] Table 1 (read)
+- `GM_EARTH` = 3.986004e+14 m^3 s^-2 (exact) [Prsa2016] Table 1 (read)
+- `GM_JUPITER` = 1.2668653e+17 m^3 s^-2 (exact) [Prsa2016] Table 1 (read)
+- `EARTH_EQUATORIAL_RADIUS` = 6378100 m (exact) [Prsa2016] Table 1 (read)
+- `EARTH_POLAR_RADIUS` = 6356800 m (exact) [Prsa2016] Table 1 (read)
+- `JUPITER_EQUATORIAL_RADIUS` = 71492000 m (exact) [Prsa2016] Table 1 (read)
+- `JUPITER_POLAR_RADIUS` = 66854000 m (exact) [Prsa2016] Table 1 (read)
+- `BOLOMETRIC_ZERO_POINT_LUMINOSITY` = 3.0128e+28 W (exact) [Mamajek2015] L_0 definition (read)
+- `ASTRONOMICAL_UNIT` = 149597870700 m (exact) [ERFA2023] erfam.h ERFA_DAU (read)
+- `DAY_SECONDS` = 86400 s (exact) [ERFA2023] erfam.h ERFA_DAYSEC (read)
+- `JULIAN_YEAR_DAYS` = 365.25 day (exact) [ERFA2023] erfam.h ERFA_DJY (read)
+- `JULIAN_CENTURY_DAYS` = 36525 day (exact) [ERFA2023] erfam.h ERFA_DJC (read)
+- `J2000_JD` = 2451545 day (exact) [ERFA2023] erfam.h ERFA_DJ00 (read)
+- `MJD_ZERO_JD` = 2400000.5 day (exact) [ERFA2023] erfam.h ERFA_DJM0 (read)
+- `TT_MINUS_TAI` = 32.184 s (exact) [ERFA2023] erfam.h ERFA_TTMTAI (read)
+- `PARSEC` = 3.08567758149e+16 m (exact) [Mamajek2015] final note: the parsec is exactly (648000/π) au (read; derivation: au · 648000 / pi)
+- `MEGAPARSEC` = 3.08567758149e+22 m (exact) [Mamajek2015] final note: the parsec is exactly (648000/π) au (read; derivation: 1e6 · parsec)
+- `JULIAN_YEAR_SECONDS` = 31557600 s (exact) [ERFA2023] erfam.h ERFA_DJY · ERFA_DAYSEC (read; derivation: 365.25 · 86400)
+
+## Number of functions per source
 
 - [ADQL2023]: 2
 - [Abramowicz2013]: 11
@@ -447,7 +453,7 @@ yazıldı, testlerle sınandı, ama kaynağın metni henüz açılmadı.
 - [Pols2011]: 1
 - [Prsa2016]: 4
 - [Reynolds2021]: 2
-- [SExtractorBelge2026]: 2
+- [SExtractorDocs2026]: 2
 - [Salpeter1955]: 4
 - [Sathyaprakash2009]: 5
 - [Schirmer2013]: 2
@@ -460,5 +466,5 @@ yazıldı, testlerle sınandı, ama kaynağın metni henüz açılmadı.
 - [Zinnecker2007]: 1
 - [vanDokkum2001]: 1
 
-## Kaynağı okunmayı bekleyenler
+## Functions awaiting source reading
 

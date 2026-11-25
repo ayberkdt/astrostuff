@@ -7,21 +7,21 @@ from kozmos.core import constants
 from kozmos.ephemeris import kepler
 
 
-def test_dunya_yorunge_donemi():
-    # a = 1 au ve nominal GM_Güneş [Prsa2016] için dönem bir Gauss yılıdır: 365,2569 gün dolayı.
-    donem_gun = (
+def test_earth_orbital_period():
+    # For a = 1 au and the nominal GM_Sun [Prsa2016] the period is one Gaussian year: about 365.2569 days.
+    period_days = (
         float(kepler.orbital_period_s(constants.ASTRONOMICAL_UNIT.value, constants.GM_SUN.value))
         / constants.DAY_SECONDS.value
     )
-    assert donem_gun == pytest.approx(365.2569, abs=1e-3)
+    assert period_days == pytest.approx(365.2569, abs=1e-3)
 
 
-def test_dairesel_yorunge_hizi():
+def test_circular_orbit_speed():
     r, mu = 7.0e6, constants.GM_EARTH.value
     assert float(kepler.orbital_speed_m_s(r, r, mu)) == pytest.approx(math.sqrt(mu / r), rel=1e-15)
 
 
-def test_ozel_durumlar():
+def test_special_cases():
     assert float(kepler.eccentric_anomaly(0.0, 0.5)) == pytest.approx(0.0, abs=1e-15)
     assert float(kepler.eccentric_anomaly(math.pi, 0.5)) == pytest.approx(math.pi, rel=1e-14)
     m = np.linspace(-10, 10, 41)

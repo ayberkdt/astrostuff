@@ -1,12 +1,13 @@
-"""README için Hubble diyagramı: Pantheon+ uzaklık modülleri ve en iyi uyum eğrisi.
+"""Hubble diagram for the README: Pantheon+ distance moduli and the best-fit curve.
 
-Girdi: ``sonuc.json`` (hubble_analizi.py çıktısı) ve yerel önbellekteki veri.
-Çıktı: ``figures/hubble_diagram.png`` (+ PDF ve denetim raporu).
+Input: ``result.json`` (output of hubble_analysis.py) and the data in the local cache.
+Output: ``figures/hubble_diagram.png`` (+ PDF and audit report).
 
-Şekildeki hata çubukları kovaryans köşegeninden gelir ve yalnızca görsel
-amaçlıdır; uyum tam kovaryansla yapılmıştır (veri deposu README uyarısı).
+The error bars in the figure come from the covariance diagonal and are for
+visual purposes only; the fit was done with the full covariance (README
+warning of the data repository).
 
-Kullanım:
+Usage:
     python projects/hubble/hubble_figure.py
 """
 
@@ -23,67 +24,72 @@ from kozmos.cosmology.distances import Cosmology, distance_modulus
 
 ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT / "examples"))
-import _plotting
+import _plotting  # noqa: E402
 
-SONUC = json.loads((Path(__file__).resolve().parent / "sonuc.json").read_text(encoding="utf-8"))
+RESULT = json.loads((Path(__file__).resolve().parent / "result.json").read_text(encoding="utf-8"))
 
 
 def main() -> None:
     raw = pantheon.load(ROOT / "data" / "raw" / "pantheon")
     s = raw.columns
-    akis = (s["zHD"] > 0.01) & (s["IS_CALIBRATOR"] == 0)
-    z = s["zHD"][akis]
-    a2 = SONUC["analiz_2_sn_ve_sefeid"]
-    h0, om, m = a2["h0"]["ortalama"], a2["omega_m"]["ortalama"], a2["mutlak_kadir"]["ortalama"]
+    flow = (s["zHD"] > 0.01) & (s["IS_CALIBRATOR"] == 0)
+    z = s["zHD"][flow]
+    a2 = RESULT["analysis_2_sn_and_cepheids"]
+    h0, om, m = a2["h0"]["mean"], a2["omega_m"]["mean"], a2["absolute_magnitude"]["mean"]
     cosmology = Cosmology.flat(h0, om)
-    mu = s["m_b_corr"][akis] - m  # bu analizin bulduğu mutlak kadirle uzaklık modülü
+    mu = s["m_b_corr"][flow] - m  # distance modulus with the absolute magnitude found by this analysis
     residual = mu - distance_modulus(z, cosmology)
 
-    fig, eksenler = _plotting.figure(
-        "web", target="web-640", ratio=0.82, decimal=",", mosaic=[["ust"], ["ust"], ["alt"]], sharex=True
+    fig, axes = _plotting.figure(
+        "web", target="web-640", ratio=0.82, mosaic=[["upper"], ["upper"], ["lower"]], sharex=True
     )
-    high, low = eksenler["ust"], eksenler["alt"]
-    nokta = dict(s=5, alpha=0.35, linewidths=0, color="#6b7280", rasterized=True)
+    high, low = axes["upper"], axes["lower"]
+    points = dict(s=5, alpha=0.35, linewidths=0, color="#6b7280", rasterized=True)
 
-    high.scatter(z, mu, **nokta)
+    high.scatter(z, mu, **points)
     zz = np.logspace(-2, np.log10(2.4), 300)
-    (egri,) = high.plot(zz, distance_modulus(zz, cosmology), color="#c2410c", lw=1.8)
-    high.set_xscale("log")  # datawiz: izin Hubble diyagramının alışılmış ölçeği; tikler düz sayı yazılır
-    high.set_ylabel("Uzaklık modülü (mag)")
+    (curve,) = high.plot(zz, distance_modulus(zz, cosmology), color="#c2410c", lw=1.8)
+    high.set_xscale(
+        "log"
+    )  # datawiz: allowed as the usual scale of a Hubble diagram; ticks are written as plain numbers
+    high.set_ylabel("Distance modulus (mag)")
     high.annotate(
-        f"Düz ΛCDM uyumu\n$H_0$ = {h0:.1f}, $Ω_m$ = {om:.2f}".replace(".", ","),
+        f"Flat ΛCDM fit\n$H_0$ = {h0:.1f}, $Ω_m$ = {om:.2f}",
         xy=(0.3, float(distance_modulus(0.3, cosmology))),
         xytext=(0.035, 43.3),
         color="#c2410c",
         arrowprops=dict(arrowstyle="-", color="#c2410c", lw=0.8, shrinkB=3),
     )
-    high.text(0.25, 35.4, f"{akis.sum()} Tür Ia süpernova\n(Pantheon+, z > 0,01)", color="#4b5563", va="top")
+    high.text(0.25, 35.4, f"{flow.sum()} Type Ia supernovae\n(Pantheon+, z > 0.01)", color="#4b5563", va="top")
 
-    low.scatter(z, residual, **nokta)
+    low.scatter(z, residual, **points)
     low.axhline(0.0, color="#c2410c", lw=1.4)
-    # Kutulanmış ortanca artık: eğilim var mı?
-    kenar = np.logspace(-2, np.log10(2.3), 13)
-    orta = np.sqrt(kenar[:-1] * kenar[1:])
-    kutu = np.digitize(z, kenar) - 1
-    ortanca = np.array([np.median(residual[kutu == i]) if np.sum(kutu == i) >= 5 else np.nan for i in range(orta.size)])
-    low.plot(orta, ortanca, "o", ms=4.5, color="#111827", zorder=5)
+    # Binned median residual: is there a trend?
+    edges = np.logspace(-2, np.log10(2.3), 13)
+    centers = np.sqrt(edges[:-1] * edges[1:])
+    bin_index = np.digitize(z, edges) - 1
+    medians = np.array(
+        [np.median(residual[bin_index == i]) if np.sum(bin_index == i) >= 5 else np.nan for i in range(centers.size)]
+    )
+    low.plot(centers, medians, "o", ms=4.5, color="#111827", zorder=5)
     low.set_ylim(-0.75, 0.75)
-    low.set_ylabel("Artık (mag)")
-    low.set_xlabel("Kırmızıya kayma z")
-    low.text(0.012, 0.66, "siyah: kutu ortancası", color="#111827", va="top")
+    low.set_ylabel("Residual (mag)")
+    low.set_xlabel("Redshift z")
+    low.text(0.012, 0.66, "black: bin median", color="#111827", va="top")
     low.set_xlim(0.0095, 2.6)
-    tikler = [0.01, 0.03, 0.1, 0.3, 1.0, 2.0]
-    low.set_xticks(tikler)
-    low.set_xticklabels(["0,01", "0,03", "0,1", "0,3", "1", "2"])
+    ticks = [0.01, 0.03, 0.1, 0.3, 1.0, 2.0]
+    low.set_xticks(ticks)
+    low.set_xticklabels(["0.01", "0.03", "0.1", "0.3", "1", "2"])
     low.minorticks_off()
 
-    cikti = ROOT / "figures"
-    cikti.mkdir(exist_ok=True)
-    rapor = _plotting.save(fig, str(cikti / "hubble_diyagrami"), target="web-640", cvd=True)
-    if rapor is not None:
-        print({k: v for k, v in rapor.items() if k in ("hata", "uyari", "denetim", "dosyalar")})
+    out_dir = ROOT / "figures"
+    out_dir.mkdir(exist_ok=True)
+    report = _plotting.save(fig, str(out_dir / "hubble_diagram"), target="web-640", cvd=True)
+    if report is not None:
+        # The datawiz report is keyed in Turkish; show only its counts and file list.
+        print({k: v for k, v in report.items() if isinstance(v, int | list)})
     print(
-        f"artık: ortanca {np.median(residual):+.4f} mag, sağlam saçılım {1.4826 * np.median(np.abs(residual - np.median(residual))):.3f} mag"
+        f"residual: median {np.median(residual):+.4f} mag, robust scatter {1.4826 * np.median(np.abs(residual - np.median(residual))):.3f} mag"
     )
 
 

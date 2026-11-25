@@ -1,15 +1,16 @@
-"""Parlak Yıldız Kataloğu (BSC5P): çıplak gözle görülen yıldızlar.
+"""Bright Star Catalog (BSC5P): stars visible to the naked eye.
 
-Katalog HEASARC'ın TAP servisindeki ``bsc5p`` tablosundan alınır. Tablo,
-Hoffleit ve Warren'ın Bright Star Catalog 5. gözden geçirilmiş (ön) sürümünden
-türetilmiştir ve yaklaşık 6,5 kadirden parlak yıldızları içerir; tanım
-HEASARC'ın tablo sayfasından okunmuştur [HoffleitWarren1991].
+The catalog is taken from the ``bsc5p`` table of the HEASARC TAP service. The
+table is derived from the 5th revised (preliminary) edition of the Bright Star
+Catalog by Hoffleit and Warren and contains stars brighter than about 6.5
+magnitude; the description was read from the HEASARC table page [HoffleitWarren1991].
 
-Gaia çok parlak yıldızlarda doyduğu için bu katalog Gaia örneklemini
-tamamlar: Sirius, Canopus, Arcturus gibi yıldızlar buradadır.
+Because Gaia saturates on very bright stars, this catalog complements the
+Gaia sample: stars such as Sirius, Canopus and Arcturus are here.
 
-HEASARC TAP servisi CSV vermez (25 Kasım 2026'da ``FORMAT=csv`` "Unsupported
-format" hatası döndürdü); ``FORMAT=text`` ile dikey çizgiyle ayrılmış metin alınır.
+The HEASARC TAP service does not give CSV (on 25 November 2026 ``FORMAT=csv``
+returned an "Unsupported format" error); with ``FORMAT=text`` the result is
+pipe-separated text.
 """
 
 from __future__ import annotations
@@ -23,44 +24,44 @@ from kozmos.archives import cache
 
 TAP = "https://heasarc.gsfc.nasa.gov/xamin/vo/tap/sync"
 ATTRIBUTION = (
-    "Bright Star Catalog, 5th Revised Edition (Preliminary), Hoffleit ve Warren 1991; "
-    "HEASARC bsc5p tablosu (NASA Goddard Space Flight Center)"
+    "Bright Star Catalog, 5th Revised Edition (Preliminary), Hoffleit and Warren 1991; "
+    "HEASARC bsc5p table (NASA Goddard Space Flight Center)"
 )
 COLUMNS = "name, alt_name, hr, hd, ra, dec, vmag, bv_color, spect_type, parallax, pmra, pmdec, radvel"
 
 
 @source(
     "TAP2019",
-    where="Bölüm 2.7.3 (FORMAT)",
+    where="Section 2.7.3 (FORMAT)",
     status="read",
-    note="HEASARC'ın 'text' biçimi: ilk satır sütun adları, alanlar '|' ile ayrılır, boşlukla hizalanır "
-    "(biçim servisin yanıtından gözlendi; belgesinden okunmadı)",
+    note="HEASARC 'text' format: first line is the column names, fields are separated by '|' and padded with "
+    "spaces (the format was observed in the service response; not read from its documentation)",
 )
 def read_pipe_text(path: Path) -> dict[str, np.ndarray]:
-    """Dikey çizgiyle ayrılmış metin tablosunu sütun sözlüğüne okur.
+    """Read a pipe-separated text table into a column dictionary.
 
-    Bütün değerleri sayıya çevrilebilen sütunlar ``float64`` (boş alan ``nan``),
-    diğerleri dizgi dizisi olur.
+    Columns whose values can all be converted to numbers become ``float64``
+    (empty field is ``nan``); the others become string arrays.
 
     References
     ----------
-    [TAP2019] Bölüm 2.7.3.
+    [TAP2019] Section 2.7.3.
 
     Verification
     ------------
     tests/unit/test_archives.py
     """
-    satirlar = [s for s in Path(path).read_text(encoding="utf-8").splitlines() if "|" in s]
-    if not satirlar:
-        raise ValueError("tablo satırı bulunamadı; servis hata döndürmüş olabilir")
-    basliklar = [b.strip() for b in satirlar[0].split("|")]
-    govde = [[a.strip() for a in s.split("|")] for s in satirlar[1:]]
-    govde = [g for g in govde if len(g) == len(basliklar)]
+    lines = [s for s in Path(path).read_text(encoding="utf-8").splitlines() if "|" in s]
+    if not lines:
+        raise ValueError("no table line found; the service may have returned an error")
+    headers = [b.strip() for b in lines[0].split("|")]
+    body = [[a.strip() for a in s.split("|")] for s in lines[1:]]
+    body = [row for row in body if len(row) == len(headers)]
     columns: dict[str, np.ndarray] = {}
-    for i, name in enumerate(basliklar):
-        raw = [g[i] for g in govde]
+    for i, name in enumerate(headers):
+        raw = [row[i] for row in body]
         try:
-            columns[name] = np.array([float(h) if h not in ("", "null") else np.nan for h in raw])
+            columns[name] = np.array([float(value) if value not in ("", "null") else np.nan for value in raw])
         except ValueError:
             columns[name] = np.array(raw)
     return columns
@@ -68,17 +69,17 @@ def read_pipe_text(path: Path) -> dict[str, np.ndarray]:
 
 @source(
     "HoffleitWarren1991",
-    where="HEASARC bsc5p tablo sayfası: Overview, References, Provenance",
+    where="HEASARC bsc5p table page: Overview, References, Provenance",
     status="read",
-    note="katalogun kendisi (kitap/dosya belgesi) okunmadı; tanım ve sütun açıklamaları HEASARC sayfasından ve "
-    "servisin VOTable alan tanımlarından",
+    note="the catalog itself (book/file documentation) was not read; the description and column explanations are "
+    "from the HEASARC page and the VOTable field definitions of the service",
 )
 def bright_stars(cache_dir: Path, *, refresh: bool = False) -> dict[str, np.ndarray]:
-    """Parlak Yıldız Kataloğu'nu (yaklaşık 9100 kayıt) indirir.
+    """Download the Bright Star Catalog (about 9100 records).
 
-    Döndürülen sütunlar: ``name`` (HR numarası), ``alt_name`` (Bayer ya da
-    Flamsteed adı), ``hr``, ``hd``, ``ra`` ve ``dec`` (J2000, derece), ``vmag``,
-    ``bv_color``, ``spect_type``, ``parallax`` (yay saniyesi), ``pmra``,
+    Returned columns: ``name`` (HR number), ``alt_name`` (Bayer or
+    Flamsteed name), ``hr``, ``hd``, ``ra`` and ``dec`` (J2000, degrees), ``vmag``,
+    ``bv_color``, ``spect_type``, ``parallax`` (arcseconds), ``pmra``,
     ``pmdec``, ``radvel``.
 
     References
@@ -87,14 +88,14 @@ def bright_stars(cache_dir: Path, *, refresh: bool = False) -> dict[str, np.ndar
 
     Validity
     --------
-    Katalog 1991 tarihlidir: paralakslar yer tabanlı ölçümlerdir ve çoğu yıldız
-    için yoktur ya da belirsizdir; uzaklık gerektiren işlerde Hipparcos ya da
-    Gaia kullanılmalıdır. HR numarası almış 14 kayıt yıldız değildir (küme, nova
-    vb.; HEASARC sayfası).
+    The catalog dates from 1991: parallaxes are ground-based measurements and are
+    missing or uncertain for most stars; for work that needs distances, Hipparcos
+    or Gaia should be used. 14 records that received an HR number are not stars
+    (clusters, novae etc.; HEASARC page).
 
     Verification
     ------------
-    tests/unit/test_archives.py (ağ gerektirir, ``-m ag``): Sirius'un konumu ve kadiri.
+    tests/unit/test_archives.py (needs the network, ``-m network``): position and magnitude of Sirius.
     """
     adql = f"SELECT {COLUMNS} FROM bsc5p ORDER BY vmag"
     target = Path(cache_dir) / f"bsc5p_{cache.key(TAP, adql)}.txt"

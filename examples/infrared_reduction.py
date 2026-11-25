@@ -1,31 +1,33 @@
-"""Gerçek ham yakın kızılötesi karelerin uçtan uca indirgenmesi.
+"""End-to-end reduction of real raw near-infrared frames.
 
-Veri: ESO NTT/SOFI, Ks bandı, program 184.D-1152(F), Mart 2012. İki bilim
-dizisi ve aynı gecenin kubbe düz alanları:
+Data: ESO NTT/SOFI, Ks band, program 184.D-1152(F), March 2012. Two science
+sequences and the dome flats of the same night:
 
-- SN 2011bm alanı: 16 kare (15 × 6 s), yüksek galaktik enlem, seyrek alan.
-- SN 2005at alanı (NGC 6744): 32 kare (10 × 7 s), yıldızca zengin; gökada alanı doldurur.
-- Ks kubbe düz alanı: 8 kare (lamba açık/kapalı, maskeli/maskesiz).
+- SN 2011bm field: 16 frames (15 × 6 s), high galactic latitude, sparse field.
+- SN 2005at field (NGC 6744): 32 frames (10 × 7 s), rich in stars; the galaxy fills the field.
+- Ks dome flat: 8 frames (lamp on/off, masked/unmasked).
 
-Kareler ESO arşivinden ``.fits.Z`` olarak iner; açılmış ``.fits`` dosyaları
-``data/raw/eso/`` altında beklenir (``gzip -d`` ``.Z`` dosyalarını açar; düz
-alan dosyaları ``duzalan_`` önekiyle). Dosya kimlikleri
-``examples/eso_sofi_frames.txt`` içindedir; her biri
-``https://dataportal.eso.org/dataportal_new/file/<kimlik>`` adresinden iner.
+The frames come from the ESO archive as ``.fits.Z``; the uncompressed ``.fits``
+files are expected under ``data/raw/eso/`` (``gzip -d`` unpacks the ``.Z`` files;
+the flat field files carry the ``flat_`` prefix and the standard star files
+the ``standard_`` prefix). The file identifiers are in
+``examples/eso_sofi_frames.txt``; each one is downloaded from
+``https://dataportal.eso.org/dataportal_new/file/<identifier>``.
 
-Adımlar:
+Steps:
 
-1. Düz alan: SOFI Kullanım Kılavuzu'nun özel kubbe düz alanı tarifi (maskeli karelerle gölgelenme düzeltmesi).
-2. Maskesiz durağan gökyüzü modeli, bozuk piksel haritası, kare başına saptama.
-3. Kareler arası öteleme: başlıktaki kaydırma komutlarından başlar, yıldızlarla inceltilir.
-4. İlk yığından nesne maskesi; maskeli durağan ve dinamik gökyüzü modelleri; düz alana bölme.
-5. Yığma, kaynak saptama, 2MASS kataloğuyla astrometrik çözüm (başlıktan ve başlıksız) ve sıfır noktası.
+1. Flat field: the special dome flat recipe of the SOFI User Manual (shade correction with masked frames).
+2. Static sky model without masks, bad pixel map, per-frame detection.
+3. Offsets between frames: start from the offset commands in the header, refine with stars.
+4. Object mask from the first stack; masked static and dynamic sky models; division by the flat field.
+5. Stacking, source detection, astrometric solution against the 2MASS catalog (with and without the header) and zero point.
 
-Bu sınamada "gerçek" bilinmez; ölçütler iç tutarlılıktır (artık arka planın
-düzlüğü, aynı yıldızın karelerdeki akısının yinelenebilirliği) ve bağımsız
-katalogdur (2MASS konumları ve K kadirleri).
+In this test the "truth" is not known; the criteria are internal consistency
+(flatness of the residual background, repeatability of the flux of the same
+star across frames) and the independent catalog (2MASS positions and K
+magnitudes).
 
-Kullanım:
+Usage:
     python examples/infrared_reduction.py
 """
 
@@ -38,667 +40,684 @@ import _plotting
 import numpy as np
 from scipy import ndimage
 
+from kozmos import photometry
 from kozmos.archives import gaia, twomass
 from kozmos.astrometry import matching, solve, triangles, wcs
 from kozmos.io import fits
-from kozmos.photometry import sources
 from kozmos.reduction import sky
 from kozmos.statistics import robust
 from kozmos.visualization import stretch
 
 ROOT = Path(__file__).resolve().parents[1]
-DIZIN = ROOT / "data" / "raw" / "eso"
-ACIKLIK, HALKA = 5.0, (10.0, 15.0)
-BUYUK_ACIKLIK, BUYUK_HALKA = 10.0, (15.0, 20.0)
-STANDARTLAR = {
-    "FS14 (13/14 Mart gecesi)": "standart_SOFI.2012-03-13T23*.fits",
-    "FS24 (14/15 Mart gecesi)": "standart_SOFI.2012-03-15T10*.fits",
+DATA_DIR = ROOT / "data" / "raw" / "eso"
+APERTURE, ANNULUS = 5.0, (10.0, 15.0)
+LARGE_APERTURE, LARGE_ANNULUS = 10.0, (15.0, 20.0)
+STANDARDS = {
+    "FS14 (night of March 13/14)": "standard_SOFI.2012-03-13T23*.fits",
+    "FS24 (night of March 14/15)": "standard_SOFI.2012-03-15T10*.fits",
 }
-DIZILER = {"SN2011bm": "SOFI.2012-03-15T07*.fits", "SN2005at": "SOFI.2012-03-14T09*.fits"}
+SEQUENCES = {"SN2011bm": "SOFI.2012-03-15T07*.fits", "SN2005at": "SOFI.2012-03-14T09*.fits"}
 
 
-def sapta(image: np.ndarray, threshold: float) -> sources.SourceList:
-    harita, rms = sources.background_map(image, cell=64)
-    return sources.detect_sources(image, harita, rms, threshold_sigma=threshold, min_pixels=8, smoothing_fwhm=3.0)
-
-
-def eslesen_fark(liste0, liste1, tahmin, radius: float = 8.0) -> tuple[np.ndarray, np.ndarray]:
-    """liste1 ≈ liste0 + tahmin varsayımıyla ``yaricap`` içinde eşleşen çiftlerin (dx, dy) farkları."""
-    dx = liste1.x[:, None] - liste0.x[None, :]
-    dy = liste1.y[:, None] - liste0.y[None, :]
-    yakin = np.hypot(dx - tahmin[0], dy - tahmin[1]) < radius
-    return dx[yakin], dy[yakin]
-
-
-def stack(frames: np.ndarray, oteleme: np.ndarray) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
-    """Kareleri tam piksel ötelemeyle ortak tuvale yerleştirip ortalar; (yığın, kapsama, tuval kökeni)."""
-    tam = np.round(oteleme).astype(int)
-    koken = tam.max(axis=0)  # tuval pikseli = kare pikseli − öteleme + köken
-    ny, nx = frames.shape[1:]
-    toplam = np.zeros((ny + int(koken[1] - tam[:, 1].min()), nx + int(koken[0] - tam[:, 0].min())))
-    number = np.zeros_like(toplam)
-    for kare, (dx, dy) in zip(frames, tam, strict=True):
-        x0, y0 = int(koken[0] - dx), int(koken[1] - dy)
-        iyi = np.isfinite(kare)
-        toplam[y0 : y0 + ny, x0 : x0 + nx] += np.where(iyi, kare, 0.0)
-        number[y0 : y0 + ny, x0 : x0 + nx] += iyi
-    with np.errstate(invalid="ignore", divide="ignore"):
-        return np.where(number > 0, toplam / number, np.nan), number, koken
-
-
-def buyuk_olcekli_yapi(frames: np.ndarray, masks: np.ndarray, kutu: int = 64) -> float:
-    """Maskesiz piksellerin 64 piksellik kutu ortancalarının kare içi saçılımı; kareler üzerinden ortanca [ADU]."""
-    sonuc = []
-    for kare, mask in zip(frames, masks, strict=True):
-        d = np.where(mask, np.nan, kare)
-        n = d.shape[0] // kutu
-        bloklar = d[: n * kutu, : n * kutu].reshape(n, kutu, n, kutu).swapaxes(1, 2).reshape(n, n, -1)
-        with np.errstate(all="ignore"):
-            sonuc.append(np.nanstd(np.nanmedian(bloklar, axis=2)))
-    return float(np.median(sonuc))
-
-
-def duz_alan_kur() -> tuple[np.ndarray, np.ndarray, dict]:
-    """Kubbe düz alanları: (özel, basit, bilgi).
-
-    Kare sırası SOFI Kullanım Kılavuzu'ndan (Şekil 3.3) okunmuştur ve karelerin düzeyleriyle doğrulanır:
-    lamba kapalı, kapalı+maske, açık+maske, açık; ikinci yarı tersten (açık, açık+maske, kapalı+maske, kapalı).
-
-    Basit düz alan: maskesiz (açık − kapalı). Kılavuz bunun dedektörün aydınlatmaya bağlı gölgelenme desenini
-    (shade) tam gidermediğini ve sıfır noktasında dizinin ortası boyunca yüzde birkaçlık süreksizlik bıraktığını
-    söyler. Özel düz alan (Bölüm 5.2.5): her lamba durumu için A = maskeli karenin 50-150. sütunları, B = maskeli
-    karenin 500-600. sütunları, C = maskesiz karenin 500-600. sütunları satır boyunca ortalanır; maskesiz karedeki
-    gölgelenme A + (C − B) olur ve kareden satır satır çıkarılır; sonra açık − kapalı alınır.
-    """
-    yollar = sorted(DIZIN.glob("duzalan_SOFI*.fits"))
-    if len(yollar) != 8:
-        raise SystemExit(f"{DIZIN} altında 8 düz alan karesi bekleniyor, {len(yollar)} bulundu")
-    frames = np.array([fits.read_fits(path)[0] for path in yollar])  # zaman sırasıyla
-    duzey = np.median(frames, axis=(1, 2))
-    kapali, kapali_m, acik_m, acik = (0, 7), (1, 6), (2, 5), (3, 4)
-    # Sıranın veriyle denetimi: lamba açık kareler kapalılardan, maskesizler aynı durumdaki maskelilerden parlaktır.
-    assert duzey[list(acik + acik_m)].min() > duzey[list(kapali + kapali_m)].max()
-    assert (
-        duzey[list(acik)].min() > duzey[list(acik_m)].max() and duzey[list(kapali)].min() > duzey[list(kapali_m)].max()
+def detect(image: np.ndarray, threshold: float) -> photometry.SourceList:
+    background, rms = photometry.background_map(image, cell=64)
+    return photometry.detect_sources(
+        image, background, rms, threshold_sigma=threshold, min_pixels=8, smoothing_fwhm=3.0
     )
 
-    def golgesiz(maskesiz: np.ndarray, maskeli: np.ndarray) -> np.ndarray:
-        a = maskeli[:, 49:150].mean(axis=1)
-        b = maskeli[:, 499:600].mean(axis=1)
-        c = maskesiz[:, 499:600].mean(axis=1)
-        return maskesiz - (a + (c - b))[:, None]
 
-    basit_fark = frames[list(acik)].mean(axis=0) - frames[list(kapali)].mean(axis=0)
-    ozel_fark = np.mean(
+def matched_offsets(list0, list1, guess, radius: float = 8.0) -> tuple[np.ndarray, np.ndarray]:
+    """Return the (dx, dy) differences of pairs matched within ``radius``, assuming list1 ≈ list0 + guess."""
+    dx = list1.x[:, None] - list0.x[None, :]
+    dy = list1.y[:, None] - list0.y[None, :]
+    near = np.hypot(dx - guess[0], dy - guess[1]) < radius
+    return dx[near], dy[near]
+
+
+def stack(frames: np.ndarray, offsets: np.ndarray) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
+    """Place the frames on a common canvas with whole-pixel offsets and average them; (stack, coverage, canvas origin)."""
+    whole = np.round(offsets).astype(int)
+    origin = whole.max(axis=0)  # canvas pixel = frame pixel − offset + origin
+    ny, nx = frames.shape[1:]
+    total = np.zeros((ny + int(origin[1] - whole[:, 1].min()), nx + int(origin[0] - whole[:, 0].min())))
+    count = np.zeros_like(total)
+    for frame, (dx, dy) in zip(frames, whole, strict=True):
+        x0, y0 = int(origin[0] - dx), int(origin[1] - dy)
+        good = np.isfinite(frame)
+        total[y0 : y0 + ny, x0 : x0 + nx] += np.where(good, frame, 0.0)
+        count[y0 : y0 + ny, x0 : x0 + nx] += good
+    with np.errstate(invalid="ignore", divide="ignore"):
+        return np.where(count > 0, total / count, np.nan), count, origin
+
+
+def large_scale_structure(frames: np.ndarray, masks: np.ndarray, box: int = 64) -> float:
+    """Return the within-frame scatter of the medians of 64-pixel boxes of unmasked pixels; median over frames [ADU]."""
+    results = []
+    for frame, mask in zip(frames, masks, strict=True):
+        d = np.where(mask, np.nan, frame)
+        n = d.shape[0] // box
+        blocks = d[: n * box, : n * box].reshape(n, box, n, box).swapaxes(1, 2).reshape(n, n, -1)
+        with np.errstate(all="ignore"):
+            results.append(np.nanstd(np.nanmedian(blocks, axis=2)))
+    return float(np.median(results))
+
+
+def build_flat_field() -> tuple[np.ndarray, np.ndarray, dict]:
+    """Build the dome flats: (custom, simple, info).
+
+    The frame order was read from the SOFI User Manual (Fig. 3.3) and is verified against the frame levels:
+    lamp off, off+mask, on+mask, on; the second half in reverse order (on, on+mask, off+mask, off).
+
+    Simple flat field: unmasked (on − off). The manual says this does not fully remove the illumination-dependent
+    shading pattern of the detector (shade) and leaves a discontinuity of a few percent in the zero point across the
+    middle of the array. Custom flat field (Section 5.2.5): for each lamp state, A = columns 50-150 of the masked
+    frame, B = columns 500-600 of the masked frame, C = columns 500-600 of the unmasked frame, averaged along the
+    rows; the shading in the unmasked frame is A + (C − B) and is subtracted from the frame row by row; then
+    on − off is taken.
+    """
+    paths = sorted(DATA_DIR.glob("flat_SOFI*.fits"))
+    if len(paths) != 8:
+        raise SystemExit(f"8 flat field frames expected under {DATA_DIR}, found {len(paths)}")
+    frames = np.array([fits.read_fits(path)[0] for path in paths])  # in time order
+    level = np.median(frames, axis=(1, 2))
+    off, off_masked, on_masked, on = (0, 7), (1, 6), (2, 5), (3, 4)
+    # Check of the order against the data: lamp-on frames are brighter than off frames, and unmasked frames are
+    # brighter than masked frames in the same state.
+    assert level[list(on + on_masked)].min() > level[list(off + off_masked)].max()
+    assert (
+        level[list(on)].min() > level[list(on_masked)].max() and level[list(off)].min() > level[list(off_masked)].max()
+    )
+
+    def without_shade(unmasked: np.ndarray, masked: np.ndarray) -> np.ndarray:
+        a = masked[:, 49:150].mean(axis=1)
+        b = masked[:, 499:600].mean(axis=1)
+        c = unmasked[:, 499:600].mean(axis=1)
+        return unmasked - (a + (c - b))[:, None]
+
+    simple_difference = frames[list(on)].mean(axis=0) - frames[list(off)].mean(axis=0)
+    custom_difference = np.mean(
         [
-            golgesiz(frames[acik[i]], frames[acik_m[i]]) - golgesiz(frames[kapali[i]], frames[kapali_m[i]])
+            without_shade(frames[on[i]], frames[on_masked[i]]) - without_shade(frames[off[i]], frames[off_masked[i]])
             for i in (0, 1)
         ],
         axis=0,
     )
-    basit, ozel = basit_fark / np.median(basit_fark), ozel_fark / np.median(ozel_fark)
-    ratio = ozel / basit
+    simple, custom = simple_difference / np.median(simple_difference), custom_difference / np.median(custom_difference)
+    ratio = custom / simple
     return (
-        ozel,
-        basit,
+        custom,
+        simple,
         {
-            "kare_duzeyleri_adu": [round(float(x), 1) for x in duzey],
-            "lamba_acik_eksi_kapali_adu": float(np.median(basit_fark)),
-            "duz_alan_sacilimi": float(robust.mad_scale(ozel)),
-            # Kılavuzun andığı süreksizlik: özel/basit oranının dizinin alt ve üst yarısındaki ortancaları.
-            "ozel_bolu_basit_alt_yari": float(np.median(ratio[100:500, 100:900])),
-            "ozel_bolu_basit_ust_yari": float(np.median(ratio[524:924, 100:900])),
+            "frame_levels_adu": [round(float(x), 1) for x in level],
+            "lamp_on_minus_off_adu": float(np.median(simple_difference)),
+            "flat_field_scatter": float(robust.mad_scale(custom)),
+            # The discontinuity mentioned in the manual: medians of the custom/simple ratio in the lower and upper half of the array.
+            "custom_over_simple_lower_half": float(np.median(ratio[100:500, 100:900])),
+            "custom_over_simple_upper_half": float(np.median(ratio[524:924, 100:900])),
         },
     )
 
 
-def indirge(name: str, desen: str, flat: np.ndarray, basit_duz: np.ndarray) -> tuple[dict, dict]:
-    yollar = sorted(DIZIN.glob(desen))
-    if len(yollar) < 8:
-        raise SystemExit(f"{DIZIN} altında {name} kareleri yok; kimlikler examples/eso_sofi_frames.txt içinde")
-    frames, times, basliklar = [], [], []
-    for path in yollar:
+def reduce_sequence(name: str, pattern: str, flat: np.ndarray, simple_flat: np.ndarray) -> tuple[dict, dict]:
+    paths = sorted(DATA_DIR.glob(pattern))
+    if len(paths) < 8:
+        raise SystemExit(f"no {name} frames under {DATA_DIR}; identifiers are in examples/eso_sofi_frames.txt")
+    frames, times, headers = [], [], []
+    for path in paths:
         data, header = fits.read_fits(path)
         frames.append(data)
-        times.append(float(header["MJD-OBS"]) * 1440.0)  # dakika
-        basliklar.append(header)
+        times.append(float(header["MJD-OBS"]) * 1440.0)  # minutes
+        headers.append(header)
     frames, times = np.array(frames), np.array(times)
     times -= times[0]
-    duzey = np.median(frames, axis=(1, 2))
-    k_sayi, (ny, nx) = len(frames), frames.shape[1:]
-    b0 = basliklar[0]
+    level = np.median(frames, axis=(1, 2))
+    n_frames, (ny, nx) = len(frames), frames.shape[1:]
+    b0 = headers[0]
 
-    # Maskesiz durağan model. Bozuk pikseller: gökyüzü modelinde yerel ortancadan sapanlar ve düz alanı aykırı olanlar.
-    ilk, ilk_model = sky.subtract_static_sky(frames)
-    yerel = ilk_model - ndimage.median_filter(ilk_model, size=5, mode="nearest")
-    bozuk = np.abs(yerel) > 6.0 * robust.mad_scale(yerel)
-    bozuk |= (flat < 0.5) | (flat > 1.5)
-    bozuk = ndimage.binary_dilation(bozuk, structure=np.ones((3, 3)))
-    ilk_temiz = ilk.copy()
-    ilk_temiz[:, bozuk] = 0.0
-    listeler = [sapta(kare, threshold=6.0) for kare in ilk_temiz]
+    # Static model without masks. Bad pixels: those that deviate from the local median in the sky model and those whose flat field is an outlier.
+    first, first_model = sky.subtract_static_sky(frames)
+    local = first_model - ndimage.median_filter(first_model, size=5, mode="nearest")
+    bad = np.abs(local) > 6.0 * robust.mad_scale(local)
+    bad |= (flat < 0.5) | (flat > 1.5)
+    bad = ndimage.binary_dilation(bad, structure=np.ones((3, 3)))
+    first_clean = first.copy()
+    first_clean[:, bad] = 0.0
+    lists = [detect(frame, threshold=6.0) for frame in first_clean]
 
-    # Öteleme: başlıktaki kaydırma komutları başlangıç tahminidir; komutun dedektör eksenleriyle eşleşmesi ve
-    # işareti (sekiz olasılık) en çok yıldız eşleştiren seçenek olarak veriden bulunur, sonra yıldızlarla inceltilir.
-    komut = np.array([[b["ESO SEQ CUMOFFSETX"], b["ESO SEQ CUMOFFSETY"]] for b in basliklar])
-    komut -= komut[0]
-    adaylar = []
-    for sira in ((0, 1), (1, 0)):
+    # Offsets: the offset commands in the header are the initial guess; how the command maps onto the detector axes and
+    # its sign (eight possibilities) is found from the data as the option that matches the most stars, then refined with stars.
+    command = np.array([[b["ESO SEQ CUMOFFSETX"], b["ESO SEQ CUMOFFSETY"]] for b in headers])
+    command -= command[0]
+    candidates = []
+    for order in ((0, 1), (1, 0)):
         for sx in (1.0, -1.0):
             for sy in (1.0, -1.0):
-                tahmin = np.column_stack([sx * komut[:, sira[0]], sy * komut[:, sira[1]]])
-                puan = sum(eslesen_fark(listeler[0], listeler[i], tahmin[i])[0].size for i in range(1, k_sayi))
-                adaylar.append((puan, sira, (sx, sy), tahmin))
-    adaylar.sort(key=lambda aday: -aday[0])
-    _, komut_sirasi, komut_isareti, tahmin = adaylar[0]
-    oteleme, eslesen = [(0.0, 0.0)], []
-    for i in range(1, k_sayi):
-        dx, dy = eslesen_fark(listeler[0], listeler[i], tahmin[i])
-        oteleme.append((float(np.median(dx)), float(np.median(dy))) if dx.size else tuple(tahmin[i]))
-        eslesen.append(int(dx.size))
-    oteleme = np.array(oteleme)
-    tam = np.round(oteleme).astype(int)
+                guess = np.column_stack([sx * command[:, order[0]], sy * command[:, order[1]]])
+                score = sum(matched_offsets(lists[0], lists[i], guess[i])[0].size for i in range(1, n_frames))
+                candidates.append((score, order, (sx, sy), guess))
+    candidates.sort(key=lambda candidate: -candidate[0])
+    _, command_order, command_signs, guess = candidates[0]
+    offsets, matches = [(0.0, 0.0)], []
+    for i in range(1, n_frames):
+        dx, dy = matched_offsets(lists[0], lists[i], guess[i])
+        offsets.append((float(np.median(dx)), float(np.median(dy))) if dx.size else tuple(guess[i]))
+        matches.append(int(dx.size))
+    offsets = np.array(offsets)
+    whole = np.round(offsets).astype(int)
 
-    # İlk yığından nesne maskesi (yığın koordinatında), her karenin koordinatına geri taşınır.
-    ilk_yigin, kapsama, koken = stack(np.where(bozuk[None], np.nan, ilk), oteleme)
-    tam_kapsama = kapsama >= 0.5 * k_sayi
-    dolgu = np.where(tam_kapsama, ilk_yigin, np.nanmedian(ilk_yigin[tam_kapsama]))
-    y_harita, _ = sources.background_map(dolgu, cell=64)
-    puruzsuz = ndimage.gaussian_filter(dolgu - y_harita, 1.5)
-    nesne = (puruzsuz > 3.0 * robust.mad_scale(puruzsuz[tam_kapsama])) & tam_kapsama
-    nesne = ndimage.binary_dilation(nesne, structure=np.ones((3, 3)), iterations=3)
+    # Object mask from the first stack (in stack coordinates), carried back to the coordinates of each frame.
+    first_stack, coverage, origin = stack(np.where(bad[None], np.nan, first), offsets)
+    full_coverage = coverage >= 0.5 * n_frames
+    filled = np.where(full_coverage, first_stack, np.nanmedian(first_stack[full_coverage]))
+    stack_background, _ = photometry.background_map(filled, cell=64)
+    smooth = ndimage.gaussian_filter(filled - stack_background, 1.5)
+    objects = (smooth > 3.0 * robust.mad_scale(smooth[full_coverage])) & full_coverage
+    objects = ndimage.binary_dilation(objects, structure=np.ones((3, 3)), iterations=3)
     masks = np.array(
         [
-            nesne[int(koken[1] - dy) : int(koken[1] - dy) + ny, int(koken[0] - dx) : int(koken[0] - dx) + nx]
-            for dx, dy in tam
+            objects[int(origin[1] - dy) : int(origin[1] - dy) + ny, int(origin[0] - dx) : int(origin[0] - dx) + nx]
+            for dx, dy in whole
         ]
     )
 
-    duragan, _ = sky.subtract_static_sky(frames, masks=masks)
-    dinamik = sky.subtract_dynamic_sky(frames, times, n_neighbors=8, masks=masks)
-    sabit = frames - duzey[:, None, None]  # yalnızca düzey çıkarılmış: karşılaştırma tabanı
-    disarida = masks | bozuk[None]
-    guvenli_duz = np.where(bozuk, 1.0, flat)
-    duragan_duz = duragan / guvenli_duz  # gökyüzü çıkarılmış kare düz alana bölünür
-    duragan_basit = duragan / np.where(bozuk, 1.0, basit_duz)
+    static, _ = sky.subtract_static_sky(frames, masks=masks)
+    dynamic = sky.subtract_dynamic_sky(frames, times, n_neighbors=8, masks=masks)
+    level_only = frames - level[:, None, None]  # only the level subtracted: comparison baseline
+    excluded = masks | bad[None]
+    safe_flat = np.where(bad, 1.0, flat)
+    static_flat = static / safe_flat  # the sky-subtracted frame is divided by the flat field
+    static_simple = static / np.where(bad, 1.0, simple_flat)
 
-    def gurultu(dizi: np.ndarray) -> float:
-        return float(np.median([robust.mad_scale(k[~m]) for k, m in zip(dizi, disarida, strict=True)]))
+    def noise(series: np.ndarray) -> float:
+        return float(np.median([robust.mad_scale(k[~m]) for k, m in zip(series, excluded, strict=True)]))
 
-    # Yığın (düz alanlı durağan model; bozuk pikseller girmez), saptama.
-    son_yigin, kapsama, koken = stack(np.where(bozuk[None], np.nan, duragan_duz), oteleme)
-    tam_kapsama = kapsama >= 0.5 * k_sayi
-    yigin_g = np.where(tam_kapsama, son_yigin, np.nanmedian(son_yigin[tam_kapsama]))
-    sources_of = sapta(yigin_g, threshold=5.0)
-    ic_bolge = ndimage.binary_erosion(tam_kapsama, iterations=15)
-    icte = ic_bolge[np.round(sources_of.y).astype(int), np.round(sources_of.x).astype(int)]
-    kx, ky = sources_of.x[icte], sources_of.y[icte]
-    # Kör çözümde parlaklık ölçütü tepe değeridir: bölüt akısı yaygın gökada düğümlerini yıldızların önüne geçirir.
-    k_aki = sources_of.peak[icte]
+    # Stack (static model with flat field; bad pixels are left out), detection.
+    final_stack, coverage, origin = stack(np.where(bad[None], np.nan, static_flat), offsets)
+    full_coverage = coverage >= 0.5 * n_frames
+    stack_filled = np.where(full_coverage, final_stack, np.nanmedian(final_stack[full_coverage]))
+    detections = detect(stack_filled, threshold=5.0)
+    interior = ndimage.binary_erosion(full_coverage, iterations=15)
+    inside = interior[np.round(detections.y).astype(int), np.round(detections.x).astype(int)]
+    kx, ky = detections.x[inside], detections.y[inside]
+    # In the blind solution the brightness criterion is the peak value: segment flux would put diffuse galaxy knots ahead of stars.
+    k_flux = detections.peak[inside]
 
-    # Astrometri: (a) başlıktaki WCS'ten başlayarak, (b) başlık kullanılmadan üçgen eşlemeyle.
-    baslik_wcs = wcs.wcs_from_header(b0)
-    baslik_wcs = wcs.Wcs(crpix=baslik_wcs.crpix + koken, crval=baslik_wcs.crval, cd=baslik_wcs.cd)
-    katalog = twomass.point_sources(float(b0["CRVAL1"]), float(b0["CRVAL2"]), 0.09, ROOT / "data" / "raw" / "2mass")
-    kaymasiz, oy = solve.find_shift(baslik_wcs, kx, ky, katalog["ra"], katalog["dec"], max_shift_pix=320.0, bin_pix=4.0)
-    cozulen = solve.refine_wcs(
-        kaymasiz, kx, ky, katalog["ra"], katalog["dec"], radius_arcsec=4.0, final_radius_arcsec=1.5
+    # Astrometry: (a) starting from the WCS in the header, (b) with triangle matching without using the header.
+    header_wcs = wcs.wcs_from_header(b0)
+    header_wcs = wcs.Wcs(crpix=header_wcs.crpix + origin, crval=header_wcs.crval, cd=header_wcs.cd)
+    catalog = twomass.point_sources(float(b0["CRVAL1"]), float(b0["CRVAL2"]), 0.09, ROOT / "data" / "raw" / "2mass")
+    shifted, votes = solve.find_shift(
+        header_wcs, kx, ky, catalog["ra"], catalog["dec"], max_shift_pix=320.0, bin_pix=4.0
     )
-    px, py = wcs.sky_to_pixel(cozulen.wcs, katalog["ra"], katalog["dec"])
-    alanda = np.isfinite(px) & (px > 0) & (px < yigin_g.shape[1] - 1) & (py > 0) & (py < yigin_g.shape[0] - 1)
-    alanda[alanda] = ic_bolge[np.round(py[alanda]).astype(int), np.round(px[alanda]).astype(int)]
-    ra, dec = wcs.pixel_to_sky(cozulen.wcs, kx, ky)
-    inverse = matching.cross_match(katalog["ra"][alanda], katalog["dec"][alanda], ra, dec, 1.5)
+    solved = solve.refine_wcs(
+        shifted, kx, ky, catalog["ra"], catalog["dec"], radius_arcsec=4.0, final_radius_arcsec=1.5
+    )
+    px, py = wcs.sky_to_pixel(solved.wcs, catalog["ra"], catalog["dec"])
+    in_field = (
+        np.isfinite(px) & (px > 0) & (px < stack_filled.shape[1] - 1) & (py > 0) & (py < stack_filled.shape[0] - 1)
+    )
+    in_field[in_field] = interior[np.round(py[in_field]).astype(int), np.round(px[in_field]).astype(int)]
+    ra, dec = wcs.pixel_to_sky(solved.wcs, kx, ky)
+    to_detections = matching.cross_match(catalog["ra"][in_field], catalog["dec"][in_field], ra, dec, 1.5)
     try:
-        # Kör çözüm: başlıktaki WCS kullanılmaz. Yalnızca yaklaşık gök konumu ve alan genişliği bilgisi kullanılır:
-        # katalog, yığının kısa kenarının yarısı kadar yarıçaplı bir koniyle sınırlanır.
-        radius = 0.5 * min(yigin_g.shape) * float(b0["ESO INS PIXSCALE"]) / 3600.0
-        uzaklik = np.hypot(
-            (katalog["ra"] - float(b0["CRVAL1"])) * np.cos(np.radians(float(b0["CRVAL2"]))),
-            katalog["dec"] - float(b0["CRVAL2"]),
+        # Blind solution: the WCS in the header is not used. Only the approximate sky position and field width are
+        # used: the catalog is limited to a cone with a radius of half the short side of the stack.
+        radius = 0.5 * min(stack_filled.shape) * float(b0["ESO INS PIXSCALE"]) / 3600.0
+        distance = np.hypot(
+            (catalog["ra"] - float(b0["CRVAL1"])) * np.cos(np.radians(float(b0["CRVAL2"]))),
+            catalog["dec"] - float(b0["CRVAL2"]),
         )
-        yakin = uzaklik < radius
-        kor, cift = triangles.blind_solve(
+        in_cone = distance < radius
+        blind, pairs = triangles.blind_solve(
             kx,
             ky,
-            k_aki,
-            katalog["ra"][yakin],
-            katalog["dec"][yakin],
-            katalog["k_m"][yakin],
+            k_flux,
+            catalog["ra"][in_cone],
+            catalog["dec"][in_cone],
+            catalog["k_m"][in_cone],
             n_brightest=40,
             tolerance=0.015,
         )
-        izgara_x, izgara_y = np.meshgrid(
-            np.linspace(0, yigin_g.shape[1] - 1, 4), np.linspace(0, yigin_g.shape[0] - 1, 4)
+        grid_x, grid_y = np.meshgrid(
+            np.linspace(0, stack_filled.shape[1] - 1, 4), np.linspace(0, stack_filled.shape[0] - 1, 4)
         )
-        r1, d1 = wcs.pixel_to_sky(kor.wcs, izgara_x, izgara_y)
-        r2, d2 = wcs.pixel_to_sky(cozulen.wcs, izgara_x, izgara_y)
-        kor_sonuc = {
-            "ucgen_eslemesinde_atanan_cift": cift,
-            "cozume_giren_yildiz": kor.n_stars,
-            "basliktan_baslayan_cozumden_en_buyuk_fark_yaysaniye": float(
+        r1, d1 = wcs.pixel_to_sky(blind.wcs, grid_x, grid_y)
+        r2, d2 = wcs.pixel_to_sky(solved.wcs, grid_x, grid_y)
+        blind_result = {
+            "pairs_assigned_in_triangle_match": pairs,
+            "stars_in_solution": blind.n_stars,
+            "max_difference_from_header_started_solution_arcsec": float(
                 np.max(np.hypot((r1 - r2) * np.cos(np.radians(d2)), d1 - d2)) * 3600.0
             ),
         }
-    except ValueError as hata:
-        # Tanı: başlıktan başlayan çözümle, üçgen eşlemeye giren iki parlak listenin kaç ortak yıldızı vardı?
-        g = np.argsort(-k_aki)[:40]
-        kk = np.argsort(katalog["k_m"][yakin])[:40]
-        ortak = matching.cross_match(ra[g], dec[g], katalog["ra"][yakin][kk], katalog["dec"][yakin][kk], 1.5)
-        kor_sonuc = {
-            "basarisiz": str(hata),
-            "konideki_katalog_yildizi": int(yakin.sum()),
-            "parlak_listelerin_ortak_yildizi": int(ortak.matched.sum()),
+    except ValueError as error:
+        # Diagnosis: how many stars did the two bright lists entering the triangle match share, using the solution started from the header?
+        g = np.argsort(-k_flux)[:40]
+        kk = np.argsort(catalog["k_m"][in_cone])[:40]
+        common = matching.cross_match(ra[g], dec[g], catalog["ra"][in_cone][kk], catalog["dec"][in_cone][kk], 1.5)
+        blind_result = {
+            "failed": str(error),
+            "catalog_stars_in_cone": int(in_cone.sum()),
+            "common_stars_of_bright_lists": int(common.matched.sum()),
         }
 
-    # Gaia DR3 ile astrometri: 2MASS'ten çok daha derin olduğu için seyrek alanda da yeterli yıldız verir.
-    # Konumlar öz hareketle gözlem dönemine taşınır. Kör çözümde parlaklık sırası G kadirinden alınır.
-    donem = 2000.0 + (float(b0["MJD-OBS"]) - 51544.5) / 365.25
-    g_kat = gaia.cone_search(
-        float(b0["CRVAL1"]), float(b0["CRVAL2"]), 0.09, ROOT / "data" / "raw" / "gaia", epoch_yr=donem
+    # Astrometry with Gaia DR3: it is much deeper than 2MASS, so it gives enough stars even in the sparse field.
+    # Positions are moved to the observing epoch with proper motion. In the blind solution the brightness order comes from the G magnitude.
+    epoch = 2000.0 + (float(b0["MJD-OBS"]) - 51544.5) / 365.25
+    gaia_catalog = gaia.cone_search(
+        float(b0["CRVAL1"]), float(b0["CRVAL2"]), 0.09, ROOT / "data" / "raw" / "gaia", epoch_yr=epoch
     )
-    g_kaymasiz, g_oy = solve.find_shift(baslik_wcs, kx, ky, g_kat["ra"], g_kat["dec"], max_shift_pix=320.0, bin_pix=4.0)
-    g_cozum = solve.refine_wcs(
-        g_kaymasiz, kx, ky, g_kat["ra"], g_kat["dec"], radius_arcsec=4.0, final_radius_arcsec=1.0
+    gaia_shifted, gaia_votes = solve.find_shift(
+        header_wcs, kx, ky, gaia_catalog["ra"], gaia_catalog["dec"], max_shift_pix=320.0, bin_pix=4.0
     )
-    kose_x, kose_y = np.meshgrid(np.linspace(0, yigin_g.shape[1] - 1, 4), np.linspace(0, yigin_g.shape[0] - 1, 4))
+    gaia_solution = solve.refine_wcs(
+        gaia_shifted, kx, ky, gaia_catalog["ra"], gaia_catalog["dec"], radius_arcsec=4.0, final_radius_arcsec=1.0
+    )
+    corner_x, corner_y = np.meshgrid(
+        np.linspace(0, stack_filled.shape[1] - 1, 4), np.linspace(0, stack_filled.shape[0] - 1, 4)
+    )
 
-    def cozum_farki(w1: wcs.Wcs, w2: wcs.Wcs) -> float:
-        a1, d1 = wcs.pixel_to_sky(w1, kose_x, kose_y)
-        a2, d2 = wcs.pixel_to_sky(w2, kose_x, kose_y)
+    def solution_difference(w1: wcs.Wcs, w2: wcs.Wcs) -> float:
+        a1, d1 = wcs.pixel_to_sky(w1, corner_x, corner_y)
+        a2, d2 = wcs.pixel_to_sky(w2, corner_x, corner_y)
         return float(np.max(np.hypot((a1 - a2) * np.cos(np.radians(d2)), d1 - d2)) * 3600.0)
 
-    gaia_sonuc = {
-        "donem_yil": donem,
-        "konideki_gaia_kaynagi": int(len(g_kat["ra"])),
-        "kaydirma_oyu": g_oy,
-        "cozume_giren_yildiz": g_cozum.n_stars,
-        "artik_rms_yaysaniye": g_cozum.residual_rms_arcsec,
-        "2mass_cozumunden_en_buyuk_fark_yaysaniye": cozum_farki(g_cozum.wcs, cozulen.wcs),
+    gaia_result = {
+        "epoch_yr": epoch,
+        "gaia_sources_in_cone": int(len(gaia_catalog["ra"])),
+        "shift_votes": gaia_votes,
+        "stars_in_solution": gaia_solution.n_stars,
+        "residual_rms_arcsec": gaia_solution.residual_rms_arcsec,
+        "max_difference_from_2mass_solution_arcsec": solution_difference(gaia_solution.wcs, solved.wcs),
     }
     try:
-        g_yakin = (
+        gaia_in_cone = (
             np.hypot(
-                (g_kat["ra"] - float(b0["CRVAL1"])) * np.cos(np.radians(float(b0["CRVAL2"]))),
-                g_kat["dec"] - float(b0["CRVAL2"]),
+                (gaia_catalog["ra"] - float(b0["CRVAL1"])) * np.cos(np.radians(float(b0["CRVAL2"]))),
+                gaia_catalog["dec"] - float(b0["CRVAL2"]),
             )
-            < 0.5 * min(yigin_g.shape) * float(b0["ESO INS PIXSCALE"]) / 3600.0
+            < 0.5 * min(stack_filled.shape) * float(b0["ESO INS PIXSCALE"]) / 3600.0
         )
-        g_kor, g_cift = triangles.blind_solve(
+        gaia_blind, gaia_pairs = triangles.blind_solve(
             kx,
             ky,
-            k_aki,
-            g_kat["ra"][g_yakin],
-            g_kat["dec"][g_yakin],
-            g_kat["phot_g_mean_mag"][g_yakin],
+            k_flux,
+            gaia_catalog["ra"][gaia_in_cone],
+            gaia_catalog["dec"][gaia_in_cone],
+            gaia_catalog["phot_g_mean_mag"][gaia_in_cone],
             n_brightest=40,
             tolerance=0.015,
             final_radius_arcsec=1.0,
-            min_validation_fraction=0.2,  # seyrek alanda parlak listelerin ortak yıldızı azdır; mutlak alt sınır (8) korunur
+            min_validation_fraction=0.2,  # in a sparse field the bright lists share few stars; the absolute lower limit (8) is kept
         )
-        gaia_sonuc["kor_cozum"] = {
-            "ucgen_eslemesinde_atanan_cift": g_cift,
-            "cozume_giren_yildiz": g_kor.n_stars,
-            "artik_rms_yaysaniye": g_kor.residual_rms_arcsec,
-            "basliktan_baslayan_gaia_cozumunden_en_buyuk_fark_yaysaniye": cozum_farki(g_kor.wcs, g_cozum.wcs),
+        gaia_result["blind_solution"] = {
+            "pairs_assigned_in_triangle_match": gaia_pairs,
+            "stars_in_solution": gaia_blind.n_stars,
+            "residual_rms_arcsec": gaia_blind.residual_rms_arcsec,
+            "max_difference_from_header_started_gaia_solution_arcsec": solution_difference(
+                gaia_blind.wcs, gaia_solution.wcs
+            ),
         }
-    except ValueError as hata:
-        gaia_sonuc["kor_cozum"] = {"basarisiz": str(hata)}
+    except ValueError as error:
+        gaia_result["blind_solution"] = {"failed": str(error)}
 
-    # Sıfır noktası: 2MASS K belirsizliği 0,15 kadirden küçük, doymamış, eşleşen yıldızlar.
-    e = matching.cross_match(ra, dec, katalog["ra"], katalog["dec"], 1.5)
-    flux, _ = sources.aperture_photometry(yigin_g, kx, ky, ACIKLIK, annulus=HALKA)
-    peak = sources_of.peak[icte]
-    aday = e.matched & (katalog["k_cmsig"][e.index] < 0.15) & (flux > 0) & (peak < 15000.0)
+    # Zero point: unsaturated, matched stars with a 2MASS K uncertainty below 0.15 mag.
+    matches_2mass = matching.cross_match(ra, dec, catalog["ra"], catalog["dec"], 1.5)
+    flux, _ = photometry.aperture_photometry(stack_filled, kx, ky, APERTURE, annulus=ANNULUS)
+    peak = detections.peak[inside]
+    candidate = matches_2mass.matched & (catalog["k_cmsig"][matches_2mass.index] < 0.15) & (flux > 0) & (peak < 15000.0)
 
-    # Sıfır noktası yıldızlarının tanısı: nokta kaynak mı (dar/geniş açıklık oranı), Gaia'da var mı, 2MASS niteliği.
-    dar, _ = sources.aperture_photometry(yigin_g, kx, ky, 3.0, annulus=HALKA)
-    genis, _ = sources.aperture_photometry(yigin_g, kx, ky, 8.0, annulus=HALKA)
-    g_ra, g_dec = wcs.pixel_to_sky(g_cozum.wcs, kx, ky)
-    gaia_es = matching.cross_match(g_ra, g_dec, g_kat["ra"], g_kat["dec"], 1.0)
-    yogunlasma = np.where(genis > 0, dar / np.where(genis > 0, genis, 1.0), np.nan)
-    yogunlasma_hepsi = np.nanmedian(yogunlasma[gaia_es.matched & (flux > 0)])
-    # Nokta kaynak süzgeci: 2MASS Nokta Kaynak Kataloğu sıkı gökadaları da içerir; sabit açıklık bunların akısının
-    # çoğunu kaçırır ve sıfır noktasını düşürür (seyrek alanda 0,77 kadirlik sapma böyle bulundu).
-    nokta = np.abs(yogunlasma - yogunlasma_hepsi) < 0.15
-    k_iyi = aday & nokta
-    sifir = katalog["k_m"][e.index][k_iyi] + 2.5 * np.log10(flux[k_iyi])
-    tanilar = [
+    # Diagnosis of the zero point stars: point source or not (narrow/wide aperture ratio), present in Gaia or not, 2MASS quality.
+    narrow, _ = photometry.aperture_photometry(stack_filled, kx, ky, 3.0, annulus=ANNULUS)
+    wide, _ = photometry.aperture_photometry(stack_filled, kx, ky, 8.0, annulus=ANNULUS)
+    g_ra, g_dec = wcs.pixel_to_sky(gaia_solution.wcs, kx, ky)
+    gaia_match = matching.cross_match(g_ra, g_dec, gaia_catalog["ra"], gaia_catalog["dec"], 1.0)
+    concentration = np.where(wide > 0, narrow / np.where(wide > 0, wide, 1.0), np.nan)
+    concentration_all = np.nanmedian(concentration[gaia_match.matched & (flux > 0)])
+    # Point source filter: the 2MASS Point Source Catalog also contains compact galaxies; a fixed aperture misses most
+    # of their flux and lowers the zero point (a 0.77 mag deviation in the sparse field was found this way).
+    point_source = np.abs(concentration - concentration_all) < 0.15
+    k_good = candidate & point_source
+    zero_points = catalog["k_m"][matches_2mass.index][k_good] + 2.5 * np.log10(flux[k_good])
+    diagnostics = [
         {
-            "sifir_noktasi": round(float(katalog["k_m"][e.index[i]] + 2.5 * np.log10(flux[i])), 3),
-            "k_2mass": float(katalog["k_m"][e.index[i]]),
-            "k_belirsizligi": float(katalog["k_cmsig"][e.index[i]]),
-            "ph_qual": str(katalog["ph_qual"][e.index[i]]),
-            "dar_bolu_genis_aciklik": round(float(dar[i] / genis[i]), 3),
-            "gaia_yildizlarinda_ortanca_oran": round(float(yogunlasma_hepsi), 3),
-            "nokta_kaynak": bool(nokta[i]),
-            "gaia_karsiligi": bool(gaia_es.matched[i]),
-            "gaia_g": float(g_kat["phot_g_mean_mag"][gaia_es.index[i]]) if gaia_es.matched[i] else None,
-            "yigin_konumu_piksel": [round(float(kx[i]), 1), round(float(ky[i]), 1)],
-            "en_yakin_baska_kaynak_piksel": round(float(np.sort(np.hypot(kx - kx[i], ky - ky[i]))[1]), 1),
+            "zero_point": round(
+                float(catalog["k_m"][matches_2mass.index[i]] + 2.5 * np.log10(flux[i])),
+                3,
+            ),
+            "k_2mass": float(catalog["k_m"][matches_2mass.index[i]]),
+            "k_uncertainty": float(catalog["k_cmsig"][matches_2mass.index[i]]),
+            "ph_qual": str(catalog["ph_qual"][matches_2mass.index[i]]),
+            "narrow_over_wide_aperture": round(float(narrow[i] / wide[i]), 3),
+            "median_ratio_in_gaia_stars": round(float(concentration_all), 3),
+            "point_source": bool(point_source[i]),
+            "gaia_counterpart": bool(gaia_match.matched[i]),
+            "gaia_g": float(gaia_catalog["phot_g_mean_mag"][gaia_match.index[i]]) if gaia_match.matched[i] else None,
+            "stack_position_pix": [round(float(kx[i]), 1), round(float(ky[i]), 1)],
+            "nearest_other_source_pix": round(float(np.sort(np.hypot(kx - kx[i], ky - ky[i]))[1]), 1),
         }
-        for i in np.flatnonzero(aday)
+        for i in np.flatnonzero(candidate)
     ]
 
-    # Açıklık düzeltmesi: parlak nokta kaynaklarda 10 piksellik açıklığın 5 piksellik açıklığa akı oranı [kadir].
-    buyuk, _ = sources.aperture_photometry(yigin_g, kx, ky, BUYUK_ACIKLIK, annulus=BUYUK_HALKA)
-    parlak_nokta = np.flatnonzero(gaia_es.matched & nokta & (flux > 0) & (buyuk > 0) & (peak < 15000.0))
-    parlak_nokta = parlak_nokta[np.argsort(-flux[parlak_nokta])][:8]
-    duzeltmeler = 2.5 * np.log10(buyuk[parlak_nokta] / flux[parlak_nokta])
-    aciklik_duzeltmesi = float(np.median(duzeltmeler)) if parlak_nokta.size else None
+    # Aperture correction: flux ratio of the 10-pixel aperture to the 5-pixel aperture for bright point sources [mag].
+    large, _ = photometry.aperture_photometry(stack_filled, kx, ky, LARGE_APERTURE, annulus=LARGE_ANNULUS)
+    bright_points = np.flatnonzero(gaia_match.matched & point_source & (flux > 0) & (large > 0) & (peak < 15000.0))
+    bright_points = bright_points[np.argsort(-flux[bright_points])][:8]
+    corrections = 2.5 * np.log10(large[bright_points] / flux[bright_points])
+    aperture_correction = float(np.median(corrections)) if bright_points.size else None
 
-    def yinelenebilirlik(dizi: np.ndarray) -> dict:
-        """Parlak yıldızların karelerdeki açıklık akısının bağıl sağlam saçılımı ve beklenen gürültüye oranı."""
-        olcumler, beklenen = [], []
-        piksel_sigma = gurultu(dizi)
-        n_pix, n_b = np.pi * ACIKLIK**2, np.pi * (HALKA[1] ** 2 - HALKA[0] ** 2)
+    def repeatability(series: np.ndarray) -> dict:
+        """Relative robust scatter of the aperture flux of bright stars across frames, and its ratio to the expected noise."""
+        measured, expected = [], []
+        pixel_sigma = noise(series)
+        n_pix, n_b = np.pi * APERTURE**2, np.pi * (ANNULUS[1] ** 2 - ANNULUS[0] ** 2)
         for i in np.argsort(-flux):
-            x_k = kx[i] - koken[0] + oteleme[:, 0]
-            y_k = ky[i] - koken[1] + oteleme[:, 1]
+            x_k = kx[i] - origin[0] + offsets[:, 0]
+            y_k = ky[i] - origin[1] + offsets[:, 1]
             if np.any((x_k < 20) | (x_k > nx - 21) | (y_k < 20) | (y_k > ny - 21)):
                 continue
-            if max(frames[k][int(round(y_k[k])), int(round(x_k[k]))] for k in range(k_sayi)) > 20000.0:
-                continue  # doyma bölgesinden uzak dur
+            if max(frames[k][int(round(y_k[k])), int(round(x_k[k]))] for k in range(n_frames)) > 20000.0:
+                continue  # stay away from the saturation region
             f = np.array(
                 [
                     float(
-                        sources.aperture_photometry(
-                            np.where(bozuk, 0.0, dizi[k]), x_k[k], y_k[k], ACIKLIK, annulus=HALKA
+                        photometry.aperture_photometry(
+                            np.where(bad, 0.0, series[k]), x_k[k], y_k[k], APERTURE, annulus=ANNULUS
                         )[0]
                     )
-                    for k in range(k_sayi)
+                    for k in range(n_frames)
                 ]
             )
-            if np.median(f) > 30.0 * piksel_sigma * np.sqrt(n_pix):  # S/G > 30: gürültü değil düzeltme hatası ölçülsün
-                olcumler.append(robust.mad_scale(f) / np.median(f))
-                beklenen.append(piksel_sigma * np.sqrt(n_pix * (1.0 + n_pix / n_b)) / np.median(f))
-            if len(olcumler) >= 15:
+            if np.median(f) > 30.0 * pixel_sigma * np.sqrt(
+                n_pix
+            ):  # S/N > 30: measure the correction error, not the noise
+                measured.append(robust.mad_scale(f) / np.median(f))
+                expected.append(pixel_sigma * np.sqrt(n_pix * (1.0 + n_pix / n_b)) / np.median(f))
+            if len(measured) >= 15:
                 break
-        if not olcumler:
-            return {"yildiz_sayisi": 0}
+        if not measured:
+            return {"star_count": 0}
         return {
-            "yildiz_sayisi": len(olcumler),
-            "bagil_sacilim": float(np.median(olcumler)),
-            "beklenen_arka_plan_gurultusu": float(np.median(beklenen)),
+            "star_count": len(measured),
+            "relative_scatter": float(np.median(measured)),
+            "expected_background_noise": float(np.median(expected)),
         }
 
-    def sonumleme_egimi(dizi: np.ndarray) -> dict:
-        """Dizi içinde parlak yıldızların göreli kadirinin hava kütlesine göre eğimi [kadir / hava kütlesi].
+    def extinction_slope(series: np.ndarray) -> dict:
+        """Slope of the relative magnitude of bright stars in the sequence against airmass [mag / airmass].
 
-        Her yıldızın kare akıları kendi ortancasına bölünür; her karede yıldızlar üzerinden ortanca alınır ve
-        göreli kadir hava kütlesine doğrusal uydurulur. Eğim sönümleme ile saydamlık kaymasını ayırt edemez.
+        The frame fluxes of each star are divided by its own median; in each frame the median over stars is taken and
+        the relative magnitude is fitted linearly against airmass. The slope cannot tell extinction from a drift in transparency.
         """
-        hava = np.array([float(b["ESO TEL AIRM START"]) for b in basliklar])
-        goreli = []
+        airmass = np.array([float(b["ESO TEL AIRM START"]) for b in headers])
+        relative = []
         for i in np.argsort(-flux):
-            x_k = kx[i] - koken[0] + oteleme[:, 0]
-            y_k = ky[i] - koken[1] + oteleme[:, 1]
+            x_k = kx[i] - origin[0] + offsets[:, 0]
+            y_k = ky[i] - origin[1] + offsets[:, 1]
             if np.any((x_k < 20) | (x_k > nx - 21) | (y_k < 20) | (y_k > ny - 21)):
                 continue
-            if max(frames[k][int(round(y_k[k])), int(round(x_k[k]))] for k in range(k_sayi)) > 20000.0:
+            if max(frames[k][int(round(y_k[k])), int(round(x_k[k]))] for k in range(n_frames)) > 20000.0:
                 continue
             f = np.array(
                 [
                     float(
-                        sources.aperture_photometry(
-                            np.where(bozuk, 0.0, dizi[k]), x_k[k], y_k[k], ACIKLIK, annulus=HALKA
+                        photometry.aperture_photometry(
+                            np.where(bad, 0.0, series[k]), x_k[k], y_k[k], APERTURE, annulus=ANNULUS
                         )[0]
                     )
-                    for k in range(k_sayi)
+                    for k in range(n_frames)
                 ]
             )
-            if np.median(f) > 30.0 * gurultu(dizi) * np.sqrt(np.pi * ACIKLIK**2):
-                goreli.append(f / np.median(f))
-            if len(goreli) >= 15:
+            if np.median(f) > 30.0 * noise(series) * np.sqrt(np.pi * APERTURE**2):
+                relative.append(f / np.median(f))
+            if len(relative) >= 15:
                 break
-        if len(goreli) < 5:
-            return {"yildiz_sayisi": len(goreli), "hava_kutlesi_araligi": [float(hava.min()), float(hava.max())]}
-        magnitude = -2.5 * np.log10(np.median(np.array(goreli), axis=0))
-        design = np.column_stack([np.ones(k_sayi), hava - hava.mean()])
+        if len(relative) < 5:
+            return {"star_count": len(relative), "airmass_range": [float(airmass.min()), float(airmass.max())]}
+        magnitude = -2.5 * np.log10(np.median(np.array(relative), axis=0))
+        design = np.column_stack([np.ones(n_frames), airmass - airmass.mean()])
         coefficient, *_ = np.linalg.lstsq(design, magnitude, rcond=None)
         residual = magnitude - design @ coefficient
-        kov = np.linalg.inv(design.T @ design) * residual.var(ddof=2)
+        covariance = np.linalg.inv(design.T @ design) * residual.var(ddof=2)
         return {
-            "yildiz_sayisi": len(goreli),
-            "hava_kutlesi_araligi": [float(hava.min()), float(hava.max())],
-            "egim_kadir_hava_kutlesi": float(coefficient[1]),
-            "egim_belirsizligi": float(np.sqrt(kov[1, 1])),
-            "kare_basina_artik_rms_kadir": float(residual.std(ddof=2)),
+            "star_count": len(relative),
+            "airmass_range": [float(airmass.min()), float(airmass.max())],
+            "slope_mag_per_airmass": float(coefficient[1]),
+            "slope_uncertainty": float(np.sqrt(covariance[1, 1])),
+            "residual_rms_per_frame_mag": float(residual.std(ddof=2)),
         }
 
-    sonuc = {
+    result = {
         "data": {
-            "hedef": str(b0["OBJECT"]).strip(),
-            "suzgec": str(b0["ESO INS FILT1 NAME"]).strip(),
-            "kare_sayisi": k_sayi,
+            "target": str(b0["OBJECT"]).strip(),
+            "filter": str(b0["ESO INS FILT1 NAME"]).strip(),
+            "n_frames": n_frames,
             "dit_s": float(b0["ESO DET DIT"]),
             "ndit": int(b0["ESO DET NDIT"]),
-            "dizi_suresi_dakika": float(times[-1]),
-            "hava_kutlesi": float(b0["ESO TEL AIRM START"]),
+            "sequence_duration_min": float(times[-1]),
+            "airmass": float(b0["ESO TEL AIRM START"]),
         },
-        "gokyuzu_duzeyi_adu": [float(duzey.min()), float(duzey.max())],
-        "bozuk_piksel_kesri": float(bozuk.mean()),
-        "nesne_maskesi_kesri": float(masks.mean()),
-        "oteleme": {
-            "en_buyuk_piksel": float(np.abs(oteleme).max()),
-            "kare_basina_eslesen_en_az": int(min(eslesen)),
-            "en_iyi_ve_ikinci_secenegin_puani": [int(adaylar[0][0]), int(adaylar[1][0])],
-            "baslik_komutu_eksen_sirasi": list(komut_sirasi),
-            "baslik_komutu_isareti": list(komut_isareti),
-            "baslik_komutundan_fark_rms_piksel": float(np.sqrt(np.mean((oteleme - tahmin) ** 2))),
+        "sky_level_adu": [float(level.min()), float(level.max())],
+        "bad_pixel_fraction": float(bad.mean()),
+        "object_mask_fraction": float(masks.mean()),
+        "offsets": {
+            "max_pixel": float(np.abs(offsets).max()),
+            "min_matches_per_frame": int(min(matches)),
+            "scores_of_best_and_second_option": [int(candidates[0][0]), int(candidates[1][0])],
+            "header_command_axis_order": list(command_order),
+            "header_command_signs": list(command_signs),
+            "rms_difference_from_header_command_pix": float(np.sqrt(np.mean((offsets - guess) ** 2))),
         },
-        "buyuk_olcekli_artik_adu": {
-            "yalniz_duzey_cikarilmis": buyuk_olcekli_yapi(sabit, disarida),
-            "duragan_maskesiz": buyuk_olcekli_yapi(ilk, disarida),
-            "duragan_maskeli": buyuk_olcekli_yapi(duragan, disarida),
-            "dinamik_maskeli": buyuk_olcekli_yapi(dinamik, disarida),
+        "large_scale_residual_adu": {
+            "level_only_subtracted": large_scale_structure(level_only, excluded),
+            "static_unmasked": large_scale_structure(first, excluded),
+            "static_masked": large_scale_structure(static, excluded),
+            "dynamic_masked": large_scale_structure(dynamic, excluded),
         },
-        "piksel_gurultusu_adu": {
-            "yalniz_duzey_cikarilmis": gurultu(sabit),
-            "duragan_maskeli": gurultu(duragan),
-            "dinamik_maskeli": gurultu(dinamik),
+        "pixel_noise_adu": {
+            "level_only_subtracted": noise(level_only),
+            "static_masked": noise(static),
+            "dynamic_masked": noise(dynamic),
         },
-        "yinelenebilirlik": {
-            "duz_alansiz": yinelenebilirlik(duragan),
-            "basit_duz_alanli": yinelenebilirlik(duragan_basit),
-            "ozel_duz_alanli": yinelenebilirlik(duragan_duz),
+        "repeatability": {
+            "without_flat": repeatability(static),
+            "simple_flat": repeatability(static_simple),
+            "custom_flat": repeatability(static_flat),
         },
-        "dizi_ici_sonumleme": sonumleme_egimi(duragan_duz),
-        "yigin": {"boyut": list(yigin_g.shape), "saptanan_kaynak": int(icte.sum())},
-        "astrometri": {
-            "katalog_yildizi": int(len(katalog["ra"])),
-            "kaydirma_oyu": oy,
-            "baslik_wcs_kaymasi_piksel": (kaymasiz.crpix - baslik_wcs.crpix).tolist(),
-            "cozume_giren_yildiz": cozulen.n_stars,
-            "alandaki_katalog_yildizi": int(alanda.sum()),
-            "alandaki_katalog_yildizindan_saptanan": int(inverse.matched.sum()),
-            "artik_rms_yaysaniye": cozulen.residual_rms_arcsec,
-            "olcek_yaysaniye_piksel": float(np.sqrt(abs(np.linalg.det(cozulen.wcs.cd))) * 3600.0),
-            "baslik_olcegi_yaysaniye_piksel": float(b0["ESO INS PIXSCALE"]),
-            "kor_cozum": kor_sonuc,
-            "gaia": gaia_sonuc,
+        "intra_sequence_extinction": extinction_slope(static_flat),
+        "stack": {"size": list(stack_filled.shape), "detected_sources": int(inside.sum())},
+        "astrometry": {
+            "catalog_stars": int(len(catalog["ra"])),
+            "shift_votes": votes,
+            "header_wcs_shift_pix": (shifted.crpix - header_wcs.crpix).tolist(),
+            "stars_in_solution": solved.n_stars,
+            "catalog_stars_in_field": int(in_field.sum()),
+            "detected_of_catalog_stars_in_field": int(to_detections.matched.sum()),
+            "residual_rms_arcsec": solved.residual_rms_arcsec,
+            "scale_arcsec_pix": float(np.sqrt(abs(np.linalg.det(solved.wcs.cd))) * 3600.0),
+            "header_scale_arcsec_pix": float(b0["ESO INS PIXSCALE"]),
+            "blind_solution": blind_result,
+            "gaia": gaia_result,
         },
-        "fotometri": {
-            "aday_sayisi": int(aday.sum()),
-            "nokta_kaynak_olmadigi_icin_atilan": int((aday & ~nokta).sum()),
-            "yildiz_sayisi": int(k_iyi.sum()),
-            "sifir_noktasi_kadir": float(np.median(sifir)) if sifir.size else None,
-            "sacilim_kadir": float(robust.mad_scale(sifir)) if sifir.size > 2 else None,
-            "tek_tek_sifir_noktalari": np.sort(sifir).round(3).tolist() if sifir.size <= 6 else None,
-            "yildiz_tanilari": tanilar if aday.sum() <= 6 else None,
-            "aciklik_duzeltmesi_kadir": aciklik_duzeltmesi,
-            "aciklik_duzeltmesi_yildiz_sayisi": int(parlak_nokta.size),
-            "aciklik_duzeltmesi_sacilimi": float(robust.mad_scale(duzeltmeler)) if parlak_nokta.size > 2 else None,
-            "ortanca_katalog_belirsizligi_kadir": float(np.median(katalog["k_cmsig"][e.index][k_iyi]))
-            if sifir.size
+        "photometry": {
+            "candidate_count": int(candidate.sum()),
+            "discarded_as_not_point_source": int((candidate & ~point_source).sum()),
+            "star_count": int(k_good.sum()),
+            "zero_point_mag": float(np.median(zero_points)) if zero_points.size else None,
+            "scatter_mag": float(robust.mad_scale(zero_points)) if zero_points.size > 2 else None,
+            "individual_zero_points": np.sort(zero_points).round(3).tolist() if zero_points.size <= 6 else None,
+            "star_diagnostics": diagnostics if candidate.sum() <= 6 else None,
+            "aperture_correction_mag": aperture_correction,
+            "aperture_correction_star_count": int(bright_points.size),
+            "aperture_correction_scatter": float(robust.mad_scale(corrections)) if bright_points.size > 2 else None,
+            "median_catalog_uncertainty_mag": float(np.median(catalog["k_cmsig"][matches_2mass.index][k_good]))
+            if zero_points.size
             else None,
         },
     }
-    ys, xs = np.nonzero(kapsama >= k_sayi - 1)
-    goruntuler = {
-        "raw": (frames[0], gurultu(sabit), float(duzey[0])),
-        "cikarilmis": (np.where(bozuk, 0.0, duragan_duz[0]), gurultu(duragan_duz), 0.0),
-        "yigin": (yigin_g[ys.min() : ys.max() + 1, xs.min() : xs.max() + 1], None, 0.0),
+    ys, xs = np.nonzero(coverage >= n_frames - 1)
+    images = {
+        "raw": (frames[0], noise(level_only), float(level[0])),
+        "subtracted": (np.where(bad, 0.0, static_flat[0]), noise(static_flat), 0.0),
+        "stack": (stack_filled[ys.min() : ys.max() + 1, xs.min() : xs.max() + 1], None, 0.0),
     }
-    return sonuc, goruntuler
+    return result, images
 
 
-def standart_olc(desen: str, flat: np.ndarray) -> dict:
-    """Standart yıldız dizisinden (4 kare, dört köşe) alan yıldızlarıyla sıfır noktası.
+def measure_standard(pattern: str, flat: np.ndarray) -> dict:
+    """Zero point from field stars in a standard star sequence (4 frames, four corners).
 
-    Standart yıldızın kendi kadiri kullanılmaz (UKIRT sönük standartlarının kadirleri bu çalışmada okunmadı);
-    kalibratör, aynı karelerdeki 2MASS yıldızlarıdır (K belirsizliği 0,05 kadirden küçük olanlar).
+    The magnitude of the standard star itself is not used (the magnitudes of the UKIRT faint standards were not read
+    in this work); the calibrators are the 2MASS stars in the same frames (those with a K uncertainty below 0.05 mag).
     """
-    yollar = sorted(DIZIN.glob(desen))
-    if len(yollar) < 3:
-        raise SystemExit(f"{DIZIN} altında {desen} kareleri yok; kimlikler examples/eso_sofi_frames.txt içinde")
-    frames, basliklar = [], []
-    for path in yollar:
+    paths = sorted(DATA_DIR.glob(pattern))
+    if len(paths) < 3:
+        raise SystemExit(f"no {pattern} frames under {DATA_DIR}; identifiers are in examples/eso_sofi_frames.txt")
+    frames, headers = [], []
+    for path in paths:
         data, header = fits.read_fits(path)
         frames.append(data)
-        basliklar.append(header)
+        headers.append(header)
     frames = np.array(frames)
-    b0 = basliklar[0]
-    bozuk = ndimage.binary_dilation((flat < 0.5) | (flat > 1.5), structure=np.ones((3, 3)))
-    cikarilmis, _ = sky.subtract_static_sky(frames, reject_highest=0)
-    cikarilmis = np.where(bozuk[None], np.nan, cikarilmis / np.where(bozuk, 1.0, flat))
-    # Öteleme: bilim dizilerinde veriden bulunan kural (eksen sırası X, Y; işaret +, +), yıldızlarla inceltilir.
-    komut = np.array([[b["ESO SEQ CUMOFFSETX"], b["ESO SEQ CUMOFFSETY"]] for b in basliklar])
-    komut -= komut[0]
-    listeler = [sapta(np.nan_to_num(kare), threshold=8.0) for kare in cikarilmis]
-    oteleme = [(0.0, 0.0)]
+    b0 = headers[0]
+    bad = ndimage.binary_dilation((flat < 0.5) | (flat > 1.5), structure=np.ones((3, 3)))
+    subtracted, _ = sky.subtract_static_sky(frames, reject_highest=0)
+    subtracted = np.where(bad[None], np.nan, subtracted / np.where(bad, 1.0, flat))
+    # Offsets: the rule found from the data in the science sequences (axis order X, Y; signs +, +), refined with stars.
+    command = np.array([[b["ESO SEQ CUMOFFSETX"], b["ESO SEQ CUMOFFSETY"]] for b in headers])
+    command -= command[0]
+    lists = [detect(np.nan_to_num(frame), threshold=8.0) for frame in subtracted]
+    offsets = [(0.0, 0.0)]
     for i in range(1, len(frames)):
-        dx, dy = eslesen_fark(listeler[0], listeler[i], komut[i])
-        oteleme.append((float(np.median(dx)), float(np.median(dy))) if dx.size else tuple(komut[i]))
-    oteleme = np.array(oteleme)
-    yigin_g, kapsama, koken = stack(cikarilmis, oteleme)
-    yeterli = kapsama >= 2
-    yigin_g = np.where(yeterli, yigin_g, np.nanmedian(yigin_g[yeterli]))
-    sources_of = sapta(yigin_g, threshold=6.0)
-    ic_bolge = ndimage.binary_erosion(yeterli, iterations=20)
-    icte = ic_bolge[np.round(sources_of.y).astype(int), np.round(sources_of.x).astype(int)]
-    kx, ky, peak = sources_of.x[icte], sources_of.y[icte], sources_of.peak[icte]
-    baslik_wcs = wcs.wcs_from_header(b0)
-    baslik_wcs = wcs.Wcs(crpix=baslik_wcs.crpix + koken, crval=baslik_wcs.crval, cd=baslik_wcs.cd)
-    katalog = twomass.point_sources(float(b0["CRVAL1"]), float(b0["CRVAL2"]), 0.09, ROOT / "data" / "raw" / "2mass")
-    kaymasiz, _ = solve.find_shift(baslik_wcs, kx, ky, katalog["ra"], katalog["dec"], max_shift_pix=320.0, bin_pix=4.0)
-    cozulen = solve.refine_wcs(
-        kaymasiz, kx, ky, katalog["ra"], katalog["dec"], radius_arcsec=4.0, final_radius_arcsec=1.5
+        dx, dy = matched_offsets(lists[0], lists[i], command[i])
+        offsets.append((float(np.median(dx)), float(np.median(dy))) if dx.size else tuple(command[i]))
+    offsets = np.array(offsets)
+    stack_image, coverage, origin = stack(subtracted, offsets)
+    enough = coverage >= 2
+    stack_image = np.where(enough, stack_image, np.nanmedian(stack_image[enough]))
+    detections = detect(stack_image, threshold=6.0)
+    interior = ndimage.binary_erosion(enough, iterations=20)
+    inside = interior[np.round(detections.y).astype(int), np.round(detections.x).astype(int)]
+    kx, ky, peak = detections.x[inside], detections.y[inside], detections.peak[inside]
+    header_wcs = wcs.wcs_from_header(b0)
+    header_wcs = wcs.Wcs(crpix=header_wcs.crpix + origin, crval=header_wcs.crval, cd=header_wcs.cd)
+    catalog = twomass.point_sources(float(b0["CRVAL1"]), float(b0["CRVAL2"]), 0.09, ROOT / "data" / "raw" / "2mass")
+    shifted, _ = solve.find_shift(header_wcs, kx, ky, catalog["ra"], catalog["dec"], max_shift_pix=320.0, bin_pix=4.0)
+    solved = solve.refine_wcs(
+        shifted, kx, ky, catalog["ra"], catalog["dec"], radius_arcsec=4.0, final_radius_arcsec=1.5
     )
-    ra, dec = wcs.pixel_to_sky(cozulen.wcs, kx, ky)
-    e = matching.cross_match(ra, dec, katalog["ra"], katalog["dec"], 1.5)
-    kucuk, _ = sources.aperture_photometry(yigin_g, kx, ky, ACIKLIK, annulus=HALKA)
-    buyuk, _ = sources.aperture_photometry(yigin_g, kx, ky, BUYUK_ACIKLIK, annulus=BUYUK_HALKA)
-    iyi = e.matched & (katalog["k_cmsig"][e.index] < 0.05) & (kucuk > 0) & (buyuk > 0) & (peak < 15000.0)
-    k_m = katalog["k_m"][e.index][iyi]
+    ra, dec = wcs.pixel_to_sky(solved.wcs, kx, ky)
+    match = matching.cross_match(ra, dec, catalog["ra"], catalog["dec"], 1.5)
+    small, _ = photometry.aperture_photometry(stack_image, kx, ky, APERTURE, annulus=ANNULUS)
+    large, _ = photometry.aperture_photometry(stack_image, kx, ky, LARGE_APERTURE, annulus=LARGE_ANNULUS)
+    good = match.matched & (catalog["k_cmsig"][match.index] < 0.05) & (small > 0) & (large > 0) & (peak < 15000.0)
+    k_m = catalog["k_m"][match.index][good]
     dit = float(b0["ESO DET DIT"])
-    sifir_buyuk = k_m + 2.5 * np.log10(buyuk[iyi] / dit)  # saniye başına, 10 piksellik açıklık
-    # Gevşek seçim: K belirsizliği 0,10 kadire kadar olan yıldızlar da (kalibratörü az olan alan için).
-    gevsek = e.matched & (katalog["k_cmsig"][e.index] < 0.10) & (kucuk > 0) & (buyuk > 0) & (peak < 15000.0)
-    sifir_gevsek = katalog["k_m"][e.index][gevsek] + 2.5 * np.log10(buyuk[gevsek] / dit)
+    zero_large = k_m + 2.5 * np.log10(large[good] / dit)  # per second, 10-pixel aperture
+    # Loose selection: stars with a K uncertainty up to 0.10 mag are included too (for fields with few calibrators).
+    loose = match.matched & (catalog["k_cmsig"][match.index] < 0.10) & (small > 0) & (large > 0) & (peak < 15000.0)
+    zero_loose = catalog["k_m"][match.index][loose] + 2.5 * np.log10(large[loose] / dit)
     return {
-        "hedef": str(b0.get("ESO OBS TARG NAME", b0["OBJECT"])).strip(),
-        "kare_sayisi": len(frames),
+        "target": str(b0.get("ESO OBS TARG NAME", b0["OBJECT"])).strip(),
+        "n_frames": len(frames),
         "dit_s": dit,
-        "hava_kutlesi": float(b0["ESO TEL AIRM START"]),
-        "astrometri_yildiz_sayisi": cozulen.n_stars,
-        "astrometri_artik_rms_yaysaniye": cozulen.residual_rms_arcsec,
-        "kalibrator_yildiz_sayisi": int(iyi.sum()),
-        "kalibrator_k_kadirleri": np.sort(k_m).round(3).tolist(),
-        "sifir_noktasi_1s_10piksel": float(np.median(sifir_buyuk)) if iyi.any() else None,
-        "sifir_noktasi_sacilimi": float(robust.mad_scale(sifir_buyuk)) if iyi.sum() > 2 else None,
-        "tek_tek_sifir_noktalari": np.sort(sifir_buyuk).round(3).tolist(),
-        "gevsek_secim": {
-            "yildiz_sayisi": int(gevsek.sum()),
-            "sifir_noktasi_1s_10piksel": float(np.median(sifir_gevsek)) if gevsek.any() else None,
-            "sacilim": float(robust.mad_scale(sifir_gevsek)) if gevsek.sum() > 2 else None,
-            "tek_tek": np.sort(sifir_gevsek).round(3).tolist(),
-            "alandaki_2mass_yildizi": int(e.matched.sum()),
+        "airmass": float(b0["ESO TEL AIRM START"]),
+        "astrometry_star_count": solved.n_stars,
+        "astrometry_residual_rms_arcsec": solved.residual_rms_arcsec,
+        "calibrator_star_count": int(good.sum()),
+        "calibrator_k_magnitudes": np.sort(k_m).round(3).tolist(),
+        "zero_point_1s_10pix": float(np.median(zero_large)) if good.any() else None,
+        "zero_point_scatter": float(robust.mad_scale(zero_large)) if good.sum() > 2 else None,
+        "individual_zero_points": np.sort(zero_large).round(3).tolist(),
+        "loose_selection": {
+            "star_count": int(loose.sum()),
+            "zero_point_1s_10pix": float(np.median(zero_loose)) if loose.any() else None,
+            "scatter": float(robust.mad_scale(zero_loose)) if loose.sum() > 2 else None,
+            "individual": np.sort(zero_loose).round(3).tolist(),
+            "matched_2mass_stars_in_field": int(match.matched.sum()),
         },
-        "aciklik_duzeltmesi_kadir": float(np.median(2.5 * np.log10(buyuk[iyi] / kucuk[iyi]))) if iyi.any() else None,
+        "aperture_correction_mag": float(np.median(2.5 * np.log10(large[good] / small[good]))) if good.any() else None,
     }
 
 
 def main() -> None:
-    flat, basit_duz, duz_bilgi = duz_alan_kur()
-    sonuc = {
-        "data": {"alet": "ESO NTT / SOFI", "program": "184.D-1152(F)", "kaynak": "ESO Bilim Arşivi"},
-        "duz_alan": duz_bilgi,
-        "diziler": {},
+    flat, simple_flat, flat_info = build_flat_field()
+    result = {
+        "data": {"instrument": "ESO NTT / SOFI", "program": "184.D-1152(F)", "source": "ESO Science Archive"},
+        "flat_field": flat_info,
+        "sequences": {},
     }
-    goruntuler = {}
-    for name, desen in DIZILER.items():
-        sonuc["diziler"][name], goruntuler[name] = indirge(name, desen, flat, basit_duz)
-    # Sıfır noktası aktarımı: seyrek alanda yeterli 2MASS yıldızı yoktur. Zengin alanın sıfır noktası, poz süresi
-    # farkı için düzeltilip seyrek alana taşınır ve oradaki az sayıdaki yıldızla karşılaştırılır. Piksel değerleri
-    # tek DIT başınadır: SOFI Kullanım Kılavuzu (Bölüm 2), "counts in a raw data file always correspond to DIT
-    # seconds ... the average of NDIT sub-integrations". Hava kütlesi düzeltmesi yoktur.
-    zengin, seyrek = sonuc["diziler"]["SN2005at"], sonuc["diziler"]["SN2011bm"]
-    aktarilan = zengin["fotometri"]["sifir_noktasi_kadir"] - 2.5 * np.log10(
-        zengin["data"]["dit_s"] / seyrek["data"]["dit_s"]
-    )
-    sonuc["sifir_noktasi_aktarimi"] = {
-        "zengin_alan_sifir_noktasi": zengin["fotometri"]["sifir_noktasi_kadir"],
-        "dit_duzeltmesi_kadir": float(-2.5 * np.log10(zengin["data"]["dit_s"] / seyrek["data"]["dit_s"])),
-        "seyrek_alana_aktarilan": float(aktarilan),
-        "seyrek_alandaki_nokta_kaynaklarin_sifir_noktalari": seyrek["fotometri"]["tek_tek_sifir_noktalari"],
-        "fark_kadir": float(seyrek["fotometri"]["sifir_noktasi_kadir"] - aktarilan),
-        "hava_kutleleri": [zengin["data"]["hava_kutlesi"], seyrek["data"]["hava_kutlesi"]],
+    images = {}
+    for name, pattern in SEQUENCES.items():
+        result["sequences"][name], images[name] = reduce_sequence(name, pattern, flat, simple_flat)
+    # Zero point transfer: the sparse field has too few 2MASS stars. The zero point of the rich field is corrected for
+    # the exposure time difference and carried to the sparse field, where it is compared with the few stars there. Pixel
+    # values are per single DIT: SOFI User Manual (Section 2), "counts in a raw data file always correspond to DIT
+    # seconds ... the average of NDIT sub-integrations". There is no airmass correction.
+    rich, sparse = result["sequences"]["SN2005at"], result["sequences"]["SN2011bm"]
+    transferred = rich["photometry"]["zero_point_mag"] - 2.5 * np.log10(rich["data"]["dit_s"] / sparse["data"]["dit_s"])
+    result["zero_point_transfer"] = {
+        "rich_field_zero_point": rich["photometry"]["zero_point_mag"],
+        "dit_correction_mag": float(-2.5 * np.log10(rich["data"]["dit_s"] / sparse["data"]["dit_s"])),
+        "transferred_to_sparse_field": float(transferred),
+        "zero_points_of_point_sources_in_sparse_field": sparse["photometry"]["individual_zero_points"],
+        "difference_mag": float(sparse["photometry"]["zero_point_mag"] - transferred),
+        "airmasses": [rich["data"]["airmass"], sparse["data"]["airmass"]],
     }
-    # Standart yıldız alanlarından sıfır noktası ve gece başına karşılaştırma. Bütün sıfır noktaları saniye başına
-    # ve 10 piksellik açıklığa indirgenir: bilim alanında 5 piksellik açıklığın sıfır noktasına o alanın açıklık
-    # düzeltmesi eklenir. Aynı gecede standart ile bilim alanının farkı, hava kütlesi farkına bölünerek sönümleme
-    # katsayısına çevrilir (iki noktadan; yalnızca tutarlılık göstergesidir).
-    sonuc["standart_yildizlar"] = {name: standart_olc(desen, flat) for name, desen in STANDARTLAR.items()}
-    gece = {"SN2005at": "FS14 (13/14 Mart gecesi)", "SN2011bm": "FS24 (14/15 Mart gecesi)"}
-    sonuc["gece_basina_karsilastirma"] = {}
-    for alan, standart in gece.items():
-        bilim, std = sonuc["diziler"][alan], sonuc["standart_yildizlar"][standart]
-        f = bilim["fotometri"]
-        if None in (f["sifir_noktasi_kadir"], f["aciklik_duzeltmesi_kadir"], std["sifir_noktasi_1s_10piksel"]):
+    # Zero point from the standard star fields and comparison per night. All zero points are reduced to per second and
+    # the 10-pixel aperture: the aperture correction of the science field is added to the zero point of the 5-pixel
+    # aperture. The difference between standard and science field in the same night, divided by the airmass
+    # difference, is converted to an extinction coefficient (from two points; only a consistency indicator).
+    result["standard_stars"] = {name: measure_standard(pattern, flat) for name, pattern in STANDARDS.items()}
+    night = {"SN2005at": "FS14 (night of March 13/14)", "SN2011bm": "FS24 (night of March 14/15)"}
+    result["per_night_comparison"] = {}
+    for field, standard in night.items():
+        science, std = result["sequences"][field], result["standard_stars"][standard]
+        f = science["photometry"]
+        if None in (f["zero_point_mag"], f["aperture_correction_mag"], std["zero_point_1s_10pix"]):
             continue
-        bilim_1s = f["sifir_noktasi_kadir"] - 2.5 * np.log10(bilim["data"]["dit_s"]) + f["aciklik_duzeltmesi_kadir"]
-        fark = std["sifir_noktasi_1s_10piksel"] - bilim_1s
-        hava_farki = bilim["data"]["hava_kutlesi"] - std["hava_kutlesi"]
-        sonuc["gece_basina_karsilastirma"][alan] = {
-            "standart": standart,
-            "bilim_sifir_noktasi_1s_10piksel": float(bilim_1s),
-            "bilim_yildiz_sayisi": f["yildiz_sayisi"],
-            "standart_sifir_noktasi_1s_10piksel": std["sifir_noktasi_1s_10piksel"],
-            "standart_yildiz_sayisi": std["kalibrator_yildiz_sayisi"],
-            "fark_kadir": float(fark),
-            "hava_kutlesi_farki": float(hava_farki),
-            "sonumleme_kadir_hava_kutlesi": float(fark / hava_farki),
+        science_1s = f["zero_point_mag"] - 2.5 * np.log10(science["data"]["dit_s"]) + f["aperture_correction_mag"]
+        difference = std["zero_point_1s_10pix"] - science_1s
+        airmass_difference = science["data"]["airmass"] - std["airmass"]
+        result["per_night_comparison"][field] = {
+            "standard": standard,
+            "science_zero_point_1s_10pix": float(science_1s),
+            "science_star_count": f["star_count"],
+            "standard_zero_point_1s_10pix": std["zero_point_1s_10pix"],
+            "standard_star_count": std["calibrator_star_count"],
+            "difference_mag": float(difference),
+            "airmass_difference": float(airmass_difference),
+            "extinction_mag_per_airmass": float(difference / airmass_difference),
         }
-    cikti = ROOT / "figures"
-    (cikti / "kizilotesi_indirgeme.json").write_text(json.dumps(sonuc, ensure_ascii=False, indent=1), encoding="utf-8")
-    print(json.dumps(sonuc, ensure_ascii=False, indent=1))
+    out_dir = ROOT / "figures"
+    (out_dir / "infrared_reduction.json").write_text(json.dumps(result, ensure_ascii=False, indent=1), encoding="utf-8")
+    print(json.dumps(result, ensure_ascii=False, indent=1))
 
-    # Şekil: ham kare, gökyüzü çıkarılmış kare, yığının bütün karelerin örtüştüğü orta bölgesi (SN 2011bm dizisi).
-    def ger(image: np.ndarray, sacilim: float | None, taban: float) -> np.ndarray:
-        sacilim = robust.mad_scale(image) if sacilim is None else sacilim
-        g = stretch.asinh_stretch(image, black=taban - 2.0 * sacilim, alpha=1.0 / (10.0 * sacilim), q=6.0)
+    # Figure: raw frame, sky-subtracted frame, central region of the stack where all frames overlap (SN 2011bm sequence).
+    def stretch_image(image: np.ndarray, scatter: float | None, floor: float) -> np.ndarray:
+        scatter = robust.mad_scale(image) if scatter is None else scatter
+        g = stretch.asinh_stretch(image, black=floor - 2.0 * scatter, alpha=1.0 / (10.0 * scatter), q=6.0)
         return stretch.percentile_scale(g, 0.5, 99.8)
 
-    g = goruntuler["SN2011bm"]
-    paneller = [
-        ("Ham kare (15 × 6 s)", ger(*g["raw"])),
-        ("Gökyüzü çıkarılmış kare", ger(*g["cikarilmis"])),
-        ("16 karenin yığını (orta bölge)", ger(*g["yigin"])),
+    g = images["SN2011bm"]
+    panels = [
+        ("Raw frame (15 × 6 s)", stretch_image(*g["raw"])),
+        ("Sky-subtracted frame", stretch_image(*g["subtracted"])),
+        ("Stack of 16 frames (central region)", stretch_image(*g["stack"])),
     ]
-    fig, eksenler = _plotting.figure(
-        "web", target="web-640", ratio=0.40, decimal=",", mosaic=[["a", "b", "c"]], gridspec_kw={"wspace": 0.04}
+    fig, axes = _plotting.figure(
+        "web", target="web-640", ratio=0.40, mosaic=[["a", "b", "c"]], gridspec_kw={"wspace": 0.04}
     )
-    for ax, (header, image) in zip(eksenler.values(), paneller, strict=True):
-        # datawiz: izin göreli parlaklık görüntüsü; asinh gerilmiş değerlerin renk çubuğu okura nicelik vermez
+    for ax, (title, image) in zip(axes.values(), panels, strict=True):
+        # datawiz: allowed as a relative brightness image; a color bar of asinh-stretched values gives the reader no quantity
         ax.imshow(image, origin="lower", cmap="gray", vmin=0, vmax=1, interpolation="nearest")
         ax.set_xticks([])
         ax.set_yticks([])
         ax.grid(False)
-        for kenar in ax.spines.values():
-            kenar.set_visible(False)
-        ax.set_title(header, loc="left")
-    _plotting.save(fig, str(cikti / "kizilotesi_indirgeme"), target="web-640", formats=("png",))
+        for edge in ax.spines.values():
+            edge.set_visible(False)
+        ax.set_title(title, loc="left")
+    _plotting.save(fig, str(out_dir / "infrared_reduction"), target="web-640", formats=("png",))
 
 
 if __name__ == "__main__":

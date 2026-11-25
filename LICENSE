@@ -1,45 +1,29 @@
-Telif Hakkı (c) 2026 Ayberk (github.com/ayberkdt). Tüm hakları saklıdır.
-
-Bu depodaki kaynak kodu, belgeler, plan dosyaları ve diğer bütün içerik telif
-hakkı sahibinin mülkiyetindedir. Telif hakkı sahibinin önceden alınmış yazılı
-izni olmadan içeriğin tamamı ya da bir bölümü kopyalanamaz, değiştirilemez,
-birleştirilemez, yayımlanamaz, dağıtılamaz, alt lisansla verilemez, satılamaz
-ve türev çalışmalarda kullanılamaz.
-
-Deponun herkese açık olması, içeriğin GitHub Hizmet Koşullarının öngördüğü
-biçimde görüntülenmesi ve çatallanması dışında hiçbir hak ya da lisans vermez.
-
-İÇERİK "OLDUĞU GİBİ" SUNULUR; AÇIK YA DA ÖRTÜK HİÇBİR GARANTİ VERİLMEZ. TELİF
-HAKKI SAHİBİ, İÇERİĞİN KULLANIMINDAN DOĞAN HİÇBİR TALEP, ZARAR YA DA
-YÜKÜMLÜLÜKTEN SORUMLU TUTULAMAZ.
-
-Üçüncü taraf içerik: Bu depo üçüncü taraf verisi ya da kodu barındırmaz. Bazı
-fonksiyonların izlediği ERFA algoritmalarına ilişkin telif ve lisans bildirimi
-UCUNCU_TARAF_BILDIRIMLERI.md dosyasındadır; yukarıdaki hak saklama o bildirimin
-kapsamındaki haklara dokunmaz.
-belgeler/ klasöründeki bazı şekiller üçüncü taraf gözlem verisinden
-türetilmiştir; yukarıdaki hak saklama bu şekilleri kapsamaz. Bunlardan
-optik_kizilotesi.png, Digitized Sky Survey verisi içerdiği için CC BY-NC-SA 4.0
-lisansıyla, kizilotesi_indirgeme.png ESO verisinden türetildiği için CC BY 4.0
-lisansıyla paylaşılır. Her şeklin tabi olduğu koşullar aynı bildirim
-dosyasında listelenmiştir.
-Analizlerin kullandığı veri setleri kendi sahiplerine aittir, çalışma anında
-kaynağından indirilir ve yeniden dağıtılmaz. Algoritmaların dayandığı
-yayınlar kaynakca/kaynaklar.bib dosyasında listelenmiştir.
-
---------------------------------------------------------------------------------
-
 Copyright (c) 2026 Ayberk (github.com/ayberkdt). All rights reserved.
 
-No part of this repository may be copied, modified, merged, published,
-distributed, sublicensed, sold, or used in derivative works without the prior
-written permission of the copyright holder. Public availability of this
-repository grants no rights beyond viewing and forking as provided by the
-GitHub Terms of Service. The content is provided "as is", without warranty of
-any kind.
+The source code, documents, plan files and all other content in this
+repository are the property of the copyright holder. No part of the content
+may be copied, modified, merged, published, distributed, sublicensed, sold or
+used in derivative works without the prior written permission of the
+copyright holder.
 
-Figures under belgeler/ that are derived from third-party survey data are not
-covered by this reservation of rights; optik_kizilotesi.png contains Digitized
-Sky Survey data and is shared under CC BY-NC-SA 4.0; kizilotesi_indirgeme.png
-is derived from ESO data and is shared under CC BY 4.0. See
-UCUNCU_TARAF_BILDIRIMLERI.md for the terms that apply to each figure.
+Public availability of this repository grants no rights or licence beyond
+viewing and forking the content as provided by the GitHub Terms of Service.
+
+THE CONTENT IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED. THE COPYRIGHT HOLDER SHALL NOT BE LIABLE FOR ANY CLAIM, DAMAGES OR
+OTHER LIABILITY ARISING FROM THE USE OF THE CONTENT.
+
+Third-party content: This repository does not host third-party data or code.
+The copyright and licence notice for the ERFA algorithms that some functions
+follow is in THIRD_PARTY_NOTICES.md; the reservation of rights above does not
+affect the rights covered by that notice.
+Some of the figures in the figures/ directory are derived from third-party
+observational data; the reservation of rights above does not cover these
+figures. Of these, optical_infrared.png is shared under the CC BY-NC-SA 4.0
+licence because it contains Digitized Sky Survey data, and
+infrared_reduction.png is shared under the CC BY 4.0 licence because it is
+derived from ESO data. The terms that apply to each figure are listed in the
+same notice file.
+The datasets used by the analyses belong to their own owners, are downloaded
+from their source at run time and are not redistributed. The publications
+that the algorithms rest on are listed in bibliography/references.bib.

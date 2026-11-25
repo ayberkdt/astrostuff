@@ -1,81 +1,81 @@
-# Kara delikler, yıldız fiziği ve yıldız oluşumu: uygulanan modüller
+# Black holes, stellar physics and star formation: implemented modules
 
-Modüller: `karadelik/`, `yildiz/`, `yildizolusumu/`. Üçü de 25 Kasım 2026'da yazılmıştır. Fonksiyon başına kaynak ve teyit durumu [../DURUM.md](../DURUM.md) dosyasındadır; bu belge kapsamı, okunan kaynakları ve okuma sırasında bulunan uyuşmazlıkları kaydeder.
+Modules: `black_holes/`, `stars/`, `star_formation/`. All three were written on 25 November 2026. The source and verification status per function is in [../STATUS.md](../STATUS.md); this document records the scope, the sources read, and the discrepancies found while reading.
 
-## Kara delikler (`karadelik`)
+## Black holes (`black_holes`)
 
-34 fonksiyon; 29'unun bütün kayıtları kaynak metninden okunmuştur.
+34 functions; all records of 29 of them were read from the source text.
 
-**Kapsam.**
+**Scope.**
 
-- Geometri: çekim yarıçapı ve Schwarzschild yarıçapı, foton küresi, kritik çarpma parametresi, gölgenin açısal çapı [EHT2019]; en içteki kararlı yörünge (ISCO) ve yörünge frekansı [Abramowicz2013].
-- Kerr: ISCO, olay ufku, ergosfer, foton yörüngesi yarıçapları ve ufkun açısal hızı [Abramowicz2013; Page2005].
-- Yığılma: Eddington ışınım gücü ve kütle akısı, Salpeter zamanı, Bondi yarıçapı ve akısı [Inayoshi2020]; ince disk sıcaklık profili [Armitage2011]; gelgit parçalanma yarıçapı ve Hills kütlesi [Komossa2015].
-- Kuantum: Hawking sıcaklığı, Bekenstein-Hawking entropisi [Page2005].
-- Çiftler: cıvıltı kütlesi, frekans türevi, birleşmeye kalan süre [Sathyaprakash2009].
+- Geometry: gravitational radius and Schwarzschild radius, photon sphere, critical impact parameter, angular diameter of the shadow [EHT2019]; innermost stable circular orbit (ISCO) and orbital frequency [Abramowicz2013].
+- Kerr: ISCO, event horizon, ergosphere, photon orbit radii and the angular velocity of the horizon [Abramowicz2013; Page2005].
+- Accretion: Eddington luminosity and mass flux, Salpeter time, Bondi radius and flux [Inayoshi2020]; thin disk temperature profile [Armitage2011]; tidal disruption radius and Hills mass [Komossa2015].
+- Quantum: Hawking temperature, Bekenstein-Hawking entropy [Page2005].
+- Binaries: chirp mass, frequency derivative, time to merger [Sathyaprakash2009].
 
-**Okuma sırasında bulunanlar.**
+**Findings made while reading.**
 
-- [Abramowicz2013] içindeki Kerr foton yörüngesi formülü basıldığı biçimiyle `a* = 1` için 4 çekim yarıçapı verir; bu geri yönlü yörüngedir. İleri yönlü yörünge için açının işareti değiştirilmiş ve sonuç kaynağın kendi kübik denklemine karşı sınanmıştır.
-- Aynı kaynaktaki ISCO formülü yalnızca ileri yönlü yörünge içindir. Geri yönlü işaret [Bardeen1972] makalesinden gelir ve o makale okunmamıştır; kayıt "bekliyor" durumundadır. İki işaret de radyal episiklik koşula karşı sınanmıştır.
-- [Abramowicz2013] Eddington ışınım gücünü Güneş kütlesi başına 1,2 × 10³⁸ erg/s verir; Thomson kesiti ve proton kütlesiyle hesaplanan değer 1,257 × 10³⁸'dir. Fark yuvarlamadır; test toleransı %6 alınmıştır.
-- [EHT2019] değerleriyle M87* gölgesi 37,86 mikroyay saniyesi çıkar; makaledeki değer 37,6'dır.
+- The Kerr photon orbit formula in [Abramowicz2013], as printed, gives 4 gravitational radii for `a* = 1`; this is the retrograde orbit. For the prograde orbit the sign of the angle was changed and the result was tested against the source's own cubic equation.
+- The ISCO formula in the same source is for the prograde orbit only. The retrograde sign comes from the paper [Bardeen1972], and that paper was not read; the record is in the "pending" state. Both signs were tested against the radial epicyclic condition.
+- [Abramowicz2013] gives the Eddington luminosity as 1.2 × 10³⁸ erg/s per solar mass; the value computed with the Thomson cross section and the proton mass is 1.257 × 10³⁸. The difference is rounding; the test tolerance was set to 6%.
+- With the values of [EHT2019], the shadow of M87* comes out as 37.86 microarcseconds; the value in the paper is 37.6.
 
-**Bekleyen kayıtlar.** Çekimsel kırmızıya kayma [Carroll2019], ISCO özgül enerjisi ve verim bağıntısı [Bardeen1972], buharlaşma süresi [Page1976]. Bu fonksiyonlar bağımsız sınamalardan geçer (enerji en küçüğü, kareleme ile integral), ama kaynak metinleri açılmamıştır.
+**Pending records.** Gravitational redshift [Carroll2019], ISCO specific energy and the efficiency relation [Bardeen1972], evaporation time [Page1976]. These functions pass independent tests (energy minimum, integral by quadrature), but their source texts have not been opened.
 
-**Sınırlar.** Birleşen çiftlerde ISCO frekansı deneme parçacığı formülünün toplam kütleye uygulanmasıdır; kaba bir kestirimdir. Dalga biçimi, post-Newton terimleri ve dönen çiftler yoktur.
+**Limits.** For merging binaries, the ISCO frequency is the test-particle formula applied to the total mass; it is a rough estimate. There is no waveform, no post-Newtonian terms and no spinning binaries.
 
-## Yıldız fiziği (`yildiz`)
+## Stellar physics (`stars`)
 
-39 fonksiyon; 34'ünün bütün kayıtları kaynak metninden okunmuştur.
+39 functions; all records of 34 of them were read from the source text.
 
-**Kapsam.**
+**Scope.**
 
-- Politroplar: Lane-Emden denkleminin sayısal çözümü, ilk sıfır, kütle katsayısı, merkez-ortalama yoğunluk oranı, `n = 0, 1, 5` kapalı çözümleri; kütle ve yarıçaptan merkez yoğunluğu, basıncı ve sıcaklığı; çekim enerjisi [Liu1995; Bludman2010].
-- Ölçekleme: ışınım gücü ve etkin sıcaklık, yüzey çekimi [Prsa2016]; serbest düşme, Kelvin-Helmholtz ve nükleer zaman ölçekleri [McKee2007; Zinnecker2007]; Eddington sınırı ve kritik dönme [Paxton2013]; Eddington standart modeli [Bludman2010].
-- Sıkışık son evreler: beyaz cüce durum denklemi katsayısı ve Chandrasekhar kütlesi [Bludman2010].
-- Başlangıç kütle fonksiyonları: Salpeter, Kroupa, Chabrier; yoğunluk, ortalama kütle, kütle kesri ve örnekleme [Kroupa2001; Chabrier2003].
+- Polytropes: numerical solution of the Lane-Emden equation, first zero, mass coefficient, central-to-mean density ratio, the closed-form solutions for `n = 0, 1, 5`; central density, pressure and temperature from mass and radius; gravitational energy [Liu1995; Bludman2010].
+- Scaling: luminosity and effective temperature, surface gravity [Prsa2016]; free-fall, Kelvin-Helmholtz and nuclear timescales [McKee2007; Zinnecker2007]; Eddington limit and critical rotation [Paxton2013]; Eddington standard model [Bludman2010].
+- Compact final stages: white dwarf equation of state coefficient and Chandrasekhar mass [Bludman2010].
+- Initial mass functions: Salpeter, Kroupa, Chabrier; density, mean mass, mass fraction and sampling [Kroupa2001; Chabrier2003].
 
-**Okuma sırasında bulunanlar.**
+**Findings made while reading.**
 
-- [Bludman2010] Tablo I'deki kütle katsayısı sütunu yalnızca `n = 3` için standart tanımla (2,018) uyuşur; `n = 1,5` ve `n = 2` için farklı bir nicelik verir. Kod yalnızca ilk sıfır ve yoğunluk oranı sütunlarını kullanır.
-- [Araujo2011] makalesindeki türev tablosu `n = 1` için yanlıştır; yalnızca `n = 3` Güneş değerleri test karşılaştırmasında kullanılmıştır.
-- [Kroupa2001] parçaların yalnızca orantısını verir. Parçalar sürekli birleştirilmiştir; bu varsayımla makalede bildirilen ortalama kütle (0,36) ve sayı ile kütle payları yuvarlama içinde yeniden elde edilir.
-- [Chabrier2003] tablo katsayıları 1 Güneş kütlesinde %0,5'lik bir sıçrama bırakır; yayımlanan sayılar korunmuştur.
+- The mass coefficient column in Table I of [Bludman2010] agrees with the standard definition (2.018) only for `n = 3`; for `n = 1.5` and `n = 2` it gives a different quantity. The code uses only the first-zero and density-ratio columns.
+- The derivative table in [Araujo2011] is wrong for `n = 1`; only the `n = 3` solar values were used in the test comparison.
+- [Kroupa2001] gives only the proportions of the segments. The segments were joined continuously; with this assumption, the mean mass reported in the paper (0.36) and the number and mass fractions are recovered within rounding.
+- The table coefficients of [Chabrier2003] leave a 0.5% jump at 1 solar mass; the published numbers were kept.
 
-**Yeniden üretilen kaynak değerleri.** `n = 3` Güneş modeli: merkez yoğunluğu 76,4 g/cm³, merkez basıncı 1,24 × 10¹⁷ dyn/cm², merkez sıcaklığı 1,2 × 10⁷ K. Chandrasekhar kütlesi 1,46 Güneş kütlesi (`μ_e = 2`). Güneş'in `log g` değeri 4,438068.
+**Source values reproduced.** The `n = 3` solar model: central density 76.4 g/cm³, central pressure 1.24 × 10¹⁷ dyn/cm², central temperature 1.2 × 10⁷ K. Chandrasekhar mass 1.46 solar masses (`μ_e = 2`). The `log g` of the Sun is 4.438068.
 
-**Bekleyen kayıtlar.** Salpeter eğiminin özgün makalesi [Salpeter1955] (eğim değeri okunan iki makaleden alınmıştır) ve nükleer zaman ölçeği [Kippenhahn2012].
+**Pending records.** The original paper for the Salpeter slope [Salpeter1955] (the slope value was taken from the two papers that were read) and the nuclear timescale [Kippenhahn2012].
 
-**Eksikler.** Görelilikli olmayan beyaz cüce kütle-yarıçap bağıntısının kaynaklı katsayısı, hidrostatik merkez basıncı alt sınırı, anakol ömrü ölçeklemesi. Tam yıldız yapısı çözümü ve izokronlar yol haritasının sonraki adımlarıdır ([03_yildiz_astrofizigi.md](03_yildiz_astrofizigi.md)).
+**Gaps.** The sourced coefficient of the nonrelativistic white dwarf mass-radius relation, the lower bound on the hydrostatic central pressure, the main sequence lifetime scaling. A full stellar structure solution and isochrones are later steps of the roadmap ([03_stellar_astrophysics.md](03_stellar_astrophysics.md)).
 
-## Yıldız oluşumu (`yildizolusumu`)
+## Star formation (`star_formation`)
 
-29 fonksiyon; hepsinin denklemi kaynak metninden okunmuştur.
+29 functions; the equation of every one was read from the source text.
 
-**Kapsam.**
+**Scope.**
 
-- Gaz: eşsıcaklık ses hızı, Mach sayısı, sayı ve kütle yoğunluğu, sütun ve yüzey yoğunluğu [Krumholz2015].
-- Kararlılık: Jeans boyu ve kütlesi, Bonnor-Ebert kritik kütlesi ve yarıçapı, viryal parametre, manyetik kritik kütle [McKee2007; Krumholz2015].
-- Zaman ölçekleri ve verim: serbest düşme ve geçiş süreleri, serbest düşme başına yıldız oluşum verimi, eşsıcaklık küre çöküşünün birikim hızı [McKee2007].
-- Gökada ölçeği: Kennicutt-Schmidt yasası ve yörünge zamanı biçimi [Kennicutt1998], tüketme zamanı, gaz diski için Toomre Q, ışınım gücünden yıldız oluşum hızı kalibrasyonları [Kennicutt2012].
+- Gas: isothermal sound speed, Mach number, number and mass density, column and surface density [Krumholz2015].
+- Stability: Jeans length and mass, Bonnor-Ebert critical mass and radius, virial parameter, magnetic critical mass [McKee2007; Krumholz2015].
+- Timescales and efficiency: free-fall and crossing times, star formation efficiency per free-fall time, accretion rate of an isothermal sphere collapse [McKee2007].
+- Galactic scale: the Kennicutt-Schmidt law and its orbital-time form [Kennicutt1998], depletion time, Toomre Q for a gas disk, star formation rate calibrations from luminosity [Kennicutt2012].
 
-**Okuma sırasında bulunanlar.**
+**Findings made while reading.**
 
-- Jeans kütlesinin tanımı kaynaktan kaynağa değişir: [McKee2007] Jeans boyunun yarısı yarıçaplı kürenin kütlesini, [Krumholz2015] Jeans boyunun yarısı kenarlı küpün kütlesini alır. Oran 4π/3'tür; fonksiyon ikisini de sunar.
-- Manyetik kritik kütlenin katsayısı için [McKee2007] 0,17, [Krumholz2015] 0,12 verir (farklı sayısal çalışmalardan). Varsayılan 0,17'dir.
-- [Kennicutt2012] Tablo 1 kalibrasyonları, aynı Hα ışınım gücü için [Kennicutt1998] değerinin 0,68 katı yıldız oluşum hızı verir (başlangıç kütle fonksiyonu farkı).
-- Bonnor-Ebert katsayıları (1,182; yoğunluk karşıtlığı 14,04) denklemin sayısal çözümünden yeniden elde edilmiştir.
+- The definition of the Jeans mass varies from source to source: [McKee2007] takes the mass of a sphere whose radius is half the Jeans length, [Krumholz2015] takes the mass of a cube whose side is half the Jeans length. The ratio is 4π/3; the function offers both.
+- For the coefficient of the magnetic critical mass, [McKee2007] gives 0.17 and [Krumholz2015] gives 0.12 (from different numerical studies). The default is 0.17.
+- The calibrations in Table 1 of [Kennicutt2012] give a star formation rate 0.68 times the value of [Kennicutt1998] for the same H-alpha luminosity (a difference in the initial mass function).
+- The Bonnor-Ebert coefficients (1.182; density contrast 14.04) were recovered from the numerical solution of the equation.
 
-**Eksikler.** Isıl ve türbülans desteğini birleştiren etkin hız dağılımı, yıldız diski için Toomre Q, tek tek gökadalara uygulanan yasaların gözlemle karşılaştırılması.
+**Gaps.** An effective velocity dispersion combining thermal and turbulent support, Toomre Q for a stellar disk, comparison of the laws applied to individual galaxies with observation.
 
-## Sınama yaklaşımı
+## Testing approach
 
-Bu üç modülün bağımsız bir kitaplık kâhini yoktur. Sınama dört kaynaktan gelir:
+These three modules have no independent library oracle. Testing comes from four sources:
 
-- Kapalı çözümler ve limitler (Lane-Emden `n = 0, 1, 5`; düzgün küre; dönmeyen kara delik).
-- Kaynaklarda basılı sayılar (tablolar, örnek değerler), toleransı basılan basamak sayısına bağlı.
-- Bağımsız hesap yolları: aynı niceliğin başka bir denklemden ya da sayısal integralden elde edilmesi (disk ışınım gücü, birleşme süresi, Salpeter büyümesi).
-- `hypothesis` ile değişmezler: tekdüzelik, ölçekleme, gidiş-dönüş.
+- Closed-form solutions and limits (Lane-Emden `n = 0, 1, 5`; uniform sphere; non-rotating black hole).
+- Numbers printed in the sources (tables, worked values), with the tolerance tied to the number of printed digits.
+- Independent calculation paths: obtaining the same quantity from another equation or from a numerical integral (disk luminosity, merger time, Salpeter growth).
+- Invariants with `hypothesis`: monotonicity, scaling, round trip.
 
-Galeri şekilleri (`examples/physics_gallery.py`) bu fonksiyonların doğrudan çıktısıdır.
+The gallery figures (`examples/physics_gallery.py`) are the direct output of these functions.

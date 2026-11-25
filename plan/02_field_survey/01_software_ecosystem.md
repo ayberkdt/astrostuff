@@ -1,112 +1,112 @@
-# Yazılım ekosistemi
+# Software ecosystem
 
-Sürüm ve tarih bilgileri 25 Kasım 2026'da PyPI JSON API'sinden `bibliography/verify.py` ile okunmuştur; tam liste [../bibliography/VERIFICATION_SUMMARY.md](../../bibliography/VERIFICATION_SUMMARY.md) dosyasındadır. Bakım durumu ve atıf bilgileri altı kollu bir web taramasından gelir; taramanın sayfayı açarak okuduğu bilgi ile yalnızca arama özetinde gördüğü bilgi ayrı işaretlenmiştir. Bu belgede "tarama" sözcüğüyle anılan bilgiler o taramanın bildirimidir ve ayrıca doğrulanmamıştır.
+Version and date information was read on 25 November 2026 from the PyPI JSON API with `bibliography/verify.py`; the full list is in [../../bibliography/VERIFICATION_SUMMARY.md](../../bibliography/VERIFICATION_SUMMARY.md). Maintenance status and citation information come from a six-branch web survey; what the survey read by opening the page is marked separately from what it saw only in a search summary. Information that this document attributes to "the survey" is the survey's own report and has not been verified separately.
 
-Her paket için projedeki rolü yazılıdır:
+Each package is given its role in the project:
 
-- **kâhin:** aynı hesabı yapan bağımsız uygulama; testte karşılaştırılır.
-- **kullan:** yeniden yazılmaz, bağımlılık olarak kullanılır.
-- **incele:** tasarımı ya da algoritması örnek alınır.
+- **oracle:** an independent implementation of the same computation; compared against in tests.
+- **use:** not rewritten, used as a dependency.
+- **study:** its design or algorithm is taken as a model.
 
-## 1. Çekirdek
+## 1. Core
 
-- `astropy` 8.0.3 (17 Kasım 2026). Birimler, sabitler, koordinatlar, zaman, WCS, FITS, tablo, kozmoloji, modelleme, istatistik ve zaman serisi alt paketleri tek dağıtımdadır. Atıf: üç proje makalesi [Astropy2013; Astropy2018; Astropy2022]. Rol: hemen her modülün kâhini.
-- `pyerfa` 2.0.1.5 (11 Kasım 2024). IAU SOFA algoritmalarının ERFA uyarlamasının Python sarmalayıcısı. SOFA'nın güncel sürümü 11 Ekim 2023 tarihlidir (iausofa.org, taramada okundu) [SOFA2023]. Rol: zaman ve koordinat için birincil kâhin; SOFA yemek kitapları algoritma kaynağı.
-- `numpy` 2.5.5, `scipy` 1.18.1. Rol: çalışma zamanı bağımlılığı [Harris2020; Virtanen2020].
+- `astropy` 8.0.3 (17 November 2026). The units, constants, coordinates, time, WCS, FITS, table, cosmology, modeling, statistics and time series subpackages ship in a single distribution. Citation: three project papers [Astropy2013; Astropy2018; Astropy2022]. Role: oracle for almost every module.
+- `pyerfa` 2.0.1.5 (11 November 2024). Python wrapper of ERFA, the adaptation of the IAU SOFA algorithms. The current SOFA release is dated 11 October 2023 (iausofa.org, read in the survey) [SOFA2023]. Role: primary oracle for time and coordinates; the SOFA cookbooks are an algorithm source.
+- `numpy` 2.5.5, `scipy` 1.18.1. Role: runtime dependency [Harris2020; Virtanen2020].
 
-## 2. Arşiv erişimi
+## 2. Archive access
 
-- `astroquery` 0.4.11 (20 Eylül 2025); arşiv ve hizmetlere sorgu [Ginsburg2019]. Kararlı sürüm bir yılı aşkın süredir yenilenmemiştir; taramaya göre geliştirme ön sürümleri sürmektedir.
-- `pyvo` 1.10.0 (4 Kasım 2026); TAP, SIA, SSA istemcisi.
+- `astroquery` 0.4.11 (20 September 2025); queries to archives and services [Ginsburg2019]. The stable release has not been renewed for more than a year; according to the survey, development pre-releases continue.
+- `pyvo` 1.10.0 (4 November 2026); TAP, SIA, SSA client.
 - `astrocut` 1.5.1, `mocpy` 0.21.0, `astropy-healpix` 2.0.1, `healpy` 1.20.1, `lsdb` 0.11.2.
 
-Rol: kâhin (`arsiv/tap.py` için) ve yedek erişim yolu.
+Role: oracle (for `archives/tap.py`) and fallback access path.
 
-## 3. Konum astronomisi, efemeris, yörünge
+## 3. Positional astronomy, ephemerides, orbits
 
-- `skyfield` 1.55 (7 Ağustos 2026), `jplephem` 2.24: JPL DE efemerisleriyle konum hesabı. Rol: efemeris kâhini.
-- `spiceypy` 8.4.0 (11 Kasım 2026): NAIF SPICE araç takımının sarmalayıcısı. Rol: Düzey 3 kâhini.
-- `sgp4` 2.27: uydu ilerletici. Rol: kullan.
-- `ephem` 4.2.1: eski kuşak kitaplık; hâlâ sürüm çıkıyor.
-- `rebound` 5.2.3 (18 Kasım 2026), `reboundx` 5.1.0: N cisim integratörleri [ReinLiu2012; ReinTamayo2015; ReinSpiegel2015]. Rol: kâhin ve incele.
-- `poliastro` 0.17.0 (10 Temmuz 2022): taramaya göre GitHub deposu 14 Ekim 2023'te arşivlenmiştir. Çatalı `hapsira` 0.18.0 (24 Aralık 2023) o tarihten beri PyPI'da yeni sürüm çıkarmamıştır. İkisi de bakımlı bir kâhin sayılmaz; yörünge mekaniği testleri REBOUND, Skyfield ve kaynak örneklerine dayanır.
-- `galpy` 1.12.1 (2 Kasım 2026), `gala` 1.12.0: gökada dinamiği. Rol: `gokada` kâhini.
-- JPL Horizons: bağımsız efemeris hizmeti. DE440/DE441 güncel gezegen efemerisidir [Park2021]; tarama JPL sayfasında daha yeni bir sürüm adı görmemiştir.
+- `skyfield` 1.55 (7 August 2026), `jplephem` 2.24: position computation with the JPL DE ephemerides. Role: ephemeris oracle.
+- `spiceypy` 8.4.0 (11 November 2026): wrapper of the NAIF SPICE toolkit. Role: Level 3 oracle.
+- `sgp4` 2.27: satellite propagator. Role: use.
+- `ephem` 4.2.1: legacy-generation library; releases are still being made.
+- `rebound` 5.2.3 (18 November 2026), `reboundx` 5.1.0: N-body integrators [ReinLiu2012; ReinTamayo2015; ReinSpiegel2015]. Role: oracle and study.
+- `poliastro` 0.17.0 (10 July 2022): according to the survey, its GitHub repository was archived on 14 October 2023. Its fork `hapsira` 0.18.0 (24 December 2023) has not published a new release on PyPI since that date. Neither counts as a maintained oracle; orbital mechanics tests rely on REBOUND, Skyfield and worked examples from sources.
+- `galpy` 1.12.1 (2 November 2026), `gala` 1.12.0: galactic dynamics. Role: oracle for `galaxies`.
+- JPL Horizons: independent ephemeris service. DE440/DE441 is the current planetary ephemeris [Park2021]; the survey saw no newer release name on the JPL page.
 
-## 4. Görüntü indirgeme, fotometri, astrometri
+## 4. Image reduction, photometry, astrometry
 
-- `ccdproc` 2.5.1 (5 Temmuz 2025): CCD indirgeme. Taramaya göre GitHub sürüm başlığı bunu "son 2.x sürümü" olarak adlandırır; 3.x'in durumu doğrulanmamıştır.
-- `astroscrappy` 1.3.0: L.A.Cosmic uygulaması [vanDokkum2001].
-- `photutils` 3.1.1 (16 Ekim 2026): kaynak saptama, açıklık ve PSF fotometrisi. Ana sürüm 3'e geçmiştir; 2.x'e göre arayüz değişiklikleri incelenmemiştir.
-- `sep` 1.4.1 (18 Şubat 2025): SExtractor çekirdeğinin kitaplık biçimi [Barbary2016; BertinArnouts1996]. Taramaya göre proje el değiştirmiştir (özgün depo 1.2.1'e kadar, güncel geliştirme `sep-developers` altında).
+- `ccdproc` 2.5.1 (5 July 2025): CCD reduction. According to the survey, the GitHub release title calls it the "last 2.x release"; the status of 3.x has not been verified.
+- `astroscrappy` 1.3.0: implementation of L.A.Cosmic [vanDokkum2001].
+- `photutils` 3.1.1 (16 October 2026): source detection, aperture and PSF photometry. The major version has moved to 3; interface changes relative to 2.x have not been examined.
+- `sep` 1.4.1 (18 February 2025): library form of the SExtractor core [Barbary2016; BertinArnouts1996]. According to the survey, the project has changed hands (the original repository up to 1.2.1, current development under `sep-developers`).
 - `astroalign` 2.6.2, `reproject` 0.21.0, `regions` 0.13.
-- `twirl` 0.6.0 (26 Ekim 2026): Gaia ile saf Python astrometrik çözüm. `astrometry.net`: kör çözücü [Lang2010].
-- `stdpipe` 0.5.0: geçici kaynak hattı.
-- SExtractor, SCAMP, SWarp: taramaya göre resmî sayfalarda son sürümler 2006 ve 2010 tarihlidir; ardılı SourceXtractor++'tır. Python işinde `sep` ve `photutils` tercih edilir.
-- IRAF: taramaya göre topluluk dağıtımı 2.18.2'dir ve topluluk sayfası yeni projects için Astropy'yi önerir.
+- `twirl` 0.6.0 (26 October 2026): pure-Python astrometric solution with Gaia. `astrometry.net`: blind solver [Lang2010].
+- `stdpipe` 0.5.0: transient source pipeline.
+- SExtractor, SCAMP, SWarp: according to the survey, the latest releases on the official pages are dated 2006 and 2010; the successor is SourceXtractor++. For Python work, `sep` and `photutils` are preferred.
+- IRAF: according to the survey, the community distribution is 2.18.2, and the community page recommends Astropy for new projects.
 
-Rol: `ccdproc`, `photutils`, `sep`, `astroscrappy` kâhin; `astrometry.net` ve `twirl` ilk aşamada kullan.
+Role: `ccdproc`, `photutils`, `sep`, `astroscrappy` are oracles; `astrometry.net` and `twirl` are used in the first stage.
 
-## 5. Tayf
+## 5. Spectroscopy
 
-- `specutils` 2.4.0, `specreduce` 1.9.0: tayf kapları, çıkarım ve dalga boyu kalibrasyonu.
-- `pypeit` 3.0.0 (9 Kasım 2026): yarı otomatik tayf indirgeme hattı.
-- `synphot` 1.9.0, `speclite` 1.0.0: sentetik fotometri ve filtreler.
-- `dust-extinction` 1.7, `extinction` 0.4.10, `dustmaps` 1.0.14: sönümleme yasaları ve toz haritaları.
-- `ppxf` 9.5.3 (24 Kasım 2026): tam tayf uydurma.
+- `specutils` 2.4.0, `specreduce` 1.9.0: spectrum containers, extraction and wavelength calibration.
+- `pypeit` 3.0.0 (9 November 2026): semi-automated spectral reduction pipeline.
+- `synphot` 1.9.0, `speclite` 1.0.0: synthetic photometry and filters.
+- `dust-extinction` 1.7, `extinction` 0.4.10, `dustmaps` 1.0.14: extinction laws and dust maps.
+- `ppxf` 9.5.3 (24 November 2026): full spectrum fitting.
 
-Rol: kâhin.
+Role: oracle.
 
-## 6. Zaman serisi ve ötegezegen
+## 6. Time series and exoplanets
 
-- `lightkurve` 2.6.0: Kepler ve TESS verisi.
-- `transitleastsquares` 2.3.0 (12 Kasım 2026), `wotan` 2.1.1 (18 Kasım 2026): geçiş arama ve eğilim giderme [HippkeHeller2019].
-- `batman-package` 2.5.3: geçiş modeli [Kreidberg2015; MandelAgol2002].
-- `exoplanet` 0.6.0 (Nisan 2024), `starry` 1.2.0 (Ekim 2021): uzun süredir sürüm çıkmamıştır.
+- `lightkurve` 2.6.0: Kepler and TESS data.
+- `transitleastsquares` 2.3.0 (12 November 2026), `wotan` 2.1.1 (18 November 2026): transit search and detrending [HippkeHeller2019].
+- `batman-package` 2.5.3: transit model [Kreidberg2015; MandelAgol2002].
+- `exoplanet` 0.6.0 (April 2024), `starry` 1.2.0 (October 2021): no release for a long time.
 - `radvel` 1.6.7, `stingray` 2.3.2, `celerite2` 0.3.3, `george` 0.4.4, `tinygp` 0.3.1.
 
-Rol: `astropy.timeseries`, `transitleastsquares`, `batman` kâhin.
+Role: `astropy.timeseries`, `transitleastsquares`, `batman` are oracles.
 
-## 7. Kozmoloji
+## 7. Cosmology
 
-- `astropy.cosmology`: uzaklık hesapları. Rol: birincil kâhin.
-- `camb` 2.0.5, `classy` 3.4.3.0: Boltzmann kodları. Rol: kullan (güç tayfı ve ses ufku girdisi).
-- `cobaya` 3.6.2, `getdist` 1.7.7: örnekleme çatısı ve zincir çözümlemesi.
-- `sncosmo` 2.13.2 (23 Kasım 2026): süpernova ışık eğrisi uydurma [Guy2007; Kenworthy2021]. Rol: kullan.
-- `pyccl` 3.3.6, `colossus` 1.4.0: yapı oluşumu ve hale hesapları.
+- `astropy.cosmology`: distance computations. Role: primary oracle.
+- `camb` 2.0.5, `classy` 3.4.3.0: Boltzmann codes. Role: use (input for the power spectrum and the sound horizon).
+- `cobaya` 3.6.2, `getdist` 1.7.7: sampling framework and chain analysis.
+- `sncosmo` 2.13.2 (23 November 2026): supernova light curve fitting [Guy2007; Kenworthy2021]. Role: use.
+- `pyccl` 3.3.6, `colossus` 1.4.0: structure formation and halo computations.
 
-## 8. İstatistik ve çıkarım
+## 8. Statistics and inference
 
-- `emcee` 3.1.6 (19 Nisan 2024) [ForemanMackey2013], `zeus-mcmc` 2.5.4 (Ocak 2023).
-- `dynesty` 3.2.0 (10 Kasım 2026) [Speagle2020], `nautilus-sampler` 1.0.6, `ultranest` 4.6.3.
-- `pymc` 6.4.0, `numpyro` 0.22.0, `blackjax` 1.7.1, `cmdstanpy` 1.3.2: gradyan tabanlı örnekleme.
-- `arviz` 1.3.0, `corner` 2.3.0: tanı ve görselleştirme.
-- `astroML` 1.0.2.post1 (Mart 2022): Ivezić ve arkadaşlarının kitabının eşlik eden kodu [Ivezic2020]; uzun süredir sürüm çıkmamıştır, yöntem kaynağı olarak değerlidir.
+- `emcee` 3.1.6 (19 April 2024) [ForemanMackey2013], `zeus-mcmc` 2.5.4 (January 2023).
+- `dynesty` 3.2.0 (10 November 2026) [Speagle2020], `nautilus-sampler` 1.0.6, `ultranest` 4.6.3.
+- `pymc` 6.4.0, `numpyro` 0.22.0, `blackjax` 1.7.1, `cmdstanpy` 1.3.2: gradient-based sampling.
+- `arviz` 1.3.0, `corner` 2.3.0: diagnostics and visualization.
+- `astroML` 1.0.2.post1 (March 2022): companion code of the book by Ivezić and colleagues [Ivezic2020]; no release for a long time, valuable as a source of methods.
 - `scikit-learn` 1.9.1, `iminuit` 2.33.0, `lmfit` 1.3.4, `uncertainties` 3.2.3, `sbi` 0.27.0, `jax` 0.12.1.
 
-Rol: `emcee` ve `dynesty` kâhin; `scikit-learn` kullan; NumPyro ya da PyMC ileri aşamada kullan.
+Role: `emcee` and `dynesty` are oracles; `scikit-learn` is used; NumPyro or PyMC are used in a later stage.
 
-## 9. Astrofizik alan kodları
+## 9. Astrophysical domain codes
 
-- Yıldız: MESA (taramaya göre figuresindeki güncel sürüm 26.4.1) [Paxton2011], MIST ve PARSEC ızgaraları [Choi2016; Bressan2012], `fsps` 0.5.0, `astro-prospector` 1.4.1, `bagpipes` 1.4.1.
-- Benzetim çözümlemesi: `yt` 4.4.4, `pynbody` 2.8.0.
-- Yüksek enerji: `gammapy` 2.1, `sherpa` 4.19.0, `naima` 0.11.0.
-- Çekimsel dalga: `gwpy` 4.1.0, `pycbc` 2.11.0, `bilby` 2.8.2 [Abbott2016].
-- Pulsar zamanlama: `pint-pulsar` 1.1.8.
-- Güneş ve plazma: `sunpy` 8.0.1, `plasmapy` 2026.2.0.
-- Görelilik: `einsteinpy` 0.5.0.
-- Tayf çizgisi ve ışınım: `pyneb` 1.1.32, `radis` 0.17.1.
-- `tardis-sn`: PyPI'daki 1.0.1 sürümü 2015 tarihlidir; proje PyPI üzerinden dağıtılmıyor olabilir, güncel kurulum yolu incelenmemiştir.
+- Stellar: MESA (current release 26.4.1 according to the survey) [Paxton2011], MIST and PARSEC grids [Choi2016; Bressan2012], `fsps` 0.5.0, `astro-prospector` 1.4.1, `bagpipes` 1.4.1.
+- Simulation analysis: `yt` 4.4.4, `pynbody` 2.8.0.
+- High energy: `gammapy` 2.1, `sherpa` 4.19.0, `naima` 0.11.0.
+- Gravitational waves: `gwpy` 4.1.0, `pycbc` 2.11.0, `bilby` 2.8.2 [Abbott2016].
+- Pulsar timing: `pint-pulsar` 1.1.8.
+- Solar and plasma: `sunpy` 8.0.1, `plasmapy` 2026.2.0.
+- Relativity: `einsteinpy` 0.5.0.
+- Spectral lines and radiation: `pyneb` 1.1.32, `radis` 0.17.1.
+- `tardis-sn`: the 1.0.1 release on PyPI is dated 2015; the project may not be distributed through PyPI, and the current installation path has not been examined.
 
-Rol: çoğu ileri aşama için incele; yeniden yazılmaz.
+Role: study for most of the later stages; not rewritten.
 
-## 10. Tarama kapsamı dışında kalanlar
+## 10. Outside the survey's scope
 
-Tarama aşağıdakileri okuyamadı ya da ele almadı; envanterin bu kısmı eksiktir: radyo astronomi (CASA, `spectral-cube`, `pyuvdata`), ışınım aktarımı kodları (RADMC-3D, Cloudy, SKIRT), atom ve molekül veritabanları (CHIANTI, HITRAN, ExoMol), hidrodinamik kodları (GADGET-4, AREPO, Athena++), ötegezegen atmosfer kodları (petitRADTRANS, PICASO), tayfsal enerji dağılımı uydurma (CIGALE), LSST Science Pipelines, DRAGONS. Bu alanlar yol haritasının ileri aşamalarına girdiğinde ayrıca taranmalıdır.
+The survey could not read or did not cover the following; this part of the inventory is incomplete: radio astronomy (CASA, `spectral-cube`, `pyuvdata`), radiative transfer codes (RADMC-3D, Cloudy, SKIRT), atomic and molecular databases (CHIANTI, HITRAN, ExoMol), hydrodynamics codes (GADGET-4, AREPO, Athena++), exoplanet atmosphere codes (petitRADTRANS, PICASO), spectral energy distribution fitting (CIGALE), the LSST Science Pipelines, DRAGONS. These areas must be surveyed separately when they enter the later stages of the roadmap.
 
-## 11. Sonuç
+## 11. Conclusion
 
-- Python astronomi ekosistemi olgundur: hemen her temel hesap için bakımlı bir kâhin vardır. Projenin katkısı yeni işlev değil, her denklemi kaynağına bağlayan, okunabilir ve doğrulanmış bir uygulamadır.
-- Bakımı durmuş ya da belirsiz paketler: `poliastro`, `hapsira`, `astroML`, `starry`, `exoplanet`, `zeus-mcmc`, `astroplan`. Bunlara dayanan testler kaynak örnekleriyle desteklenmelidir.
-- 2026'da ana sürüm değiştiren paketler (`astropy` 8, `photutils` 3, `pypeit` 3, `pymc` 6, `sunpy` 8): kâhin testleri belirli sürüme sabitlenir ve sürüm referans çıktının başlığına yazılır.
-- SOFA/ERFA ikilisi konum astronomisinin fiilî standardıdır; algoritma kaynağı ve kâhin olarak ilk başvurulacak yerdir.
+- The Python astronomy ecosystem is mature: for almost every basic computation there is a maintained oracle. The project's contribution is not a new capability but a readable and verified implementation that ties every equation to its source.
+- Packages whose maintenance has stopped or is uncertain: `poliastro`, `hapsira`, `astroML`, `starry`, `exoplanet`, `zeus-mcmc`, `astroplan`. Tests that rely on them must be backed by worked examples from sources.
+- Packages that changed major version in 2026 (`astropy` 8, `photutils` 3, `pypeit` 3, `pymc` 6, `sunpy` 8): oracle tests are pinned to a specific version, and the version is written into the header of the reference output.
+- The SOFA/ERFA pair is the de facto standard of positional astronomy; it is the first place to look, both as an algorithm source and as an oracle.

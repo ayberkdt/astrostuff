@@ -1,219 +1,219 @@
 # astrostuff
 
-`kozmos`: gökbilim ve astrofizik hesapları için sıfırdan yazılan bir Python kitaplığı. Tek bir kuralı var:
+`kozmos`: a Python library for astronomy and astrophysics calculations, written from scratch. It has a single rule:
 
-> **Her fonksiyon, uyguladığı denklemin yayımlanmış kaynağını gösterir ve bağımsız bir hesaba karşı sınanır. Kaynağı olmayan fonksiyon testten geçemez.**
+> **Every function cites the published source of the equation it implements and is tested against an independent calculation. A function without a source cannot pass the tests.**
 
-Kitaplık çalışırken yalnızca NumPy ve SciPy kullanır. Astropy ve ERFA hesap için değil, sonuçları karşılaştırmak için vardır.
+At run time the library uses only NumPy and SciPy. Astropy and ERFA exist to compare results, not to compute them.
 
-- 230 fonksiyon, 35 sabit, 1095 test
-- 270 kaynak kaydının hepsinde denklem kaynağın metninden okundu; "bekliyor" işaretli kayıt kalmadı
-- Güncel sayılar: [plan/STATUS.md](plan/STATUS.md) (koddan üretilir)
+- 230 functions, 35 constants, 1325 tests
+- In all 270 source records the equation was read from the text of the source; no record marked "pending" is left
+- Current numbers: [plan/STATUS.md](plan/STATUS.md) (generated from the code)
 
-## Kitaplıkla üretilen sonuçlar
+## Results produced with the library
 
-Aşağıdaki şekillerin hepsi bu depodaki kodla, açık veriden ya da doğrudan fonksiyon çıktısından üretilmiştir. Üreten betikler [examples/](examples/) ve [projects/](projects/) klasörlerindedir.
+All the figures below were produced with the code in this repository, from open data or directly from function output. The scripts that produce them are in [examples/](examples/) and [projects/](projects/).
 
-### Hubble sabiti: Pantheon+ süpernovaları
+### Hubble constant: Pantheon+ supernovae
 
-![Pantheon+ Hubble diyagramı: 1580 Tür Ia süpernovanın uzaklık modülü, en iyi uyum eğrisi ve artıklar](figures/hubble_diagram.png)
+![Pantheon+ Hubble diagram: distance modulus of 1580 Type Ia supernovae, best-fit curve and residuals](figures/hubble_diagram.png)
 
-Kod açık [Pantheon+SH0ES verisini](https://github.com/PantheonPlusSH0ES/DataRelease) indirir, 1701 × 1701 kovaryans matrisiyle olabilirliği kurar ve kendi yazdığımız MCMC örnekleyicisiyle parametreleri kestirir. Bulunan değerler yayımlananları yeniden üretir:
+The code downloads the open [Pantheon+SH0ES data](https://github.com/PantheonPlusSH0ES/DataRelease), builds the likelihood with the 1701 × 1701 covariance matrix, and estimates the parameters with an MCMC sampler we wrote ourselves. The values it finds reproduce the published ones:
 
-- Madde yoğunluğu: **Ωm = 0,332 ± 0,018** (yayımlanan 0,334 ± 0,018)
-- Hubble sabiti: **H0 = 73,53 ± 1,00 km s⁻¹ Mpc⁻¹** (yayımlanan 73,6 ± 1,1)
+- Matter density: **Ωm = 0.332 ± 0.018** (published 0.334 ± 0.018)
+- Hubble constant: **H0 = 73.53 ± 1.00 km s⁻¹ Mpc⁻¹** (published 73.6 ± 1.1)
 
-Yayımlanan değerler Brout ve ark. (2022) makalesinin arXiv kaynağından okundu. Kayıt: [projects/hubble/result.json](projects/hubble/result.json).
+The published values were read from the arXiv source of Brout et al. (2022). Record: [projects/hubble/result.json](projects/hubble/result.json).
 
-Bulunan H0 belirsizliği yayımlanandan küçüktür. Üç bağımsız denetim bizim değeri destekliyor ([h0_belirsizlik_denetimi.py](projects/hubble/h0_uncertainty_check.py)):
+The H0 uncertainty we find is smaller than the published one. Three independent checks support our value ([h0_uncertainty_check.py](projects/hubble/h0_uncertainty_check.py)):
 
-- Zincirden bağımsız kapalı biçimli çözüm aynı veriden 73,52 ± 1,02 verir; kırmızıya kayma kesimi hiç uygulanmazsa 73,41 ± 1,01, kesim 0,023'e çıkarılırsa 73,70 ± 1,03; veri sürümündeki olabilirlik kodunun uzaklık tanımıyla (d_L = (1 + z_HEL) D_M) 73,53 ± 1,02.
-- Veri sürümündeki dört zincirin (emcee) hepsi, ilk %10'u atılınca ± 1,01 ile ± 1,04 arasında saçılım verir; baş kısım atılmazsa ± 1,03 ile ± 1,07 arasındadır. Düz ΛCDM zinciri 73,53 ± 1,01'dir.
-- Riess ve ark. (2022) temel sonucu ± 1,01'dir; aynı makalenin özeti, yüksek kırmızıya kaymalı süpernovalar eklendiğinde 73,30 ± 1,04 verir.
+- A closed-form solution that does not use a chain gives 73.52 ± 1.02 from the same data; with no redshift cut at all it gives 73.41 ± 1.01, with the cut raised to 0.023 it gives 73.70 ± 1.03; with the distance definition of the likelihood code in the data release (d_L = (1 + z_HEL) D_M) it gives 73.53 ± 1.02.
+- All four chains (emcee) in the data release give a scatter between ± 1.01 and ± 1.04 after the first 10% is discarded; if the initial part is not discarded they give between ± 1.03 and ± 1.07. The flat ΛCDM chain gives 73.53 ± 1.01.
+- The baseline result of Riess et al. (2022) is ± 1.01; the abstract of the same paper gives 73.30 ± 1.04 when high-redshift supernovae are added.
 
-Makale dört model için de ± 1,1 yazar; yayımlanan zincirlerin hiçbiri bu değeri vermez (tek ondalıkla hepsi ± 1,0'a yuvarlanır). Makale örnekleyici olarak PolyChord'u anar, veri sürümündeki zincirler emcee'dir; Yayımlanan zincirin başlığındaki yapılandırma durumu gösterir: zincir 16 yürüyüşçülü emcee koşusudur ve bütün yürüyüşçüler aynı noktadan başlar (baş kısmın geniş saçılımı buradan gelir); aynı yapılandırmada 250 canlı noktalı ayrı bir PolyChord çıktısı tanımlıdır (`122221_poly_P+SH0ES`), makale de 250 canlı nokta der. Bu çıktı veri sürümünde yoktur. Yayımlanan veri ve yayımlanan olabilirlik kodu, zincirle de zincirsiz de ± 1,0 verir; ± 1,1'i üreten koşu yayımlanmadığı için değer açık veriden yeniden üretilemez. Veri sürümü deposunda aynı soruyu soran açık bir kayıt vardır ([PantheonPlusSH0ES/DataRelease#16](https://github.com/PantheonPlusSH0ES/DataRelease/issues/16), 27 Ekim 2026; 25 Kasım 2026'da yanıtsız).
+The paper quotes ± 1.1 for all four models; none of the published chains gives this value (to one decimal place they all round to ± 1.0). The paper names PolyChord as the sampler, while the chains in the data release are emcee. The configuration shown in the header of the published chain says this: the chain is an emcee run with 16 walkers, and all walkers start from the same point (this is where the wide scatter of the initial part comes from); a separate PolyChord output with 250 live points is defined for the same configuration (`122221_poly_P+SH0ES`), and the paper also says 250 live points. This output is not in the data release. The published data and the published likelihood code give ± 1.0, with or without a chain; the run that produces ± 1.1 has not been published, so the value cannot be reproduced from open data. The repository of the data release has an open record that asks the same question ([PantheonPlusSH0ES/DataRelease#16](https://github.com/PantheonPlusSH0ES/DataRelease/issues/16), 27 October 2026; unanswered on 25 November 2026).
 
-### Yıldız kataloğu: Gaia ile Güneş çevresi
+### Star catalog: the Sun's neighborhood with Gaia
 
-![Gaia DR3 Hertzsprung-Russell diyagramı: 50 parsek içindeki 31 298 yıldız; anakol, beyaz cüce dizisi ve dev kolu](figures/hr_diagram.png)
+![Gaia DR3 Hertzsprung-Russell diagram: 31,298 stars within 50 parsecs; main sequence, white dwarf sequence and giant branch](figures/hr_diagram.png)
 
-Güneş'e 50 parsekten yakın 31 298 yıldız anakol, beyaz cüce dizisi ve dev kolunda toplanıyor. Katalog Gaia DR3'ten kendi yazdığımız TAP istemcisiyle indirilir (paralaks sinyal-gürültü oranı > 20, RUWE < 1,4). Gaia çok parlak yıldızlarda doyduğu için en parlak yıldızlar örneklemde yoktur.
+The 31,298 stars within 50 parsecs of the Sun gather on the main sequence, the white dwarf sequence and the giant branch. The catalog is downloaded from Gaia DR3 with a TAP client we wrote ourselves (parallax signal-to-noise ratio > 20, RUWE < 1.4). Gaia saturates on very bright stars, so the brightest stars are missing from the sample.
 
-### Aynı alan, üç dalga boyu: optik ve kızılötesi
+### The same field, three wavelengths: optical and infrared
 
-![Alev Bulutsusu'nun optik, yakın kızılötesi ve orta kızılötesi görüntüleri; saptanan kaynak sayıları 17, 132 ve 15](figures/optical_infrared.png)
+![Optical, near-infrared and mid-infrared images of the Flame Nebula; detected source counts 17, 132 and 15](figures/optical_infrared.png)
 
-Alev Bulutsusu'nda (NGC 2024) toz, görünür ışıkta yıldızları gizler; 2 µm'de aynı alanda saptanan kaynak sayısı 17'den 132'ye çıkar. 12 µm'de ısınmış tozun kendi ışıması görünür; ortadaki kiremit rengi bölgede 10 247 piksel veri taşımaz (FITS dosyasında NaN). WISE Açıklayıcı Eki (bölüm I.4.c.vii) nedeni verir: doymuş pikseller tek pozlarda maskelenir ve Atlas görüntüsüne girmez; doyma sınırını aşan parlak bölgeler NaN olur ve bu boşluklar tipik olarak ışımanın tepesinde görülür. Buradaki boşluk da en parlak ışımanın ortasındadır. Görüntüler NASA SkyView'dan indirilir, kendi FITS okuyucumuzla okunur; arka plan haritası ve kaynak saptama `kozmos.photometry` ile yapılır.
+In the Flame Nebula (NGC 2024), dust hides the stars in visible light; at 2 µm the number of sources detected in the same field rises from 17 to 132. At 12 µm the emission of the heated dust itself is visible; in the brick-colored region in the middle, 10,247 pixels carry no data (NaN in the FITS file). The WISE Explanatory Supplement (section I.4.c.vii) gives the reason: saturated pixels are masked in single exposures and do not enter the Atlas image; bright regions above the saturation limit become NaN, and these gaps are typically seen at the peak of the emission. The gap here is also in the middle of the brightest emission. The images are downloaded from NASA SkyView and read with our own FITS reader; the background map and source detection are done with `kozmos.photometry`.
 
-<img src="figures/flame_nebula_jhk.png" width="360" alt="Alev Bulutsusu'nun 2MASS J, H ve K bantlarından renkli bileşimi; toz şeridinin içinde kızarmış genç yıldız kümesi">
+<img src="figures/flame_nebula_jhk.png" width="360" alt="Color composite of the Flame Nebula from the 2MASS J, H and K bands; young star cluster reddened inside the dust lane">
 
-Aynı alanın 2MASS J, H ve K bantlarından renk koruyan bileşimi (Lupton ve ark. 2004 germesi). Toz şeridinin içindeki kırmızı yıldızlar K bandında J bandına göre çok daha parlaktır; bu, tozun içinden gelen ışığın kızarmasıyla uyumludur.
+A color-preserving composite of the same field from the 2MASS J, H and K bands (Lupton et al. 2004 stretch). The red stars inside the dust lane are much brighter in the K band than in the J band; this is consistent with the reddening of light that comes through the dust.
 
-### Gerçek görüntüde doğrulama: 2MASS kataloğuna karşı
+### Validation on a real image: against the 2MASS catalog
 
-![Solda K kadirine göre saptanan kaynak kesri, katalog yıldızları ve yapay yıldızlar için; sağda saptanan konumların katalog konumlarından farkı](figures/real_image_validation.png)
+![Left: fraction of sources detected as a function of K magnitude, for catalog stars and artificial stars; right: difference between detected positions and catalog positions](figures/real_image_validation.png)
 
-Kaynak saptama, WCS dönüşümü ve katalog eşleme aynı alanın 2MASS K görüntüsünde (1 yay saniyesi/piksel) 2MASS Nokta Kaynak Kataloğu'na karşı sınandı ([gercek_goruntu_dogrulamasi.py](examples/real_image_validation.py), kayıt: [gercek_goruntu_dogrulamasi.json](figures/real_image_validation.json)):
+Source detection, the WCS transform and catalog matching were tested against the 2MASS Point Source Catalog on the 2MASS K image of the same field (1 arcsec/pixel) ([real_image_validation.py](examples/real_image_validation.py), record: [real_image_validation.json](figures/real_image_validation.json)):
 
-- K = 7-11 aralığındaki 61 katalog yıldızının 59'u bulundu; görüntüye eklenen yapay yıldızların K ≤ 12 için en az %94'ü, K = 14'te %51'i geri bulundu.
-- Saptanan 281 kaynağın %85'inin 2 yay saniyesi içinde katalog karşılığı var; kalanların bir kısmı bulutsunun parlak düğümleridir.
-- Konum farkının ortancası sağ açıklıkta 0,16, dik açıklıkta 0,03 yay saniyesi; saçılım iki eksende 0,14 ve 0,13 yay saniyesi. Artıklar iki öbekte toplanıyor; nedeni incelenmedi (SkyView'ın yeniden örneklemesi olası).
-- Açıklık kadiri ile katalog K kadiri arasındaki sıfır noktasının saçılımı 40 yalıtılmış yıldızda 0,021 kadir.
+- Of the 61 catalog stars in the range K = 7-11, 59 were found; of the artificial stars added to the image, at least 94% were recovered for K ≤ 12 and 51% at K = 14.
+- 85% of the 281 detected sources have a catalog counterpart within 2 arcseconds; some of the rest are bright knots of the nebula.
+- The median position difference is 0.16 arcsec in right ascension and 0.03 arcsec in declination; the scatter is 0.14 and 0.13 arcsec on the two axes. The residuals gather in two clumps; the cause was not investigated (resampling by SkyView is likely).
+- The scatter of the zero point between the aperture magnitude and the catalog K magnitude is 0.021 mag over 40 isolated stars.
 
-Örtüşen kaynakları ayıran adım bu sınamada eklendi: ayrıştırma olmadan parlak yapay yıldızların %84'ü bulunuyordu. Aynı görüntüde başlıktaki WCS bilerek bozulup (0,4° dönme, %0,4 ölçek, 18 ve 14 piksel kaydırma) yalnızca saptanan kaynaklarla katalogdan yeniden çözüldü: en büyük konum hatası 25,8 yay saniyesinden 0,43 yay saniyesine indi (246 yıldız). Katalog aynı taramanın verisinden üretildiği için bu sınama kodu ölçer, 2MASS'in kendisini değil. Başlık hiç kullanılmadan, üçgen eşlemeyle yapılan kör çözüm de aynı sonuca vardı: 24 çift atandı, 246 yıldızla çözüm başlıktaki WCS'ten en çok 0,43 yay saniyesi ayrıldı; bulunan ölçek 0,9998 yay saniyesi/piksel (başlıkta 1).
+The step that separates overlapping sources was added during this test: without deblending, 84% of the bright artificial stars were found. On the same image, the WCS in the header was deliberately corrupted (0.4° rotation, 0.4% scale, shifts of 18 and 14 pixels) and re-solved from the catalog using only the detected sources: the largest position error fell from 25.8 arcsec to 0.43 arcsec (246 stars). Because the catalog was produced from the data of the same survey, this test measures the code, not 2MASS itself. A blind solution by triangle matching, with no use of the header at all, reached the same result: 24 pairs were assigned, the solution with 246 stars differed from the header WCS by at most 0.43 arcsec; the scale found was 0.9998 arcsec/pixel (1 in the header).
 
-### Gerçek ham veriyle indirgeme
+### Reduction with real raw data
 
-![Hubble STIS karesinde kozmik ışın temizliği: birinci poz, temizlenmiş birinci poz ve ikinci poz](figures/cosmic_rays_real_data.png)
+![Cosmic-ray cleaning on a Hubble STIS frame: first exposure, cleaned first exposure and second exposure](figures/cosmic_rays_real_data.png)
 
-Kozmik ışın temizliği iki Hubble STIS gözleminde sınandı; her dosya aynı yönelimde iki ardışık poz taşır. Kozmik ışınlar iki pozda farklı piksellere düştüğü için pozların farkı bağımsız bir ölçüt verir ([kozmik_isin_gercek_veri.py](examples/cosmic_rays_real_data.py)):
+Cosmic-ray cleaning was tested on two Hubble STIS observations; each file holds two consecutive exposures with the same orientation. Because cosmic rays fall on different pixels in the two exposures, the difference of the exposures gives an independent criterion ([cosmic_rays_real_data.py](examples/cosmic_rays_real_data.py)):
 
-| Alan | Farkta 6σ üstü piksel | Bulunan | 20σ üstünde bulunan | Saflık | Temizlik öncesi ve sonrası sapma |
+| Field | Pixels above 6σ in the difference | Found | Found above 20σ | Purity | Deviation before and after cleaning |
 |---|---|---|---|---|---|
-| M5 küresel kümesi (yıldızca kalabalık) | 7081 | %77 | %97 | %91 | 29σ, 1,0σ |
-| Abell 1795 gökada kümesi (seyrek, yaygın kaynaklı) | 14059 | %84 | %98 | %97 | 39σ, 0,8σ |
+| M5 globular cluster (crowded with stars) | 7081 | 77% | 97% | 91% | 29σ, 1.0σ |
+| Abell 1795 galaxy cluster (sparse, diffuse sources) | 14059 | 84% | 98% | 97% | 39σ, 0.8σ |
 
-Saflık, işaretlenen piksellerin gerçek bir kozmik ışına bitişik olan kesridir. İşaretlenen piksellerin komşularına düşük eşik uygulayan adım bu sınamada eklendi; onsuz tamlık %60 ve %66 idi. Kaynak makalenin eksik örneklenmiş veri için önerdiği f_lim = 5, bu iki alanda f_lim = 2'den düşük tamlık verdi (%64 ve %72).
+Purity is the fraction of flagged pixels that are adjacent to a real cosmic ray. The step that applies a low threshold to the neighbors of flagged pixels was added during this test; without it, completeness was 60% and 66%. The f_lim = 5 that the source paper recommends for undersampled data gave lower completeness than f_lim = 2 in these two fields (64% and 72%).
 
-![ESO SOFI Ks karelerinde indirgeme: ham kare, gökyüzü çıkarılmış kare ve 16 karenin yığını](figures/infrared_reduction.png)
+![Reduction of ESO SOFI Ks frames: raw frame, sky-subtracted frame and stack of 16 frames](figures/infrared_reduction.png)
 
-Kızılötesi indirgeme ESO NTT/SOFI'nin iki ham Ks dizisinde, aynı gecenin kubbe düz alanıyla uçtan uca koşuldu ([kizilotesi_indirgeme.py](examples/infrared_reduction.py)):
+The infrared reduction was run end to end on two raw Ks sequences from ESO NTT/SOFI, with the dome flat of the same night ([infrared_reduction.py](examples/infrared_reduction.py)):
 
-| | SN 2011bm alanı (seyrek) | SN 2005at alanı (zengin, gökada alanı doldurur) |
+| | SN 2011bm field (sparse) | SN 2005at field (rich, the galaxy fills the field) |
 |---|---|---|
-| Kare sayısı ve süre | 16 kare, 28 dakika | 32 kare, 53 dakika |
-| Büyük ölçekli artık (ADU) | 156 → 0,8 | 159 → 4,6 |
-| Piksel gürültüsü (ADU) | 251 → 7,2 | 260 → 9,9 |
-| Öteleme ile başlık komutu farkı (piksel) | 0,7 | 3,1 |
-| Alandaki 2MASS yıldızı, saptanan | 5, 5 | 48, 33 |
-| Astrometri artığı (yay saniyesi) | 0,45 | 0,47 |
-| Sıfır noktası (nokta kaynaklar) | 1 yıldız: 24,02 | 10 yıldız: 24,23, saçılım 0,065 kadir |
-| Kör çözüm, 2MASS kataloğuyla | reddedildi (ortak yıldız az) | başlıktan başlayan çözümle aynı |
-| Gaia DR3 ile astrometri | 10 yıldız, 0,17″ artık | 123 yıldız, 0,29″ artık |
-| Kör çözüm, Gaia DR3 ile | 8 yıldız, 0,16″; başlıktan başlayan çözümden en çok 0,81″ | 122 yıldız; başlıktan başlayan çözümden en çok 0,004″ |
+| Number of frames and duration | 16 frames, 28 minutes | 32 frames, 53 minutes |
+| Large-scale residual (ADU) | 156 → 0.8 | 159 → 4.6 |
+| Pixel noise (ADU) | 251 → 7.2 | 260 → 9.9 |
+| Offset vs. header command difference (pixels) | 0.7 | 3.1 |
+| 2MASS stars in the field, detected | 5, 5 | 48, 33 |
+| Astrometry residual (arcsec) | 0.45 | 0.47 |
+| Zero point (point sources) | 1 star: 24.02 | 10 stars: 24.23, scatter 0.065 mag |
+| Blind solution, with the 2MASS catalog | rejected (few common stars) | same as the solution started from the header |
+| Astrometry with Gaia DR3 | 10 stars, 0.17″ residual | 123 stars, 0.29″ residual |
+| Blind solution, with Gaia DR3 | 8 stars, 0.16″; at most 0.81″ from the solution started from the header | 122 stars; at most 0.004″ from the solution started from the header |
 
-Zengin alanda sıfır noktası saçılımı (0,065 kadir) kullanılan 2MASS yıldızlarının ortanca katalog belirsizliğinin (0,10 kadir) altındadır. Sıfır noktasına yalnızca nokta kaynaklar girer: 2MASS Nokta Kaynak Kataloğu sıkı gökadaları da içerir ve sabit açıklık bunların akısını eksik ölçer; zengin alanda 14 adaydan 4'ü bu yüzden atıldı (süzgeçsiz saçılım 0,094 kadirdi).
+In the rich field, the zero-point scatter (0.065 mag) is below the median catalog uncertainty of the 2MASS stars used (0.10 mag). Only point sources enter the zero point: the 2MASS Point Source Catalog also contains compact galaxies, and a fixed aperture underestimates their flux; in the rich field, 4 of 14 candidates were rejected for this reason (the scatter without the filter was 0.094 mag).
 
-Düz alan SOFI Kullanım Kılavuzu'nun özel kubbe düz alanı tarifiyle kuruldu (Bölüm 5.2.5: maskeli karelerle gölgelenme düzeltmesi). Aynı yıldızın karelerdeki akı saçılımı düz alansız %3,1, basit düz alanla %2,7, özel düz alanla %2,9 (15 yıldız; yalnızca arka plan gürültüsünden beklenen %1,8). Bu ölçütte özel düz alan basit düz alandan iyi çıkmadı; ikisinin oranı dizinin iki yarısında yalnızca %0,3 ayrılıyor. Bu dizilerde durağan gökyüzü modeli dinamik modelden az gürültülü çıktı. Gökada alanı doldurduğunda büyük ölçekli artık daha yüksek kalır (4,5 ADU): kaydırma adımından büyük nesne modele sızar.
+The flat field was built with the dome flat recipe of the SOFI User Manual (section 5.2.5: shading correction with masked frames). The flux scatter of the same star across frames is 3.1% without a flat, 2.7% with a simple flat, and 2.9% with the special flat (15 stars; 1.8% expected from background noise alone). By this measure the special flat did not do better than the simple flat; the ratio of the two differs by only 0.3% between the two halves of the sequence. In these sequences the static sky model gave less noise than the dynamic model. When the galaxy fills the field, the large-scale residual stays higher (4.5 ADU): an object larger than the dither step leaks into the model.
 
-Seyrek alanda 2MASS yetmez: tam kapsanan bölgede yalnızca 5 katalog yıldızı vardır. Astrometri Gaia DR3 ile kuruldu (konumlar öz hareketle gözlem dönemine taşındı); kör çözüm de Gaia ile başarılı oldu, 2MASS ile yanlış bir çözüm üretip doğrulama adımında reddedildi. Fotometride iki aday vardı ve sıfır noktaları 0,77 kadir ayrıydı. Sapan aday nokta kaynak değildir: dar açıklığın geniş açıklığa akı oranı 0,27'dir, alandaki Gaia yıldızlarında ortanca 0,78; yani bir gökadadır ve açıklık akısının çoğunu kaçırır. Kalan tek yıldızla kalibrasyon yapılamayacağı için aynı gecelerin standart yıldız dizileri de arşivden indirilip indirgendi (FS14 ve FS24 alanları; kalibratör, karelerdeki 2MASS yıldızlarıdır). Dört bağımsız sıfır noktası, saniye başına ve 10 piksellik açıklığa indirgenmiş olarak:
+In the sparse field, 2MASS is not enough: the fully covered region holds only 5 catalog stars. The astrometry was set up with Gaia DR3 (positions were moved to the epoch of observation with proper motion); the blind solution also succeeded with Gaia, while with 2MASS it produced a wrong solution that was rejected in the verification step. In photometry there were two candidates, and their zero points were 0.77 mag apart. The deviant candidate is not a point source: the flux ratio of its narrow aperture to its wide aperture is 0.27, against a median of 0.78 for the Gaia stars in the field; that is, it is a galaxy, and the aperture misses most of its flux. Because a calibration cannot be made with the single remaining star, the standard star sequences of the same nights were also downloaded from the archive and reduced (fields FS14 and FS24; the calibrators are the 2MASS stars in the frames). The four independent zero points, reduced to per second and to a 10-pixel aperture:
 
-| Alan | Gece | Hava kütlesi | Yıldız | Sıfır noktası (kadir) |
+| Field | Night | Airmass | Stars | Zero point (mag) |
 |---|---|---|---|---|
-| FS14 standart alanı | 13/14 Mart | 1,19 | 17 | 22,16 (saçılım 0,051) |
-| SN 2005at | 13/14 Mart | 1,45 | 10 | 22,18 |
-| FS24 standart alanı | 14/15 Mart | 1,44 | 2 | 22,10 |
-| SN 2011bm (seyrek alan) | 14/15 Mart | 1,70 | 1 | 22,13 |
+| FS14 standard field | 13/14 March | 1.19 | 17 | 22.16 (scatter 0.051) |
+| SN 2005at | 13/14 March | 1.45 | 10 | 22.18 |
+| FS24 standard field | 14/15 March | 1.44 | 2 | 22.10 |
+| SN 2011bm (sparse field) | 14/15 March | 1.70 | 1 | 22.13 |
 
-Dört değer 0,08 kadirlik bir aralığa sığar. Seyrek alanın tek yıldızı, aynı gecenin standart alanından 0,04 kadir, öteki gecenin 17 yıldızlı standart alanından 0,03 kadir ayrıdır; yıldızın katalog belirsizliği 0,06 kadirdir. Saniye başına indirgemenin dayandığı kural kılavuzdan okundu: ham dosyadaki sayımlar tek DIT'e karşılık gelir (NDIT alt pozun ortalaması). Sönümleme dizi içinden ölçüldü: SN 2005at dizisinde 15 parlak yıldızın göreli kadiri hava kütlesiyle (1,33-1,45) 0,10 ± 0,04 kadir/hava kütlesi eğimle değişiyor (32 kare, kare başına artık 0,008 kadir). Bu eğim sönümlemeyi saydamlık kaymasından ayıramaz ve aralık dardır. Dört sıfır noktası bu eğimle hava kütlesi 1'e indirgendiğinde aralık 0,08 kadirden 0,09 kadire değişir; yani düzeltme, değerlerin uyumunu iyileştirmez. Seyrek dizide eğim ölçülemedi (yeterli parlaklıkta tek yıldız). Seyrek alan için önerilen sıfır noktası bu yüzden kendi tek yıldızı değil, dört değerin ortak düzeyidir; FS24 alanında yalnızca 2 kalibratör yıldız vardır; eşik 2MASS belirsizliği 0,10 kadire gevşetilince sayı 7'ye çıkar ama saçılım 0,15 kadire büyür ve değer 0,11 kadir düşer (toplam 6 saniyelik pozda sönük yıldızlar gürültülüdür), bu yüzden sıkı seçim tutuldu. ESO arşivinde gözlem dönemi çevresindeki iki haftada bu iki diziden başka Ks standart dizisi yoktur.
+The four values fit in a range of 0.08 mag. The single star of the sparse field differs by 0.04 mag from the standard field of the same night and by 0.03 mag from the 17-star standard field of the other night; the catalog uncertainty of the star is 0.06 mag. The rule that the per-second reduction rests on was read from the manual: the counts in the raw file correspond to a single DIT (NDIT is the mean of the sub-exposures). Extinction was measured within the sequence: in the SN 2005at sequence, the relative magnitude of 15 bright stars changes with airmass (1.33-1.45) with a slope of 0.10 ± 0.04 mag/airmass (32 frames, residual 0.008 mag per frame). This slope cannot separate extinction from a drift in transparency, and the range is narrow. When the four zero points are reduced to airmass 1 with this slope, the range changes from 0.08 mag to 0.09 mag; that is, the correction does not improve the agreement of the values. The slope could not be measured in the sparse sequence (a single star of sufficient brightness). The zero point recommended for the sparse field is therefore not its own single star but the common level of the four values; the FS24 field has only 2 calibrator stars; when the threshold on the 2MASS uncertainty is relaxed to 0.10 mag the number rises to 7, but the scatter grows to 0.15 mag and the value drops by 0.11 mag (faint stars are noisy in the 6-second total exposure), so the strict selection was kept. In the ESO archive, no Ks standard sequence other than these two exists in the two weeks around the observation epoch.
 
-Kılavuzun indirgeme adımlarından çapraz konuşma (cross talk) düzeltmesi ve aydınlatma düzeltmesi uygulanmadı. Gökyüzü çıkarılmış tek karede çapraz çizgili artık desenler kalıyor; nedeni incelenmedi.
+Of the reduction steps in the manual, the cross talk correction and the illumination correction were not applied. Cross-hatched residual patterns remain in a single sky-subtracted frame; the cause was not investigated.
 
-### Parlak yıldızlar: gökyüzü haritası
+### Bright stars: sky map
 
-![Parlak Yıldız Kataloğu'ndaki 9096 yıldızın galaktik koordinatlarda gökyüzü haritası; Samanyolu düzlemi boyunca yoğunlaşma](figures/sky_map.png)
+![Sky map in galactic coordinates of the 9096 stars in the Bright Star Catalogue; concentration along the Milky Way plane](figures/sky_map.png)
 
-Parlak Yıldız Kataloğu'nun (5. baskı) konum ve kadir taşıyan 9096 yıldızı, galaktik koordinatlarda. Yıldızların %47'si galaktik enlemin ±20° kuşağındadır; düzgün dağılımda bu oran %34 olurdu. Gaia'nın doyduğu çıplak gözle görülen yıldızlar bu katalogdan gelir.
+The 9096 stars of the Bright Star Catalogue (5th edition) that carry a position and a magnitude, in galactic coordinates. 47% of the stars lie in the band of ±20° of galactic latitude; for a uniform distribution this fraction would be 34%. The naked-eye stars on which Gaia saturates come from this catalog.
 
-### Kara delikler, yıldızlar, yıldız oluşumu
+### Black holes, stars, star formation
 
-![Dönen kara delikte en içteki kararlı yörüngenin yarıçapı ve yığılma verimi, dönme parametresine karşı](figures/black_hole_spin.png)
+![Radius of the innermost stable orbit and accretion efficiency in a rotating black hole, against the spin parameter](figures/black_hole_spin.png)
 
-Kara delik döndükçe en içteki kararlı yörünge 6'dan 1,24 çekim yarıçapına iner ve yığılan maddenin ışınıma çevrilen kesri %5,7'den %32'ye çıkar (a* = 0,998).
+As the black hole spins, the innermost stable orbit falls from 6 to 1.24 gravitational radii, and the fraction of the accreting matter converted to radiation rises from 5.7% to 32% (a* = 0.998).
 
 <p>
-<img src="figures/lane_emden.png" width="49%" alt="Lane-Emden denkleminin n = 0, 1, 1,5 ve 3 politrop indisleri için çözümleri">
-<img src="figures/mass_functions.png" width="49%" alt="Salpeter, Kroupa ve Chabrier başlangıç kütle fonksiyonları">
+<img src="figures/lane_emden.png" width="49%" alt="Solutions of the Lane-Emden equation for polytropic indices n = 0, 1, 1.5 and 3">
+<img src="figures/mass_functions.png" width="49%" alt="Salpeter, Kroupa and Chabrier initial mass functions">
 </p>
 
-Solda politrop yıldız modelleri: indis büyüdükçe yıldız merkezde yoğunlaşır (n = 3 için merkez yoğunluğu ortalamanın 54 katı). Sağda üç başlangıç kütle fonksiyonu, 0,1-50 Güneş kütlesi aralığında aynı toplam sayıya normalleştirilmiş: 1 Güneş kütlesinin üstünde eğimleri aynıdır, altında Salpeter çok daha fazla küçük yıldız öngörür.
+On the left, polytropic stellar models: the larger the index, the more the star is concentrated at the center (for n = 3 the central density is 54 times the mean). On the right, three initial mass functions, normalized to the same total number over the range 0.1-50 solar masses: above 1 solar mass their slopes are the same; below it Salpeter predicts many more small stars.
 
-<img src="figures/jeans_mass.png" width="62%" alt="Jeans kütlesinin gaz yoğunluğuna bağlılığı, 10, 20 ve 50 kelvin için">
+<img src="figures/jeans_mass.png" width="62%" alt="Dependence of the Jeans mass on gas density, for 10, 20 and 50 kelvin">
 
-Bir gaz bulutunun kendi çekimiyle çökebilmesi için gereken en küçük kütle. 10 K sıcaklıkta ve santimetreküpte 10⁴ parçacık yoğunluğunda yaklaşık 3 Güneş kütlesidir.
+The smallest mass a gas cloud needs to collapse under its own gravity. At a temperature of 10 K and a particle density of 10⁴ per cubic centimeter it is about 3 solar masses.
 
-## Neler var
+## What is included
 
-**Gözlem ve veri**
+**Observing and data**
 
-- `arsiv`: TAP istemcisi, Gaia DR3 yıldız örneklemleri ve koni sorgusu (öz hareketle dönem taşıması), 2MASS nokta kaynak koni sorgusu, Parlak Yıldız Kataloğu, SkyView görüntü kesitleri (DSS2, 2MASS, WISE), Pantheon+ verisi; her indirme SHA-256 özetiyle kayda geçer, geçici ağ hataları yeniden denenir
-- `io`: FITS okuyucu ve yazıcı (FITS 4.0 standardından); birincil birim, görüntü uzantıları ve ESO HIERARCH başlık kartları
-- `gozlem`: hedef görünürlüğü ve hava kütlesi (presesyon ve atmosfer kırılmasıyla), CCD sinyal modeli, sentetik ham kare, sinyal-gürültü oranı
-- `indirgeme`: sigma kırpmalı kare birleştirme, bias/karanlık/düz alan düzeltmesi, kazanç ve okuma gürültüsü ölçümü, tek karede kozmik ışın temizliği (L.A.Cosmic), kaydırmalı kızılötesi karelerden gökyüzü çıkarma
-- `fotometri`: arka plan haritası, kaynak saptama ve örtüşen kaynakların ayrıştırılması, açıklık fotometrisi
-- `astrometri`: FITS WCS piksel-gök dönüşümü (TAN izdüşümü), katalog çapraz eşleme, yaklaşık WCS'ten ve başlangıç WCS'i olmadan (üçgen eşleme) astrometrik çözüm
-- `gorsel`: asinh germe ve renk koruyan RGB bileşimi
-- `isinim`: kadir sistemleri, Planck fonksiyonu, 2MASS ve WISE sıfır noktaları
-- `zamanserisi`: Lomb-Scargle periyodogramı
+- `archives`: TAP client, Gaia DR3 star samples and cone search (epoch transfer with proper motion), 2MASS point source cone search, Bright Star Catalogue, SkyView image cutouts (DSS2, 2MASS, WISE), Pantheon+ data; every download is recorded with a SHA-256 digest, and transient network errors are retried
+- `io`: FITS reader and writer (from the FITS 4.0 standard); primary unit, image extensions and ESO HIERARCH header cards
+- `observing`: target visibility and airmass (with precession and atmospheric refraction), CCD signal model, synthetic raw frame, signal-to-noise ratio
+- `reduction`: frame combining with sigma clipping, bias/dark/flat-field correction, gain and read-noise measurement, single-frame cosmic-ray cleaning (L.A.Cosmic), sky subtraction from dithered infrared frames
+- `photometry`: background map, source detection and deblending of overlapping sources, aperture photometry
+- `astrometry`: FITS WCS pixel-to-sky transform (TAN projection), catalog cross-matching, astrometric solution from an approximate WCS and without an initial WCS (triangle matching)
+- `visualization`: asinh stretch and color-preserving RGB composite
+- `radiation`: magnitude systems, Planck function, 2MASS and WISE zero points
+- `timeseries`: Lomb-Scargle periodogram
 
-**Astrofizik**
+**Astrophysics**
 
-- `karadelik`: Schwarzschild ve Kerr yarıçapları, gölge boyutu, yığılma (Eddington, Bondi, ince disk), Hawking ışınımı, birleşen çiftlerin çekimsel dalga frekansı
-- `yildiz`: Lane-Emden politropları, yıldız ölçekleme bağıntıları, Chandrasekhar kütlesi, başlangıç kütle fonksiyonları
-- `yildizolusumu`: Jeans ve Bonnor-Ebert kütleleri, serbest düşme süresi, viryal parametre, Kennicutt-Schmidt yasası, Toomre Q
-- `kozmoloji`: uzaklık ölçüleri, Hubble diyagramı olabilirliği
-- `efemeris`: Kepler denklemi ve yörünge bağıntıları
+- `black_holes`: Schwarzschild and Kerr radii, shadow size, accretion (Eddington, Bondi, thin disk), Hawking radiation, gravitational-wave frequency of merging binaries
+- `stars`: Lane-Emden polytropes, stellar scaling relations, Chandrasekhar mass, initial mass functions
+- `star_formation`: Jeans and Bonnor-Ebert masses, free-fall time, virial parameter, Kennicutt-Schmidt law, Toomre Q
+- `cosmology`: distance measures, Hubble diagram likelihood
+- `ephemeris`: Kepler's equation and orbit relations
 
-**Altyapı**
+**Infrastructure**
 
-- `temel`: CODATA 2022 sabitleri, IAU nominal değerleri, açı aritmetiği
-- `zaman`, `koordinat`: Jülyen tarihi, artık saniyeler, yıldız zamanı, galaktik ve ufuk dönüşümleri, IAU 2006 presesyonu
-- `istatistik`: doğrusal uyum, MCMC, yakınsama tanıları, sağlam kestiriciler
+- `core`: CODATA 2022 constants, IAU nominal values, angle arithmetic
+- `time`, `coordinates`: Julian date, leap seconds, sidereal time, galactic and horizontal transforms, IAU 2006 precession
+- `statistics`: linear fitting, MCMC, convergence diagnostics, robust estimators
 
-## Kaynak kuralı nasıl işler
+## How the source rule works
 
 ```python
-@kaynak("Hogg1999", yer="Denk. 15", teyit="okundu")
-def esyuruyen_uzaklik_mpc(z, kozmoloji):
-    """Bakış doğrultusundaki eşyürüyen uzaklığı hesaplar.
+@source("Hogg1999", where="Eq. 15", status="read")
+def comoving_distance_mpc(z, cosmology):
+    """Compute the line-of-sight comoving distance.
 
-    Kaynaklar
-    ---------
-    [Hogg1999] Denk. 15.
+    References
+    ----------
+    [Hogg1999] Eq. 15.
 
-    Doğrulama
-    ---------
+    Verification
+    ------------
     tests/oracle/test_cosmology_oracle.py
     """
 ```
 
-- `teyit="okundu"`: denklem kod yazılırken kaynağın metninden alındı (arXiv TeX dosyası, standart belgesi, kaynak kodu).
-- `teyit="bekliyor"`: denklem bilinen biçimiyle yazıldı ve testlerle sınandı, ama kaynağın metni henüz açılmadı.
+- `status="read"`: the equation was taken from the text of the source while the code was written (arXiv TeX file, standard document, source code).
+- `status="pending"`: the equation was written in its known form and tested, but the text of the source has not yet been opened.
 
-Bir test her açık fonksiyon için kaydın varlığını, anahtarın [kaynakçada](bibliography/) tanımlı olduğunu, belge dizgisinin aynı kaynağı andığını ve gösterilen test dosyasının var olduğunu denetler. Kaynakçadaki künyeler de sınanır: [bibliography/verify.py](bibliography/verify.py) her DOI'yi Crossref'e, her arXiv kimliğini arXiv'e sorar.
+For every public function, a test checks that the record exists, that the key is defined in the [bibliography](bibliography/), that the docstring cites the same source, and that the test file it points to exists. The entries in the bibliography are also tested: [bibliography/verify.py](bibliography/verify.py) queries every DOI at Crossref and every arXiv identifier at arXiv.
 
-Kaynak metnini açmak sonucu değiştirdi. Okuma sırasında bulunanlardan üçü:
+Opening the text of a source changed results. Three of the things found while reading:
 
-- Bir derleme makalesindeki Kerr foton yörüngesi formülü, basıldığı biçimiyle ileri değil geri yönlü yörüngeyi veriyor.
-- Jeans kütlesinin iki yaygın tanımı arasında 4π/3 kat fark var; fonksiyon ikisini de adıyla sunuyor.
-- Bir kaynaktaki politrop tablosunun kütle katsayısı sütunu yalnızca n = 3 için standart tanımla uyuşuyor.
+- The Kerr photon orbit formula in a review article, as printed, gives the retrograde orbit, not the prograde one.
+- The two common definitions of the Jeans mass differ by a factor of 4π/3; the function offers both by name.
+- The mass coefficient column of the polytrope table in one source agrees with the standard definition only for n = 3.
 
-Ayrıntılar [plan/04_physics/08_black_holes_stars_and_star_formation.md](plan/04_physics/08_black_holes_stars_and_star_formation.md) dosyasındadır.
+The details are in [plan/04_physics/08_black_holes_stars_and_star_formation.md](plan/04_physics/08_black_holes_stars_and_star_formation.md).
 
-## Kurulum ve kullanım
+## Installation and usage
 
-Python 3.12 ya da üstü gerekir.
+Python 3.12 or later is required.
 
 ```
-pip install -e ".[dogrulama,gelistirme,gorsel]"
-pytest -m "not ag"
+pip install -e ".[verification,dev,plotting]"
+pytest -m "not network"
 ```
 
 ```python
 import numpy as np
-from kozmos.cosmology.distances import Kozmoloji, isinim_gucu_uzakligi_mpc
-from kozmos.black_holes.basics import isco_isinim_verimliligi
-from kozmos import bibliography_raporu
+from kozmos.cosmology.distances import Cosmology, luminosity_distance_mpc
+from kozmos.black_holes.basics import isco_radiative_efficiency
+from kozmos import bibliography_report
 
-isinim_gucu_uzakligi_mpc(np.array([0.1, 1.0]), Kozmoloji.duz(h0=70.0, omega_m=0.3))  # [460.30, 6607.66] Mpc
-isco_isinim_verimliligi(0.0)  # 0.0572: dönmeyen kara delikte yığılma verimi
-print(bibliography_raporu(isco_isinim_verimliligi))  # hangi yayına dayanıyor, okundu mu
+luminosity_distance_mpc(np.array([0.1, 1.0]), Cosmology.flat(h0=70.0, omega_m=0.3))  # [460.30, 6607.66] Mpc
+isco_radiative_efficiency(0.0)  # 0.0572: accretion efficiency of a non-rotating black hole
+print(bibliography_report(isco_radiative_efficiency))  # which publication it rests on, whether it was read
 ```
 
-Şekilleri yeniden üretmek için (veriyi kendileri indirir):
+To reproduce the figures (the scripts download the data themselves):
 
 ```
-python projects/hubble/hubble_analysis.py     # yaklaşık 12 dakika
+python projects/hubble/hubble_analysis.py     # about 12 minutes
 python projects/hubble/hubble_figure.py
 python examples/hr_diagram.py
 python examples/optical_infrared.py
@@ -221,28 +221,28 @@ python examples/physics_gallery.py
 python examples/sky_map.py
 python examples/real_image_validation.py
 python examples/cosmic_rays_real_data.py
-python examples/infrared_reduction.py      # SOFI kareleri önce indirilip açılmalı: examples/eso_sofi_frames.txt
+python examples/infrared_reduction.py      # the SOFI frames must be downloaded and unpacked first: examples/eso_sofi_frames.txt
 python projects/hubble/h0_uncertainty_check.py
 ```
 
-Depodaki şekiller yerel bir figür denetim aracıyla (`datawiz`) üretildi; araç bu depoda yoktur. Araç kurulu değilse betikler aynı veriyi düz matplotlib ile çizer ([examples/_plotting.py](examples/_plotting.py)); görünüm depodaki şekillerden farklı olur.
+The figures in the repository were produced with a local figure-audit tool (`datawiz`); the tool is not in this repository. If the tool is not installed, the scripts draw the same data with plain matplotlib ([examples/_plotting.py](examples/_plotting.py)); the appearance then differs from the figures in the repository.
 
-## Sınırlar
+## Limits
 
-- Yeni yazılan fizik modülleri kendi testleriyle, kapalı çözümlerle ve kaynaklardaki sayılarla sınandı. Bağımsız bir kitaplıkla karşılaştırma zaman, koordinat, kozmoloji, istatistik, FITS ve periyodogram modüllerinde var.
-- Gözlem planlaması çerçeve yanlılığı, presesyon ve isteğe bağlı kırılma içerir; nutasyon, aberasyon ve UT1 − UTC farkı yoktur. 30 rastgele hedefte astropy ile yön farkı en çok 0,45 yay dakikasıdır (presesyonsuz hesapta 26 yay dakikası). Kırılma modeli yaklaşık 5° yüksekliğin altında geçersizdir.
-- FITS okuyucu birincil birimi ve görüntü uzantılarını okur; tablo uzantıları listelenir ama çözülmez, sıkıştırılmış görüntüler okunmaz.
-- Kaynak ayrıştırma aralarında belirgin eyer olan çiftleri ayırır: 2 FWHM aralıkta akı oranı 2'ye kadar çiftlerin %92-98'i, oran 3'te varsayılan ayarla %14'ü ayrışır. Açıklık fotometrisi dar açıklıkta yüzde birkaç eksik ölçer.
-- WCS yalnızca TAN izdüşümünü çözer; bozulma terimleri (SIP) yoktur. Kör astrometrik çözüm ölçek, yönelim ve ayna bilmeden çalışır ama görüntünün kapladığı bölgenin kataloğunu ister (yaklaşık gök konumu ve alan genişliği); bütün gökte arayan dizinli bir çözücü değildir ve en az 8 ortak yıldız bulamazsa çözümü reddeder.
-- Gerçek ham veri sınamaları iki STIS gözlemine ve iki SOFI dizisine dayanır; hepsi tek alet ve tek süzgeçtir. SOFI kareleri `.fits.Z` olarak iner ve okuyucumuz sıkıştırmayı açmaz (`gzip -d` gerekir). Ayrı karanlık çıkarılmaz (gökyüzü modeli karanlığı da içerir); düz alan kılavuzun özel kubbe düz alanıdır.
-- SkyView kesitleri yeniden örneklenmiş görüntülerdir; fotometrik kalibrasyon için özgün arşiv verisi gerekir.
+- The newly written physics modules were tested with their own tests, closed-form solutions and the numbers in the sources. A comparison with an independent library exists in the time, coordinates, cosmology, statistics, FITS and periodogram modules.
+- Observation planning includes frame bias, precession and optional refraction; it has no nutation, aberration or UT1 − UTC difference. On 30 random targets the largest direction difference from astropy is 0.45 arcmin (26 arcmin in the calculation without precession). The refraction model is invalid below an altitude of about 5°.
+- The FITS reader reads the primary unit and image extensions; table extensions are listed but not decoded, and compressed images are not read.
+- Source deblending separates pairs with a clear saddle between them: at a separation of 2 FWHM, 92-98% of the pairs with a flux ratio up to 2 are separated, and 14% at a ratio of 3 with the default setting. Aperture photometry underestimates by a few percent in narrow apertures.
+- The WCS solves only the TAN projection; there are no distortion terms (SIP). The blind astrometric solution works without knowing the scale, orientation or mirror image, but it asks for the catalog of the region the image covers (approximate sky position and field width); it is not an indexed solver that searches the whole sky, and it rejects the solution if it cannot find at least 8 common stars.
+- The tests on real raw data rest on two STIS observations and two SOFI sequences; all are a single instrument and a single filter. The SOFI frames download as `.fits.Z` and our reader does not decompress them (`gzip -d` is needed). A separate dark is not subtracted (the sky model also contains the dark); the flat field is the special dome flat of the manual.
+- SkyView cutouts are resampled images; photometric calibration needs the original archive data.
 
 ## Plan
 
-[plan/](plan/00_README.md) klasörü projenin tasarımını taşır: saha araştırması, matematik, fizik, veri bilimi, mimari, yol haritası ve işlev envanteri. Plan figuresindeki denklemler planlama düzeyindedir; bir fonksiyon yazılırken denklem kaynağından alınır.
+The [plan/](plan/00_README.md) folder holds the design of the project: field survey, mathematics, physics, data science, architecture, roadmap and function inventory. The equations in the plan documents are at planning level; when a function is written, the equation is taken from its source.
 
-## Lisans
+## License
 
-Telif Hakkı © 2026 Ayberk. Tüm hakları saklıdır; ayrıntı [LICENSE](LICENSE) dosyasındadır. Bazı fonksiyonların izlediği ERFA algoritmalarına ilişkin bildirim [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md) dosyasındadır. Analizlerin kullandığı veri depoya konmaz; çalışma anında kaynağından indirilir. Şekillerin bir kısmı DSS2, 2MASS, WISE, Gaia, Parlak Yıldız Kataloğu, Pantheon+, Hubble STIS ve ESO SOFI verisinden türetilmiştir; hak saklama bu şekilleri kapsamaz. DSS verisi içeren `optik_kizilotesi.png` CC BY-NC-SA 4.0 ile paylaşılır, Gaia verisi CC BY-NC 3.0 IGO lisanslıdır. Her taramanın koşulları ve istenen teşekkür metinleri aynı bildirim dosyasındadır.
+Copyright © 2026 Ayberk. All rights reserved; see the [LICENSE](LICENSE) file for details. The notice for the ERFA algorithms that some functions follow is in [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md). The data used by the analyses is not put in the repository; it is downloaded from its source at run time. Some of the figures are derived from DSS2, 2MASS, WISE, Gaia, Bright Star Catalogue, Pantheon+, Hubble STIS and ESO SOFI data; the reservation of rights does not cover these figures. `optical_infrared.png`, which contains DSS data, is shared under CC BY-NC-SA 4.0, and Gaia data is licensed under CC BY-NC 3.0 IGO. The terms of each survey and the requested acknowledgement texts are in the same notice file.
 
 This publication makes use of data products from the Two Micron All Sky Survey, which is a joint project of the University of Massachusetts and the Infrared Processing and Analysis Center/California Institute of Technology, funded by the National Aeronautics and Space Administration and the National Science Foundation. This publication makes use of data products from the Wide-field Infrared Survey Explorer, which is a joint project of the University of California, Los Angeles, and the Jet Propulsion Laboratory/California Institute of Technology, funded by the National Aeronautics and Space Administration. This research has made use of the NASA/IPAC Infrared Science Archive, which is funded by the National Aeronautics and Space Administration and operated by the California Institute of Technology. This research is based on observations made with the NASA/ESA Hubble Space Telescope obtained from the Space Telescope Science Institute, which is operated by the Association of Universities for Research in Astronomy, Inc., under NASA contract NAS5-26555. These observations are associated with programs 8310 and 7245. Based on observations collected at the European Southern Observatory under ESO programme 184.D-1152(F).

@@ -1,7 +1,7 @@
-"""Açı aritmetiği ve küre üzerinde ayrıklık.
+"""Angle arithmetic and angular separation on the sphere.
 
-İç gösterim radyandır. Dönüşüm sabitleri ERFA ``erfam.h`` dosyasından
-okunmuştur [ERFA2023].
+The internal representation is radians. The conversion constants are read
+from the ERFA file ``erfam.h`` [ERFA2023].
 """
 
 from __future__ import annotations
@@ -23,7 +23,7 @@ Array = NDArray[np.float64]
 
 @source("ERFA2023", where="erfam.h ERFA_DD2R", status="read")
 def deg_to_rad(angle_deg: ArrayLike) -> Array:
-    """Dereceyi radyana çevirir.
+    """Convert degrees to radians.
 
     References
     ----------
@@ -38,7 +38,7 @@ def deg_to_rad(angle_deg: ArrayLike) -> Array:
 
 @source("ERFA2023", where="erfam.h ERFA_DD2R", status="read")
 def rad_to_deg(angle_rad: ArrayLike) -> Array:
-    """Radyanı dereceye çevirir.
+    """Convert radians to degrees.
 
     References
     ----------
@@ -53,7 +53,7 @@ def rad_to_deg(angle_rad: ArrayLike) -> Array:
 
 @source("ERFA2023", where="erfam.h ERFA_DAS2R", status="read")
 def arcsec_to_rad(angle_arcsec: ArrayLike) -> Array:
-    """Yay saniyesini radyana çevirir.
+    """Convert arcseconds to radians.
 
     References
     ----------
@@ -70,10 +70,10 @@ def arcsec_to_rad(angle_arcsec: ArrayLike) -> Array:
     "ERFA2023",
     where="anp.c",
     status="read",
-    note="w = fmod(a, 2π); eksi ise 2π eklenir",
+    note="w = fmod(a, 2π); 2π is added if negative",
 )
 def wrap_0_2pi(angle_rad: ArrayLike) -> Array:
-    """Açıyı [0, 2π) aralığına indirger.
+    """Reduce an angle to the range [0, 2π).
 
     References
     ----------
@@ -81,16 +81,16 @@ def wrap_0_2pi(angle_rad: ArrayLike) -> Array:
 
     Verification
     ------------
-    tests/property/test_angles_property.py: sonuç aralıkta ve girdiyle 2π'nin katı kadar farklı.
+    tests/property/test_angles_property.py: the result lies in the range and differs from the input by a multiple of 2π.
     """
     w = np.mod(np.asarray(angle_rad, dtype=float), TWO_PI)
-    # Çok küçük eksi girdide mod sonucu yuvarlamayla 2π'ye eşitlenebilir.
+    # For a very small negative input the mod result can round to exactly 2π.
     return np.where(w >= TWO_PI, 0.0, w)
 
 
-@source("ERFA2023", where="anpm.c", status="read", note="ERFA aralığı (−π, π]; burada [−π, π)")
+@source("ERFA2023", where="anpm.c", status="read", note="ERFA range is (−π, π]; here [−π, π)")
 def wrap_pm_pi(angle_rad: ArrayLike) -> Array:
-    """Açıyı [−π, π) aralığına indirger.
+    """Reduce an angle to the range [−π, π).
 
     References
     ----------
@@ -103,13 +103,13 @@ def wrap_pm_pi(angle_rad: ArrayLike) -> Array:
     return wrap_0_2pi(np.asarray(angle_rad, dtype=float) + math.pi) - math.pi
 
 
-@source("ERFA2023", where="s2c.c", status="read", note="küresel → Kartezyen birim vektör")
+@source("ERFA2023", where="s2c.c", status="read", note="spherical to Cartesian unit vector")
 def spherical_to_unit_vector(longitude_rad: ArrayLike, latitude_rad: ArrayLike) -> Array:
-    """Boylam ve enlemden birim vektör üretir: (cos b cos l, cos b sin l, sin b).
+    """Build a unit vector from longitude and latitude: (cos b cos l, cos b sin l, sin b).
 
     Returns
     -------
-    ndarray, biçim (..., 3)
+    ndarray, shape (..., 3)
 
     References
     ----------
@@ -117,17 +117,17 @@ def spherical_to_unit_vector(longitude_rad: ArrayLike, latitude_rad: ArrayLike) 
 
     Verification
     ------------
-    tests/property/test_angles_property.py: norm 1, gidiş-dönüş.
+    tests/property/test_angles_property.py: norm 1, round trip.
     """
-    boylam = np.asarray(longitude_rad, dtype=float)
-    enlem = np.asarray(latitude_rad, dtype=float)
-    cb = np.cos(enlem)
-    return np.stack(np.broadcast_arrays(cb * np.cos(boylam), cb * np.sin(boylam), np.sin(enlem)), axis=-1)
+    longitude = np.asarray(longitude_rad, dtype=float)
+    latitude = np.asarray(latitude_rad, dtype=float)
+    cb = np.cos(latitude)
+    return np.stack(np.broadcast_arrays(cb * np.cos(longitude), cb * np.sin(longitude), np.sin(latitude)), axis=-1)
 
 
 @source("ERFA2023", where="c2s.c", status="read")
 def unit_vector_to_spherical(vector: ArrayLike) -> tuple[Array, Array]:
-    """Vektörden boylam [0, 2π) ve enlem [−π/2, π/2] üretir.
+    """Return longitude [0, 2π) and latitude [−π/2, π/2] from a vector.
 
     References
     ----------
@@ -135,7 +135,7 @@ def unit_vector_to_spherical(vector: ArrayLike) -> tuple[Array, Array]:
 
     Verification
     ------------
-    tests/property/test_angles_property.py: gidiş-dönüş.
+    tests/property/test_angles_property.py: round trip.
     """
     v = np.asarray(vector, dtype=float)
     x, y, z = v[..., 0], v[..., 1], v[..., 2]
@@ -146,24 +146,24 @@ def unit_vector_to_spherical(vector: ArrayLike) -> tuple[Array, Array]:
     "ERFA2023",
     where="sepp.c",
     status="read",
-    note="açı = atan2(|a×b|, a·b); kosinüs formülünün küçük açıdaki duyarlılık kaybı yoktur",
+    note="angle = atan2(|a×b|, a·b); no loss of precision at small angles, unlike the cosine formula",
 )
 def angular_separation(
     longitude1_rad: ArrayLike, latitude1_rad: ArrayLike, longitude2_rad: ArrayLike, latitude2_rad: ArrayLike
 ) -> Array:
-    """Küre üzerinde iki yön arasındaki açıyı hesaplar.
+    """Compute the angle between two directions on the sphere.
 
-    θ = atan2(|a × b|, a · b); a ve b yönlerin birim vektörleridir.
+    θ = atan2(|a × b|, a · b); a and b are the unit vectors of the directions.
 
     Parameters
     ----------
-    boylam1_rad, enlem1_rad, boylam2_rad, enlem2_rad : float ya da ndarray
-        İki yönün boylam ve enlemi [rad].
+    longitude1_rad, latitude1_rad, longitude2_rad, latitude2_rad : float or ndarray
+        Longitude and latitude of the two directions [rad].
 
     Returns
     -------
-    float ya da ndarray
-        Ayrıklık [rad], [0, π].
+    float or ndarray
+        Separation [rad], [0, π].
 
     References
     ----------
@@ -171,14 +171,14 @@ def angular_separation(
 
     Validity
     --------
-    Bütün açılarda kararlıdır; çakışık ve karşıt noktalar dahil.
+    Stable at all angles, including coincident and antipodal points.
 
     Verification
     ------------
-    tests/oracle/test_angles_oracle.py: erfa.seps ile fark < 1e-14 rad.
+    tests/oracle/test_angles_oracle.py: difference from erfa.seps < 1e-14 rad.
     """
     a = spherical_to_unit_vector(longitude1_rad, latitude1_rad)
     b = spherical_to_unit_vector(longitude2_rad, latitude2_rad)
-    capraz = np.linalg.norm(np.cross(a, b), axis=-1)
-    nokta = np.sum(a * b, axis=-1)
-    return np.arctan2(capraz, nokta)
+    cross = np.linalg.norm(np.cross(a, b), axis=-1)
+    dot = np.sum(a * b, axis=-1)
+    return np.arctan2(cross, dot)

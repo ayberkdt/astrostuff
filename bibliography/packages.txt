@@ -1,5 +1,5 @@
-# PyPI paket adları; dogrula.py her birinin son sürümünü ve yükleme tarihini okur.
-# çekirdek ve bağlı paketler
+# PyPI package names; verify.py reads the latest version and upload date of each.
+# core and related packages
 numpy
 scipy
 astropy
@@ -18,7 +18,7 @@ astroscrappy
 sep
 lightkurve
 astrocut
-# konum, efemeris, yörünge
+# position, ephemerides, orbits
 skyfield
 jplephem
 spiceypy
@@ -30,7 +30,7 @@ hapsira
 poliastro
 galpy
 gala
-# indirgeme, astrometri, tayf, zaman serisi
+# reduction, astrometry, spectra, time series
 astroalign
 twirl
 pypeit
@@ -39,7 +39,7 @@ wotan
 stingray
 fitsio
 stdpipe
-# kozmoloji
+# cosmology
 camb
 classy
 cobaya
@@ -48,7 +48,7 @@ sncosmo
 pyccl
 colossus
 healpy
-# istatistik
+# statistics
 emcee
 dynesty
 nautilus-sampler
@@ -70,7 +70,7 @@ tinygp
 jax
 uncertainties
 sbi
-# astrofizik alan kodları
+# astrophysics domain codes
 batman-package
 exoplanet
 radvel
@@ -101,7 +101,7 @@ radis
 mocpy
 astropy-healpix
 lsdb
-# geliştirme
+# development
 pytest
 hypothesis
 ruff

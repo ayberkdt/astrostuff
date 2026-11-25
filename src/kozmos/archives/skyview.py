@@ -1,12 +1,12 @@
-"""NASA SkyView'dan görüntü kesitleri.
+"""Image cutouts from NASA SkyView.
 
-SkyView, çok sayıda taramayı (DSS2, 2MASS, WISE ...) istenen konum, alan ve
-piksel ızgarasına yeniden örnekleyip FITS olarak verir. Sorgu parametreleri
-(``Position``, ``Survey``, ``Pixels``, ``Size``, ``Return``) SkyView'ın toplu
-kullanım belgesindeki örneklerden okunmuştur [SkyView2026].
+SkyView resamples many surveys (DSS2, 2MASS, WISE ...) to the requested
+position, field and pixel grid and returns them as FITS. The query parameters
+(``Position``, ``Survey``, ``Pixels``, ``Size``, ``Return``) were read from the
+examples in the SkyView batch-use documentation [SkyView2026].
 
-Kesitler yeniden örneklenmiş görüntülerdir: fotometrik kalibrasyon için özgün
-arşiv verisinin yerini tutmaz, görsel karşılaştırma ve algoritma sınaması içindir.
+Cutouts are resampled images: they do not replace the original archive data for
+photometric calibration; they are for visual comparison and algorithm testing.
 """
 
 from __future__ import annotations
@@ -20,10 +20,10 @@ from kozmos.archives import cache
 from kozmos.io import fits
 
 ENDPOINT = "https://skyview.gsfc.nasa.gov/current/cgi/runquery.pl"
-ATTRIBUTION = "NASA SkyView (HEASARC); taramaların kendi atıfları ayrıca gerekir"
+ATTRIBUTION = "NASA SkyView (HEASARC); the surveys' own attributions are also required"
 
-# Görünür ve kızılötesi karşılaştırmasında kullanılan taramalar ve etkin dalga boyları [µm].
-# Dalga boyları 2MASS için [Cohen2003] Tablo 2 (λ_iso), WISE için [Wright2010] bant adları; DSS2 için yaklaşık.
+# Surveys used in the visible and infrared comparison, with effective wavelengths [µm].
+# Wavelengths: [Cohen2003] Table 2 (λ_iso) for 2MASS, [Wright2010] band names for WISE; approximate for DSS2.
 SURVEYS = {
     "DSS2 Blue": 0.44,
     "DSS2 Red": 0.64,
@@ -42,9 +42,9 @@ ATTEMPTS = 3
 
 @source(
     "SkyView2026",
-    where="Batch Page: runquery.pl örnekleri (Position, Survey, Pixels, Size, Return)",
+    where="Batch Page: runquery.pl examples (Position, Survey, Pixels, Size, Return)",
     status="read",
-    note="tarama adları ('DSS2 Red', '2MASS-K', 'WISE 12') belgeden değil, çalışan sorgulardan doğrulandı",
+    note="survey names ('DSS2 Red', '2MASS-K', 'WISE 12') were verified from working queries, not from the document",
 )
 def download_cutout(
     ra_deg: float,
@@ -56,23 +56,25 @@ def download_cutout(
     pixels: int = 400,
     refresh: bool = False,
 ) -> tuple[np.ndarray, dict]:
-    """Verilen konum çevresinde bir taramadan kare görüntü kesiti indirir.
+    """Download a square image cutout from a survey around a given position.
 
     Parameters
     ----------
-    sag_acikllik_derece, dik_acikllik_derece : float
-        Merkez konumu (ICRS) [derece].
-    tarama : str
-        SkyView tarama adı; bilinen adlar ``TARAMALAR`` sözlüğündedir.
-    onbellek_dizini : Path
-    alan_derece : float
-        Görüntünün kenar uzunluğu [derece].
-    piksel : int
-        Kenar başına piksel sayısı.
+    ra_deg, dec_deg : float
+        Center position (ICRS) [deg].
+    survey : str
+        SkyView survey name; known names are in the ``SURVEYS`` dictionary.
+    cache_dir : Path
+    size_deg : float
+        Side length of the image [deg].
+    pixels : int
+        Number of pixels per side.
+    refresh : bool
+        Download again even if the cached file exists.
 
     Returns
     -------
-    (görüntü, başlık) : ``görüntü[y, x]`` ve FITS başlığı.
+    (image, header) : ``image[y, x]`` and the FITS header.
 
     References
     ----------
@@ -80,19 +82,19 @@ def download_cutout(
 
     Validity
     --------
-    Görüntü yeniden örneklenmiştir; piksel değerleri taramanın özgün birimindedir
-    ve taramadan taramaya değişir. Kuzey yukarı, doğu soldadır (SkyView varsayılanı;
-    başlıktaki CDELT1 işaretinden denetlenir).
+    The image is resampled; pixel values are in the original unit of the survey
+    and change from survey to survey. North is up and east is left (SkyView
+    default; checked from the sign of CDELT1 in the header).
 
-    Servis geçerli FITS döndürmezse istek üç kez yinelenir; bozuk yanıtlar önbelleğe alınmaz.
+    If the service does not return valid FITS the request is repeated three times; invalid responses are not cached.
 
     Verification
     ------------
-    tests/unit/test_archives.py: bozuk yanıtın yeniden denenmesi (ağsız) ve gerçek sorgu (``-m ag``).
+    tests/unit/test_archives.py: retry on an invalid response (no network) and a real query (``-m network``).
     """
     name = f"skyview_{cache.key(survey, f'{ra_deg:.6f}', f'{dec_deg:.6f}', str(size_deg), str(pixels))}.fits"
     target = Path(cache_dir) / name
-    for deneme in range(1, ATTEMPTS + 1):
+    for attempt in range(1, ATTEMPTS + 1):
         path = cache.download(
             ENDPOINT,
             target,
@@ -103,20 +105,21 @@ def download_cutout(
                 "Size": f"{size_deg:g}",
                 "Return": "FITS",
             },
-            attribution=f"{ATTRIBUTION}; tarama: {survey}",
-            refresh=refresh or deneme > 1,
+            attribution=f"{ATTRIBUTION}; survey: {survey}",
+            refresh=refresh or attempt > 1,
         )
         try:
             return fits.read_fits(path)
-        except ValueError as hata:
-            # Servis ara sıra 200 koduyla FITS olmayan ya da yarım bir yanıt döndürür (25 Kasım 2026'da testte
-            # görüldü). Bozuk yanıt önbellekte bırakılmaz; incelenebilsin diye ``.hatali`` adıyla saklanır.
-            hatali = target.with_name(f"{target.name}.hatali{deneme}")
-            path.replace(hatali)
-            if deneme == ATTEMPTS:
-                bas = hatali.read_bytes()[:80]
+        except ValueError as error:
+            # The service sometimes returns a non-FITS or truncated response with status 200 (seen in a test on
+            # 25 November 2026). The invalid response is not left in the cache; it is kept under the name
+            # ``.invalid`` so it can be inspected.
+            invalid = target.with_name(f"{target.name}.invalid{attempt}")
+            path.replace(invalid)
+            if attempt == ATTEMPTS:
+                head = invalid.read_bytes()[:80]
                 raise ValueError(
-                    f"SkyView {ATTEMPTS} denemede geçerli FITS döndürmedi ({hata}); son yanıtın başı: {bas!r}; "
-                    f"yanıtlar {hatali.parent} altında .hatali adıyla saklandı"
-                ) from hata
-    raise AssertionError("ulaşılamaz")
+                    f"SkyView did not return valid FITS in {ATTEMPTS} attempts ({error}); start of the last response: "
+                    f"{head!r}; responses were kept under {invalid.parent} with the .invalid name"
+                ) from error
+    raise AssertionError("unreachable")

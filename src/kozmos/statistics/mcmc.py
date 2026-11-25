@@ -1,8 +1,8 @@
-"""Afin değişmez topluluk örnekleyici ve zincir tanıları.
+"""Affine-invariant ensemble sampler and chain diagnostics.
 
-Gerdirme hamlesi ve paralel güncelleme şeması emcee makalesinin arXiv TeX
-kaynağından (1202.3665) okunmuştur [ForemanMackey2013]; yöntemin özgün
-kaynağı [GoodmanWeare2010] makalesidir ve bu çalışmada okunmamıştır.
+The stretch move and the parallel update scheme were read from the arXiv TeX
+source (1202.3665) of the emcee paper [ForemanMackey2013]; the original source
+of the method is the paper [GoodmanWeare2010], which was not read in this work.
 """
 
 from __future__ import annotations
@@ -22,13 +22,13 @@ Array = NDArray[np.float64]
 
 @dataclass(frozen=True, slots=True)
 class Chain:
-    """Topluluk örnekleyicinin çıktısı.
+    """Output of the ensemble sampler.
 
     Attributes
     ----------
-    examples : ndarray, biçim (adım, yürüyücü, boyut)
-    log_olasilik : ndarray, biçim (adım, yürüyücü)
-    kabul_orani : ndarray, biçim (yürüyücü,)
+    samples : ndarray, shape (step, walker, dimension)
+    log_probability : ndarray, shape (step, walker)
+    acceptance_fraction : ndarray, shape (walker,)
     """
 
     samples: Array
@@ -36,25 +36,25 @@ class Chain:
     acceptance_fraction: Array
 
     def flatten(self, discard: int = 0, thin: int = 1) -> Array:
-        """Isınma adımlarını atar ve yürüyücüleri tek örnek dizisinde birleştirir."""
+        """Discard the burn-in steps and merge the walkers into a single sample array."""
         return self.samples[discard::thin].reshape(-1, self.samples.shape[-1])
 
 
 @source(
     "ForemanMackey2013",
-    where="Denk. goodmanprop (g(z) ∝ 1/√z, z ∈ [1/a, a])",
+    where="Eq. goodmanprop (g(z) ∝ 1/√z, z ∈ [1/a, a])",
     status="read",
-    note="ters dönüşüm örneklemesi: z = ((a−1)u + 1)² / a, u ~ U(0,1); türetim bu projede",
+    note="inverse transform sampling: z = ((a−1)u + 1)² / a, u ~ U(0,1); derivation in this project",
 )
 def stretch_factor(rng: np.random.Generator, size: int | tuple[int, ...], a: float = 2.0) -> Array:
-    """Gerdirme hamlesinin ölçek çarpanını g(z) ∝ 1/√z dağılımından örnekler.
+    """Sample the scale factor of the stretch move from the distribution g(z) ∝ 1/√z.
 
-    Birikimli dağılım F(z) = (√z − 1/√a) / (√a − 1/√a) ters çevrilir:
+    The cumulative distribution F(z) = (√z − 1/√a) / (√a − 1/√a) is inverted:
     z = ((a − 1) u + 1)² / a.
 
     References
     ----------
-    [ForemanMackey2013] Denk. goodmanprop.
+    [ForemanMackey2013] Eq. goodmanprop.
 
     Validity
     --------
@@ -62,19 +62,19 @@ def stretch_factor(rng: np.random.Generator, size: int | tuple[int, ...], a: flo
 
     Verification
     ------------
-    tests/unit/test_mcmc.py: örneklerin aralığı ve birikimli dağılımı (KS testi).
+    tests/unit/test_mcmc.py: range of the samples and their cumulative distribution (KS test).
     """
     if a <= 1.0:
-        raise ValueError("a 1'den büyük olmalı")
+        raise ValueError("a must be greater than 1")
     u = rng.random(size)
     return ((a - 1.0) * u + 1.0) ** 2 / a
 
 
 @source(
     "ForemanMackey2013",
-    where="Denk. proposal, acceptance; Algoritma 3 (paralel gerdirme hamlesi)",
+    where="Eq. proposal, acceptance; Algorithm 3 (parallel stretch move)",
     status="read",
-    note="Y = X_j + Z (X_k − X_j); kabul q = min(1, Z^{N−1} p(Y)/p(X_k)); topluluk iki yarıya bölünür",
+    note="Y = X_j + Z (X_k − X_j); acceptance q = min(1, Z^{N−1} p(Y)/p(X_k)); the ensemble is split into two halves",
 )
 def ensemble_sample(
     log_probability: Callable[[Array], float],
@@ -84,200 +84,202 @@ def ensemble_sample(
     *,
     a: float = 2.0,
 ) -> Chain:
-    """Afin değişmez topluluk örnekleyiciyi (gerdirme hamlesi) koşturur.
+    """Run the affine-invariant ensemble sampler (stretch move).
 
-    Her adımda topluluk iki yarıya ayrılır; bir yarıdaki her yürüyücü öbür
-    yarıdan rastgele seçilen bir yürüyücüye göre güncellenir.
+    At each step the ensemble is split into two halves; every walker in one
+    half is updated relative to a walker chosen at random from the other half.
 
     Parameters
     ----------
-    log_olasilik : callable
-        Parametre vektörünü alıp log sonsal yoğunluğu döndürür; tanım kümesi
-        dışında ``-inf``.
-    baslangic : ndarray, biçim (yürüyücü, boyut)
-        Başlangıç konumları. Yürüyücü sayısı çift ve boyutun en az iki katı olmalı.
-    adim_sayisi : int
-    uretec : numpy.random.Generator
+    log_probability : callable
+        Takes a parameter vector and returns the log posterior density;
+        ``-inf`` outside the domain.
+    initial : ndarray, shape (walker, dimension)
+        Initial positions. The number of walkers must be even and at least twice the dimension.
+    n_steps : int
+    rng : numpy.random.Generator
     a : float
-        Gerdirme ölçeği; kaynakta önerilen değer 2.
+        Stretch scale; the value recommended in the source is 2.
 
     References
     ----------
-    [ForemanMackey2013] Denk. proposal, acceptance, Algoritma 3.
+    [ForemanMackey2013] Eq. proposal, acceptance, Algorithm 3.
 
     Validity
     --------
-    Sürekli, tek tepeli ya da hafif çok tepeli dağılımlar. Yüksek boyutta
-    (onlarca parametre üstü) verimi düşer.
+    Continuous, unimodal or mildly multimodal distributions. Efficiency drops
+    in high dimension (above a few tens of parameters).
 
     Verification
     ------------
-    tests/unit/test_mcmc.py: ilintili Gauss hedefte ortalama ve kovaryansın geri kazanımı.
+    tests/unit/test_mcmc.py: recovery of the mean and covariance for a correlated Gaussian target.
     """
     x = np.array(initial, dtype=float)
     if x.ndim != 2:
-        raise ValueError("başlangıç (yürüyücü, boyut) biçiminde olmalı")
+        raise ValueError("initial must have the shape (walker, dimension)")
     k, n = x.shape
     if k % 2 or k < 2 * n:
-        raise ValueError("yürüyücü sayısı çift ve boyutun en az iki katı olmalı")
+        raise ValueError("the number of walkers must be even and at least twice the dimension")
     lp = np.array([log_probability(v) for v in x])
     if not np.all(np.isfinite(lp)):
-        raise ValueError("başlangıç konumlarının bir kısmında log olasılık sonlu değil")
+        raise ValueError("log probability is not finite at some of the initial positions")
     samples = np.empty((n_steps, k, n))
-    lp_kayit = np.empty((n_steps, k))
-    kabul = np.zeros(k)
-    yari = k // 2
-    yarilar = (np.arange(yari), np.arange(yari, k))
+    lp_record = np.empty((n_steps, k))
+    accepted = np.zeros(k)
+    half = k // 2
+    halves = (np.arange(half), np.arange(half, k))
     for t in range(n_steps):
-        for target, tamamlayici in (yarilar, yarilar[::-1]):
-            z = stretch_factor(rng, yari, a)
-            es = tamamlayici[rng.integers(0, yari, yari)]
-            oneri = x[es] + z[:, None] * (x[target] - x[es])
-            lp_oneri = np.array([log_probability(v) for v in oneri])
-            log_q = (n - 1) * np.log(z) + lp_oneri - lp[target]
-            kabul_mu = np.log(rng.random(yari)) < log_q
-            secili = target[kabul_mu]
-            x[secili] = oneri[kabul_mu]
-            lp[secili] = lp_oneri[kabul_mu]
-            kabul[secili] += 1
+        for target, complement in (halves, halves[::-1]):
+            z = stretch_factor(rng, half, a)
+            partner = complement[rng.integers(0, half, half)]
+            proposal = x[partner] + z[:, None] * (x[target] - x[partner])
+            lp_proposal = np.array([log_probability(v) for v in proposal])
+            log_q = (n - 1) * np.log(z) + lp_proposal - lp[target]
+            is_accepted = np.log(rng.random(half)) < log_q
+            chosen = target[is_accepted]
+            x[chosen] = proposal[is_accepted]
+            lp[chosen] = lp_proposal[is_accepted]
+            accepted[chosen] += 1
         samples[t] = x
-        lp_kayit[t] = lp
-    return Chain(samples, lp_kayit, kabul / n_steps)
+        lp_record[t] = lp
+    return Chain(samples, lp_record, accepted / n_steps)
 
 
 @source(
     "ForemanMackey2013",
-    where="Bölüm 3, 'Autocorrelation time': τ_f ve C_f(T) denklemleri",
+    where="Section 3, 'Autocorrelation time': τ_f and C_f(T) equations",
     status="read",
-    note="τ = 1 + 2 Σ C(T)/C(0). Toplamın kesildiği pencere kuralı (en küçük M, M >= c·τ(M), c = 5) makalede yoktur; "
-    "emcee figuresindeki uygulamadan hatırlanmıştır ve teyit edilmemiştir",
+    note="τ = 1 + 2 Σ C(T)/C(0). The window rule that truncates the sum (smallest M with M >= c·τ(M), c = 5) is not in the paper; "
+    "it is recalled from the implementation in the emcee documentation and has not been verified",
 )
 def autocorrelation_time(chain: ArrayLike, c: float = 5.0) -> Array:
-    """Tümleşik öz ilinti süresini parametre başına kestirir.
+    """Estimate the integrated autocorrelation time per parameter.
 
     Parameters
     ----------
-    zincir : ndarray, biçim (adım, yürüyücü, boyut)
+    chain : ndarray, shape (step, walker, dimension)
     c : float
-        Pencere katsayısı.
+        Window coefficient.
 
     Returns
     -------
-    ndarray, biçim (boyut,)
-        Adım cinsinden τ. Zincir uzunluğu 50 τ'dan kısaysa kestirim güvenilmezdir.
+    ndarray, shape (dimension,)
+        τ in steps. The estimate is unreliable if the chain is shorter than 50 τ.
 
     References
     ----------
-    [ForemanMackey2013] Bölüm 3.
+    [ForemanMackey2013] Section 3.
 
     Verification
     ------------
-    tests/unit/test_mcmc.py: AR(1) sürecinde kapalı çözüm (1+ρ)/(1−ρ).
+    tests/unit/test_mcmc.py: closed-form solution (1+ρ)/(1−ρ) for an AR(1) process.
     """
     x = np.asarray(chain, dtype=float)
-    adim, k, n = x.shape
+    n_steps, k, n = x.shape
     tau = np.empty(n)
-    boy = 1 << int(np.ceil(np.log2(2 * adim)))
+    fft_length = 1 << int(np.ceil(np.log2(2 * n_steps)))
     for d in range(n):
-        acf = np.zeros(adim)
+        acf = np.zeros(n_steps)
         for w in range(k):
             y = x[:, w, d] - x[:, w, d].mean()
-            f = np.fft.rfft(y, boy)
-            g = np.fft.irfft(f * np.conjugate(f))[:adim]
+            f = np.fft.rfft(y, fft_length)
+            g = np.fft.irfft(f * np.conjugate(f))[:n_steps]
             acf += g / g[0] if g[0] > 0 else 0.0
         acf /= k
         taus = 2.0 * np.cumsum(acf) - 1.0
-        pencere = np.arange(adim) >= c * taus
-        m = int(np.argmax(pencere)) if np.any(pencere) else adim - 1
+        window = np.arange(n_steps) >= c * taus
+        m = int(np.argmax(window)) if np.any(window) else n_steps - 1
         tau[d] = taus[m]
     return tau
 
 
 @source(
     "Vehtari2021",
-    where="Bölüm 3.1: B, W, var⁺ ve R̂ denklemleri",
+    where="Section 3.1: B, W, var⁺ and R̂ equations",
     status="read",
-    note="B = N/(M−1) Σ(θ̄_m − θ̄)², W = ortalama s_m², var⁺ = (N−1)/N·W + B/N, R̂ = sqrt(var⁺/W); ikiye bölünür",
+    note="B = N/(M−1) Σ(θ̄_m − θ̄)², W = mean s_m², var⁺ = (N−1)/N·W + B/N, R̂ = sqrt(var⁺/W); split into two halves",
 )
 def split_rhat(chain: ArrayLike) -> Array:
-    """Bölünmüş R̂ yakınsama tanısını parametre başına hesaplar.
+    """Compute the split R̂ convergence diagnostic per parameter.
 
     Parameters
     ----------
-    zincir : ndarray, biçim (adım, yürüyücü, boyut)
-        Isınma atıldıktan sonraki örnekler.
+    chain : ndarray, shape (step, walker, dimension)
+        Samples after the burn-in has been discarded.
 
     Returns
     -------
-    ndarray, biçim (boyut,)
-        R̂; 1'e yakın değer zincirlerin aynı dağılımı örneklediğiyle tutarlıdır.
+    ndarray, shape (dimension,)
+        R̂; a value close to 1 is consistent with the chains sampling the same distribution.
 
     References
     ----------
-    [Vehtari2021] Bölüm 3.1.
+    [Vehtari2021] Section 3.1.
 
     Validity
     --------
-    Topluluk örnekleyicinin yürüyücüleri bağımsız zincirler değildir; bu
-    yüzden R̂ burada iyimser olabilir ve öz ilinti süresiyle birlikte okunmalıdır.
+    The walkers of an ensemble sampler are not independent chains; R̂ can
+    therefore be optimistic here and should be read together with the
+    autocorrelation time.
 
     Verification
     ------------
-    tests/unit/test_mcmc.py: bağımsız Gauss örneklerde R̂ ≈ 1, kaydırılmış zincirlerde R̂ > 1,1.
+    tests/unit/test_mcmc.py: R̂ ≈ 1 for independent Gaussian samples, R̂ > 1.1 for shifted chains.
     """
     x = np.asarray(chain, dtype=float)
-    yari = x.shape[0] // 2
-    parts = np.concatenate([x[:yari], x[yari : 2 * yari]], axis=1)  # (yari, 2k, n)
-    ortalama = parts.mean(axis=0)
+    half = x.shape[0] // 2
+    parts = np.concatenate([x[:half], x[half : 2 * half]], axis=1)  # (half, 2k, n)
+    mean = parts.mean(axis=0)
     w = parts.var(axis=0, ddof=1).mean(axis=0)
-    b = yari * ortalama.var(axis=0, ddof=1)
-    var_arti = (yari - 1) / yari * w + b / yari
-    return np.sqrt(var_arti / w)
+    b = half * mean.var(axis=0, ddof=1)
+    var_plus = (half - 1) / half * w + b / half
+    return np.sqrt(var_plus / w)
 
 
 @source(
     "Vehtari2021",
-    where="Bölüm 4.1-4.2: sıra normalleştirme ve katlama denklemleri",
+    where="Section 4.1-4.2: rank normalization and folding equations",
     status="read",
-    note="z = Φ⁻¹((r − 3/8)/(S + 1/4)); katlama ζ = |θ − ortanca(θ)|; ikisinin büyüğü raporlanır",
+    note="z = Φ⁻¹((r − 3/8)/(S + 1/4)); folding ζ = |θ − median(θ)|; the larger of the two is reported",
 )
 def rank_normalized_rhat(chain: ArrayLike) -> Array:
-    """Sıra normalleştirilmiş bölünmüş R̂ ile katlanmış bölünmüş R̂'nin büyüğünü hesaplar.
+    """Compute the larger of the rank-normalized split R̂ and the folded split R̂.
 
-    Her parametre için örnekler havuzdaki sıralarıyla değiştirilir (eşitlikte
-    ortalama sıra) ve z = Φ⁻¹((r − 3/8)/(S + 1/4)) ile normal puanlara
-    çevrilir; bölünmüş R̂ bu puanlardan hesaplanır. Aynı işlem ortancadan
-    mutlak sapmalara (katlanmış örnekler) uygulanır; kuyruklardaki
-    yakınsamayı bu ölçer. Sonuç ikisinin büyüğüdür.
+    For each parameter the samples are replaced by their ranks in the pooled
+    sample (average rank for ties) and converted to normal scores with
+    z = Φ⁻¹((r − 3/8)/(S + 1/4)); the split R̂ is computed from these scores.
+    The same procedure is applied to the absolute deviations from the median
+    (folded samples); this measures convergence in the tails. The result is the
+    larger of the two.
 
     Parameters
     ----------
-    zincir : ndarray, biçim (adım, yürüyücü, boyut)
+    chain : ndarray, shape (step, walker, dimension)
 
     Returns
     -------
-    ndarray, biçim (boyut,)
+    ndarray, shape (dimension,)
 
     References
     ----------
-    [Vehtari2021] Bölüm 4.1-4.2.
+    [Vehtari2021] Section 4.1-4.2.
 
     Validity
     --------
-    Tekdüze dönüşümlere değişmezdir ve sonsuz varyanslı dağılımlarda da
-    tanımlıdır. Topluluk örnekleyicide yürüyücüler bağımsız zincir değildir;
-    değer iyimser olabilir.
+    Invariant under monotone transformations and also defined for
+    distributions with infinite variance. In an ensemble sampler the walkers
+    are not independent chains; the value can be optimistic.
 
     Verification
     ------------
-    tests/unit/test_mcmc.py: konumu kaymış ve ölçeği farklı zincirlerin yakalanması; Cauchy örneklerde tanımlılık.
+    tests/unit/test_mcmc.py: detection of chains with shifted location and different scale; well-defined for Cauchy samples.
     """
     x = np.asarray(chain, dtype=float)
-    adim, k, n = x.shape
+    n_steps, k, n = x.shape
 
-    def puan(d: Array) -> Array:
-        sira = rankdata(d.reshape(-1, n), axis=0)  # eşitlikte ortalama sıra
-        return ndtri((sira - 0.375) / (adim * k + 0.25)).reshape(adim, k, n)
+    def score(d: Array) -> Array:
+        rank = rankdata(d.reshape(-1, n), axis=0)  # average rank for ties
+        return ndtri((rank - 0.375) / (n_steps * k + 0.25)).reshape(n_steps, k, n)
 
-    katlanmis = np.abs(x - np.median(x.reshape(-1, n), axis=0))
-    return np.maximum(split_rhat(puan(x)), split_rhat(puan(katlanmis)))
+    folded = np.abs(x - np.median(x.reshape(-1, n), axis=0))
+    return np.maximum(split_rhat(score(x)), split_rhat(score(folded)))

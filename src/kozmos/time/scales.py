@@ -1,9 +1,9 @@
-"""Zaman ölçekleri arasındaki farklar: TAI − UTC ve türevleri.
+"""Differences between time scales: TAI − UTC and derived quantities.
 
-Artık saniye tablosu ve 1972 öncesi sürüklenme katsayıları ERFA ``dat.c``
-dosyasından okunmuştur [ERFA2023]. Tablo yeni bir artık saniye ilan
-edildiğinde güncellenmelidir; ``TABLO_SURUM_YILI`` tablonun ait olduğu ERFA
-sürüm yılıdır.
+The leap-second table and the pre-1972 drift coefficients were read from the
+ERFA file ``dat.c`` [ERFA2023]. The table must be updated when a new leap
+second is announced; ``TABLE_RELEASE_YEAR`` is the ERFA release year the table
+belongs to.
 """
 
 from __future__ import annotations
@@ -15,7 +15,7 @@ from kozmos.time.julian import TT_MINUS_TAI_S, calendar_to_mjd
 
 TABLE_RELEASE_YEAR = 2023  # dat.c IYV
 
-# (yıl, ay, TAI − UTC [s]); dat.c içindeki _changes tablosu.
+# (year, month, TAI − UTC [s]); the _changes table in dat.c.
 _CHANGES: tuple[tuple[int, int, float], ...] = (
     (1960, 1, 1.4178180),
     (1961, 1, 1.4228180),
@@ -61,7 +61,7 @@ _CHANGES: tuple[tuple[int, int, float], ...] = (
     (2017, 1, 37.0),
 )
 
-# 1972 öncesi: (referans MJD, sürüklenme [s/gün]); dat.c içindeki drift tablosu.
+# Before 1972: (reference MJD, drift [s/day]); the drift table in dat.c.
 _DRIFT: tuple[tuple[float, float], ...] = (
     (37300.0, 0.0012960),
     (37300.0, 0.0012960),
@@ -80,16 +80,18 @@ _DRIFT: tuple[tuple[float, float], ...] = (
 )
 
 
-@source("ERFA2023", where="dat.c", status="read", note="tablo 2017-01-01 girişiyle biter; ERFA sürüm yılı 2023")
+@source(
+    "ERFA2023", where="dat.c", status="read", note="the table ends with the 2017-01-01 entry; ERFA release year 2023"
+)
 def tai_minus_utc_s(year: int, month: int, day: int, day_fraction: float = 0.0) -> float:
-    """Verilen UTC tarihinde TAI − UTC farkını (ΔAT) saniye olarak verir.
+    """Return the difference TAI − UTC (ΔAT) in seconds at the given UTC date.
 
     Parameters
     ----------
-    yil, ay, gun : int
-        UTC takvim tarihi (Gregoryen).
-    gun_kesri : float
-        Günün kesri, [0, 1]; yalnızca 1972 öncesi sürüklenme döneminde sonucu etkiler.
+    year, month, day : int
+        UTC calendar date (Gregorian).
+    day_fraction : float
+        Fraction of the day, [0, 1]; affects the result only in the pre-1972 drift era.
 
     Returns
     -------
@@ -102,23 +104,23 @@ def tai_minus_utc_s(year: int, month: int, day: int, day_fraction: float = 0.0) 
 
     Validity
     --------
-    1960 ve sonrası. Tablonun sürüm yılından beş yıldan fazla ileri tarihlerde
-    uyarı verilir: o tarihe kadar yeni artık saniye ilan edilmiş olabilir.
-    Artık saniyenin eklendiği günün içindeki 86401. saniye bu fonksiyonla
-    ayırt edilmez.
+    1960 and later. A warning is issued for dates more than five years beyond the
+    table release year: a new leap second may have been announced by then.
+    The 86401st second within a day on which a leap second is inserted is not
+    distinguished by this function.
 
     Verification
     ------------
-    tests/oracle/test_time_scales_oracle.py: erfa.dat ile tam eşitlik.
+    tests/oracle/test_time_scales_oracle.py: exact equality with erfa.dat.
     """
     if not 0.0 <= day_fraction <= 1.0:
-        raise ValueError("gün kesri [0, 1] aralığında olmalı")
+        raise ValueError("day fraction must be in the range [0, 1]")
     mjd = int(calendar_to_mjd(year, month, day))
     if year < _CHANGES[0][0]:
-        raise ValueError("UTC 1960 öncesinde tanımlı değil")
+        raise ValueError("UTC is not defined before 1960")
     if year > TABLE_RELEASE_YEAR + 5:
         warnings.warn(
-            f"artık saniye tablosu {TABLE_RELEASE_YEAR} sürümüdür; {year} için güncelliği doğrulanmalı",
+            f"the leap-second table is the {TABLE_RELEASE_YEAR} release; verify it is current for {year}",
             stacklevel=2,
         )
     m = 12 * year + month
@@ -126,16 +128,16 @@ def tai_minus_utc_s(year: int, month: int, day: int, day_fraction: float = 0.0) 
         if m >= 12 * _CHANGES[i][0] + _CHANGES[i][1]:
             break
     else:
-        raise ValueError("tarih tablonun başlangıcından önce")
-    fark = _CHANGES[i][2]
+        raise ValueError("date is before the start of the table")
+    diff = _CHANGES[i][2]
     if i < len(_DRIFT):
-        fark += (mjd + day_fraction - _DRIFT[i][0]) * _DRIFT[i][1]
-    return fark
+        diff += (mjd + day_fraction - _DRIFT[i][0]) * _DRIFT[i][1]
+    return diff
 
 
-@source("ERFA2023", where="dat.c; erfam.h ERFA_TTMTAI", status="read", note="TT − UTC = (TAI − UTC) + 32,184 s")
+@source("ERFA2023", where="dat.c; erfam.h ERFA_TTMTAI", status="read", note="TT − UTC = (TAI − UTC) + 32.184 s")
 def tt_minus_utc_s(year: int, month: int, day: int, day_fraction: float = 0.0) -> float:
-    """Verilen UTC tarihinde TT − UTC farkını saniye olarak verir.
+    """Return the difference TT − UTC in seconds at the given UTC date.
 
     References
     ----------

@@ -1,185 +1,185 @@
 {
- "aciklama": "kapalı biçimli doğrusal Gauss çözümü; örnekleyici yok",
- "yayimlanan": {
+ "description": "closed-form linear Gaussian solution; no sampler",
+ "published": {
   "h0": 73.6,
   "sigma": 1.1,
-  "kaynak": "Brout2022 TeX makrosu \\fLCDMHPanSH"
+  "source": "Brout2022 TeX macro \\fLCDMHPanSH"
  },
- "zincir": {
-  "ortalama": 73.53193135156619,
-  "standart_sapma": 1.0020583538385743,
-  "yuzdelikler_16_50_84": [
+ "chain": {
+  "mean": 73.53193135156619,
+  "std": 1.0020583538385743,
+  "percentiles_16_50_84": [
    72.53762820685328,
    73.52914243045379,
    74.53521491496936
   ]
  },
- "secenekler": {
-  "stat+sys, z > 0.01 (zincirle aynı seçim)": {
-   "sn_sayisi": 1657,
-   "kalibrator": 77,
+ "options": {
+  "stat+sys, z > 0.01 (same selection as the chain)": {
+   "n_sn": 1657,
+   "calibrators": 77,
    "h0": 73.52378413423837,
-   "sigma_h0_omega_m_sabit": 1.0071896799854627,
+   "sigma_h0_omega_m_fixed": 1.0071896799854627,
    "sigma_h0": 1.016864773892327,
    "omega_m": 0.33151003821488506
   },
-  "stat+sys, z > 0.01, yayımlanan olabilirliğin uzaklık tanımı (zHEL)": {
-   "sn_sayisi": 1657,
-   "kalibrator": 77,
+  "stat+sys, z > 0.01, distance definition of the published likelihood (zHEL)": {
+   "n_sn": 1657,
+   "calibrators": 77,
    "h0": 73.5284841630597,
-   "sigma_h0_omega_m_sabit": 1.007254064872343,
+   "sigma_h0_omega_m_fixed": 1.007254064872343,
    "sigma_h0": 1.0169503468386625,
    "omega_m": 0.3324823463569688
   },
-  "stat+sys, kesim yok (bütün süpernovalar)": {
-   "sn_sayisi": 1701,
-   "kalibrator": 77,
+  "stat+sys, no cut (all supernovae)": {
+   "n_sn": 1701,
+   "calibrators": 77,
    "h0": 73.41278476091517,
-   "sigma_h0_omega_m_sabit": 1.0008850004220218,
+   "sigma_h0_omega_m_fixed": 1.0008850004220218,
    "sigma_h0": 1.01023470183672,
    "omega_m": 0.33343873905414984
   },
   "stat+sys, z > 0.0233": {
-   "sn_sayisi": 1442,
-   "kalibrator": 77,
+   "n_sn": 1442,
+   "calibrators": 77,
    "h0": 73.6982459550257,
-   "sigma_h0_omega_m_sabit": 1.0154215248171357,
+   "sigma_h0_omega_m_fixed": 1.0154215248171357,
    "sigma_h0": 1.0264490215017246,
    "omega_m": 0.32800958242198736
   },
   "stat+sys, 0.0233 < z < 0.15": {
-   "sn_sayisi": 567,
-   "kalibrator": 77,
+   "n_sn": 567,
+   "calibrators": 77,
    "h0": 73.51591128970522,
-   "sigma_h0_omega_m_sabit": 1.0287730136031645,
+   "sigma_h0_omega_m_fixed": 1.0287730136031645,
    "sigma_h0": 1.05827466449169,
    "omega_m": 0.3302536986063634
   },
-  "yalnız istatistik, z > 0.01": {
-   "sn_sayisi": 1657,
-   "kalibrator": 77,
+  "stat only, z > 0.01": {
+   "n_sn": 1657,
+   "calibrators": 77,
    "h0": 73.22052713822197,
-   "sigma_h0_omega_m_sabit": 0.9920167861579464,
+   "sigma_h0_omega_m_fixed": 0.9920167861579464,
    "sigma_h0": 1.0029142701971483,
    "omega_m": 0.3469017116866236
   }
  },
- "yayimlanan_zincirler": {
+ "published_chains": {
   "FlatLambdaCDM": {
-   "makale": {
+   "paper": {
     "h0": 73.6,
     "sigma_h0": 1.1
    },
-   "ornekleyici_satiri": "#sampler=emcee",
-   "ornek_sayisi": 160000,
-   "kesitler": {
-    "tamami": {
-     "ornek": 160000,
+   "sampler_line": "#sampler=emcee",
+   "n_samples": 160000,
+   "slices": {
+    "all": {
+     "samples": 160000,
      "h0": 73.5026847604877,
      "sigma_h0": 1.0680215307742278
     },
-    "ilk_yuzde_10_atilmis": {
-     "ornek": 144000,
+    "first_10_percent_discarded": {
+     "samples": 144000,
      "h0": 73.52652353199043,
      "sigma_h0": 1.013924496438092
     },
-    "ilk_yuzde_25_atilmis": {
-     "ornek": 120000,
+    "first_25_percent_discarded": {
+     "samples": 120000,
      "h0": 73.54394540863196,
      "sigma_h0": 1.0152750424899442
     },
-    "son_yari": {
-     "ornek": 80000,
+    "second_half": {
+     "samples": 80000,
      "h0": 73.53542402987247,
      "sigma_h0": 1.014469599869741
     }
    }
   },
   "LambdaCDM": {
-   "makale": {
+   "paper": {
     "h0": 73.4,
     "sigma_h0": 1.1
    },
-   "ornekleyici_satiri": "#sampler=emcee",
-   "ornek_sayisi": 150400,
-   "kesitler": {
-    "tamami": {
-     "ornek": 150400,
+   "sampler_line": "#sampler=emcee",
+   "n_samples": 150400,
+   "slices": {
+    "all": {
+     "samples": 150400,
      "h0": 73.46324757336758,
      "sigma_h0": 1.0348763964878338
     },
-    "ilk_yuzde_10_atilmis": {
-     "ornek": 135360,
+    "first_10_percent_discarded": {
+     "samples": 135360,
      "h0": 73.47893004163585,
      "sigma_h0": 1.0265614029851642
     },
-    "ilk_yuzde_25_atilmis": {
-     "ornek": 112800,
+    "first_25_percent_discarded": {
+     "samples": 112800,
      "h0": 73.47824556937027,
      "sigma_h0": 1.0240777448895515
     },
-    "son_yari": {
-     "ornek": 75200,
+    "second_half": {
+     "samples": 75200,
      "h0": 73.44740777786626,
      "sigma_h0": 1.0274626891013054
     }
    }
   },
   "FlatwCDM": {
-   "makale": {
+   "paper": {
     "h0": 73.5,
     "sigma_h0": 1.1
    },
-   "ornekleyici_satiri": "#sampler=emcee",
-   "ornek_sayisi": 211200,
-   "kesitler": {
-    "tamami": {
-     "ornek": 211200,
+   "sampler_line": "#sampler=emcee",
+   "n_samples": 211200,
+   "slices": {
+    "all": {
+     "samples": 211200,
      "h0": 73.46928534574877,
      "sigma_h0": 1.040283491907071
     },
-    "ilk_yuzde_10_atilmis": {
-     "ornek": 190080,
+    "first_10_percent_discarded": {
+     "samples": 190080,
      "h0": 73.45696917737806,
      "sigma_h0": 1.0277099899902715
     },
-    "ilk_yuzde_25_atilmis": {
-     "ornek": 158400,
+    "first_25_percent_discarded": {
+     "samples": 158400,
      "h0": 73.4608819872811,
      "sigma_h0": 1.0335749369138685
     },
-    "son_yari": {
-     "ornek": 105600,
+    "second_half": {
+     "samples": 105600,
      "h0": 73.45487059771881,
      "sigma_h0": 1.0294935335457807
     }
    }
   },
   "Flatw0waCDM": {
-   "makale": {
+   "paper": {
     "h0": 73.3,
     "sigma_h0": 1.1
    },
-   "ornekleyici_satiri": "#sampler=emcee",
-   "ornek_sayisi": 451200,
-   "kesitler": {
-    "tamami": {
-     "ornek": 451200,
+   "sampler_line": "#sampler=emcee",
+   "n_samples": 451200,
+   "slices": {
+    "all": {
+     "samples": 451200,
      "h0": 73.37378223202218,
      "sigma_h0": 1.0586112227835909
     },
-    "ilk_yuzde_10_atilmis": {
-     "ornek": 406080,
+    "first_10_percent_discarded": {
+     "samples": 406080,
      "h0": 73.37717122285208,
      "sigma_h0": 1.0367129639524721
     },
-    "ilk_yuzde_25_atilmis": {
-     "ornek": 338400,
+    "first_25_percent_discarded": {
+     "samples": 338400,
      "h0": 73.3960565405703,
      "sigma_h0": 1.032832806530961
     },
-    "son_yari": {
-     "ornek": 225600,
+    "second_half": {
+     "samples": 225600,
      "h0": 73.40445018551114,
      "sigma_h0": 1.0342461018812543
     }

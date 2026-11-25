@@ -1,71 +1,71 @@
-# Yörünge ve gök mekaniği
+# Orbits and celestial mechanics
 
-Hedef modül: `efemeris/`.
+Target module: `ephemeris/`.
 
-Denklemler planlama düzeyindedir; kodlanmadan önce anılan kaynaktan okunur.
+The equations are at planning level; they are read from the cited source before they are coded.
 
-## 1. İki cisim problemi
+## 1. Two-body problem
 
-- Göreli hareket denklemi: `r̈ = −μ r / r³`, `μ = G(m1 + m2)`.
-- Korunan nicelikler: özgül enerji `ε = v²/2 − μ/r`, açısal momentum `h = r × v`, dışmerkezlik (Laplace-Runge-Lenz) vektörü [MurrayDermott1999, Böl. 2].
-- Yörünge denklemi: `r = a(1 − e²) / (1 + e cos f)`; vis-viva: `v² = μ(2/r − 1/a)`.
-- Kepler'in üçüncü yasası: `P² = 4π² a³ / μ`.
-- `GM` çarpımı `G` ve `M` ayrı ayrı bilindiğinden çok daha duyarlı ölçülür; sabitler dosyasında nominal `GM` değerleri tutulur [Prsa2016].
+- Relative equation of motion: `r̈ = −μ r / r³`, `μ = G(m1 + m2)`.
+- Conserved quantities: specific energy `ε = v²/2 − μ/r`, angular momentum `h = r × v`, eccentricity (Laplace-Runge-Lenz) vector [MurrayDermott1999, Section 2].
+- Orbit equation: `r = a(1 − e²) / (1 + e cos f)`; vis-viva: `v² = μ(2/r − 1/a)`.
+- Kepler's third law: `P² = 4π² a³ / μ`.
+- The product `GM` is measured much more precisely than `G` and `M` separately, so the constants file keeps nominal `GM` values [Prsa2016].
 
-## 2. Anomaliler ve Kepler denklemi
+## 2. Anomalies and Kepler's equation
 
-- Ortalama anomali `M = n(t − t0)`, dış merkezli anomali `E`, gerçek anomali `f`.
-- Kepler denklemi `M = E − e sin E`; çözücüler [../03_matematik/03_sayisal_yontemler.md](../03_matematik/03_sayisal_yontemler.md) dosyasında [Markley1995].
-- `E → f`: `tan(f/2) = sqrt((1+e)/(1−e)) tan(E/2)`; `atan2` biçimi tercih edilir.
-- Parabolik (Barker denklemi) ve hiperbolik yörüngeler; evrensel değişken biçimi [Vallado2022, Böl. 2].
+- Mean anomaly `M = n(t − t0)`, eccentric anomaly `E`, true anomaly `f`.
+- Kepler's equation `M = E − e sin E`; solvers are in [../03_mathematics/03_numerical_methods.md](../03_mathematics/03_numerical_methods.md) [Markley1995].
+- `E → f`: `tan(f/2) = sqrt((1+e)/(1−e)) tan(E/2)`; the `atan2` form is preferred.
+- Parabolic (Barker's equation) and hyperbolic orbits; universal variable form [Vallado2022, Section 2].
 
-## 3. Yörünge elemanları ve durum vektörü
+## 3. Orbital elements and state vector
 
-- Klasik elemanlar: `a, e, i, Ω, ω, M0` ve dönem.
-- Elemanlar ↔ durum vektörü (`r, v`) dönüşümü; perifokal çerçeveden `R3(−Ω) R1(−i) R3(−ω)` dönmesi [Vallado2022, Böl. 2].
-- Tekillikler: `e = 0` ve `i = 0` durumunda bazı açılar tanımsızdır; ekinoktal elemanlar bu durumları kaldırır.
-- Ortalama ve anlık (osküle) elemanların ayrımı.
+- Classical elements: `a, e, i, Ω, ω, M0` and the epoch.
+- Conversion between elements and state vector (`r, v`); rotation `R3(−Ω) R1(−i) R3(−ω)` from the perifocal frame [Vallado2022, Section 2].
+- Singularities: for `e = 0` and `i = 0` some angles are undefined; equinoctial elements remove these cases.
+- Distinction between mean and instantaneous (osculating) elements.
 
-## 4. Güneş, Ay ve gezegen konumları
+## 4. Positions of the Sun, Moon and planets
 
-Üç doğruluk düzeyi:
+Three accuracy levels:
 
-- **Düzey 1:** kısaltılmış seriler. Güneş için yaklaşık 0,01°, Ay için yaklaşık 10″, gezegenler için ortalama elemanlar [Meeus1998, Böl. 25, 31-33, 47]. Planlama ve doğuş-batış için yeter.
-- **Düzey 2:** tam analitik kuramların (VSOP87, ELP) terim tabloları [Bretagnon1988]; ELP kuramının künyesi eklenecek.
-- **Düzey 3:** JPL DE440 sayısal efemerisinin okunması: SPK dosya biçimi, Chebyshev katsayılarının değerlendirilmesi [Park2021]. DE440 1550-2650 yıllarını kapsar; DE441 daha uzun aralığı daha düşük doğrulukla verir. Bu aralık bilgisi JPL'in `de440_de441` belge sayfasından araştırma sırasında okunmuştur.
+- **Level 1:** truncated series. About 0.01° for the Sun, about 10″ for the Moon, mean elements for the planets [Meeus1998, Section 25, 31-33, 47]. Sufficient for planning and for rise and set times.
+- **Level 2:** term tables of the full analytical theories (VSOP87, ELP) [Bretagnon1988]; the reference entry for the ELP theory will be added.
+- **Level 3:** reading the JPL DE440 numerical ephemeris: the SPK file format, evaluation of Chebyshev coefficients [Park2021]. DE440 covers the years 1550-2650; DE441 gives a longer span at lower accuracy. This span was read from the JPL `de440_de441` documentation page during the survey.
 
-Kâhinler: Skyfield ve `jplephem` (aynı DE dosyasıyla bit düzeyine yakın uyum beklenir), JPL Horizons (bağımsız hizmet).
+Oracles: Skyfield and `jplephem` (agreement close to the bit level is expected with the same DE file), JPL Horizons (an independent service).
 
-## 5. Küçük cisimler ve yapay uydular
+## 5. Minor bodies and artificial satellites
 
-- Asteroit ve kuyruklu yıldız efemerisi: Minor Planet Center elemanlarından iki cisim ilerletme ve gezegen tedirginlikleriyle sayısal integrasyon.
-- Kadir modeli: `H, G` sistemi.
-- Yapay uydular: TLE biçimi ve SGP4 ilerletici [Vallado2022, Böl. 9]. SGP4 yeniden yazılmaz; `sgp4` paketi kullanılır, çünkü TLE'ler yalnızca o modelin tanımıyla anlamlıdır. Görüntülerdeki uydu izlerinin öngörülmesi için gerekir.
+- Ephemerides of asteroids and comets: two-body propagation from Minor Planet Center elements and numerical integration with planetary perturbations.
+- Magnitude model: the `H, G` system.
+- Artificial satellites: the TLE format and the SGP4 propagator [Vallado2022, Section 9]. SGP4 is not rewritten; the `sgp4` package is used, because TLEs are meaningful only with the definition of that model. It is needed to predict satellite trails in images.
 
-## 6. Yörünge belirleme
+## 6. Orbit determination
 
-- Üç gözlemden başlangıç yörüngesi: Gauss ve Laplace yöntemleri [Vallado2022, Böl. 7].
-- Diferansiyel düzeltme: ağırlıklı en küçük kareler, durum geçiş matrisi.
-- Görsel ve tayfsal çift yıldız yörüngeleri: Thiele-Innes sabitleri, dikine hız eğrisi `v_r = K[cos(ω + f) + e cos ω] + γ`, kütle fonksiyonu.
+- Initial orbit from three observations: the Gauss and Laplace methods [Vallado2022, Section 7].
+- Differential correction: weighted least squares, state transition matrix.
+- Visual and spectroscopic binary orbits: Thiele-Innes constants, radial velocity curve `v_r = K[cos(ω + f) + e cos ω] + γ`, mass function.
 
-## 7. N cisim ve tedirginlik
+## 7. N-body and perturbations
 
-- Doğrudan toplam `O(N²)`; yumuşatma uzunluğu.
-- İntegratörler: leapfrog, Wisdom-Holman [WisdomHolman1991; ReinTamayo2015], yüksek dereceli uyarlamalı [ReinSpiegel2015]. Kâhin: REBOUND [ReinLiu2012].
-- Kısıtlı üç cisim problemi: Jacobi sabiti, Lagrange noktaları, Hill küresi, Roche limiti [MurrayDermott1999, Böl. 3].
-- Seküler tedirginlikler, rezonanslar, gelgit evrimi (ileri aşama) [MurrayDermott1999, Böl. 6-8].
-- Görelilikli düzeltmeler: günberi ilerlemesi; birinci post-Newton terimi.
+- Direct summation `O(N²)`; softening length.
+- Integrators: leapfrog, Wisdom-Holman [WisdomHolman1991; ReinTamayo2015], high-order adaptive [ReinSpiegel2015]. Oracle: REBOUND [ReinLiu2012].
+- Restricted three-body problem: Jacobi constant, Lagrange points, Hill sphere, Roche limit [MurrayDermott1999, Section 3].
+- Secular perturbations, resonances, tidal evolution (advanced stage) [MurrayDermott1999, Section 6-8].
+- Relativistic corrections: perihelion advance; the first post-Newtonian term.
 
-## 8. Ötegezegen gözlenebilirleri
+## 8. Exoplanet observables
 
-- Geçiş geometrisi: derinlik `(Rp/R*)²`, süre, çarpma parametresi; ışık eğrisinden yıldız yoğunluğu [SeagerMallenOrnelas2003; Winn2010].
-- Geçiş ışık eğrisi modeli: kenar kararmalı disk üzerinde analitik çözüm [MandelAgol2002]. Kâhin: `batman` [Kreidberg2015].
-- Dikine hız yarı genliği `K` ve en küçük kütle `m sin i`.
-- Geçiş zamanlama değişimleri (ileri aşama).
+- Transit geometry: depth `(Rp/R*)²`, duration, impact parameter; stellar density from the light curve [SeagerMallenOrnelas2003; Winn2010].
+- Transit light curve model: analytic solution on a limb-darkened disk [MandelAgol2002]. Oracle: `batman` [Kreidberg2015].
+- Radial velocity semi-amplitude `K` and minimum mass `m sin i`.
+- Transit timing variations (advanced stage).
 
-## Test durumları
+## Test cases
 
-- Kapalı çözüm: dairesel ve eliptik yörüngede bir dönem sonunda başlangıç durumuna dönüş; enerji ve açısal momentum korunumu.
-- Kaynak örnekleri [Meeus1998; Vallado2022] sayısal olarak yeniden üretilir.
-- Gezegen konumları Skyfield + DE440 ile, Düzey 1'de kaynağın bildirdiği doğruluk içinde, Düzey 3'te mikroyay saniyesi düzeyinde karşılaştırılır.
-- N cisim: REBOUND ile aynı başlangıç koşullarında yörünge farkı; figür-sekiz üç cisim çözümünün kararlılığı.
+- Closed-form solution: return to the initial state after one period on circular and elliptical orbits; conservation of energy and angular momentum.
+- The worked examples of the sources [Meeus1998; Vallado2022] are reproduced numerically.
+- Planet positions are compared with Skyfield + DE440, within the accuracy reported by the source at Level 1 and at the microarcsecond level at Level 3.
+- N-body: orbit difference against REBOUND for the same initial conditions; stability of the figure-eight three-body solution.

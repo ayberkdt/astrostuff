@@ -1,97 +1,97 @@
-# Kod standartları ve kaynak gösterme
+# Code standards and source citation
 
-Her açık fonksiyon, uyguladığı denklemin ya da algoritmanın yayımlanmış kaynağına bağlanır. Bağ üç yerde kurulur ve üçü de makineyle denetlenir: belge dizgisi, `@kaynak` dekoratörü ve test.
+Every public function is tied to the published source of the equation or algorithm it implements. The tie is made in three places, and all three are checked by machine: the docstring, the `@source` decorator and the test.
 
-## Kaynak gösterme sistemi
+## The source citation system
 
-### Tek kaynakça dosyası
+### A single bibliography file
 
-Bütün kaynaklar `bibliography/references.bib` dosyasında BibTeX biçiminde durur. Anahtar biçimi `İlkYazarSoyadıYıl` (`Hogg1999`), aynı yazar ve yılda `Hogg1999a`; kurum figuresinde kısa ad ve yıl (`IERS2010`, `SOFA2021`). Kod, belge ve test bu anahtarı kullanır; başka yerde künye yazılmaz.
+All sources are kept in BibTeX format in the file `bibliography/references.bib`. The key format is `FirstAuthorSurnameYear` (`Hogg1999`), with `Hogg1999a` for the same author and year; for institutional documents, a short name and the year (`IERS2010`, `SOFA2021`). Code, documents and tests use this key; no bibliographic entry is written anywhere else.
 
-Her girişte `doi`, yoksa `eprint` (arXiv) ya da `isbn` bulunur. `bibliography/verify.py` DOI'leri Crossref'ten sorgular, başlığı ve yılı karşılaştırır ve sonucu `dogrulama_kaydi.json` dosyasına yazar. Kayıtta doğrulanmamış görünen bir giriş kodda kullanılabilir, ama künyesi doğrulanmış sayılmaz.
+Every entry has a `doi`, or failing that an `eprint` (arXiv) or an `isbn`. `bibliography/verify.py` queries the DOIs at Crossref, compares the title and the year, and writes the result to the file `verification_record.json`. An entry that appears unverified in the record can be used in code, but its bibliographic details are not counted as verified.
 
-### Belge dizgisi
+### Docstring
 
-NumPy belge dizgisi biçimi kullanılır. `Kaynaklar` bölümü zorunludur ve yalnızca anahtar değil, kaynağın içindeki yeri de verir: denklem numarası, bölüm, sayfa ya da tablo.
+The NumPy docstring format is used. The `References` section is mandatory and gives not only the key but also the location inside the source: equation number, section, page or table.
 
 ```python
-@kaynak("Hogg1999", yer="Denk. 15", teyit="okundu")
-def esyuruyen_uzaklik_mpc(z, kozmoloji):
-    """Bakış doğrultusundaki eşyürüyen uzaklığı hesaplar.
+@source("Hogg1999", where="Eq. 15", status="read")
+def comoving_distance_mpc(z, cosmology):
+    """Compute the line-of-sight comoving distance.
 
     D_C = D_H * ∫_0^z dz' / E(z'),  D_H = c / H0
 
-    Parametreler
-    ------------
-    z : float ya da ndarray
-        Kırmızıya kayma, z >= 0.
-    kozmoloji : Kozmoloji
-        H0 [km s^-1 Mpc^-1] ve yoğunluk parametreleri.
-
-    Döndürür
-    --------
-    float ya da ndarray
-        Eşyürüyen uzaklık [Mpc].
-
-    Kaynaklar
-    ---------
-    [Hogg1999] Denk. 15.
-
-    Geçerlilik
+    Parameters
     ----------
-    Radyasyon terimi E(z) içindedir; z > 1e4 için integral çözünürlüğü sınanmamıştır.
+    z : float or ndarray
+        Redshift, z >= 0.
+    cosmology : Cosmology
+        H0 [km s^-1 Mpc^-1] and the density parameters.
 
-    Doğrulama
-    ---------
-    tests/oracle/test_kozmoloji.py: astropy.cosmology.FlatLambdaCDM ile bağıl fark < 1e-8.
+    Returns
+    -------
+    float or ndarray
+        Comoving distance [Mpc].
+
+    References
+    ----------
+    [Hogg1999] Eq. 15.
+
+    Validity
+    --------
+    The radiation term is inside E(z); for z > 1e4 the resolution of the integral has not been tested.
+
+    Verification
+    ------------
+    tests/oracle/test_cosmology_oracle.py: relative difference < 1e-8 against astropy.cosmology.FlatLambdaCDM.
     """
 ```
 
-Bölümlerin sırası sabittir: tek satırlık özet, denklem, `Parametreler`, `Döndürür`, `Kaynaklar`, `Geçerlilik`, `Doğrulama`. `Geçerlilik` yaklaşımın sınırını yazar (kesilen seri terimi, geçerli zaman aralığı, beklenen doğruluk); sınır bilinmiyorsa "sınanmadı" yazılır.
+The order of the sections is fixed: one-line summary, equation, `Parameters`, `Returns`, `References`, `Validity`, `Verification`. `Validity` writes the limit of the approximation (the truncated series term, the valid time range, the expected accuracy); if the limit is unknown, "not tested" is written.
 
-### `@kaynak` dekoratörü
+### The `@source` decorator
 
-`kozmos/_kaynak.py` içindeki dekoratör fonksiyonu değiştirmez; yalnızca `(modül, fonksiyon, anahtar, yer, teyit, not)` kaydını bir kütüğe ekler. `yer` kaynağın içindeki konumdur (denklem numarası, bölüm, tablo, dosya adı ya da TeX etiketi). `teyit` kaydın kanıt statüsüdür: `okundu` denklemin kod yazılırken kaynağın metninden alındığını, `bekliyor` kaynağın henüz açılmadığını bildirir. Kütükten üç şey üretilir:
+The decorator in `kozmos/_sources.py` does not change the function; it only adds the record `(module, function, key, where, status, note)` to a registry. `where` is the position inside the source (equation number, section, table, file name or TeX label). `status` is the evidential status of the record: `read` says the equation was taken from the text of the source while the code was written, and `pending` says the source has not yet been opened. Three things are produced from the registry:
 
-- `kozmos.kaynaklar(fonksiyon)`: fonksiyonun dayandığı künyeleri döndürür.
-- `kozmos.bibliography_raporu()`: bir analizde çağrılan fonksiyonların kaynak listesini verir; makale yazarken atıf listesi buradan çıkar.
-- Kaynak → fonksiyon ters dizini: bir kaynakta hata bulunursa etkilenen fonksiyonlar listelenir.
+- `kozmos.sources_of(function)`: returns the bibliographic entries the function rests on.
+- `kozmos.bibliography_report()`: gives the source list of the functions called in an analysis; the citation list comes out of here when writing a paper.
+- The source → function reverse index: if an error is found in a source, the affected functions are listed.
 
-### Makine denetimi
+### Machine check
 
-`tests/test_source_rule.py` aşağıdakileri sınar ve herhangi biri bozulduğunda test başarısız olur:
+`tests/test_source_rule.py` tests the following, and the test fails when any of them is broken:
 
-1. `kozmos` altında adı alt çizgiyle başlamayan her fonksiyon ve sınıf en az bir `@kaynak` taşır.
-2. Kullanılan her anahtar `kaynaklar.bib` içinde vardır.
-3. Belge dizgisindeki `Kaynaklar` bölümü dekoratördeki anahtarlarla aynı kümeyi içerir.
-4. Her `@kaynak` kaydında `yer` doludur ve `teyit` iki geçerli değerden biridir.
-5. Her açık fonksiyonun `Doğrulama` bölümünde adı geçen test dosyası vardır.
+1. Every function and class under `kozmos` whose name does not start with an underscore carries at least one `@source`.
+2. Every key used exists in `references.bib`.
+3. The `References` section in the docstring contains the same set as the keys in the decorator.
+4. In every `@source` record `where` is filled and `status` is one of the two valid values.
+5. The test file named in the `Verification` section of every public function exists.
 
-Kaynağı olmayan yardımcılar (dizi biçimlendirme, argüman denetimi) alt çizgiyle adlandırılır ve kuralın dışında kalır. Açık kalması gereken ama denklem uygulamayan fonksiyonlar `@altyapi("gerekçe")` ile işaretlenir; test bu muafiyetlerin gerekçeli ve en çok beş tane olduğunu denetler. Fonksiyon bir kaynağa değil bu projedeki bir türetime dayanıyorsa türetim `plan/03_mathematics` ya da `docs/turetimler` altında yazılır ve `@kaynak("kozmos:turetim/<ad>")` ile gösterilir.
+Helpers that have no source (array formatting, argument checking) are named with an underscore and stay outside the rule. Functions that must be public but implement no equation are marked with `@infrastructure("reason")`; the test checks that these exemptions have a reason and are at most five. If a function rests not on a source but on a derivation in this project, the derivation is written under `plan/03_mathematics` or `docs/derivations` and cited with `@source("kozmos:derivation/<name>")`.
 
-### Sabitler
+### Constants
 
-Fiziksel ve astronomik sabitler `temel/sabitler.py` dosyasında, her biri değeri, birimi, belirsizliği ve kaynağıyla tanımlanır. Fiziksel sabitler CODATA önerilen değerlerinden, Güneş ve gezegen nominal değerleri IAU 2015 B3 kararından [Prsa2016], astronomik birim IAU 2012 B2 kararından alınır. Kod içinde çıplak sayı sabiti yazılmaz; `ruff` kuralı ve gözden geçirme bunu denetler.
+Physical and astronomical constants are defined in `core/constants.py`, each with its value, unit, uncertainty and source. Physical constants are taken from the CODATA recommended values, the nominal solar and planetary values from the IAU 2015 B3 resolution [Prsa2016], and the astronomical unit from the IAU 2012 B2 resolution. No bare numeric constant is written in code; the `ruff` rules and review check this.
 
-## Python standartları
+## Python standards
 
-- Python 3.12 ve üstü; tip ipuçları zorunlu, `mypy --strict` temiz.
-- Biçim ve denetim `ruff` ile; yapılandırma `pyproject.toml` içinde.
-- Bir modül bir konuyu taşır; 400 satırı aşan modülün bölünmesi gözden geçirilir.
-- Fonksiyon bir iş yapar. Bayrak argümanıyla davranış değiştiren fonksiyon ikiye ayrılır.
-- Konumsal argüman en çok üç tanedir; fazlası anahtar sözcükle verilir (`*` ayırıcı).
-- Hata sessizce geçilmez: geçersiz girdi `ValueError` üretir, tanım kümesi dışındaki dizi elemanı için davranış (`nan` ya da hata) belge dizgisinde yazılıdır.
-- Değişebilir varsayılan argüman, küresel değişken ve içe aktarma sırasında yan etki yasaktır.
-- Rastgelelik `numpy.random.Generator` nesnesi argüman olarak alınarak kullanılır; küresel tohum kullanılmaz.
-- Açılar içeride radyandır. Derece, saat ve yay saniyesi yalnızca `temel/aci.py` dönüşümleriyle sınırda görünür.
-- Dizi fonksiyonları `numpy.asarray` ile girdi alır, skaler girdide skaler döndürür.
+- Python 3.12 and later; type hints are mandatory, `mypy --strict` is clean.
+- Formatting and checking are done with `ruff`; the configuration is in `pyproject.toml`.
+- A module carries one topic; a module that exceeds 400 lines is reviewed for splitting.
+- A function does one job. A function whose behavior changes with a flag argument is split in two.
+- There are at most three positional arguments; more are given by keyword (the `*` separator).
+- Errors are not passed over silently: invalid input raises `ValueError`, and the behavior (`nan` or error) for array elements outside the domain is written in the docstring.
+- Mutable default arguments, global variables and side effects at import time are forbidden.
+- Randomness is used by taking a `numpy.random.Generator` object as an argument; no global seed is used.
+- Angles are radians inside. Degrees, hours and arcseconds appear only at the boundary, with the conversions in `core/angles.py`.
+- Array functions take input with `numpy.asarray` and return a scalar for scalar input.
 
-## Adlandırma
+## Naming
 
-- Fonksiyon adı hesaplanan niceliği ve birimini söyler: `isiklilik_uzakligi_mpc`, `hava_kutlesi`, `julyen_tarihi`.
-- Dönüşüm fonksiyonları `kaynak_den_hedef` biçimindedir: `ekvatoral_den_galaktik`, `utc_den_tt`.
-- Semboller kaynaktaki gösterimi izler ve belge dizgisinde açıklanır; iki kaynak farklı sembol kullanıyorsa `@kaynak` notunda eşleme yazılır.
+- The function name says the quantity computed and its unit: `luminosity_distance_mpc`, `airmass`, `julian_date`.
+- Transform functions have the form `source_to_target`: `equatorial_to_galactic`, `utc_to_tt`.
+- Symbols follow the notation in the source and are explained in the docstring; if two sources use different symbols, the mapping is written in the `@source` note.
 
-## Sürüm ve değişiklik
+## Versions and changes
 
-Sayısal sonucu değiştiren her değişiklik (yeni seri terimi, sabit güncellemesi, farklı integral yöntemi) `DEGISIKLIKLER.md` dosyasına, etkilenen fonksiyon ve değişimin büyüklüğüyle yazılır. Kâhin testlerinin toleransı gevşetilecekse gerekçe aynı kayıtta durur.
+Every change that alters a numerical result (a new series term, a constant update, a different integration method) is written to the file `CHANGES.md`, with the affected function and the size of the change. If the tolerance of an oracle test is to be loosened, the rationale stays in the same record.

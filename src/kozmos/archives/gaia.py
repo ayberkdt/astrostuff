@@ -1,12 +1,12 @@
-"""Gaia DR3 kataloğundan yıldız örneklemleri.
+"""Star samples from the Gaia DR3 catalog.
 
-Sorgular IRSA'nın TAP servisindeki ``gaia_dr3_source`` tablosuna gider. ESA
-Gaia arşivinin eski ``tap-server`` adresi 25 Kasım 2026'da sorguya açılış
-sayfası döndürdüğü için kullanılmamıştır; AIP'deki ayna (gaia.aip.de)
-çalışmakta ama VOTable döndürmektedir.
+Queries go to the ``gaia_dr3_source`` table of the IRSA TAP service. The old
+``tap-server`` address of the ESA Gaia archive is not used because on
+25 November 2026 it returned a landing page instead of a query result; the
+mirror at AIP (gaia.aip.de) works but returns VOTable.
 
-Katalog: Gaia DR3 [Vallenari2023]; sütun tanımları IRSA şema tablosundan [IRSA2026]. Mutlak kadir tanımı ve kalite kesimi
-yaklaşımı Gaia DR2 HR diyagramı makalesinden okunmuştur [Babusiaux2018].
+Catalog: Gaia DR3 [Vallenari2023]; column definitions from the IRSA schema table [IRSA2026]. The absolute magnitude
+definition and the quality-cut approach were read from the Gaia DR2 HR diagram paper [Babusiaux2018].
 """
 
 from __future__ import annotations
@@ -20,7 +20,7 @@ from kozmos.archives import tap
 
 IRSA_TAP = "https://irsa.ipac.caltech.edu/TAP/sync"
 TABLE = "gaia_dr3_source"
-ATTRIBUTION = "ESA Gaia DR3 (Gaia Collaboration, Vallenari ve ark. 2023); IRSA TAP servisi üzerinden"
+ATTRIBUTION = "ESA Gaia DR3 (Gaia Collaboration, Vallenari et al. 2023); via the IRSA TAP service"
 COLUMNS = (
     "source_id, ra, dec, parallax, parallax_over_error, pmra, pmdec, "
     "phot_g_mean_mag, phot_bp_mean_mag, phot_rp_mean_mag, bp_rp, ruwe"
@@ -29,16 +29,16 @@ COLUMNS = (
 
 @source(
     "Babusiaux2018",
-    where="Ek B: arşiv sorgusu ve süzgeçler; Bölüm 2",
+    where="Appendix B: archive query and filters; Section 2",
     status="read",
-    note="makale parallax_over_error > 10 ve fotometrik süzgeçler kullanır; burada göreli paralaks hatası ve "
-    "RUWE kesimi uygulanır (RUWE DR2 makalesinde yoktur; Gaia DR3 sütunudur)",
+    note="the paper uses parallax_over_error > 10 and photometric filters; here a relative parallax error and "
+    "a RUWE cut are applied (RUWE is not in the DR2 paper; it is a Gaia DR3 column)",
 )
 @source(
     "IRSA2026",
     where="TAP_SCHEMA.columns, table_name = 'gaia_dr3_source'",
     status="read",
-    note="sütun tanımları ve birimleri servisin şema tablosundan: parallax [mas], pmra/pmdec [mas/yr], "
+    note="column definitions and units from the service schema table: parallax [mas], pmra/pmdec [mas/yr], "
     "ruwe 'Renormalised unit weight error', bp_rp 'BP - RP colour' [mag]",
 )
 def nearby_stars(
@@ -49,38 +49,40 @@ def nearby_stars(
     ruwe_max: float = 1.4,
     refresh: bool = False,
 ) -> dict[str, np.ndarray]:
-    """Güneş çevresindeki yıldızları Gaia DR3'ten kalite kesimleriyle indirir.
+    """Download stars around the Sun from Gaia DR3 with quality cuts.
 
-    Varsayılan seçim: paralaks > 20 mas (50 pc içi), paralaks S/N > 20,
-    RUWE < 1,4, BP−RP rengi var. 25 Kasım 2026'da bu seçim 31 298 yıldız vermiştir.
+    Default selection: parallax > 20 mas (within 50 pc), parallax S/N > 20,
+    RUWE < 1.4, BP−RP color present. On 25 November 2026 this selection returned 31,298 stars.
 
     Parameters
     ----------
-    onbellek_dizini : Path
-    paralaks_alt_mas : float
-        Alt paralaks sınırı [mas]; 1000/paralaks_alt parsek içindeki yıldızlar.
-    paralaks_sn_alt : float
-        ``parallax_over_error`` alt sınırı.
-    ruwe_ust : float
-        Yeniden normalleştirilmiş birim ağırlık hatasının üst sınırı.
+    cache_dir : Path
+    parallax_min_mas : float
+        Lower parallax limit [mas]; stars within 1000/parallax_min_mas parsec.
+    parallax_snr_min : float
+        Lower limit of ``parallax_over_error``.
+    ruwe_max : float
+        Upper limit of the renormalised unit weight error.
+    refresh : bool
+        Download again even if the cached file exists.
 
     Returns
     -------
     dict[str, ndarray]
-        Sütun adı → değerler; adlar Gaia arşivindeki gibidir.
+        Column name → values; names are as in the Gaia archive.
 
     References
     ----------
-    [Babusiaux2018] Ek B; [IRSA2026] TAP_SCHEMA.columns.
+    [Babusiaux2018] Appendix B; [IRSA2026] TAP_SCHEMA.columns.
 
     Validity
     --------
-    Gaia çok parlak yıldızlarda (yaklaşık G < 3) doyar; en parlak yıldızlar
-    örneklemde yoktur. RUWE kesimi çözülmemiş çiftlerin bir kısmını ayıklar.
+    Gaia saturates on very bright stars (roughly G < 3); the brightest stars
+    are not in the sample. The RUWE cut removes some of the unresolved binaries.
 
     Verification
     ------------
-    tests/unit/test_archives.py (ağ gerektirir, ``-m ag``).
+    tests/unit/test_archives.py (needs the network, ``-m network``).
     """
     adql = (
         f"SELECT {COLUMNS} FROM {TABLE} WHERE parallax > {parallax_min_mas:g} "
@@ -91,32 +93,32 @@ def nearby_stars(
 
 @source(
     "Babusiaux2018",
-    where="Bölüm 2: M_G = G + 5 + 5 log10(ϖ/1000), ϖ miliyay saniyesi",
+    where="Section 2: M_G = G + 5 + 5 log10(ϖ/1000), ϖ in milliarcseconds",
     status="read",
-    note="sönümleme terimi eklenmez",
+    note="no extinction term is added",
 )
 def absolute_magnitude(apparent_magnitude: np.ndarray, parallax_mas: np.ndarray) -> np.ndarray:
-    """Görünen kadir ve paralakstan mutlak kadiri hesaplar: M = m + 5 + 5 log10(ϖ/1000).
+    """Compute absolute magnitude from apparent magnitude and parallax: M = m + 5 + 5 log10(ϖ/1000).
 
     Parameters
     ----------
-    gorunen_kadir : ndarray
-    paralaks_mas : ndarray
-        Paralaks [mas], pozitif.
+    apparent_magnitude : ndarray
+    parallax_mas : ndarray
+        Parallax [mas], positive.
 
     References
     ----------
-    [Babusiaux2018] Bölüm 2.
+    [Babusiaux2018] Section 2.
 
     Validity
     --------
-    Paralaksın tersini uzaklık sayar; göreli paralaks hatası küçükken
-    (yaklaşık %10 altı) kullanılabilir. Yıldızlararası sönümleme düzeltilmez;
-    50 pc içinde küçüktür (sınanmadı).
+    Takes the inverse of the parallax as the distance; usable when the relative
+    parallax error is small (below about 10%). Interstellar extinction is not
+    corrected; it is small within 50 pc (not tested).
 
     Verification
     ------------
-    tests/unit/test_archives.py: 10 pc (ϖ = 100 mas) için M = m; uzaklık modülüyle tutarlılık.
+    tests/unit/test_archives.py: M = m at 10 pc (ϖ = 100 mas); consistency with the distance modulus.
     """
     return (
         np.asarray(apparent_magnitude, dtype=float)
@@ -130,13 +132,13 @@ def absolute_magnitude(apparent_magnitude: np.ndarray, parallax_mas: np.ndarray)
     where="TAP_SCHEMA.columns, table_name = 'gaia_dr3_source'",
     status="read",
     note="ra/dec [deg], ref_epoch 'Reference epoch' [yr], pmra 'Proper motion in right ascension direction' "
-    "(μ_α cos δ) ve pmdec [mas/yr], phot_g_mean_mag 'G-band mean magnitude' [mag]",
+    "(μ_α cos δ) and pmdec [mas/yr], phot_g_mean_mag 'G-band mean magnitude' [mag]",
 )
 @source(
     "ADQL2023",
-    where="Bölüm 4.2.11 (CIRCLE), 4.2.12 (CONTAINS), 4.2.18 (POINT)",
+    where="Section 4.2.11 (CIRCLE), 4.2.12 (CONTAINS), 4.2.18 (POINT)",
     status="read",
-    note="koni sorgusu; koordinat sistemi dizgisi belgede kullanımdan kalkmakta olan seçenektir, IRSA'da çalışır",
+    note="cone query; the coordinate-system string is a deprecated option in the document but works at IRSA",
 )
 def cone_search(
     ra_deg: float,
@@ -147,35 +149,37 @@ def cone_search(
     epoch_yr: float | None = None,
     refresh: bool = False,
 ) -> dict[str, np.ndarray]:
-    """Verilen yönün çevresindeki Gaia DR3 kaynaklarını indirir; istenirse konumları bir döneme taşır.
+    """Download Gaia DR3 sources around a given direction; optionally move positions to an epoch.
 
     Parameters
     ----------
-    sag_acikllik_derece, dik_acikllik_derece, yaricap_derece : float
-        Koninin merkezi (ICRS) ve yarıçapı [derece].
-    onbellek_dizini : Path
-    donem_yil : float, isteğe bağlı
-        Verilirse ``ra`` ve ``dec`` öz hareketle bu Jülyen yılına taşınır; öz hareketi olmayan
-        kaynaklar olduğu gibi kalır.
+    ra_deg, dec_deg, radius_deg : float
+        Center (ICRS) and radius of the cone [deg].
+    cache_dir : Path
+    epoch_yr : float, optional
+        If given, ``ra`` and ``dec`` are moved to this Julian year with the proper motion; sources
+        without a proper motion are left unchanged.
+    refresh : bool
+        Download again even if the cached file exists.
 
     Returns
     -------
     dict[str, ndarray]
-        ``source_id``, ``ra``, ``dec`` [derece], ``ref_epoch`` [yıl], ``pmra``, ``pmdec`` [mas/yıl],
+        ``source_id``, ``ra``, ``dec`` [deg], ``ref_epoch`` [yr], ``pmra``, ``pmdec`` [mas/yr],
         ``phot_g_mean_mag``.
 
     References
     ----------
-    [IRSA2026] TAP_SCHEMA.columns; [ADQL2023] Bölüm 4.2.11, 4.2.12, 4.2.18; katalog: [Vallenari2023].
+    [IRSA2026] TAP_SCHEMA.columns; [ADQL2023] Section 4.2.11, 4.2.12, 4.2.18; catalog: [Vallenari2023].
 
     Validity
     --------
-    Dönem taşıması doğrusaldır: Δα = μ_α* Δt / cos δ, Δδ = μ_δ Δt; paralaks ve dikine hız
-    uygulanmaz. Kutuplara çok yakın yönlerde 1/cos δ çarpanı güvenilmezdir.
+    The epoch shift is linear: Δα = μ_α* Δt / cos δ, Δδ = μ_δ Δt; parallax and radial velocity
+    are not applied. Very close to the poles the 1/cos δ factor is unreliable.
 
     Verification
     ------------
-    tests/unit/test_archives.py (ağ gerektirir, ``-m ag``): koni içinde kalma ve dönem taşımasının büyüklüğü.
+    tests/unit/test_archives.py (needs the network, ``-m network``): staying inside the cone and the size of the epoch shift.
     """
     adql = (
         f"SELECT source_id, ra, dec, ref_epoch, pmra, pmdec, phot_g_mean_mag FROM {TABLE} WHERE "

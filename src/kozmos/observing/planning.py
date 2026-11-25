@@ -1,15 +1,15 @@
-"""Gözlem planlama: bir hedefin gece boyunca yüksekliği, azimutu ve hava kütlesi.
+"""Observation planning: altitude, azimuth and airmass of a target through the night.
 
-Var olan yapı taşlarını birleştirir: Greenwich ortalama yıldız zamanı
-(``zaman.julyen``, ERFA ``gmst06.c``) ve saat açısından ufuk koordinatlarına
-dönüşüm (``koordinat.donusum``, ERFA ``hd2ae.c``) [ERFA2023].
+Combines existing building blocks: Greenwich mean sidereal time
+(``time.julian``, ERFA ``gmst06.c``) and the conversion from hour angle to
+horizontal coordinates (``coordinates.transforms``, ERFA ``hd2ae.c``) [ERFA2023].
 
-Koordinatlar çerçeve yanlılığı ve presesyonla tarihin ortalama ekvatoruna
-taşınır (``koordinat.presesyon``, ERFA ``pmat06.c``); istenirse atmosfer
-kırılması eklenir (``gozlem.kirilma``, ERFA ``refco.c``). Nutasyon, aberasyon,
-kutup hareketi ve UT1 − UTC farkı uygulanmaz; astropy ile ölçülen fark bir yay
-dakikasının altındadır (tests/oracle/test_planning_oracle.py). Teleskop
-yönlendirmesi için yeterli değildir.
+Coordinates are moved to the mean equator of date by frame bias and precession
+(``coordinates.precession``, ERFA ``pmat06.c``); atmospheric refraction is added
+on request (``observing.refraction``, ERFA ``refco.c``). Nutation, aberration,
+polar motion and the UT1 − UTC difference are not applied; the difference
+measured against astropy is below one arcminute (tests/oracle/test_planning_oracle.py).
+It is not sufficient for telescope pointing.
 """
 
 from __future__ import annotations
@@ -27,12 +27,12 @@ from kozmos.observing.refraction import observed_altitude
 from kozmos.time.julian import greenwich_mean_sidereal_time
 
 Array = NDArray[np.float64]
-SIDEREAL_RATE = 1.00273781191135448  # era00.c: UT1 günü başına Dünya dönüşü (tur)
+SIDEREAL_RATE = 1.00273781191135448  # era00.c: Earth rotation per UT1 day (turns)
 
 
 @dataclass(frozen=True, slots=True)
 class Visibility:
-    """Bir hedefin verilen anlardaki ufuk koordinatları."""
+    """Horizon coordinates of a target at the given times."""
 
     hour_angle_rad: Array
     azimuth_rad: Array
@@ -44,8 +44,8 @@ class Visibility:
     "ERFA2023",
     where="gmst06.c, hd2ae.c, pmat06.c, refco.c",
     status="read",
-    note="koordinatlar yanlılık-presesyon matrisiyle tarihe taşınır; H = GMST + doğu boylamı − sağ açıklık; ardından "
-    "saat açısı → azimut, yükseklik; istenirse kırılma. UT1 ≈ UTC ≈ TT alınır",
+    note="coordinates are moved to the date with the bias-precession matrix; H = GMST + east longitude − right "
+    "ascension; then hour angle → azimuth, altitude; refraction on request. UT1 ≈ UTC ≈ TT is assumed",
 )
 def visibility(
     ra_rad: float,
@@ -58,25 +58,26 @@ def visibility(
     to_date: bool = True,
     refraction: tuple[float, float] | None = None,
 ) -> Visibility:
-    """Bir hedefin verilen anlardaki saat açısını, azimutunu, yüksekliğini ve hava kütlesini hesaplar.
+    """Compute the hour angle, azimuth, altitude and airmass of a target at the given times.
 
     Parameters
     ----------
-    sag_acikllik_rad, dik_acikllik_rad : float
-        Hedefin ICRS (J2000) koordinatları [rad].
-    enlem_rad, dogu_boylami_rad : float
-        Gözlemcinin enlemi ve doğuya artı boylamı [rad].
-    jd1, jd2 : float ya da ndarray
-        İki parçalı Jülyen tarihi (UTC).
-    tarihe_tasi : bool
-        Doğruysa koordinatlar tarihin ortalama ekvatoruna taşınır; yanlışsa verildiği gibi kullanılır
-        (koordinatlar zaten tarihin ekinoksundaysa).
-    kirilma : (A, B), isteğe bağlı
-        ``gozlem.kirilma.kirilma_sabitleri`` çıktısı; verilirse yükseklik gözlenen (kırılmış) yüksekliktir.
+    ra_rad, dec_rad : float
+        ICRS (J2000) coordinates of the target [rad].
+    latitude_rad, east_longitude_rad : float
+        Latitude of the observer and longitude, positive east [rad].
+    jd1, jd2 : float or ndarray
+        Two-part Julian date (UTC).
+    to_date : bool
+        If true, the coordinates are moved to the mean equator of date; if false, they are used as
+        given (when the coordinates are already in the equinox of date).
+    refraction : (A, B), optional
+        Output of ``observing.refraction.refraction_constants``; if given, the altitude is the
+        observed (refracted) altitude.
 
     Returns
     -------
-    Gorunurluk
+    Visibility
 
     References
     ----------
@@ -84,32 +85,32 @@ def visibility(
 
     Validity
     --------
-    UT1, UTC ve TT aynı sayılır (yıldız zamanında en çok birkaç saniyelik
-    etki). Nutasyon ve aberasyon uygulanmaz. ``tarihe_tasi=False`` ve J2000
-    koordinatlarıyla hata yılda yaklaşık 50 yay saniyesi birikir. Kırılma
-    modeli yaklaşık 5° yüksekliğin altında ``nan`` verir. Hava kütlesi
-    düzlem-paralel yaklaşımdır; ufkun altında ``nan``.
+    UT1, UTC and TT are treated as equal (an effect of at most a few seconds
+    in sidereal time). Nutation and aberration are not applied. With ``to_date=False`` and J2000
+    coordinates the error grows by about 50 arcseconds per year. The refraction
+    model gives ``nan`` below an altitude of about 5°. The airmass is the
+    plane-parallel approximation; ``nan`` below the horizon.
 
     Verification
     ------------
-    tests/oracle/test_planning_oracle.py: astropy AltAz ile bir yay dakikası içinde uyum (kırılmalı ve kırılmasız).
+    tests/oracle/test_planning_oracle.py: agreement with astropy AltAz within one arcminute (with and without refraction).
     """
     ra, dec = ra_rad, dec_rad
     if to_date:
         ra, dec = icrs_to_mean_of_date(ra, dec, jd1, jd2)
     gmst = greenwich_mean_sidereal_time(jd1, jd2, jd1, jd2)
-    saat_acisi = wrap_pm_pi(gmst + east_longitude_rad - ra)
-    azimut, yukseklik = hour_angle_to_horizontal(saat_acisi, dec, latitude_rad)
+    hour_angle = wrap_pm_pi(gmst + east_longitude_rad - ra)
+    azimuth, altitude = hour_angle_to_horizontal(hour_angle, dec, latitude_rad)
     if refraction is not None:
-        yukseklik = observed_altitude(yukseklik, *refraction)
-    return Visibility(saat_acisi, azimut, yukseklik, airmass_plane_parallel(yukseklik))
+        altitude = observed_altitude(altitude, *refraction)
+    return Visibility(hour_angle, azimuth, altitude, airmass_plane_parallel(altitude))
 
 
 @source(
     "ERFA2023",
-    where="era00.c (dönme hızı), hd2ae.c",
+    where="era00.c (rotation rate), hd2ae.c",
     status="read",
-    note="meridyen geçişi H = 0; saat açısı UT1 günü başına 1,00273781191135448 tur ilerler",
+    note="meridian transit at H = 0; the hour angle advances 1.00273781191135448 turns per UT1 day",
 )
 def transit_jd(
     ra_rad: float,
@@ -118,11 +119,11 @@ def transit_jd(
     *,
     dec_rad: float | None = None,
 ) -> float:
-    """Verilen andan sonraki ilk üst meridyen geçişinin Jülyen tarihini bulur.
+    """Find the Julian date of the first upper meridian transit after a given time.
 
-    ``dik_acikllik_rad`` verilirse koordinatlar ICRS sayılır ve sağ açıklık başlangıç
-    anının ortalama ekinoksuna taşınır (presesyon dik açıklığa da bağlıdır); verilmezse
-    sağ açıklık olduğu gibi kullanılır.
+    If ``dec_rad`` is given, the coordinates are taken as ICRS and the right ascension is moved to
+    the mean equinox of the start time (precession also depends on declination); if not given,
+    the right ascension is used as is.
 
     References
     ----------
@@ -130,34 +131,34 @@ def transit_jd(
 
     Validity
     --------
-    ``gorunurluk`` ile aynı yaklaşımlar. Sonuç birkaç saniye doğruluğundadır.
+    Same approximations as ``visibility``. The result is accurate to a few seconds.
 
     Verification
     ------------
-    tests/oracle/test_planning_oracle.py: bulunan anda saat açısı sıfır, yükseklik en büyük.
+    tests/oracle/test_planning_oracle.py: hour angle is zero and altitude is maximal at the time found.
     """
     if dec_rad is not None:
         ra_rad = float(icrs_to_mean_of_date(ra_rad, dec_rad, jd_start)[0])
     gmst = float(greenwich_mean_sidereal_time(jd_start, 0.0, jd_start, 0.0))
-    kalan = (ra_rad - gmst - east_longitude_rad) % TWO_PI
-    return jd_start + kalan / TWO_PI / SIDEREAL_RATE
+    remaining = (ra_rad - gmst - east_longitude_rad) % TWO_PI
+    return jd_start + remaining / TWO_PI / SIDEREAL_RATE
 
 
 @source(
     "ERFA2023",
-    where="hd2ae.c (yükseklik bileşeni)",
+    where="hd2ae.c (altitude component)",
     status="read",
-    note="sin h = sin φ sin δ + cos φ cos δ cos H denkleminin H için çözümü (türetim bu projede)",
+    note="solution for H of the equation sin h = sin φ sin δ + cos φ cos δ cos H (derivation in this project)",
 )
 def time_above_horizon_hr(dec_rad: ArrayLike, latitude_rad: float, altitude_limit_rad: float = 0.0) -> Array:
-    """Bir hedefin günde verilen yükseklik sınırının üstünde kaldığı süreyi hesaplar.
+    """Compute the time per day a target stays above a given altitude limit.
 
-    cos H₀ = (sin h₀ − sin φ sin δ) / (cos φ cos δ); süre = 2 H₀ (yıldız zamanıyla).
+    cos H₀ = (sin h₀ − sin φ sin δ) / (cos φ cos δ); duration = 2 H₀ (in sidereal time).
 
     Returns
     -------
-    float ya da ndarray
-        Süre [yıldız saati]; hiç doğmuyorsa 0, hiç batmıyorsa 24.
+    float or ndarray
+        Duration [sidereal hours]; 0 if the target never rises, 24 if it never sets.
 
     References
     ----------
@@ -165,11 +166,11 @@ def time_above_horizon_hr(dec_rad: ArrayLike, latitude_rad: float, altitude_limi
 
     Validity
     --------
-    Kırılma ve hedefin açısal boyutu hesaba katılmaz.
+    Refraction and the angular size of the target are not taken into account.
 
     Verification
     ------------
-    tests/oracle/test_planning_oracle.py: ekvatorda her yıldız 12 saat; kutup yıldızları 24 saat.
+    tests/oracle/test_planning_oracle.py: every star is up for 12 hours at the equator; circumpolar stars for 24 hours.
     """
     d = np.asarray(dec_rad, dtype=float)
     cosine = (np.sin(altitude_limit_rad) - np.sin(latitude_rad) * np.sin(d)) / (np.cos(latitude_rad) * np.cos(d))

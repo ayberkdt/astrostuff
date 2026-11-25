@@ -1,14 +1,14 @@
-"""Görüntüden astrometrik çözüm: saptanan kaynakları katalogla eşleyip WCS uydurma.
+"""Astrometric solution from an image: match detected sources to a catalog and fit a WCS.
 
-FITS WCS'in doğrusal bölümü piksel koordinatlarını teğet düzlem koordinatlarına
-bağlar: (ξ, η) = CD · (p − CRPIX) [CalabrettaGreisen2002, TeX etiketi eq:px].
-Buradaki işlevler bu bağıntıyı ters yönde kullanır: eşlenmiş yıldızların piksel
-ve gök konumlarından CD ve CRPIX en küçük kareler ile bulunur.
+The linear part of the FITS WCS connects pixel coordinates to tangent-plane coordinates:
+(ξ, η) = CD · (p − CRPIX) [CalabrettaGreisen2002, TeX label eq:px].
+The functions here use this relation in the reverse direction: CD and CRPIX are found by
+least squares from the pixel and sky positions of matched stars.
 
-Yöntemin kendisi (oylamayla kaydırma bulma, eşle-uydur yinelemesi) bu projenin
-seçimidir; bir makaleden alınmamıştır. Kapsamı sınırlıdır: yaklaşık bir WCS
-(ölçek ve yönelim yüzde birkaç içinde, kaydırma onlarca piksel) gerekir. Hiçbir
-ön bilgi olmadan desen eşleme ("kör" çözüm) yoktur.
+The method itself (finding the shift by voting, the match-and-fit iteration) is this
+project's choice; it is not taken from a paper. The scope is limited: an approximate WCS
+(scale and orientation within a few percent, shift of tens of pixels) is required. There is no
+pattern matching ("blind" solution) without any prior information.
 """
 
 from __future__ import annotations
@@ -27,15 +27,15 @@ Array = NDArray[np.float64]
 
 @dataclass(frozen=True, slots=True)
 class WcsSolution:
-    """Uydurulan WCS ve uyumun niteliği.
+    """Fitted WCS and the quality of the fit.
 
     Attributes
     ----------
     wcs : Wcs
-    yildiz_sayisi : int
-        Uyuma giren eşleşmiş yıldız sayısı.
-    artik_rms_yaysaniye : float
-        Eşleşmiş yıldızlarda gökteki konum artığının karekök ortalaması.
+    n_stars : int
+        Number of matched stars that entered the fit.
+    residual_rms_arcsec : float
+        Root mean square of the position residuals on the sky for the matched stars.
     """
 
     wcs: Wcs
@@ -44,17 +44,18 @@ class WcsSolution:
 
 
 def _tangent_plane(ra_deg: Array, dec_deg: Array, crval: Array) -> tuple[Array, Array]:
-    """Gök konumlarının crval çevresindeki teğet düzlem koordinatları (ξ, η) [derece]."""
+    """Tangent-plane coordinates (ξ, η) [deg] of sky positions around crval."""
     unit = Wcs(crpix=np.array([1.0, 1.0]), crval=np.asarray(crval, dtype=float), cd=np.eye(2))
     return sky_to_pixel(unit, ra_deg, dec_deg)
 
 
 @source(
     "CalabrettaGreisen2002",
-    where="TeX etiketi eq:px (doğrusal piksel → ara koordinat bağıntısı)",
+    where="TeX label eq:px (linear pixel → intermediate coordinate relation)",
     status="read",
-    note="(ξ, η) = CD (p − CRPIX) bağıntısı ξ = a0 + a1 x + a2 y, η = b0 + b1 x + b2 y biçiminde doğrusaldır; "
-    "altı katsayı en küçük kareler ile bulunur, CRPIX = −CD⁻¹ (a0, b0). Uydurma yöntemi bu projenin seçimidir",
+    note="the relation (ξ, η) = CD (p − CRPIX) is linear in the form ξ = a0 + a1 x + a2 y, η = b0 + b1 x + b2 y; "
+    "the six coefficients are found by least squares, CRPIX = −CD⁻¹ (a0, b0). The fitting method is this "
+    "project's choice",
 )
 def fit_wcs(
     x: ArrayLike,
@@ -63,20 +64,20 @@ def fit_wcs(
     dec_deg: ArrayLike,
     crval: ArrayLike | None = None,
 ) -> WcsSolution:
-    """Eşlenmiş yıldızların piksel ve gök konumlarından TAN izdüşümlü WCS uydurur.
+    """Fit a WCS with TAN projection from the pixel and sky positions of matched stars.
 
     Parameters
     ----------
     x, y : ndarray
-        Sıfır tabanlı piksel koordinatları.
-    sag_acikllik_derece, dik_acikllik_derece : ndarray
-        Aynı yıldızların katalog konumları [derece].
-    crval : (2,), isteğe bağlı
-        Teğet noktası [derece]; verilmezse yıldızların ortalama yönü alınır.
+        Zero-based pixel coordinates.
+    ra_deg, dec_deg : ndarray
+        Catalog positions of the same stars [deg].
+    crval : (2,), optional
+        Tangent point [deg]; if not given, the mean direction of the stars is used.
 
     Returns
     -------
-    WcsCozumu
+    WcsSolution
 
     References
     ----------
@@ -84,18 +85,18 @@ def fit_wcs(
 
     Validity
     --------
-    En az üç yıldız gerekir; aynı doğru üzerindeki yıldızlar çözümü belirlemez.
-    Yalnızca doğrusal terimler uydurulur (ölçek, dönme, eğiklik, kaydırma); optik
-    bozulma modellenmez. Aykırı eşleşmeler ayıklanmaz.
+    At least three stars are required; stars on the same line do not determine the solution.
+    Only linear terms are fitted (scale, rotation, skew, shift); optical
+    distortion is not modeled. Outlier matches are not removed.
 
     Verification
     ------------
-    tests/unit/test_astrometry_solve.py: bilinen WCS'ten üretilen yıldızlarda CD ve CRPIX'in geri bulunması.
+    tests/unit/test_astrometry_solve.py: recovery of CD and CRPIX for stars generated from a known WCS.
     """
     x, y = np.asarray(x, dtype=float), np.asarray(y, dtype=float)
     ra, dec = np.asarray(ra_deg, dtype=float), np.asarray(dec_deg, dtype=float)
     if x.size < 3:
-        raise ValueError("WCS uydurmak için en az üç eşleşmiş yıldız gerekir")
+        raise ValueError("at least three matched stars are required to fit a WCS")
     if crval is None:
         v = np.array(
             [
@@ -109,7 +110,7 @@ def fit_wcs(
         )
     crval = np.asarray(crval, dtype=float)
     xi, eta = _tangent_plane(ra, dec, crval)
-    design = np.column_stack([np.ones(x.size), x + 1.0, y + 1.0])  # FITS pikseli = sıfır tabanlı + 1
+    design = np.column_stack([np.ones(x.size), x + 1.0, y + 1.0])  # FITS pixel = zero-based + 1
     a, *_ = np.linalg.lstsq(design, xi, rcond=None)
     b, *_ = np.linalg.lstsq(design, eta, rcond=None)
     cd = np.array([[a[1], a[2]], [b[1], b[2]]])
@@ -123,10 +124,11 @@ def fit_wcs(
 
 @source(
     "CalabrettaGreisen2002",
-    where="TeX etiketi eq:px: CRPIX referans noktanın piksel konumudur",
+    where="TeX label eq:px: CRPIX is the pixel position of the reference point",
     status="read",
-    note="kaydırma, kataloğun yaklaşık WCS ile hesaplanan piksel konumları ile saptanan konumlar arasındaki bütün "
-    "ikili farkların iki boyutlu histogramının tepesinden bulunur ve CRPIX'e eklenir. Oylama yöntemi bu projenin seçimidir",
+    note="the shift is found from the peak of the two-dimensional histogram of all pairwise differences between "
+    "the pixel positions of the catalog computed with the approximate WCS and the detected positions, and is "
+    "added to CRPIX. The voting method is this project's choice",
 )
 def find_shift(
     wcs: Wcs,
@@ -138,24 +140,24 @@ def find_shift(
     max_shift_pix: float = 60.0,
     bin_pix: float = 2.0,
 ) -> tuple[Wcs, int]:
-    """Yaklaşık bir WCS'in piksel kaydırmasını oylamayla bulur ve düzeltilmiş WCS'i döndürür.
+    """Find the pixel shift of an approximate WCS by voting and return the corrected WCS.
 
     Parameters
     ----------
     wcs : Wcs
-        Ölçeği ve yönelimi yaklaşık doğru, sıfır noktası kaymış WCS.
+        WCS with approximately correct scale and orientation and a shifted zero point.
     x, y : ndarray
-        Saptanan kaynakların sıfır tabanlı piksel konumları.
-    sag_acikllik_derece, dik_acikllik_derece : ndarray
-        Katalog konumları [derece].
-    en_cok_piksel : float
-        Aranan en büyük kaydırma (her eksende).
-    kutu_piksel : float
-        Oylama histogramının kutu genişliği.
+        Zero-based pixel positions of the detected sources.
+    ra_deg, dec_deg : ndarray
+        Catalog positions [deg].
+    max_shift_pix : float
+        Largest shift searched (along each axis).
+    bin_pix : float
+        Bin width of the voting histogram.
 
     Returns
     -------
-    (düzeltilmiş WCS, tepe kutusundaki oy sayısı)
+    (corrected WCS, number of votes in the peak bin)
 
     References
     ----------
@@ -163,37 +165,37 @@ def find_shift(
 
     Validity
     --------
-    Dönme ya da ölçek hatası, alanın kenarında kutu genişliğini aşan bir kaymaya yol
-    açıyorsa oylar dağılır. Tepe oyu rastlantısal düzeyden (kaynak sayısı × katalog
-    sayısı × kutu alanı / arama alanı) belirgin yüksek değilse çözüme güvenilmez.
+    If a rotation or scale error causes a shift larger than the bin width at the edge of the
+    field, the votes are spread out. If the peak vote is not clearly above the chance level
+    (number of sources × number of catalog stars × bin area / search area), the solution cannot be trusted.
 
     Verification
     ------------
-    tests/unit/test_astrometry_solve.py: bilinen kaydırmanın, sahte saptamalar ve eksik katalog yıldızları varken bulunması.
+    tests/unit/test_astrometry_solve.py: recovery of a known shift in the presence of false detections and missing catalog stars.
     """
     x, y = np.asarray(x, dtype=float), np.asarray(y, dtype=float)
     kx, ky = sky_to_pixel(wcs, ra_deg, dec_deg)
-    gecerli = np.isfinite(kx) & np.isfinite(ky)
-    dx = (x[:, None] - kx[gecerli][None, :]).ravel()
-    dy = (y[:, None] - ky[gecerli][None, :]).ravel()
-    yakin = (np.abs(dx) <= max_shift_pix) & (np.abs(dy) <= max_shift_pix)
-    kenarlar = np.arange(-max_shift_pix, max_shift_pix + bin_pix, bin_pix)
-    oy, _, _ = np.histogram2d(dx[yakin], dy[yakin], bins=(kenarlar, kenarlar))
-    # Tepe iki kutunun sınırına düşebilir: komşu kutularla toplanmış haritada aranır.
-    toplu = sum(np.roll(np.roll(oy, i, 0), j, 1) for i in (-1, 0, 1) for j in (-1, 0, 1))
-    i, j = np.unravel_index(np.argmax(toplu), toplu.shape)
-    sec = yakin & (np.abs(dx - (kenarlar[i] + bin_pix / 2)) <= 1.5 * bin_pix)
-    sec &= np.abs(dy - (kenarlar[j] + bin_pix / 2)) <= 1.5 * bin_pix
-    kayma = np.array([np.median(dx[sec]), np.median(dy[sec])])
-    return Wcs(crpix=wcs.crpix + kayma, crval=wcs.crval, cd=wcs.cd, lonpole=wcs.lonpole), int(toplu[i, j])
+    finite = np.isfinite(kx) & np.isfinite(ky)
+    dx = (x[:, None] - kx[finite][None, :]).ravel()
+    dy = (y[:, None] - ky[finite][None, :]).ravel()
+    nearby = (np.abs(dx) <= max_shift_pix) & (np.abs(dy) <= max_shift_pix)
+    edges = np.arange(-max_shift_pix, max_shift_pix + bin_pix, bin_pix)
+    votes, _, _ = np.histogram2d(dx[nearby], dy[nearby], bins=(edges, edges))
+    # The peak may fall on the boundary of two bins: search in the map summed with neighboring bins.
+    pooled = sum(np.roll(np.roll(votes, i, 0), j, 1) for i in (-1, 0, 1) for j in (-1, 0, 1))
+    i, j = np.unravel_index(np.argmax(pooled), pooled.shape)
+    selected = nearby & (np.abs(dx - (edges[i] + bin_pix / 2)) <= 1.5 * bin_pix)
+    selected &= np.abs(dy - (edges[j] + bin_pix / 2)) <= 1.5 * bin_pix
+    shift = np.array([np.median(dx[selected]), np.median(dy[selected])])
+    return Wcs(crpix=wcs.crpix + shift, crval=wcs.crval, cd=wcs.cd, lonpole=wcs.lonpole), int(pooled[i, j])
 
 
 @source(
     "CalabrettaGreisen2002",
-    where="TeX etiketi eq:px",
+    where="TeX label eq:px",
     status="read",
-    note="eşle (capraz_esle) ve uydur (wcs_uydur) adımları, eşleme yarıçapı daraltılarak yinelenir. "
-    "Yineleme düzeni bu projenin seçimidir",
+    note="the match (cross_match) and fit (fit_wcs) steps are iterated while the matching radius is narrowed. "
+    "The iteration scheme is this project's choice",
 )
 def refine_wcs(
     wcs: Wcs,
@@ -206,20 +208,20 @@ def refine_wcs(
     final_radius_arcsec: float = 1.5,
     iterations: int = 6,
 ) -> WcsSolution:
-    """Yaklaşık bir WCS'i katalogla eşle-uydur yinelemesiyle iyileştirir.
+    """Improve an approximate WCS against a catalog by match-and-fit iteration.
 
     Parameters
     ----------
     wcs : Wcs
-        Başlangıç WCS'i; yıldızların çoğunu ``yaricap_yaysaniye`` içinde doğru yıldıza düşürmelidir
-        (gerekirse önce ``kaydirma_bul``).
-    yaricap_yaysaniye, son_yaricap_yaysaniye : float
-        İlk ve son eşleme yarıçapı; arada geometrik olarak daraltılır.
+        Initial WCS; it must place most stars on the correct star within ``radius_arcsec``
+        (first ``find_shift`` if necessary).
+    radius_arcsec, final_radius_arcsec : float
+        First and last matching radius; narrowed geometrically in between.
 
     Returns
     -------
-    WcsCozumu
-        Son yinelemenin çözümü.
+    WcsSolution
+        Solution of the last iteration.
 
     References
     ----------
@@ -227,23 +229,29 @@ def refine_wcs(
 
     Validity
     --------
-    Başlangıç hatası eşleme yarıçapını aşan yıldızlar ilk yinelemede eşleşmez; hata alanın
-    büyük bölümünde yarıçapı aşıyorsa yineleme yanlış çözüme yakınsayabilir. Öz hareket
-    uygulanmaz.
+    Stars whose initial error exceeds the matching radius are not matched in the first iteration; if
+    the error exceeds the radius over a large part of the field, the iteration can converge to a wrong
+    solution. Proper motion is not applied.
 
     Verification
     ------------
-    tests/unit/test_astrometry_solve.py: döndürülmüş, ölçeği bozulmuş ve kaydırılmış başlangıçtan gerçek WCS'e yakınsama.
+    tests/unit/test_astrometry_solve.py: convergence to the true WCS from a rotated, scale-distorted and shifted start.
     """
     x, y = np.asarray(x, dtype=float), np.asarray(y, dtype=float)
     ra_k, dec_k = np.asarray(ra_deg, dtype=float), np.asarray(dec_deg, dtype=float)
-    yaricaplar = np.geomspace(radius_arcsec, final_radius_arcsec, iterations)
-    cozum = None
-    for radius in yaricaplar:
+    radii = np.geomspace(radius_arcsec, final_radius_arcsec, iterations)
+    solution = None
+    for radius in radii:
         ra, dec = pixel_to_sky(wcs, x, y)
-        e = cross_match(ra, dec, ra_k, dec_k, float(radius))
-        if e.matched.sum() < 3:
-            raise ValueError(f"{radius:.1f} yay saniyesi içinde üçten az eşleşme var; başlangıç WCS'i yetersiz")
-        cozum = fit_wcs(x[e.matched], y[e.matched], ra_k[e.index[e.matched]], dec_k[e.index[e.matched]], wcs.crval)
-        wcs = cozum.wcs
-    return cozum
+        match = cross_match(ra, dec, ra_k, dec_k, float(radius))
+        if match.matched.sum() < 3:
+            raise ValueError(f"fewer than three matches within {radius:.1f} arcsec; the initial WCS is insufficient")
+        solution = fit_wcs(
+            x[match.matched],
+            y[match.matched],
+            ra_k[match.index[match.matched]],
+            dec_k[match.index[match.matched]],
+            wcs.crval,
+        )
+        wcs = solution.wcs
+    return solution

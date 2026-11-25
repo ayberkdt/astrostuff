@@ -1,84 +1,84 @@
-# Fotometri, astrometri ve tayf ölçümü
+# Photometry, astrometry and spectroscopic measurement
 
-Hedef modüller: `fotometri/`, `astrometri/`, `tayf/`.
+Target modules: `photometry/`, `astrometry/`, `spectroscopy/`.
 
-Girdi indirgenmiş görüntüdür ([02_goruntu_indirgeme_hatti.md](02_goruntu_indirgeme_hatti.md)); çıktı kalibre edilmiş katalog ya da tayftır.
+The input is a reduced image ([02_image_reduction_pipeline.md](02_image_reduction_pipeline.md)); the output is a calibrated catalog or spectrum.
 
-## 1. Kaynak saptama
+## 1. Source detection
 
-- Eşleşmiş süzgeç: görüntünün PSF ile evrişimi nokta kaynak için en yüksek S/N'yi verir; eşik arka plan RMS'inin katıdır.
-- Yıldız bulucu: evrişimli görüntüde yerel en büyükler, keskinlik ve yuvarlaklık ölçütleriyle kozmik ışın ve yaygın kaynak ayıklama [Stetson1987].
-- Bölütleme: eşik üstü bağlı piksel grupları, en küçük alan koşulu; çok eşikli ayrıştırma (deblending) [BertinArnouts1996].
-- Tamlık ve saflık: yapay yıldız ekleme deneyiyle kadire karşı ölçülür.
+- Matched filter: convolving the image with the PSF gives the highest S/N for a point source; the threshold is a multiple of the background RMS.
+- Star finder: local maxima in the convolved image, rejection of cosmic rays and extended sources with sharpness and roundness criteria [Stetson1987].
+- Segmentation: groups of connected pixels above the threshold, a minimum area condition; multi-threshold deblending [BertinArnouts1996].
+- Completeness and purity: measured against magnitude with an artificial star injection experiment.
 
-Kâhinler: `photutils` (DAOStarFinder, bölütleme), `sep` [Barbary2016].
+Oracles: `photutils` (DAOStarFinder, segmentation), `sep` [Barbary2016].
 
-## 2. Merkez ve biçim ölçümü
+## 2. Centroid and shape measurement
 
-- Merkez: ağırlıklı ilk moment, kenar toplamlarına Gauss uydurma, 2B PSF uydurma. Astrometrik duyarlık yaklaşık `FWHM / (S/N)` mertebesindedir; katsayı ve türetim kaynağıyla yazılır [King1971].
-- İkinci momentler: FWHM, eliptiklik, konum açısı; yıldız-gökada ayrımı.
+- Centroid: weighted first moment, Gaussian fit to the marginal sums, 2D PSF fit. The astrometric precision is of the order of `FWHM / (S/N)`; the coefficient and the derivation are written with their source [King1971].
+- Second moments: FWHM, ellipticity, position angle; star-galaxy separation.
 
-## 3. Açıklık fotometrisi
+## 3. Aperture photometry
 
-- Dairesel ve eliptik açıklık; piksel-daire kesişiminin tam alan hesabı (alt piksel örnekleme değil, geometrik çözüm).
-- Yerel gökyüzü: halka içinde sigma kırpmalı kestirim.
-- Belirsizlik: CCD denklemi [MerlineHowell1995].
-- Açıklık düzeltmesi: küçük açıklık akısının büyüme eğrisiyle toplam akıya taşınması.
-- Kron açıklığı: ilk moment yarıçapına bağlı uyarlamalı eliptik açıklık; gökadalar için [Kron1980].
-- En iyi (ağırlıklı) fotometri: PSF ağırlıklı toplam; soluk kaynaklarda açıklık fotometrisinden yüksek S/N [Naylor1998].
+- Circular and elliptical apertures; exact area computation of the pixel-circle intersection (a geometric solution, not subpixel sampling).
+- Local sky: sigma-clipped estimate inside the annulus.
+- Uncertainty: the CCD equation [MerlineHowell1995].
+- Aperture correction: carrying the flux of a small aperture to the total flux with the growth curve.
+- Kron aperture: an adaptive elliptical aperture tied to the first-moment radius; for galaxies [Kron1980].
+- Optimal (weighted) photometry: PSF-weighted sum; higher S/N than aperture photometry for faint sources [Naylor1998].
 
-## 4. PSF fotometrisi
+## 4. PSF photometry
 
-- PSF modeli: analitik (Gauss, Moffat) + deneysel artık tablosu; alan boyunca değişim [Stetson1987].
-- PSF yıldızlarının seçimi: parlak, yalıtılmış, doymamış.
-- Uydurma: konum ve akı için doğrusal olmayan en küçük kareler; kalabalık alanda komşu grupların eşzamanlı uydurulması.
-- Yineleme: uydur, çıkar, artıkta yeni kaynak ara.
-- Kalite ölçütleri: `χ`, keskinlik; artık görüntü denetimi.
+- PSF model: analytic (Gaussian, Moffat) + empirical residual table; variation across the field [Stetson1987].
+- Choice of PSF stars: bright, isolated, unsaturated.
+- Fitting: nonlinear least squares for position and flux; simultaneous fitting of neighbor groups in a crowded field.
+- Iteration: fit, subtract, search for new sources in the residual.
+- Quality measures: `χ`, sharpness; inspection of the residual image.
 
-## 5. Fotometrik kalibrasyon
+## 5. Photometric calibration
 
-- Aygıt kadiri: `m_aygıt = −2,5 log10(akı / t)`.
-- **Mutlak (tüm gökyüzü) fotometri:** `m_std = m_aygıt + ZP − k X + c (renk)`; standart yıldızlarla sıfır noktası, sönümleme katsayısı ve renk terimi birlikte çözülür [Landolt1992; Bessell2005].
-- **Diferansiyel fotometri:** aynı karedeki karşılaştırma yıldızlarına göre; atmosferin birinci mertebe etkisi düşer. Topluluk fotometrisi: çok sayıda karşılaştırma yıldızının ağırlıklı birleşimi.
-- **Katalog kalibrasyonu:** alan yıldızlarının Gaia, Pan-STARRS ya da SDSS kadirleriyle eşlenmesi; sistem dönüşümü ve renk terimi sağlam doğrusal uyumla [Vallenari2023; Fukugita1996].
-- Sistematikler: düz alan hatası, ikinci mertebe sönümleme, perde süresi, doğrusallık; her biri için tanı grafiği.
+- Instrumental magnitude: `m_inst = −2.5 log10(flux / t)`.
+- **Absolute (all-sky) photometry:** `m_std = m_inst + ZP − k X + c (color)`; the zero point, extinction coefficient and color term are solved together with standard stars [Landolt1992; Bessell2005].
+- **Differential photometry:** relative to comparison stars in the same frame; the first-order effect of the atmosphere drops out. Ensemble photometry: weighted combination of many comparison stars.
+- **Catalog calibration:** matching the field stars to Gaia, Pan-STARRS or SDSS magnitudes; system transformation and color term with a robust linear fit [Vallenari2023; Fukugita1996].
+- Systematics: flat field error, second-order extinction, shutter time, linearity; a diagnostic plot for each.
 
-## 6. Astrometrik çözüm
+## 6. Astrometric solution
 
-- **Kör çözüm:** dörtlü yıldız asterizmlerinin geometrik karma kodu ve dizin araması [Lang2010]. Bu algoritma yeniden yazılabilir ama dizin dosyaları büyüktür; ilk aşamada `astrometry.net` ya da `twirl` kullanılır, yaklaşık konum bilinen durum için kendi çözücümüz yazılır.
-- **Yaklaşık konum bilinen durum:** saptanan kaynaklar ile Gaia kataloğunun TAN izdüşümünde üçgen eşlemesi; ardından doğrusal (6 parametre) ve polinom bozulma uyumu.
-- Referans katalog: Gaia DR3; yıldızlar gözlem dönemine öz hareketle taşınır [Vallenari2023].
-- Çözüm kalitesi: artıkların RMS'i, alan boyunca desen; diferansiyel renk kırılması.
-- Küçük cisim astrometrisi: hareketli kaynakta poz ortası zamanı ve iz merkezi.
+- **Blind solution:** geometric hashing of four-star asterisms and index lookup [Lang2010]. This algorithm could be rewritten, but the index files are large; in the first stage `astrometry.net` or `twirl` is used, and our own solver is written for the case where the approximate position is known.
+- **Approximate position known:** triangle matching between the detected sources and the Gaia catalog in the TAN projection; then a linear (6-parameter) and polynomial distortion fit.
+- Reference catalog: Gaia DR3; the stars are moved to the observation epoch with their proper motions [Vallenari2023].
+- Solution quality: RMS of the residuals, pattern across the field; differential color refraction.
+- Minor body astrometry: mid-exposure time and trail center for a moving source.
 
-## 7. Tayf indirgeme
+## 7. Spectral reduction
 
-Uzun yarık ve echelle için ortak sıra:
+Common sequence for long slit and echelle:
 
-1. Görüntü indirgeme (bias, karanlık, düz alan; tayfsal düz alanda lambanın sürekliliği normalleştirilir).
-2. **İz bulma:** dağılma ekseni boyunca tayfın uzamsal merkezinin polinomla izlenmesi.
-3. **Arka plan:** yarık boyunca gökyüzü bölgelerinden dalga boyu sütunu başına model.
-4. **Çıkarım:** kutu toplamı ve en iyi çıkarım. En iyi çıkarım uzamsal profili ağırlık olarak kullanır, S/N'yi artırır ve kozmik ışınları profil uyumsuzluğundan ayıklar [Horne1986].
-5. **Dalga boyu kalibrasyonu:** ark lambası çizgilerinin saptanması, çizgi listesiyle eşleme, piksel → dalga boyu polinomu; artık RMS'i kalite ölçütüdür. Gökyüzü çizgileriyle sıfır noktası düzeltmesi. Hava ve boşluk dalga boyu dönüşümü havanın kırılma indisi formülüne dayanır [Ciddor1996].
-6. **Akı kalibrasyonu:** tayfsal standart yıldızla duyarlılık fonksiyonu; atmosferik sönümleme düzeltmesi [OkeGunn1983].
-7. **Tellürik düzeltme** ve barisentrik düzeltme [WrightEastman2014].
+1. Image reduction (bias, dark, flat field; in the spectral flat field the continuum of the lamp is normalized).
+2. **Trace finding:** following the spatial center of the spectrum along the dispersion axis with a polynomial.
+3. **Background:** a model per wavelength column from sky regions along the slit.
+4. **Extraction:** boxcar sum and optimal extraction. Optimal extraction uses the spatial profile as the weight, increases the S/N and removes cosmic rays through profile mismatch [Horne1986].
+5. **Wavelength calibration:** detecting arc lamp lines, matching them with the line list, a pixel → wavelength polynomial; the residual RMS is the quality measure. Zero-point correction with sky lines. The conversion between air and vacuum wavelengths relies on the refractive index formula of air [Ciddor1996].
+6. **Flux calibration:** sensitivity function with a spectrophotometric standard star; correction for atmospheric extinction [OkeGunn1983].
+7. **Telluric correction** and barycentric correction [WrightEastman2014].
 
-Kâhinler: `specreduce`, `specutils`, PypeIt.
+Oracles: `specreduce`, `specutils`, PypeIt.
 
-## 8. Tayf çözümlemesi
+## 8. Spectral analysis
 
-- Süreklilik normalleştirme: yinelemeli polinom ya da spline, çizgi maskeleme.
-- Çizgi ölçümü: Gauss, Lorentz, Voigt uydurma; eşdeğer genişlik, akı, merkez, FWHM ve belirsizlikleri.
-- **Kırmızıya kayma:** salma çizgisi eşleme; şablonla çapraz ilinti ve tepe uydurma, `r` istatistiğiyle güven ölçüsü [TonryDavis1979]; şablon `χ²` taraması.
-- Dikine hız: log-dalga boyu ızgarasında çapraz ilinti.
-- Tayf sınıflaması: çizgi oranları ve şablon eşleme.
-- Tayfların birleştirilmesi ve yeniden örneklenmesi: akı ve varyans korunumu.
+- Continuum normalization: iterative polynomial or spline, line masking.
+- Line measurement: Gaussian, Lorentzian, Voigt fitting; equivalent width, flux, center, FWHM and their uncertainties.
+- **Redshift:** emission line matching; cross-correlation with a template and peak fitting, confidence measure with the `r` statistic [TonryDavis1979]; template `χ²` scan.
+- Radial velocity: cross-correlation on a log-wavelength grid.
+- Spectral classification: line ratios and template matching.
+- Combining and resampling spectra: conservation of flux and variance.
 
-Kırmızıya kayma ölçümü Hubble diyagramının yatay eksenini verir; SDSS tayfları üzerinde yayımlanmış değerlerin yeniden elde edilmesi bu modülün uçtan uca testidir [York2000].
+The redshift measurement gives the horizontal axis of the Hubble diagram; recovering the published values on SDSS spectra is the end-to-end test of this module [York2000].
 
-## 9. Doğrulama
+## 9. Verification
 
-- Sentetik yıldız alanında açıklık ve PSF fotometrisi girilen akıyı yansız geri verir; artıklar belirsizlik kestirimiyle tutarlıdır.
-- Aynı görüntüde `photutils` ve `sep` ile kaynak listesi ve akı karşılaştırması.
-- Astrometrik çözüm `astrometry.net` çözümüyle karşılaştırılır; fark Gaia artıklarının altındadır.
-- Bir açık kümenin renk-kadir diyagramı yayımlanmış fotometriyle karşılaştırılır.
+- On a synthetic star field, aperture and PSF photometry return the input flux without bias; the residuals are consistent with the uncertainty estimate.
+- Comparison of the source list and fluxes with `photutils` and `sep` on the same image.
+- The astrometric solution is compared with the `astrometry.net` solution; the difference is below the Gaia residuals.
+- The color-magnitude diagram of an open cluster is compared with published photometry.

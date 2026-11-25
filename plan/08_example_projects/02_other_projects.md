@@ -1,76 +1,76 @@
-# Diğer uçtan uca projects
+# Other end-to-end projects
 
-Her proje bir modül grubunun kabul sınamasıdır: bilinen bir sonucu açık veriden ya da kendi gözlemimizden yeniden üretir. Sıra yol haritasındaki aşamaları izler.
+Each project is an acceptance test of a group of modules: it reproduces a known result from open data or from our own observations. The order follows the phases in the roadmap.
 
-## P1. Gözlem gecesi planlayıcı
+## P1. Observing night planner
 
-- Girdi: gözlemci konumu, tarih, hedef listesi.
-- Çıktı: alacakaranlık saatleri, hedeflerin yükseklik ve hava kütlesi eğrileri, Ay'ın konumu ve uzaklığı, gözlem sırası önerisi.
-- Modüller: `zaman`, `koordinat`, `efemeris` (Düzey 1), `gozlem/planlama`.
-- Kabul: doğuş-batış ve meridyen geçiş zamanları `astroplan` ve Skyfield ile 1 dakika içinde uyuşur [Morris2018; Meeus1998].
+- Input: observer location, date, target list.
+- Output: twilight times, altitude and airmass curves of the targets, position and distance of the Moon, a proposed observing order.
+- Modules: `time`, `coordinates`, `ephemeris` (Level 1), `observing/planning`.
+- Acceptance: rise-set and meridian transit times agree with `astroplan` and Skyfield within 1 minute [Morris2018; Meeus1998].
 
-## P2. Sentetik CCD ve indirgeme hattı
+## P2. Synthetic CCD and reduction pipeline
 
-- Bilinen parametrelerle ham kare üretimi; bias, karanlık, düz alan ve bilim karelerinden indirgenmiş görüntü.
-- Modüller: `gozlem/dedektor`, `indirgeme`, `io/fits`.
-- Kabul: artıklar gürültü modeliyle tutarlıdır; foton aktarım eğrisi girilen kazancı ve okuma gürültüsünü geri verir; gerçek ham karelerde sonuç `ccdproc` çıktısıyla piksel düzeyinde uyuşur [Howell2006; Janesick2007].
+- Generating a raw frame with known parameters; a reduced image from bias, dark, flat-field and science frames.
+- Modules: `observing/detector`, `reduction`, `io/fits`.
+- Acceptance: the residuals are consistent with the noise model; the photon transfer curve returns the input gain and read noise; on real raw frames the result agrees with the `ccdproc` output at the pixel level [Howell2006; Janesick2007].
 
-## P3. Açık küme renk-kadir diyagramı
+## P3. Open cluster color-magnitude diagram
 
-- İki bantta küme görüntüleri (kendi gözlemimiz ya da arşiv), fotometri, Gaia ile astrometrik ve fotometrik kalibrasyon, öz hareket ve paralaksla üyelik, izokron uydurma.
-- Modüller: `fotometri`, `astrometri`, `arsiv/gaia`, `yildiz/izokron`, `istatistik`.
-- Kabul: uzaklık modülü, kızarma ve yaş yayımlanmış değerlerle belirsizlik içinde uyuşur; uzaklık Gaia paralaks ortalamasıyla tutarlıdır [Vallenari2023; Choi2016; Lindegren2021].
+- Cluster images in two bands (our own observation or from the archive), photometry, astrometric and photometric calibration with Gaia, membership by proper motion and parallax, isochrone fitting.
+- Modules: `photometry`, `astrometry`, `archives/gaia`, `stars/isochrones`, `statistics`.
+- Acceptance: the distance modulus, reddening and age agree with published values within the uncertainty; the distance is consistent with the mean Gaia parallax [Vallenari2023; Choi2016; Lindegren2021].
 
-## P4. Gaia HR diyagramı ve yerel yıldız popülasyonu
+## P4. Gaia HR diagram and the local stellar population
 
-- 100 pc içindeki yıldızların ADQL ile seçimi, kalite kesimleri, mutlak kadir ve renk; anakol, dev kolu ve beyaz cüce dizisi.
-- Modüller: `arsiv/tap`, `arsiv/gaia`, `yildiz/hr`.
-- Kabul: Gaia Collaboration'ın HR diyagramının yapısı yeniden elde edilir; `1/ϖ` ile sonsal uzaklık kestirimi arasındaki fark göreli paralaks hatasına karşı gösterilir [BailerJones2015; Luri2018].
+- Selection of stars within 100 pc with ADQL, quality cuts, absolute magnitude and color; main sequence, giant branch and white dwarf sequence.
+- Modules: `archives/tap`, `archives/gaia`, `stars/hr`.
+- Acceptance: the structure of the HR diagram of the Gaia Collaboration is obtained again; the difference between `1/ϖ` and the posterior distance estimate is shown against the relative parallax error [BailerJones2015; Luri2018].
 
-## P5. Ötegezegen geçişi
+## P5. Exoplanet transit
 
-- TESS ışık eğrisinin indirilmesi, eğilim giderme, BLS ve TLS ile dönem arama, geçiş modeli uydurma, MCMC ile parametre belirsizlikleri.
-- Modüller: `arsiv` (MAST), `zamanserisi`, `efemeris` (geçiş modeli), `istatistik/mcmc`.
-- Kabul: dönem, derinlik ve süre NASA Exoplanet Archive değerleriyle belirsizlik içinde uyuşur; enjeksiyon-geri kazanım haritası üretilir [Kovacs2002; HippkeHeller2019; MandelAgol2002; Ricker2015].
-- Uzantı: aynı geçişin yer tabanlı gözlemi ve diferansiyel fotometrisi.
+- Downloading a TESS light curve, detrending, period search with BLS and TLS, transit model fitting, parameter uncertainties with MCMC.
+- Modules: `archives` (MAST), `timeseries`, `ephemeris` (transit model), `statistics/mcmc`.
+- Acceptance: the period, depth and duration agree with the NASA Exoplanet Archive values within the uncertainty; an injection-recovery map is produced [Kovacs2002; HippkeHeller2019; MandelAgol2002; Ricker2015].
+- Extension: ground-based observation and differential photometry of the same transit.
 
-## P6. Sefeid dönem-ışınım gücü bağıntısı
+## P6. Cepheid period-luminosity relation
 
-- Büyük Macellan Bulutu Sefeidlerinin ışık eğrileri (OGLE ya da Gaia), Lomb-Scargle ile dönem, ortalama kadir, Wesenheit kadiri, iki eksende hatalı doğrusal uyum.
-- Modüller: `zamanserisi/periyodogram`, `isinim/sonumleme`, `istatistik/uyum`.
-- Kabul: eğim ve saçılma yayımlanmış bağıntıyla uyuşur; bağıntı başka bir gökadaya uygulanıp uzaklık modülü kestirilir [LeavittPickering1912; Madore1982; Kelly2007]. Bu proje Hubble projesinin uzaklık merdiveni basamağına bağlanır.
+- Light curves of Large Magellanic Cloud Cepheids (OGLE or Gaia), period with Lomb-Scargle, mean magnitude, Wesenheit magnitude, linear fit with errors on two axes.
+- Modules: `timeseries/periodogram`, `radiation/extinction`, `statistics/fitting`.
+- Acceptance: the slope and scatter agree with the published relation; the relation is applied to another galaxy and the distance modulus is estimated [LeavittPickering1912; Madore1982; Kelly2007]. This project connects to the distance ladder step of the Hubble project.
 
-## P7. Gökada tayfından kırmızıya kayma
+## P7. Redshift from a galaxy spectrum
 
-- SDSS tayflarının indirilmesi, süreklilik normalleştirme, salma ve soğurma çizgilerinin saptanması, şablon çapraz ilintisi.
-- Modüller: `arsiv`, `tayf`.
-- Kabul: ölçülen kırmızıya kaymalar SDSS katalog değerleriyle belirsizlik içinde uyuşur [TonryDavis1979; York2000].
-- Uzantı: kendi uzun yarık tayfımızın ham kareden indirgenmesi [Horne1986].
+- Downloading SDSS spectra, continuum normalization, detection of emission and absorption lines, template cross-correlation.
+- Modules: `archives`, `spectroscopy`.
+- Acceptance: the measured redshifts agree with the SDSS catalog values within the uncertainty [TonryDavis1979; York2000].
+- Extension: reducing our own long-slit spectrum from the raw frame [Horne1986].
 
-## P8. Gökada dönme eğrisi
+## P8. Galaxy rotation curve
 
-- Yayımlanmış bir dönme eğrisinin disk, gaz ve NFW hale bileşenlerine ayrılması; kütle-ışınım gücü oranı ile hale parametrelerinin dejenerasyonu.
-- Modüller: `gokada/potansiyel`, `gokada/donme_egrisi`, `istatistik/mcmc`.
-- Kabul: hale parametreleri yayımlanmış uyumla tutarlıdır; karanlık maddesiz model verilerle bağdaşmaz [NFW1997; BinneyTremaine2008].
+- Decomposing a published rotation curve into disk, gas and NFW halo components; the degeneracy between the mass-to-light ratio and the halo parameters.
+- Modules: `galaxies/potentials`, `galaxies/rotation_curves`, `statistics/mcmc`.
+- Acceptance: the halo parameters are consistent with the published fit; a model without dark matter is incompatible with the data [NFW1997; BinneyTremaine2008].
 
-## P9. Küçük cisim astrometrisi ve yörünge
+## P9. Minor body astrometry and orbit
 
-- Bir asteroitin birkaç gecelik gözleminden astrometri, Gauss yöntemiyle başlangıç yörüngesi, diferansiyel düzeltme.
-- Modüller: `astrometri`, `efemeris`.
-- Kabul: elemanlar JPL değerleriyle uyuşur; öngörülen konum sonraki gözlemle doğrulanır [Vallado2022; Lang2010].
+- Astrometry from a few nights of observation of an asteroid, an initial orbit with Gauss's method, differential correction.
+- Modules: `astrometry`, `ephemeris`.
+- Acceptance: the elements agree with the JPL values; the predicted position is verified with a later observation [Vallado2022; Lang2010].
 
-## P10. Güneş sistemi integrasyonu
+## P10. Solar system integration
 
-- Gezegenlerin DE440 başlangıç koşullarından simplektik integrasyonu; Merkür'ün günberi ilerlemesi (Newton ve post-Newton).
-- Modüller: `efemeris`, `temel/sayisal`.
-- Kabul: 100 yıllık konumlar DE440 ile uyuşur; enerji hatası sınırlı kalır; REBOUND ile aynı başlangıç koşullarında uyum [Park2021; ReinTamayo2015; WisdomHolman1991].
+- Symplectic integration of the planets from DE440 initial conditions; the perihelion advance of Mercury (Newtonian and post-Newtonian).
+- Modules: `ephemeris`, `core/numerical`.
+- Acceptance: 100-year positions agree with DE440; the energy error stays bounded; agreement with REBOUND for the same initial conditions [Park2021; ReinTamayo2015; WisdomHolman1991].
 
-## P11. Yıldız yapısı: politrop ve basit anakol modeli
+## P11. Stellar structure: polytrope and a simple main-sequence model
 
-- Lane-Emden çözümleri; homojen bileşimli anakol yıldızının atış yöntemiyle çözümü; kütle-ışınım gücü ve kütle-yarıçap bağıntıları.
-- Modüller: `yildiz/yapi`.
-- Kabul: Lane-Emden kapalı çözümleri; Güneş kütleli modelin merkez koşulları ders kitabı değerleriyle mertebe olarak uyuşur; eğilimler MIST izleriyle tutarlıdır [Kippenhahn2012; Choi2016].
+- Lane-Emden solutions; solving a main-sequence star of homogeneous composition by the shooting method; mass-luminosity and mass-radius relations.
+- Modules: `stars/structure`.
+- Acceptance: the Lane-Emden closed-form solutions; the central conditions of a solar-mass model agree with textbook values in order of magnitude; the trends are consistent with MIST tracks [Kippenhahn2012; Choi2016].
 
-## İleri aşama adayları
+## Advanced-phase candidates
 
-Çekimsel dalga olayının eşleşmiş süzgeçle bulunması (GW150914 açık verisi) [Abbott2016]; görüntü farkıyla geçici kaynak arama [Zackay2016]; tayfsal enerji dağılımı uydurma; gökada iki nokta ilinti fonksiyonu ve BAO tepesi [Eisenstein2005]; mercek zaman gecikmesiyle `H0`. Her biri başlamadan önce kendi saha taraması yapılır.
+Finding a gravitational-wave event with a matched filter (the open data of GW150914) [Abbott2016]; transient search by image differencing [Zackay2016]; spectral energy distribution fitting; the galaxy two-point correlation function and the BAO peak [Eisenstein2005]; `H0` from lens time delays. A field survey of its own is made before each is started.

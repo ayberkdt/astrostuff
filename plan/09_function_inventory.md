@@ -1,206 +1,206 @@
-# İşlev envanteri
+# Function inventory
 
-Modül modül yazılacak fonksiyonların listesi. Uygulanmış olanların güncel durumu elle tutulmaz; [DURUM.md](DURUM.md) dosyası kaynak kütüğünden üretilir. Bu belgedeki "uygulandı" işaretleri 25 Kasım 2026 tarihli ilk sürüme aittir.
+The list of the functions to be written, module by module. The current status of the implemented ones is not maintained by hand; the file [STATUS.md](STATUS.md) is generated from the source registry. The "implemented" marks in this document belong to the first release of 25 November 2026.
 
-Her fonksiyon satırı adı, girdi ve çıktı birimlerini ve birincil kaynağını verir. Adlar değişebilir; birim ve kaynak sözleşmenin parçasıdır.
+Each function line gives the name, the input and output units, and the primary source. Names may change; units and sources are part of the contract.
 
-## `temel`
+## `core`
 
-**`sabitler`** (uygulandı). CODATA 2022 fiziksel sabitleri [CODATA2022], IAU 2015 B3 nominal Güneş ve gezegen değerleri [Prsa2016], IAU 2015 B2 bolometrik sıfır noktası [Mamajek2015], zaman sabitleri [ERFA2023]. Eklenecek: Güneş'in bant bant mutlak kadirleri, gezegen kütle parametrelerinin tamamı [Park2021], Dünya elipsoidi (WGS84 ve GRS80) [IERS2010].
+**`constants`** (implemented). CODATA 2022 physical constants [CODATA2022], IAU 2015 B3 nominal solar and planetary values [Prsa2016], IAU 2015 B2 bolometric zero point [Mamajek2015], time constants [ERFA2023]. To be added: the absolute magnitudes of the Sun band by band, all the planetary mass parameters [Park2021], the Earth ellipsoids (WGS84 and GRS80) [IERS2010].
 
-**`aci`** (uygulandı). Derece, yay saniyesi ve radyan dönüşümleri, aralık indirgeme, birim vektör dönüşümleri, açısal ayrıklık [ERFA2023]. Eklenecek:
+**`angles`** (implemented). Conversions between degrees, arcseconds and radians, range reduction, unit vector conversions, angular separation [ERFA2023]. To be added:
 
-- `altmislik_den_derece`, `derece_den_altmislik`: dizgi ayrıştırma ve biçimlendirme; eksi sıfır durumu.
-- `konum_acisi(l1, b1, l2, b2) → rad`: kuzeyden doğuya.
-- `hedef_nokta(l, b, konum_acisi, ayriklik) → (l, b)`.
+- `sexagesimal_to_degrees`, `degrees_to_sexagesimal`: string parsing and formatting; the negative-zero case.
+- `position_angle(l1, b1, l2, b2) → rad`: from north through east.
+- `offset_point(l, b, position_angle, separation) → (l, b)`.
 
-**`vektor`**. `donme_1/2/3(aci) → 3×3`, matris çarpımı ve devriği, Rodrigues dönmesi, küresel hız dönüşümü [SOFA2023].
+**`vectors`**. `rotation_1/2/3(angle) → 3×3`, matrix product and transpose, Rodrigues rotation, spherical velocity transform [SOFA2023].
 
-**`sayisal`**. `kok_bul_brent`, `gauss_legendre`, `romberg`, `rk4_adim`, `dormand_prince` [DormandPrince1980], `leapfrog_adim`, `yoshida4_adim` [Yoshida1990], `chebyshev_degerlendir` (Clenshaw), `kubik_spline`, `lanczos_cekirdegi`, `kahan_toplam` [Higham2002].
+**`numerical`**. `find_root_brent`, `gauss_legendre`, `romberg`, `rk4_step`, `dormand_prince` [DormandPrince1980], `leapfrog_step`, `yoshida4_step` [Yoshida1990], `chebyshev_evaluate` (Clenshaw), `cubic_spline`, `lanczos_kernel`, `kahan_sum` [Higham2002].
 
-## `zaman`
+## `time`
 
-**`julyen`** (uygulandı). Takvim ↔ MJD/JD, TAI ↔ TT, Dünya dönme açısı, Greenwich ve yerel ortalama yıldız zamanı, ortalama eğiklik [ERFA2023].
+**`julian`** (implemented). Calendar ↔ MJD/JD, TAI ↔ TT, Earth rotation angle, Greenwich and local mean sidereal time, mean obliquity [ERFA2023].
 
-**`olcekler`** (kısmen uygulandı: `tai_eksi_utc_s`, `tt_eksi_utc_s` [ERFA2023]).
+**`scales`** (partially implemented: `tai_minus_utc_s`, `tt_minus_utc_s` [ERFA2023]).
 
-- `utc_den_tai(jd1, jd2) → (jd1, jd2)`: artık saniye gününün ele alınmasıyla [IERS2010].
-- `tt_den_tdb(jd1, jd2, ...) → (jd1, jd2)`: tek terimli düşük duyarlık biçimi ve tam seri [Kaplan2005].
-- `utc_den_ut1(jd1, jd2, dut1_s)`: DUT1 dışarıdan verilir.
-- `delta_t_s(yil)`: tarihsel polinomlar [Meeus1998].
+- `utc_to_tai(jd1, jd2) → (jd1, jd2)`: handling the leap-second day [IERS2010].
+- `tt_to_tdb(jd1, jd2, ...) → (jd1, jd2)`: the single-term low-precision form and the full series [Kaplan2005].
+- `utc_to_ut1(jd1, jd2, dut1_s)`: DUT1 is given from outside.
+- `delta_t_s(year)`: historical polynomials [Meeus1998].
 
-**`barisentrik`**. `romer_gecikmesi_s`, `bjd_tdb` [Eastman2010]; `barisentrik_hiz_duzeltmesi_m_s` [WrightEastman2014].
+**`barycentric`**. `roemer_delay_s`, `bjd_tdb` [Eastman2010]; `barycentric_velocity_correction_m_s` [WrightEastman2014].
 
-**`olaylar`**. `dogus_batis_meridyen`, `alacakaranlik`, `ay_evresi` [Meeus1998].
+**`events`**. `rise_set_transit`, `twilight`, `moon_phase` [Meeus1998].
 
-## `koordinat`
+## `coordinates`
 
-**`donusum`** (uygulandı). ICRS ↔ galaktik, saat açısı ↔ ufuk, düzlem-paralel hava kütlesi [ERFA2023].
+**`transforms`** (implemented). ICRS ↔ galactic, hour angle ↔ horizontal, plane-parallel airmass [ERFA2023].
 
-Eklenecek:
+To be added:
 
-- `ekvatoral_den_ekliptik(ra, dec, egiklik) → (lam, bet)` ve tersi.
-- `presesyon_matrisi_iau2006(tt) → 3×3` [Capitaine2003]; `nutasyon_iau2000b(tt) → (dpsi, deps)` [IERS2010].
-- `ozhareket_uygula(ra, dec, pmra, pmdec, paralaks, vr, devir1, devir2)` [SOFA2023].
-- `yillik_aberasyon`, `isik_bukulmesi`, `gunluk_aberasyon` [Kaplan2005].
-- `kirilma_bennett(yukseklik, basinc, sicaklik) → rad` [Bennett1982].
-- `hava_kutlesi_kasten_young(zenit) → X` [KastenYoung1989], `hava_kutlesi_young(zenit)` [Young1994].
-- `icrs_den_gozlenen(...)`: zincirin tamamı; ERFA `atco13` ile karşılaştırılır.
+- `equatorial_to_ecliptic(ra, dec, obliquity) → (lam, bet)` and its inverse.
+- `precession_matrix_iau2006(tt) → 3×3` [Capitaine2003]; `nutation_iau2000b(tt) → (dpsi, deps)` [IERS2010].
+- `apply_proper_motion(ra, dec, pmra, pmdec, parallax, rv, epoch1, epoch2)` [SOFA2023].
+- `annual_aberration`, `light_deflection`, `diurnal_aberration` [Kaplan2005].
+- `refraction_bennett(altitude, pressure, temperature) → rad` [Bennett1982].
+- `airmass_kasten_young(zenith) → X` [KastenYoung1989], `airmass_young(zenith)` [Young1994].
+- `icrs_to_observed(...)`: the whole chain; compared with ERFA `atco13`.
 
-**`izdusum`**. `tan_izdusum`, `tan_ters`, `sin`, `stg`, `arc`, `zea`, `car`, `ait` [CalabrettaGreisen2002]; `piksel_den_gok`, `gok_den_piksel` (`CRPIX`, `CD`, SIP) [GreisenCalabretta2002; Shupe2005].
+**`projections`**. `tan_projection`, `tan_inverse`, `sin`, `stg`, `arc`, `zea`, `car`, `ait` [CalabrettaGreisen2002]; `pixel_to_sky`, `sky_to_pixel` (`CRPIX`, `CD`, SIP) [GreisenCalabretta2002; Shupe2005].
 
-**`healpix`**. `aci_den_piksel`, `piksel_den_aci`, `komsular`, halka ↔ iç içe [Gorski2005].
+**`healpix`**. `angle_to_pixel`, `pixel_to_angle`, `neighbors`, ring ↔ nested [Gorski2005].
 
-## `efemeris`
+## `ephemeris`
 
-**`kepler`** (uygulandı). Kepler denklemi (eliptik), gerçek anomali, dönem, vis-viva; kaynak kayıtları okunmayı bekliyor [MurrayDermott1999].
+**`kepler`** (implemented). Kepler's equation (elliptic), true anomaly, period, vis-viva; the source records are waiting to be read [MurrayDermott1999].
 
-Eklenecek:
+To be added:
 
-- `kepler_markley(M, e) → E`: yinelemesiz çözüm [Markley1995].
-- `hiperbolik_anomali`, `evrensel_degisken_ilerlet` [Vallado2022].
-- `elemanlar_dan_durum(a, e, i, Ω, ω, M, μ) → (r, v)` ve tersi [Vallado2022].
-- `gunes_konumu_dusuk`, `ay_konumu_dusuk`, `gezegen_konumu_dusuk` [Meeus1998].
-- `spk_oku`, `spk_konum_hiz`: DE440 [Park2021].
-- `n_cisim_ilerlet(durum, kutleler, dt, adim, yontem)`: leapfrog, Wisdom-Holman [WisdomHolman1991; ReinTamayo2015].
-- `gecis_isik_egrisi(t, parametreler)`: kenar kararmalı [MandelAgol2002].
-- `dikine_hiz_egrisi(t, K, P, e, ω, T0, γ)`.
+- `kepler_markley(M, e) → E`: iteration-free solution [Markley1995].
+- `hyperbolic_anomaly`, `universal_variable_propagate` [Vallado2022].
+- `elements_to_state(a, e, i, Ω, ω, M, μ) → (r, v)` and its inverse [Vallado2022].
+- `sun_position_low`, `moon_position_low`, `planet_position_low` [Meeus1998].
+- `read_spk`, `spk_position_velocity`: DE440 [Park2021].
+- `n_body_propagate(state, masses, dt, steps, method)`: leapfrog, Wisdom-Holman [WisdomHolman1991; ReinTamayo2015].
+- `transit_light_curve(t, parameters)`: with limb darkening [MandelAgol2002].
+- `radial_velocity_curve(t, K, P, e, ω, T0, γ)`.
 
-## `isinim`
+## `radiation`
 
-**`kadir`** (uygulandı). Bolometrik kadir ↔ ışınım gücü [Mamajek2015], uzaklık modülü [Hogg1999], Planck fonksiyonu (kaynak kaydı bekliyor) [RybickiLightman1979], kara cisim akısı.
+**`magnitudes`** (implemented). Bolometric magnitude ↔ luminosity [Mamajek2015], distance modulus [Hogg1999], Planck function (source record pending) [RybickiLightman1979], blackbody flux.
 
-Eklenecek:
+To be added:
 
-- `ab_kadiri(aki_jy)`, `aki_jy(ab_kadiri)` [OkeGunn1983].
-- `asinh_kadir(aki, yumusatma)` [Lupton1999].
-- `filtre_oku`, `sentetik_kadir(tayf, filtre, sistem)` [BessellMurphy2012].
-- `pivot_dalgaboyu`, `etkin_dalgaboyu`.
-- `sonumleme_ccm89(dalga_boyu, rv)`, `sonumleme_f99` [CCM1989; Fitzpatrick1999].
-- `wesenheit(kadir, renk, r)` [Madore1982].
-- `k_duzeltmesi(tayf, z, filtre_goz, filtre_durgun)` [Hogg2002].
+- `ab_magnitude_from_flux(flux_jy)`, `flux_jy_from_ab_magnitude(ab_magnitude)` [OkeGunn1983].
+- `asinh_magnitude(flux, softening)` [Lupton1999].
+- `read_filter`, `synthetic_magnitude(spectrum, filter, system)` [BessellMurphy2012].
+- `pivot_wavelength`, `effective_wavelength`.
+- `extinction_ccm89(wavelength, rv)`, `extinction_f99` [CCM1989; Fitzpatrick1999].
+- `wesenheit(magnitude, color, r)` [Madore1982].
+- `k_correction(spectrum, z, filter_observed, filter_rest)` [Hogg2002].
 
-## `gozlem`
+## `observing`
 
-**`dedektor`** (uygulandı; kaynak kayıtları bekliyor). `ham_kare_uret`, `yildiz_alani`, `sinyal_gurultu_orani` [Howell2006; MerlineHowell1995].
+**`detector`** (implemented; source records pending). `simulate_raw_frame`, `star_field`, `signal_to_noise` [Howell2006; MerlineHowell1995].
 
-Eklenecek:
+To be added:
 
-- `hedef_gorunurlugu(hedef, gozlemci, zamanlar) → (yukseklik, hava_kutlesi)`.
-- `ay_ayrikligi_ve_aydinlanma`; `gokyuzu_parlakligi_ay` [KrisciunasSchaefer1991].
-- `poz_suresi(hedef_sn, ...)`, `doyma_suresi`.
-- `gorus_fwhm(r0, dalga_boyu, hava_kutlesi)` [Fried1966].
-- Üretece eklenecekler: kozmik ışın, sıcak piksel, doyma, Moffat PSF [Moffat1969].
-- `foton_aktarim_egrisi(duz_cifti_listesi)`: çok düzeyli varyans-ortalama uyumu [Janesick2007].
+- `target_visibility(target, observer, times) → (altitude, airmass)`.
+- `moon_separation_and_illumination`; `moon_sky_brightness` [KrisciunasSchaefer1991].
+- `exposure_time(target_snr, ...)`, `saturation_time`.
+- `seeing_fwhm(r0, wavelength, airmass)` [Fried1966].
+- To be added to the generator: cosmic rays, hot pixels, saturation, Moffat PSF [Moffat1969].
+- `photon_transfer_curve(flat_pair_list)`: multi-level variance-mean fit [Janesick2007].
 
-## `indirgeme`
+## `reduction`
 
-**`kalibrasyon`** (uygulandı; kaynak kayıtları bekliyor). `birlestir`, `kare_indirge`, `kazanc_ve_okuma_gurultusu` [Howell2006; Janesick2007].
+**`calibration`** (implemented; source records pending). `combine`, `reduce_frame`, `gain_and_read_noise` [Howell2006; Janesick2007].
 
-Eklenecek:
+To be added:
 
-- Maske düzlemi ve ana kalibrasyon karelerinin gürültüsünün varyansa eklenmesi.
-- `kozmik_isin_laplace(goruntu, ...)` [vanDokkum2001].
-- `arka_plan_haritasi(goruntu, hucre, suzgec)` [BertinArnouts1996].
-- `hizala`, `yeniden_ornekle`, `birlestir`; `drizzle` [FruchterHook2002].
-- `psf_esleme_cekirdegi`, `fark_goruntusu` [AlardLupton1998; Zackay2016].
+- A mask plane, and adding the noise of the master calibration frames to the variance.
+- `cosmic_ray_laplacian(image, ...)` [vanDokkum2001].
+- `background_map(image, cell, filter_size)` [BertinArnouts1996].
+- `align`, `resample`, `combine`; `drizzle` [FruchterHook2002].
+- `psf_matching_kernel`, `difference_image` [AlardLupton1998; Zackay2016].
 
-## `fotometri` ve `astrometri`
+## `photometry` and `astrometry`
 
-- `yildiz_bul(goruntu, fwhm, esik)` [Stetson1987]; `bolutle`, `ayristir` [BertinArnouts1996].
-- `merkez_moment`, `merkez_gauss`; `ikinci_momentler`.
-- `aciklik_fotometrisi(goruntu, konumlar, r, halka)`: tam piksel-daire kesişimi [MerlineHowell1995].
-- `kron_yaricapi` [Kron1980]; `en_iyi_fotometri` [Naylor1998].
-- `psf_modeli_kur`, `psf_fotometrisi` [Stetson1987].
-- `sifir_noktasi_uydur(aygit_kadiri, katalog_kadiri, renk, hava_kutlesi)` [Landolt1992; Padmanabhan2008].
-- `katalog_esle(xy, gok, tolerans)`; `wcs_uydur(xy, radec, derece)` [Lang2010; Shupe2005]. Yazılanlar: `astrometri.wcs.basliktan_wcs`, `piksel_den_gok`, `gok_den_piksel` (TAN) ve `astrometri.eslestirme.capraz_esle`; `wcs_uydur` yazılmadı.
+- `find_stars(image, fwhm, threshold)` [Stetson1987]; `segment`, `deblend` [BertinArnouts1996].
+- `centroid_moment`, `centroid_gauss`; `second_moments`.
+- `aperture_photometry(image, positions, r, annulus)`: exact pixel-circle intersection [MerlineHowell1995].
+- `kron_radius` [Kron1980]; `optimal_photometry` [Naylor1998].
+- `build_psf_model`, `psf_photometry` [Stetson1987].
+- `fit_zero_point(instrumental_magnitude, catalog_magnitude, color, airmass)` [Landolt1992; Padmanabhan2008].
+- `match_catalog(xy, sky, tolerance)`; `fit_wcs(xy, radec, degree)` [Lang2010; Shupe2005]. Written: `astrometry.wcs.wcs_from_header`, `pixel_to_sky`, `sky_to_pixel` (TAN) and `astrometry.matching.cross_match`; `fit_wcs` was not written (at the first release; it was written later, in `astrometry.solve`).
 
-## `tayf`
+## `spectroscopy`
 
-- `iz_bul`, `gokyuzu_cikar`, `en_iyi_cikarim` [Horne1986].
-- `ark_cizgileri_bul`, `dalgaboyu_cozumu`; `hava_den_bosluk` [Ciddor1996].
-- `duyarlilik_fonksiyonu`, `aki_kalibre`.
-- `sureklilik_normallestir`, `cizgi_uydur` (Gauss, Voigt), `esdeger_genislik`.
-- `capraz_ilinti_kirmiziya_kayma(tayf, sablon)` [TonryDavis1979].
+- `find_trace`, `subtract_sky`, `optimal_extraction` [Horne1986].
+- `find_arc_lines`, `wavelength_solution`; `air_to_vacuum` [Ciddor1996].
+- `sensitivity_function`, `flux_calibrate`.
+- `normalize_continuum`, `fit_line_profile` (Gauss, Voigt), `equivalent_width`.
+- `cross_correlation_redshift(spectrum, template)` [TonryDavis1979].
 
-## `zamanserisi`
+## `timeseries`
 
-**`periyodogram`** (uygulandı). Klasik ve yüzen ortalamalı ağırlıklı Lomb-Scargle, yanlış alarm olasılığı, frekans ızgarası [VanderPlas2018].
+**`periodogram`** (implemented). Weighted Lomb-Scargle, classical and floating-mean, false alarm probability, frequency grid [VanderPlas2018].
 
-Eklenecek:
+To be added:
 
-- `pencere_periyodogrami`, `cok_terimli_lomb_scargle` [VanderPlas2018]; `baluev_fap` [Baluev2008].
-- `faz_katla`, `kutula`; `faz_sacilimi_minimizasyonu` [Stellingwerf1978].
-- `egilim_gider_medyan`, `egilim_gider_ciftagirlik`.
-- `kutu_en_kucuk_kareler(t, aki, donemler, sureler)` [Kovacs2002]; `gecis_en_kucuk_kareler` [HippkeHeller2019].
-- `gp_log_olabilirlik(cekirdek, t, y, sigma)` [RasmussenWilliams2006].
+- `window_periodogram`, `multiterm_lomb_scargle` [VanderPlas2018]; `baluev_fap` [Baluev2008].
+- `phase_fold`, `bin_data`; `phase_dispersion_minimization` [Stellingwerf1978].
+- `detrend_median`, `detrend_biweight`.
+- `box_least_squares(t, flux, periods, durations)` [Kovacs2002]; `transit_least_squares` [HippkeHeller2019].
+- `gp_log_likelihood(kernel, t, y, sigma)` [RasmussenWilliams2006].
 
-## `istatistik`
+## `statistics`
 
-**`uyum`** (uygulandı). Kovaryanslı χ², doğrusal en küçük kareler, doğru uydurma [HoggBovyLang2010].
+**`fitting`** (implemented). χ² with covariance, linear least squares, line fitting [HoggBovyLang2010].
 
-**`mcmc`** (uygulandı). Gerdirme hamlesi, topluluk örnekleyici [ForemanMackey2013], bölünmüş ve sıra normalleştirilmiş R̂ [Vehtari2021], öz ilinti süresi (kaynak kaydı bekliyor).
+**`mcmc`** (implemented). Stretch move, ensemble sampler [ForemanMackey2013], split and rank-normalized R̂ [Vehtari2021], autocorrelation time (source record pending).
 
-**`saglam`** (uygulandı; kaynak kayıtları bekliyor). Sigma kırpma, MAD ölçeği, çift ağırlıklı konum ve ölçek [Beers1990].
+**`robust`** (implemented; source records pending). Sigma clipping, MAD scale, biweight location and scale [Beers1990].
 
-Eklenecek:
+To be added:
 
-- `yayilim_dogrusal(f, x, kov)`, `yayilim_monte_carlo`.
-- `dogru_uydur_iki_eksen(x, y, sx, sy, ic_sacilma)` [HoggBovyLang2010; Kelly2007].
-- `karisim_modeli_aykiri` [HoggBovyLang2010].
-- `metropolis_hastings` [Metropolis1953; Hastings1970]; etkin örnek sayısı [Vehtari2021]; klasik R̂ ile karşılaştırma [GelmanRubin1992].
-- `ic_ice_ornekle` [Skilling2006].
+- `propagate_linear(f, x, cov)`, `propagate_monte_carlo`.
+- `fit_line_two_axes(x, y, sx, sy, intrinsic_scatter)` [HoggBovyLang2010; Kelly2007].
+- `mixture_model_outliers` [HoggBovyLang2010].
+- `metropolis_hastings` [Metropolis1953; Hastings1970]; effective sample size [Vehtari2021]; comparison with classical R̂ [GelmanRubin1992].
+- `nested_sample` [Skilling2006].
 - `bootstrap`, `jackknife` [Efron1979].
-- `paralakstan_uzaklik_sonsali(paralaks, sigma, onsel)` [BailerJones2015].
-- `cash_istatistigi` [Cash1979].
+- `distance_posterior_from_parallax(parallax, sigma, prior)` [BailerJones2015].
+- `cash_statistic` [Cash1979].
 
-## `kozmoloji`
+## `cosmology`
 
-**`uzaklik`** (uygulandı). `E(z)`, eşyürüyen, enine eşyürüyen, açısal çap ve ışınım gücü uzaklıkları, uzaklık modülü, geriye bakış zamanı, hacim elemanı ve eşyürüyen hacim, iki kırmızıya kayma arası açısal çap uzaklığı, Doppler kayması ve özel hız, Hubble uzaklığı ve zamanı [Hogg1999; Brout2022].
+**`distances`** (implemented). `E(z)`, comoving, transverse comoving, angular diameter and luminosity distances, distance modulus, lookback time, volume element and comoving volume, angular diameter distance between two redshifts, Doppler shift and peculiar velocity, Hubble distance and time [Hogg1999; Brout2022].
 
-**`hubble_diyagrami`** (uygulandı). Veri seçimi, artık vektörü, olabilirlik, kapalı biçimli en iyi mutlak kadir [Brout2022].
+**`hubble_diagram`** (implemented). Data selection, residual vector, likelihood, closed-form best absolute magnitude [Brout2022].
 
-Eklenecek:
+To be added:
 
-- Radyasyon ve kütleli nötrino terimleri; `w0wa` parametrelemesi [ChevallierPolarski2001; Linder2003].
-- `evrenin_yasi_gyr` (radyasyon terimiyle birlikte).
-- `kozmografik_uzaklik(z, h0, q0, j0)` [Riess2022].
-- `ses_ufku_eh98(omega_m_h2, omega_b_h2)` [EisensteinHu1998]; `bao_uzakliklari(z)` (`D_V`, `D_M/r_d`, `D_H/r_d`) [DESI2025].
-- `buyume_carpani(z)` [Dodelson2020].
-- `tripp_uzaklik_modulu(mB, x1, c, alfa, beta, M)` [Tripp1998].
+- Radiation and massive-neutrino terms; the `w0wa` parametrization [ChevallierPolarski2001; Linder2003].
+- `age_of_universe_gyr` (including the radiation term).
+- `cosmographic_distance(z, h0, q0, j0)` [Riess2022].
+- `sound_horizon_eh98(omega_m_h2, omega_b_h2)` [EisensteinHu1998]; `bao_distances(z)` (`D_V`, `D_M/r_d`, `D_H/r_d`) [DESI2025].
+- `growth_factor(z)` [Dodelson2020].
+- `tripp_distance_modulus(mB, x1, c, alpha, beta, M)` [Tripp1998].
 
-## `yildiz` ve `gokada`
+## `stars` and `galaxies`
 
-- `lane_emden(n) → (ξ, θ)` [Kippenhahn2012]; `beyaz_cuce_kutle_yaricap` [ShapiroTeukolsky1983].
-- `imf_salpeter`, `imf_kroupa`, `imf_chabrier`: yoğunluk ve örnekleme [Salpeter1955; Kroupa2001; Chabrier2003].
-- `izokron_oku`, `izokron_enterpole` [Choi2016].
-- `leavitt_uzaklik_modulu(donem, kadir, renk)` [Madore1982].
-- Potansiyel arayüzü: `yogunluk`, `potansiyel`, `kuvvet`, `dairesel_hiz`; Plummer, Hernquist, NFW, Miyamoto-Nagai [Plummer1911; Hernquist1990; NFW1997].
-- `sersic_profili`, `sersic_bn`, `sersic_toplam_aki` [GrahamDriver2005].
-- `yorunge_ilerlet(potansiyel, durum, dt, adim)`.
+- `lane_emden_solve(n) → (ξ, θ)` [Kippenhahn2012]; `white_dwarf_mass_radius` [ShapiroTeukolsky1983].
+- `imf_salpeter`, `imf_kroupa`, `imf_chabrier`: density and sampling [Salpeter1955; Kroupa2001; Chabrier2003].
+- `read_isochrone`, `interpolate_isochrone` [Choi2016].
+- `leavitt_distance_modulus(period, magnitude, color)` [Madore1982].
+- Potential interface: `density`, `potential`, `force`, `circular_velocity`; Plummer, Hernquist, NFW, Miyamoto-Nagai [Plummer1911; Hernquist1990; NFW1997].
+- `sersic_profile`, `sersic_bn`, `sersic_total_flux` [GrahamDriver2005].
+- `orbit_propagate(potential, state, dt, steps)`.
 
-## `arsiv` ve `io`
+## `archives` and `io`
 
-**`arsiv.pantheon`** (uygulandı). İndirme, özet kaydı, tablo ve kovaryans okuma [Scolnic2022; Brout2022].
+**`archives.pantheon`** (implemented). Download, digest record, reading the table and covariance [Scolnic2022; Brout2022].
 
-Eklenecek: `onbellek` (genel indirme ve özet kaydı), `tap` (eşzamanlı ve eşzamansız sorgu), `gaia`, `mast`, `horizons`; `io.fits` (başlık, görüntü, ikili tablo) [Pence2010; FITS2018], `io.votable`.
+To be added: `cache` (general download and digest record), `tap` (synchronous and asynchronous queries), `gaia`, `mast`, `horizons`; `io.fits` (header, image, binary table) [Pence2010; FITS2018], `io.votable`.
 
-## İkinci sürümde eklenen modüller
+## Modules added in the second release
 
-25 Kasım 2026'daki ikinci çalışmada yazılan ve bu envanterin ilk hâlinde "eklenecek" görünen ya da hiç yer almayan modüller:
+The modules written in the second working session of 25 November 2026 that appeared as "to be added" in the first form of this inventory, or did not appear at all:
 
-- `karadelik.temel`, `karadelik.yigilma` (uygulandı): yarıçaplar, Kerr yörüngeleri, gölge, yığılma, Hawking ışınımı, birleşen çiftler [Abramowicz2013; EHT2019; Page2005; Inayoshi2020; Armitage2011; Komossa2015; Sathyaprakash2009].
-- `yildiz.yapi`, `yildiz.olcekleme`, `yildiz.imf` (uygulandı): politroplar, ölçekleme bağıntıları, Chandrasekhar kütlesi, kütle fonksiyonları [Liu1995; Bludman2010; Paxton2013; Kroupa2001; Chabrier2003].
-- `yildizolusumu.bulut`, `yildizolusumu.yasalar` (uygulandı): Jeans, Bonnor-Ebert, viryal parametre, Kennicutt-Schmidt, Toomre Q [McKee2007; Krumholz2015; Kennicutt1998; Kennicutt2012].
-- `arsiv.onbellek`, `arsiv.tap`, `arsiv.gaia`, `arsiv.skyview` (uygulandı) [TAP2019; Babusiaux2018; SkyView2026].
-- `io.fits` (uygulandı: birincil görüntü birimi) [FITS2018].
-- `fotometri.kaynak` (uygulandı: arka plan, saptama, açıklık fotometrisi) [SExtractorBelge2026].
-- `gorsel.germe` (uygulandı) [Lupton2004].
-- `isinim.kizilotesi` (uygulandı) [Cohen2003; Wright2010].
-- `gozlem.planlama` (uygulandı: görünürlük, meridyen geçişi, ufuk üstü süresi) [ERFA2023].
+- `black_holes.basics`, `black_holes.accretion` (implemented): radii, Kerr orbits, shadow, accretion, Hawking radiation, merging binaries [Abramowicz2013; EHT2019; Page2005; Inayoshi2020; Armitage2011; Komossa2015; Sathyaprakash2009].
+- `stars.structure`, `stars.scaling`, `stars.imf` (implemented): polytropes, scaling relations, Chandrasekhar mass, mass functions [Liu1995; Bludman2010; Paxton2013; Kroupa2001; Chabrier2003].
+- `star_formation.clouds`, `star_formation.laws` (implemented): Jeans, Bonnor-Ebert, virial parameter, Kennicutt-Schmidt, Toomre Q [McKee2007; Krumholz2015; Kennicutt1998; Kennicutt2012].
+- `archives.cache`, `archives.tap`, `archives.gaia`, `archives.skyview` (implemented) [TAP2019; Babusiaux2018; SkyView2026].
+- `io.fits` (implemented: primary image unit) [FITS2018].
+- `photometry.background`, `photometry.detection`, `photometry.aperture` (implemented: background, detection, aperture photometry) [SExtractorDocs2026].
+- `visualization.stretch` (implemented) [Lupton2004].
+- `radiation.infrared` (implemented) [Cohen2003; Wright2010].
+- `observing.planning` (implemented: visibility, meridian transit, time above the horizon) [ERFA2023].
 
-Bu modüllerin fonksiyon listesi [DURUM.md](DURUM.md) dosyasındadır; kapsam, sınırlar ve yapılacaklar [04_fizik/08_kara_delik_yildiz_ve_yildiz_olusumu.md](04_fizik/08_kara_delik_yildiz_ve_yildiz_olusumu.md) ve [05_veri_bilimi/06_optik_ve_kizilotesi_gozlem.md](05_veri_bilimi/06_optik_ve_kizilotesi_gozlem.md) figuresindedir.
+The function list of these modules is in [STATUS.md](STATUS.md); the scope, limits and to-do items are in [04_physics/08_black_holes_stars_and_star_formation.md](04_physics/08_black_holes_stars_and_star_formation.md) and [05_data_science/06_optical_and_infrared_observing.md](05_data_science/06_optical_and_infrared_observing.md).
 
-## Sıra
+## Order
 
-Yol haritasındaki aşamalar bu envanterin okunma sırasını verir ([07_yol_haritasi.md](07_yol_haritasi.md)). Bir fonksiyon yazılmadan önce kaynağı açılır; kaynağa erişilemiyorsa fonksiyon `teyit="bekliyor"` ile yazılır ve [DURUM.md](DURUM.md) dosyasının bekleyenler listesine düşer.
+The phases in the roadmap give the reading order of this inventory ([07_roadmap.md](07_roadmap.md)). Before a function is written, its source is opened; if the source cannot be reached, the function is written with `status="pending"` and falls into the pending list of [STATUS.md](STATUS.md).

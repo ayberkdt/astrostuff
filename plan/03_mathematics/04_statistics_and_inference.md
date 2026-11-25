@@ -1,77 +1,77 @@
-# İstatistik ve çıkarım
+# Statistics and inference
 
-Hedef modül: `istatistik/`.
+Target module: `statistics/`.
 
-Gözlemden fiziksel parametreye giden her adım bir çıkarım problemidir: Hubble sabiti, bir geçişin derinliği ya da bir kümenin uzaklığı, verinin bir model altındaki olasılığından elde edilir. Denklemler kodlanmadan önce anılan kaynaktan okunur.
+Every step from observation to physical parameter is an inference problem: the Hubble constant, the depth of a transit or the distance of a cluster is obtained from the probability of the data under a model. The equations are read from the cited source before they are coded.
 
-## 1. Olasılık temelleri
+## 1. Probability basics
 
-- Dağılımlar: Gauss, Poisson, binom, `χ²`, Student-t, log-normal, üstel, Cauchy. Her biri için yoğunluk, birikimli dağılım, momentler ve örnekleme [Ivezic2020, Böl. 3].
-- Poisson istatistiği: foton sayımında `σ = √N`; düşük sayımlarda Gauss yaklaşımının bozulması ve Cash istatistiği [Cash1979].
-- Merkezi limit teoremi ve geçerli olmadığı durumlar (ağır kuyruk).
-- Bayes teoremi: `p(θ|D) ∝ p(D|θ) p(θ)` [SiviaSkilling2006, Böl. 1].
+- Distributions: Gaussian, Poisson, binomial, `χ²`, Student-t, log-normal, exponential, Cauchy. For each: density, cumulative distribution, moments and sampling [Ivezic2020, Section 3].
+- Poisson statistics: `σ = √N` in photon counting; the breakdown of the Gaussian approximation at low counts and the Cash statistic [Cash1979].
+- The central limit theorem and the cases where it does not hold (heavy tails).
+- Bayes' theorem: `p(θ|D) ∝ p(D|θ) p(θ)` [SiviaSkilling2006, Section 1].
 
-## 2. Belirsizlik yayılımı
+## 2. Uncertainty propagation
 
-- Doğrusal yayılım: `Σ_f = J Σ_x Jᵀ`. Jacobian analitik, sonlu fark ya da otomatik türevle.
-- Doğrusal olmayan durumda yanlılık: kadir ↔ akı, paralaks → uzaklık. `1/ϖ` yansız bir uzaklık kestirimi değildir; göreli paralaks hatası büyüdükçe önsel dağılımla tam çıkarım gerekir [BailerJones2015; Luri2018].
-- Monte Carlo yayılımı ve doğrusal yayılımla tutarlılık testi.
-- Sistematik ve istatistik belirsizliğin ayrı tutulması; kovaryans matrisine sistematik terim eklenmesi [Conley2011; Brout2022].
+- Linear propagation: `Σ_f = J Σ_x Jᵀ`. The Jacobian by analytic derivatives, finite differences or automatic differentiation.
+- Bias in the nonlinear case: magnitude ↔ flux, parallax → distance. `1/ϖ` is not an unbiased distance estimate; as the fractional parallax error grows, full inference with a prior distribution is needed [BailerJones2015; Luri2018].
+- Monte Carlo propagation and a consistency test against linear propagation.
+- Keeping systematic and statistical uncertainty separate; adding systematic terms to the covariance matrix [Conley2011; Brout2022].
 
-## 3. Sağlam istatistik
+## 3. Robust statistics
 
-- Konum: medyan, kırpılmış ortalama, çift ağırlıklı (biweight) konum. Ölçek: MAD (`σ ≈ 1,4826 · MAD`), çift ağırlıklı ölçek [Beers1990].
-- Sigma kırpma: yinelemeli; merkez ve ölçek kestiricisi seçilebilir. Görüntü birleştirme ve arka plan kestiriminin temel aracıdır.
-- Aykırı değerlerin atılması yerine modellenmesi: karışım modeli [HoggBovyLang2010, Böl. 3].
+- Location: median, trimmed mean, biweight location. Scale: MAD (`σ ≈ 1.4826 · MAD`), biweight scale [Beers1990].
+- Sigma clipping: iterative; the center and scale estimators are selectable. It is the basic tool of image combination and background estimation.
+- Modeling outliers instead of discarding them: a mixture model [HoggBovyLang2010, Section 3].
 
-## 4. Model uydurma
+## 4. Model fitting
 
-- En büyük olabilirlik ve Gauss gürültüsünde `χ²` ile eşdeğerliği.
-- Doğrusal en küçük kareler: ağırlıklı, kovaryanslı; kapalı çözüm ve parametre kovaryansı [HoggBovyLang2010, Böl. 1].
-- **İki eksende hata ve iç saçılma:** astronomide olağan durumdur (Leavitt yasası, Tully-Fisher, `M-σ`). Yöntemler: Akritas-Bershady BCES [AkritasBershady1996], Bayesçi hiyerarşik model [Kelly2007], doğruya dik uzaklık olabilirliği [HoggBovyLang2010, Böl. 7]. Sıradan en küçük kareler burada eğimi yanlı verir.
-- Uyum iyiliği: `χ²`, indirgenmiş `χ²` ve sınırları (doğrusal olmayan modelde serbestlik derecesi belirsizdir) [Andrae2010]; artık çözümlemesi.
-- Model karşılaştırma: olabilirlik oranı, AIC, BIC, Bayes kanıtı. Hangisinin hangi soruya yanıt verdiği belgelenir [Ivezic2020, Böl. 5].
+- Maximum likelihood and its equivalence to `χ²` under Gaussian noise.
+- Linear least squares: weighted, with covariance; closed-form solution and parameter covariance [HoggBovyLang2010, Section 1].
+- **Errors in both axes and intrinsic scatter:** the usual case in astronomy (Leavitt law, Tully-Fisher, `M-σ`). Methods: Akritas-Bershady BCES [AkritasBershady1996], the Bayesian hierarchical model [Kelly2007], the likelihood of the perpendicular distance to the line [HoggBovyLang2010, Section 7]. Ordinary least squares gives a biased slope here.
+- Goodness of fit: `χ²`, reduced `χ²` and its limits (in a nonlinear model the number of degrees of freedom is uncertain) [Andrae2010]; residual analysis.
+- Model comparison: likelihood ratio, AIC, BIC, Bayes evidence. Which one answers which question is documented [Ivezic2020, Section 5].
 
-## 5. Bayesçi örnekleme
+## 5. Bayesian sampling
 
-- **Metropolis-Hastings:** öneri dağılımı, kabul oranı, ayrıntılı denge [Metropolis1953; Hastings1970].
-- **Afin değişmez topluluk örnekleyici:** gerdirme hamlesi [GoodmanWeare2010]; `emcee`'nin algoritması [ForemanMackey2013]. Yeniden yazılır ve `emcee` ile aynı hedef dağılımda momentleri karşılaştırılır.
-- **Hamilton Monte Carlo ve NUTS:** gradyan gerektirir; yüksek boyutta verimlidir [HoffmanGelman2014]. İlk aşamada yazılmaz; NumPyro ya da PyMC kâhin ve üretim aracı olarak kullanılır.
-- **İç içe örnekleme:** kanıt hesabı ve çok tepeli sonsal dağılımlar [Skilling2006; Speagle2020].
-- **Yakınsama tanıları:** sıra-normalleştirilmiş bölünmüş `R̂`, etkin örnek sayısı, öz ilinti süresi [GelmanRubin1992; Vehtari2021; ForemanMackey2013]. Zincir izleri ve köşe grafikleri her analizde üretilir.
-- Uygulama kuralları [HoggForemanMackey2018]: başlatma, ısınma evresinin atılması, önsel dağılımın açıkça yazılması, parametrelemenin etkisi.
+- **Metropolis-Hastings:** proposal distribution, acceptance fraction, detailed balance [Metropolis1953; Hastings1970].
+- **Affine-invariant ensemble sampler:** the stretch move [GoodmanWeare2010]; the algorithm of `emcee` [ForemanMackey2013]. It is rewritten, and its moments are compared with `emcee` on the same target distribution.
+- **Hamiltonian Monte Carlo and NUTS:** requires gradients; efficient in high dimensions [HoffmanGelman2014]. Not written in the first stage; NumPyro or PyMC are used as the oracle and production tool.
+- **Nested sampling:** evidence computation and multimodal posterior distributions [Skilling2006; Speagle2020].
+- **Convergence diagnostics:** rank-normalized split `R̂`, effective sample size, autocorrelation time [GelmanRubin1992; Vehtari2021; ForemanMackey2013]. Chain traces and corner plots are produced in every analysis.
+- Practical rules [HoggForemanMackey2018]: initialization, discarding the burn-in phase, writing the prior explicitly, the effect of parametrization.
 
-## 6. Önsel dağılımlar ve hiyerarşik modeller
+## 6. Priors and hierarchical models
 
-- Bilgi vermeyen önsel yoktur: ölçek parametresinde düz ve log-düz önsel farklı sonuç verir [SiviaSkilling2006, Böl. 5].
-- Hiyerarşik model: popülasyon dağılımı ile tek tek ölçümlerin birlikte modellenmesi (iç saçılma, seçim etkisi) [Gelman2013, Böl. 5].
-- Sonsal öngörü denetimi: modelden üretilen yapay verinin gözlenenle karşılaştırılması [Gelman2013, Böl. 6].
+- There is no uninformative prior: for a scale parameter, a flat and a log-flat prior give different results [SiviaSkilling2006, Section 5].
+- Hierarchical model: modeling the population distribution and the individual measurements together (intrinsic scatter, selection effect) [Gelman2013, Section 5].
+- Posterior predictive check: comparing synthetic data generated from the model with the observed data [Gelman2013, Section 6].
 
-## 7. Seçim etkileri ve yanlılıklar
+## 7. Selection effects and biases
 
-- **Malmquist yanlılığı:** akı sınırlı örneklemde uzaktaki kaynakların ortalamadan parlak olması; Hubble diyagramında uzaklığı küçültür.
-- **Eddington yanlılığı:** dik bir sayım dağılımında ölçüm hatasının sınırın üstüne taşıdığı kaynaklar.
-- **Lutz-Kelker yanlılığı:** paralaks eşiğiyle seçilmiş örneklemde [Luri2018].
-- Düzeltme yolları: ileri modelleme (seçim fonksiyonu olabilirliğe girer), benzetimle yanlılık düzeltmesi [KesslerScolnic2017], kesilmiş ve sansürlü veri olabilirliği [Ivezic2020, Böl. 4].
+- **Malmquist bias:** in a flux-limited sample, distant sources are brighter than average; it reduces the distance in the Hubble diagram.
+- **Eddington bias:** in a steep count distribution, sources that measurement error carries above the limit.
+- **Lutz-Kelker bias:** in a sample selected by a parallax threshold [Luri2018].
+- Ways of correcting: forward modeling (the selection function enters the likelihood), bias correction by simulation [KesslerScolnic2017], the likelihood of truncated and censored data [Ivezic2020, Section 4].
 
-Seçim etkisi Hubble diyagramı analizinin baskın sistematiklerindendir; `kozmoloji` modülü bunu başından tasarıma alır.
+The selection effect is one of the dominant systematics of Hubble diagram analysis; the `cosmology` module takes it into the design from the start.
 
-## 8. Parametrik olmayan ve yeniden örnekleme yöntemleri
+## 8. Nonparametric and resampling methods
 
-- Bootstrap ve jackknife [Efron1979]; ilintili veride blok bootstrap.
-- Çekirdek yoğunluk kestirimi, histogram kutu genişliği kuralları, Bayesçi bloklar [Ivezic2020, Böl. 5-6].
-- Kolmogorov-Smirnov ve Anderson-Darling testleri ve yanlış kullanımları (parametreleri veriden kestirilmiş dağılıma karşı).
+- Bootstrap and jackknife [Efron1979]; block bootstrap for correlated data.
+- Kernel density estimation, histogram bin width rules, Bayesian blocks [Ivezic2020, Section 5-6].
+- Kolmogorov-Smirnov and Anderson-Darling tests and their misuses (against a distribution whose parameters were estimated from the data).
 
-## 9. Gauss süreçleri
+## 9. Gaussian processes
 
-İlintili gürültünün (yıldız değişkenliği, aygıt sistematikleri) modeli [RasmussenWilliams2006, Böl. 2]. Genel çözüm `O(N³)` ölçeklenir; tek boyutlu zaman serisinde `celerite` çekirdek ailesi `O(N)` çözüm verir [ForemanMackey2017]. İlk aşamada küçük `N` için Cholesky tabanlı genel çözüm yazılır.
+A model of correlated noise (stellar variability, instrumental systematics) [RasmussenWilliams2006, Section 2]. The general solution scales as `O(N³)`; for a one-dimensional time series, the `celerite` kernel family gives an `O(N)` solution [ForemanMackey2017]. In the first stage, a general Cholesky-based solution is written for small `N`.
 
-## 10. Makine öğrenmesi
+## 10. Machine learning
 
-Sınıflandırma (yıldız/gökada ayrımı, değişen yıldız türleri), regresyon (fotometrik kırmızıya kayma), kümeleme (açık küme üyeliği: Gaia öz hareket ve paralaks uzayında), boyut indirgeme [Ivezic2020, Böl. 6-9]. Bu yöntemler yeniden yazılmaz; `scikit-learn` kullanılır. Projenin katkısı öznitelik çıkarımı, eğitim/sınama ayrımının doğru kurulması ve belirsizliğin taşınmasıdır.
+Classification (star/galaxy separation, variable star types), regression (photometric redshift), clustering (open cluster membership: in the Gaia proper motion and parallax space), dimensionality reduction [Ivezic2020, Section 6-9]. These methods are not rewritten; `scikit-learn` is used. The project's contribution is feature extraction, setting up the training/test split correctly and carrying the uncertainty through.
 
-Benzetime dayalı çıkarım (olabilirliğin yazılamadığı durumlar) ileri aşama konusudur [Cranmer2020].
+Simulation-based inference (when the likelihood cannot be written) is a later-stage topic [Cranmer2020].
 
-## Uygulama sırası
+## Implementation order
 
-Dağılımlar ve sağlam istatistik → doğrusal uyum (kovaryanslı) → belirsizlik yayılımı → Metropolis-Hastings → topluluk örnekleyici ve tanılar → iki eksende hatalı uyum → seçim etkili olabilirlik → iç içe örnekleme → Gauss süreci.
+Distributions and robust statistics → linear fitting (with covariance) → uncertainty propagation → Metropolis-Hastings → ensemble sampler and diagnostics → fitting with errors in both axes → likelihood with selection effects → nested sampling → Gaussian process.

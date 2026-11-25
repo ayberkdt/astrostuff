@@ -1,46 +1,46 @@
-# Araştırmanın yöntemi ve sınırları
+# Method and limits of the survey
 
-Planın hangi bölümüne ne kadar güvenilebileceği bilginin nasıl elde edildiğine bağlıdır. Dört güven düzeyi vardır.
+How far any part of the plan can be trusted depends on how the information was obtained. There are four levels of confidence.
 
-## 1. Kaynağından okunan ve kaydı tutulan
+## 1. Read from the source and recorded
 
-- **Künyeler.** `bibliography/references.bib` içindeki her giriş `dogrula.py` ile dış kayda karşı sınanmıştır: DOI'ler Crossref'e, arXiv kimlikleri arXiv API'sine, ISBN'ler Open Library'ye. Sınama başlık benzerliğini ve yılı karşılaştırır; sonuç `dogrulama_kaydi.json` dosyasındadır. Bu sınama künyenin var olduğunu ve başlığın, yılın, derginin doğru yazıldığını gösterir; kaynağın içeriğinin planda doğru aktarıldığını göstermez.
-- **Paket sürümleri.** `paketler.txt` içindeki 100 paketin sürümü ve yükleme tarihi PyPI JSON API'sinden okunmuştur.
-- **Pantheon+SH0ES veri sürümü.** Dosya listesi, satır sayısı, sütun adları, kovaryans boyutu ve lisans durumu GitHub'dan okunmuştur.
-- **Paket adı.** `kozmos` adının PyPI'da boş olduğu sorgulanmıştır.
-- **Uygulanan fonksiyonların denklemleri.** Aşağıdaki kaynakların metni açılmış ve kodlanan denklemler oradan alınmıştır: Hogg 1999, Brout ve ark. 2022, Hogg, Bovy ve Lang 2010, Foreman-Mackey ve ark. 2013, VanderPlas 2018, Prša ve ark. 2016 ve Mamajek ve ark. 2015 (arXiv TeX kaynakları); CODATA 2022 (NIST `allascii.txt`); ERFA kaynak dosyaları (`cal2jd.c`, `jd2cal.c`, `era00.c`, `gmst06.c`, `obl06.c`, `sepp.c`, `s2c.c`, `c2s.c`, `anp.c`, `anpm.c`, `icrs2g.c`, `hd2ae.c`, `ae2hd.c`, `erfam.h`); Pantheon+SH0ES veri deposunun `README` dosyası. Fonksiyon başına durum [../DURUM.md](../DURUM.md) dosyasındadır.
+- **Bibliographic records.** Every entry in `bibliography/references.bib` was checked against an external record with `verify.py`: DOIs against Crossref, arXiv identifiers against the arXiv API, ISBNs against Open Library. The check compares title similarity and year; the result is in `verification_record.json`. This check shows that the record exists and that the title, year and journal are written correctly; it does not show that the content of the source is correctly reproduced in the plan.
+- **Package versions.** The versions and upload dates of the 100 packages in `packages.txt` were read from the PyPI JSON API.
+- **Pantheon+SH0ES data release.** The file list, row counts, column names, covariance dimension and license status were read from GitHub.
+- **Package name.** It was queried that the name `kozmos` is free on PyPI.
+- **Equations of the implemented functions.** The texts of the following sources were opened and the coded equations were taken from them: Hogg 1999, Brout et al. 2022, Hogg, Bovy and Lang 2010, Foreman-Mackey et al. 2013, VanderPlas 2018, Prša et al. 2016 and Mamajek et al. 2015 (arXiv TeX sources); CODATA 2022 (NIST `allascii.txt`); the ERFA source files (`cal2jd.c`, `jd2cal.c`, `era00.c`, `gmst06.c`, `obl06.c`, `sepp.c`, `s2c.c`, `c2s.c`, `anp.c`, `anpm.c`, `icrs2g.c`, `hd2ae.c`, `ae2hd.c`, `erfam.h`); the `README` file of the Pantheon+SH0ES data repository. The status per function is in [../STATUS.md](../STATUS.md).
 
-## 2. Web taramasının sayfayı açarak bildirdiği
+## 2. Reported by the web survey by opening the page
 
-Altı kollu bir tarama (çekirdek ekosistem, konum astronomisi, veri indirgeme, kozmoloji, istatistik ve arşivler, astrofizik alan kodları) yapılmıştır. Tarama her bilgi için okuduğu adresi bildirmiştir. Bakım durumları, arşiv sürümleri, IVOA standart sürümleri ve güncel `H0` değerleri bu düzeydedir. Bu bilgiler ikinci kez doğrulanmamıştır; figuresde "taramaya göre" ya da "tarama-sayfa" diye işaretlidir.
+A six-branch survey was carried out (core ecosystem, positional astronomy, data reduction, cosmology, statistics and archives, astrophysical domain codes). For each piece of information, the survey reported the address it read. Maintenance status, archive releases, IVOA standard versions and current `H0` values are at this level. This information has not been verified a second time; in this document it is marked "according to the survey" or "survey-page".
 
-## 3. Taramanın yalnızca arama özetinde gördüğü
+## 3. Seen by the survey only in a search summary
 
-Union3, DES-SN5YR yeniden kalibrasyonu, CosmoVerse raporu, SH0ES HST+JWST birleşik değeri ve JWST TRGB/JAGB değerleri bu düzeydedir ("tarama-özet"). Kullanılmadan önce kaynağından okunmalıdır.
+Union3, the DES-SN5YR recalibration, the CosmoVerse report, the combined SH0ES HST+JWST value and the JWST TRGB/JAGB values are at this level ("survey-summary"). They must be read from their source before use.
 
-## 4. Hatırlanan bilgi
+## 4. Recalled information
 
-Matematik, fizik ve veri bilimi bölümlerindeki denklemler, algoritma adımları, sayısal katsayılar, denklem ve bölüm numaraları, tipik büyüklükler ve yöntemlerin birbirine göre üstünlükleri planı yazanın bilgisinden gelir; yukarıda sayılan kaynaklar dışında kaynak metinleri açılıp okunmamıştır. Atıflar denklemin hangi kaynakta aranacağını gösterir, denklemin o kaynaktan aktarıldığını göstermez.
+The equations, algorithm steps, numerical coefficients, equation and section numbers, typical magnitudes and the relative merits of methods in the mathematics, physics and data science sections come from the knowledge of the person who wrote the plan; apart from the sources listed above, the source texts were not opened and read. Citations show where to look for the equation; they do not show that the equation was transcribed from that source.
 
-Bu nedenle bir fonksiyon yazılmadan önce atıf verilen kaynağın ilgili bölümü açılır, denklem oradan alınır ve `@kaynak` kaydına denklem numarası o okumadan yazılır. Plandaki denklem ile kaynaktaki farklıysa kaynak geçerlidir ve plan düzeltilir.
+For this reason, before a function is written, the relevant section of the cited source is opened, the equation is taken from it, and the equation number is written into the `@source` record from that reading. If the equation in the plan differs from the one in the source, the source is correct and the plan is corrected.
 
-## Taramanın ulaşamadıkları
+## What the survey could not reach
 
-- Yayıncı sayfalarının bir kısmı (A&A, IERS, USNO, ESO, MPC, GWOSC, Euclid, ZTF, Planck Legacy Archive) otomatik erişimi reddetti ya da boş döndü.
-- PyPI'nin HTML sayfaları sık sık yüklenemedi; sürümler bu yüzden JSON API'sinden yeniden okundu.
-- Astrofizik alan kodları kolunun büyük kısmı tamamlanamadı; ders kitaplarının künyeleri taramadan değil, Crossref ve Open Library sınamasından gelir.
-- Taramanın bellekten denediği birkaç arXiv kimliği ilgisiz makalelere çıktı ve atıldı. Kimlik ve DOI'nin bellekten yazılmaması, yazılanın sınanması gerektiğinin göstergesidir.
+- Some of the publisher pages (A&A, IERS, USNO, ESO, MPC, GWOSC, Euclid, ZTF, Planck Legacy Archive) refused automated access or returned empty.
+- The PyPI HTML pages often failed to load; the versions were therefore read again from the JSON API.
+- Most of the astrophysical domain codes branch could not be completed; the bibliographic records of the textbooks come not from the survey but from the Crossref and Open Library check.
+- A few arXiv identifiers that the survey tried from memory turned out to be unrelated papers and were discarded. That identifiers and DOIs must not be written from memory, and that what is written must be checked, is shown by this.
 
-## Künyesi eksik kaynaklar
+## Sources with missing bibliographic records
 
-İlk taramada künyesi eksik kalan konuların çoğu sonradan kaynakçaya eklenmiş ve sınanmıştır (Hipparcos kataloğu, SIP kuralı, HEALPix, Cash istatistiği, NUTS, VSOP87, görüş, Ay parlaklığı modeli, Moffat profili, havanın kırılma indisi, Landy-Szalay kestiricisi, FITS 4.0). ELP Ay kuramının künyesi hâlâ eksiktir.
+Most of the topics whose records were missing in the first survey were later added to the bibliography and checked (the Hipparcos catalog, the SIP convention, HEALPix, the Cash statistic, NUTS, VSOP87, seeing, the lunar brightness model, the Moffat profile, the refractive index of air, the Landy-Szalay estimator, FITS 4.0). The record for the ELP lunar theory is still missing.
 
-DOI, arXiv kimliği ya da ISBN taşımayan kaynakların künyesi elle doğrulanacaktır; güncel liste `bibliography/VERIFICATION_SUMMARY.md` dosyasının "Elle doğrulanacak" bölümündedir. [IERS2010] künyesinin ISBN'i Open Library'de bulunamamıştır.
+The records of sources that carry no DOI, arXiv identifier or ISBN will be verified by hand; the current list is in the "To be verified by hand" section of the file `bibliography/VERIFICATION_SUMMARY.md`. The ISBN of the [IERS2010] record could not be found in Open Library.
 
-## Yeniden doğrulama
+## Re-verification
 
 ```
 python bibliography/verify.py
 ```
 
-Betik üç denetimi yeniden koşar ve kaydı günceller. Paket sürümleri ve arşiv durumları zamanla değişir; bu figuresdeki tarihli bilgiler yeni bir koşuyla yenilenmeden güncel sayılmaz.
+The script reruns the three checks and updates the record. Package versions and archive statuses change over time; the dated information in this document cannot be considered current until it is refreshed by a new run.

@@ -1,71 +1,71 @@
-# Yıldız astrofiziği
+# Stellar astrophysics
 
-Hedef modül: `yildiz/`.
+Target module: `stars/`.
 
-Denklemler planlama düzeyindedir; kodlanmadan önce anılan kaynaktan okunur.
+The equations are at planning level; they are read from the cited source before they are coded.
 
-## 1. Gözlenebilirlerden fiziksel niceliklere
+## 1. From observables to physical quantities
 
-- Paralakstan uzaklık: `d = 1/ϖ` yalnızca küçük göreli hata için kullanılabilir; genel durumda sonsal dağılım [BailerJones2015; BailerJones2021]. Gaia paralaks sıfır noktası düzeltmesi kadire, renge ve konuma bağlıdır [Lindegren2021].
-- Işınım gücü: `L = 4π R² σ T_eff⁴`; bolometrik düzeltme.
-- Renk-sıcaklık bağıntıları ve tayf türü sınıflaması [CarrollOstlie2017, Böl. 8].
-- Çift yıldızlardan kütle: görsel, tayfsal ve örten çiftler [CarrollOstlie2017, Böl. 7].
-- Kütle-ışınım gücü bağıntısı ve anakol ömrü.
+- Distance from parallax: `d = 1/ϖ` can be used only for a small relative error; in the general case a posterior distribution is needed [BailerJones2015; BailerJones2021]. The Gaia parallax zero-point correction depends on magnitude, color and position [Lindegren2021].
+- Luminosity: `L = 4π R² σ T_eff⁴`; bolometric correction.
+- Color-temperature relations and spectral type classification [CarrollOstlie2017, Section 8].
+- Mass from binaries: visual, spectroscopic and eclipsing binaries [CarrollOstlie2017, Section 7].
+- Mass-luminosity relation and main sequence lifetime.
 
-## 2. Hertzsprung-Russell diyagramı
+## 2. Hertzsprung-Russell diagram
 
-- Renk-kadir diyagramının Gaia verisinden kurulması: kalite kesimleri, paralaks hatası kesimi, sönümleme düzeltmesi.
-- Evrim bölgeleri: anakol, alt dev kolu, kırmızı dev kolu ve ucu (TRGB), yatay kol, asimptotik dev kolu, beyaz cüce dizisi.
-- TRGB'nin standart mum olarak kullanımı: helyum parlamasının I bandındaki sabit ışınım gücü [Freedman2019].
+- Building the color-magnitude diagram from Gaia data: quality cuts, parallax error cut, extinction correction.
+- Evolutionary regions: main sequence, subgiant branch, red giant branch and its tip (TRGB), horizontal branch, asymptotic giant branch, white dwarf sequence.
+- The TRGB as a standard candle: the constant I-band luminosity of the helium flash [Freedman2019].
 
-## 3. Yıldız yapısı denklemleri
+## 3. Stellar structure equations
 
-Küresel simetrik, hidrostatik dengedeki yıldız için [Kippenhahn2012, Böl. 1-10]:
+For a spherically symmetric star in hydrostatic equilibrium [Kippenhahn2012, Section 1-10]:
 
 ```
-dm/dr = 4π r² ρ                       kütle sürekliliği
-dP/dr = −G m ρ / r²                   hidrostatik denge
-dL/dr = 4π r² ρ ε                     enerji üretimi
-dT/dr = −3 κ ρ L / (16π a c r² T³)    ışınımla taşınım
-dT/dr = (1 − 1/γ) (T/P) dP/dr         adyabatik konveksiyon
+dm/dr = 4π r² ρ                       mass continuity
+dP/dr = −G m ρ / r²                   hydrostatic equilibrium
+dL/dr = 4π r² ρ ε                     energy generation
+dT/dr = −3 κ ρ L / (16π a c r² T³)    radiative transport
+dT/dr = (1 − 1/γ) (T/P) dP/dr         adiabatic convection
 ```
 
-Kapanış bağıntıları: durum denklemi `P(ρ, T, X)`, donukluk `κ(ρ, T, X)`, enerji üretim hızı `ε(ρ, T, X)`. Konveksiyon ölçütü Schwarzschild ölçütüdür.
+Closure relations: the equation of state `P(ρ, T, X)`, the opacity `κ(ρ, T, X)`, the energy generation rate `ε(ρ, T, X)`. The convection criterion is the Schwarzschild criterion.
 
-- **Politroplar:** `P = K ρ^(1+1/n)` ve Lane-Emden denklemi. `n = 0, 1, 5` için kapalı çözüm vardır ve sayısal çözücünün testidir; `n = 1,5` tam konvektif yıldızı, `n = 3` Eddington standart modelini verir [Kippenhahn2012, Böl. 19].
-- **Durum denklemi:** ideal gaz, ışınım basıncı, yozlaşmış elektron gazı (görelilikli olmayan ve aşırı görelilikli limitler); Chandrasekhar kütlesi [CarrollOstlie2017, Böl. 16].
-- **Donukluk:** Kramers yaklaşımı, elektron saçılması; tablolanmış donukluklar ileri aşamada.
-- **Çekirdek tepkimeleri:** pp zinciri, CNO döngüsü, üçlü alfa; sıcaklık duyarlılığı için kuvvet yasası yaklaşımları [Kippenhahn2012, Böl. 18].
-- **Basit model:** homojen bileşimli sıfır yaş anakol yıldızı için atış yöntemiyle dört denklemin çözümü. Tam evrim kodu yazılmaz; MESA çıktıları karşılaştırma verisidir [Paxton2011].
+- **Polytropes:** `P = K ρ^(1+1/n)` and the Lane-Emden equation. Closed-form solutions exist for `n = 0, 1, 5` and are a test of the numerical solver; `n = 1.5` gives a fully convective star, `n = 3` gives the Eddington standard model [Kippenhahn2012, Section 19].
+- **Equation of state:** ideal gas, radiation pressure, degenerate electron gas (nonrelativistic and extreme relativistic limits); the Chandrasekhar mass [CarrollOstlie2017, Section 16].
+- **Opacity:** Kramers approximation, electron scattering; tabulated opacities at an advanced stage.
+- **Nuclear reactions:** pp chain, CNO cycle, triple alpha; power-law approximations for the temperature sensitivity [Kippenhahn2012, Section 18].
+- **Simple model:** solving the four equations by the shooting method for a zero-age main sequence star of homogeneous composition. A full evolution code is not written; MESA output is comparison data [Paxton2011].
 
-## 4. İzokronlar ve yıldız popülasyonları
+## 4. Isochrones and stellar populations
 
-- Evrim izleri ve izokron ızgaraları: MIST [Choi2016] ve PARSEC [Bressan2012]. Izgaralar indirilir, okunur ve yaş-metallik uzayında enterpole edilir.
-- Küme uydurma: renk-kadir diyagramında yaş, metallik, uzaklık modülü ve kızarmanın birlikte kestirimi; olabilirlik izokrona uzaklık ve başlangıç kütle fonksiyonu ağırlığıyla kurulur.
-- Başlangıç kütle fonksiyonu: Salpeter kuvvet yasası [Salpeter1955], parçalı kuvvet yasası [Kroupa2001], log-normal biçim [Chabrier2003]; normalleştirme ve örnekleme.
-- Basit yıldız popülasyonu sentezi: izokron + kütle fonksiyonu + tayf kitaplığı (ileri aşama).
+- Evolutionary tracks and isochrone grids: MIST [Choi2016] and PARSEC [Bressan2012]. The grids are downloaded, read and interpolated in age-metallicity space.
+- Cluster fitting: joint estimation of age, metallicity, distance modulus and reddening on the color-magnitude diagram; the likelihood is built from the distance to the isochrone and the weight of the initial mass function.
+- Initial mass function: Salpeter power law [Salpeter1955], piecewise power law [Kroupa2001], log-normal form [Chabrier2003]; normalization and sampling.
+- Simple stellar population synthesis: isochrone + mass function + spectral library (advanced stage).
 
-## 5. Değişen yıldızlar
+## 5. Variable stars
 
-- Zonklayan değişenler: Sefeidler, RR Lyrae, Mira; kararsızlık şeridi.
-- **Leavitt yasası** (dönem-ışınım gücü bağıntısı): `M = α log10 P + β` [LeavittPickering1912]; Wesenheit biçimi kızarmayı dışarıda bırakır [Madore1982]; metallik bağımlılığı uzaklık merdiveninin tartışmalı terimlerindendir [Riess2022].
-- Örten çiftler: ışık eğrisi geometrisi, Roche modeli (ileri aşama).
-- Dönem bulma yöntemleri [../05_veri_bilimi/04_zaman_serisi.md](../05_veri_bilimi/04_zaman_serisi.md) dosyasında.
+- Pulsating variables: Cepheids, RR Lyrae, Mira; the instability strip.
+- **Leavitt law** (period-luminosity relation): `M = α log10 P + β` [LeavittPickering1912]; the Wesenheit form removes reddening [Madore1982]; the metallicity dependence is one of the contested terms of the distance ladder [Riess2022].
+- Eclipsing binaries: light curve geometry, Roche model (advanced stage).
+- Period-finding methods are in [../05_data_science/04_time_series.md](../05_data_science/04_time_series.md).
 
-## 6. Yıldız atmosferleri ve tayf
+## 6. Stellar atmospheres and spectra
 
-- Gri atmosfer ve Eddington yaklaşımı: `T⁴(τ) = (3/4) T_eff⁴ (τ + 2/3)` [CarrollOstlie2017, Böl. 9].
-- Çizgi oluşumu, eşdeğer genişlik, büyüme eğrisi; bolluk çözümlemesinin temeli.
-- Dikine hız: çapraz ilinti [TonryDavis1979]; barisentrik düzeltme [WrightEastman2014].
-- Model atmosfer ızgaraları ve sentetik tayf kitaplıkları yeniden üretilmez; okunur ve enterpole edilir.
+- Gray atmosphere and the Eddington approximation: `T⁴(τ) = (3/4) T_eff⁴ (τ + 2/3)` [CarrollOstlie2017, Section 9].
+- Line formation, equivalent width, curve of growth; the basis of abundance analysis.
+- Radial velocity: cross-correlation [TonryDavis1979]; barycentric correction [WrightEastman2014].
+- Model atmosphere grids and synthetic spectral libraries are not reproduced; they are read and interpolated.
 
-## 7. Son evreler
+## 7. Final stages
 
-Beyaz cüce kütle-yarıçap bağıntısı, nötron yıldızı ve Tolman-Oppenheimer-Volkoff denklemi, süpernova türleri [CarrollOstlie2017, Böl. 15-16]. Tür Ia süpernovaların standartlaştırılması [05_kozmoloji.md](05_kozmoloji.md) dosyasındadır.
+White dwarf mass-radius relation, neutron stars and the Tolman-Oppenheimer-Volkoff equation, supernova types [CarrollOstlie2017, Section 15-16]. The standardization of Type Ia supernovae is in [05_cosmology.md](05_cosmology.md).
 
-## Test durumları
+## Test cases
 
-- Lane-Emden: `n = 0, 1, 5` kapalı çözümleri; `n = 3` için ilk sıfırın ve merkez yoğunlaşmasının yayımlanmış tablo değerleri [Kippenhahn2012, Böl. 19].
-- Güneş için hidrostatik denge mertebe kestirimleri [CarrollOstlie2017, Böl. 10].
-- Kütle fonksiyonu: normalleştirme integrali 1; örneklenen dağılımın KS testi.
-- İzokron okuma: MIST ızgarasının bir noktasının enterpolasyonla geri kazanımı.
+- Lane-Emden: the closed-form solutions for `n = 0, 1, 5`; published table values of the first zero and of the central concentration for `n = 3` [Kippenhahn2012, Section 19].
+- Order-of-magnitude estimates of hydrostatic equilibrium for the Sun [CarrollOstlie2017, Section 10].
+- Mass function: the normalization integral is 1; KS test of the sampled distribution.
+- Isochrone reading: recovery of one point of the MIST grid by interpolation.

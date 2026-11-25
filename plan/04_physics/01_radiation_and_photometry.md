@@ -1,71 +1,71 @@
-# Işınım ve fotometri fiziği
+# Radiation and photometry physics
 
-Hedef modüller: `isinim/`, `fotometri/kalibrasyon.py`.
+Target modules: `radiation/`, `photometry/calibration.py`.
 
-Denklemler planlama düzeyindedir; kodlanmadan önce anılan kaynaktan okunur.
+The equations are at planning level; they are read from the cited source before they are coded.
 
-## 1. Işınım nicelikleri
+## 1. Radiometric quantities
 
-- Özgül yeğinlik `I_ν` [W m⁻² Hz⁻¹ sr⁻¹], akı yoğunluğu `F_ν`, toplam akı `F`, ışınım gücü `L` [RybickiLightman1979, Böl. 1].
-- `F_ν` ile `F_λ` dönüşümü: `F_ν = (λ²/c) F_λ`.
-- Ters kare yasası: `F = L / (4π d²)`.
+- Specific intensity `I_ν` [W m⁻² Hz⁻¹ sr⁻¹], flux density `F_ν`, total flux `F`, luminosity `L` [RybickiLightman1979, Section 1].
+- Conversion between `F_ν` and `F_λ`: `F_ν = (λ²/c) F_λ`.
+- Inverse square law: `F = L / (4π d²)`.
 - Jansky: `1 Jy = 1e-26 W m⁻² Hz⁻¹`.
-- Yüzey parlaklığı: yakın evrende uzaklıktan bağımsızdır; kozmolojik uzaklıkta `(1+z)⁻⁴` ile söner.
+- Surface brightness: independent of distance in the nearby universe; at cosmological distances it dims as `(1+z)⁻⁴`.
 
-## 2. Kara cisim
+## 2. Blackbody
 
-- Planck fonksiyonu: `B_ν(T) = (2hν³/c²) / (exp(hν/kT) − 1)` ve `B_λ` biçimi [RybickiLightman1979, Böl. 1].
-- Wien kayma yasası, Stefan-Boltzmann yasası `F = σT⁴`, Rayleigh-Jeans ve Wien limitleri.
-- Sayısal kararlılık: küçük `x = hν/kT` için `expm1`, büyük `x` için taşma denetimi.
-- Etkin sıcaklık, renk sıcaklığı ve parlaklık sıcaklığı tanımları [CarrollOstlie2017, Böl. 3].
-- Sabitler: `h, c, k, σ` CODATA önerilen değerlerinden [CODATA2022].
+- Planck function: `B_ν(T) = (2hν³/c²) / (exp(hν/kT) − 1)` and its `B_λ` form [RybickiLightman1979, Section 1].
+- Wien displacement law, Stefan-Boltzmann law `F = σT⁴`, Rayleigh-Jeans and Wien limits.
+- Numerical stability: `expm1` for small `x = hν/kT`, an overflow check for large `x`.
+- Definitions of effective temperature, color temperature and brightness temperature [CarrollOstlie2017, Section 3].
+- Constants: `h, c, k, σ` from the CODATA recommended values [CODATA2022].
 
-## 3. Kadir sistemleri
+## 3. Magnitude systems
 
-- Pogson tanımı: `m1 − m2 = −2,5 log10(F1/F2)`.
-- **AB sistemi:** `m_AB = −2,5 log10(F_ν / 3631 Jy)`; düz `F_ν` tayfı her bantta aynı kadiri verir [OkeGunn1983].
-- **Vega sistemi:** sıfır noktası Vega'nın (ya da modelinin) tayfıdır; bant başına AB-Vega farkı tablolanır [BessellMurphy2012].
-- **ST sistemi:** düz `F_λ` referansı.
-- Mutlak kadir ve uzaklık modülü: `m − M = 5 log10(d / 10 pc) + A + K`.
-- Bolometrik kadir: sıfır noktası IAU 2015 B2 kararıyla sabitlenmiştir; `M_bol = 0` değeri `L = 3,0128e28 W` ışınım gücüne karşılık gelir [Mamajek2015]. Güneş'in nominal değerleri IAU 2015 B3'ten [Prsa2016].
-- Kadir belirsizliği: `σ_m ≈ 1,0857 · σ_F / F`; düşük S/N'de asimetri ve asinh kadir.
+- Pogson definition: `m1 − m2 = −2.5 log10(F1/F2)`.
+- **AB system:** `m_AB = −2.5 log10(F_ν / 3631 Jy)`; a flat `F_ν` spectrum gives the same magnitude in every band [OkeGunn1983].
+- **Vega system:** the zero point is the spectrum of Vega (or of its model); the AB-Vega offset is tabulated per band [BessellMurphy2012].
+- **ST system:** a flat `F_λ` reference.
+- Absolute magnitude and distance modulus: `m − M = 5 log10(d / 10 pc) + A + K`.
+- Bolometric magnitude: the zero point is fixed by IAU 2015 Resolution B2; the value `M_bol = 0` corresponds to a luminosity of `L = 3.0128e28 W` [Mamajek2015]. The nominal solar values are from IAU 2015 B3 [Prsa2016].
+- Magnitude uncertainty: `σ_m ≈ 1.0857 · σ_F / F`; at low S/N the asymmetry and the asinh magnitude apply.
 
-## 4. Filtreler ve sentetik fotometri
+## 4. Filters and synthetic photometry
 
-- Bant geçiren eğrisi `S(λ)`: dedektör foton sayar, dolayısıyla integral foton ağırlıklıdır:
-  `⟨F_λ⟩ = ∫ F_λ S λ dλ / ∫ S λ dλ` [BessellMurphy2012, Ek A].
-- Enerji ve foton karşılıklı filtre eğrilerinin ayrımı yaygın bir hata kaynağıdır; her filtre dosyasının türü üstveride tutulur.
-- Etkin, pivot ve ortalama dalga boyu tanımları.
-- Sistemler: Johnson-Cousins UBVRI [Bessell1990; Bessell2005], SDSS ugriz [Fukugita1996], Gaia G/BP/RP, 2MASS JHK [Skrutskie2006].
-- Renk dönüşümleri: sistemler arası deneysel bağıntılar; geçerlilik renk aralığı kaydedilir.
-- Standart yıldızlar: Landolt alanları [Landolt1992].
+- Bandpass curve `S(λ)`: the detector counts photons, so the integral is photon weighted:
+  `⟨F_λ⟩ = ∫ F_λ S λ dλ / ∫ S λ dλ` [BessellMurphy2012, Appendix A].
+- Confusing energy-response and photon-response filter curves is a common source of error; the type of each filter file is kept in its metadata.
+- Definitions of effective, pivot and mean wavelength.
+- Systems: Johnson-Cousins UBVRI [Bessell1990; Bessell2005], SDSS ugriz [Fukugita1996], Gaia G/BP/RP, 2MASS JHK [Skrutskie2006].
+- Color transformations: empirical relations between systems; the color range over which they are valid is recorded.
+- Standard stars: Landolt fields [Landolt1992].
 
-## 5. Yıldızlararası sönümleme ve kızarma
+## 5. Interstellar extinction and reddening
 
-- `A_λ` sönümleme, `E(B−V) = A_B − A_V` renk artığı, `R_V = A_V / E(B−V)`; Samanyolu ortalaması yaklaşık 3,1.
-- Sönümleme yasaları: `A_λ/A_V` eğrisinin `R_V` ile parametrelenmesi [CCM1989; Fitzpatrick1999].
-- Toz haritaları: tüm gökyüzü `E(B−V)` haritası [SFD1998] ve yeniden kalibrasyonu [SchlaflyFinkbeiner2011]. Haritanın çözünürlüğü ve düşük galaktik enlemdeki güvenilmezliği belgelenir.
-- Wesenheit kadiri: kızarmadan bağımsız birleşim `W = m − R (renk)` [Madore1982]; Sefe uzaklık merdiveninde kullanılır.
+- `A_λ` extinction, `E(B−V) = A_B − A_V` color excess, `R_V = A_V / E(B−V)`; the Milky Way average is about 3.1.
+- Extinction laws: the `A_λ/A_V` curve parametrized by `R_V` [CCM1989; Fitzpatrick1999].
+- Dust maps: the all-sky `E(B−V)` map [SFD1998] and its recalibration [SchlaflyFinkbeiner2011]. The resolution of the map and its unreliability at low galactic latitude are documented.
+- Wesenheit magnitude: a reddening-free combination `W = m − R (color)` [Madore1982]; used in the Cepheid distance ladder.
 
-## 6. K düzeltmesi
+## 6. K correction
 
-Kırmızıya kaymış kaynağın gözlenen banttaki akısı, durgun çerçevedeki başka bir dalga boyu aralığından gelir. Düzeltme tayfın biçimine ve bant çiftine bağlıdır; tanım ve türetim [Hogg2002; OkeSandage1968]. Uzaklık modülündeki `K` terimi budur.
+The flux of a redshifted source in the observed band comes from a different rest-frame wavelength range. The correction depends on the shape of the spectrum and on the band pair; definition and derivation in [Hogg2002; OkeSandage1968]. The `K` term in the distance modulus is this correction.
 
-## 7. Işınım aktarımı
+## 7. Radiative transfer
 
-- Aktarım denklemi: `dI_ν/dτ_ν = −I_ν + S_ν`; optik derinlik, kaynak fonksiyonu [RybickiLightman1979, Böl. 1].
-- Optik olarak ince ve kalın limitler; düzlem-paralel atmosferde biçimsel çözüm.
-- Kenar kararması: doğrusal, karesel ve doğrusal olmayan yasalar; geçiş ışık eğrisi modelinin girdisidir [MandelAgol2002].
-- Çizgi profilleri: Doppler (Gauss), doğal ve basınç genişlemesi (Lorentz), Voigt profili; eşdeğer genişlik ve büyüme eğrisi.
-- Saha ve Boltzmann denklemleri: iyonlaşma ve uyarılma dengesi [CarrollOstlie2017, Böl. 8].
+- Transfer equation: `dI_ν/dτ_ν = −I_ν + S_ν`; optical depth, source function [RybickiLightman1979, Section 1].
+- Optically thin and thick limits; formal solution in a plane-parallel atmosphere.
+- Limb darkening: linear, quadratic and nonlinear laws; it is an input of the transit light curve model [MandelAgol2002].
+- Line profiles: Doppler (Gaussian), natural and pressure broadening (Lorentzian), Voigt profile; equivalent width and curve of growth.
+- Saha and Boltzmann equations: ionization and excitation equilibrium [CarrollOstlie2017, Section 8].
 
-## 8. Işınım süreçleri (ileri aşama)
+## 8. Radiation processes (advanced stage)
 
-Serbest-serbest ışınım, sinkrotron, Compton saçılması, toz ışınımı (değiştirilmiş kara cisim) [RybickiLightman1979, Böl. 5-7; Draine2011]. Tayfsal enerji dağılımı uydurma projesinin bileşenleridir.
+Free-free emission, synchrotron, Compton scattering, dust emission (modified blackbody) [RybickiLightman1979, Section 5-7; Draine2011]. They are components of the spectral energy distribution fitting project.
 
-## Test durumları
+## Test cases
 
-- Planck fonksiyonunun integrali `σT⁴/π` vermelidir; tepe dalga boyu Wien sabitiyle uyuşmalıdır.
-- Vega ve Güneş tayfının sentetik fotometrisi yayımlanmış kadirlerle karşılaştırılır [BessellMurphy2012].
-- `synphot` ve `speclite` ile aynı tayf ve filtrede kadir farkı `1e-4` mag altında.
-- Sönümleme yasaları `dust_extinction` ve `extinction` paketleriyle karşılaştırılır.
+- The integral of the Planck function must give `σT⁴/π`; the peak wavelength must agree with the Wien constant.
+- The synthetic photometry of the Vega and solar spectra is compared with published magnitudes [BessellMurphy2012].
+- Magnitude difference against `synphot` and `speclite` for the same spectrum and filter is below `1e-4` mag.
+- The extinction laws are compared with the `dust_extinction` and `extinction` packages.

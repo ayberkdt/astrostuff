@@ -1,10 +1,11 @@
-"""Astronomik görüntülerin ekrana germe (stretch) fonksiyonları ve renkli bileşim.
+"""Display stretch functions for astronomical images and color composites.
 
-Astronomik görüntünün dinamik aralığı ekranınkinden çok geniştir: doğrusal
-ölçekte ya soluk yapı ya parlak çekirdek görünür. asinh germesi soluk uçta
-doğrusal, parlak uçta logaritmik davranır. Tanımlar ve renk koruyan bileşim
-Lupton ve arkadaşlarının makalesinin arXiv TeX kaynağından
-(astro-ph/0312483) okunmuştur [Lupton2004].
+The dynamic range of an astronomical image is much wider than that of a
+screen: on a linear scale either the faint structure or the bright core is
+visible. The asinh stretch is linear at the faint end and logarithmic at the
+bright end. The definitions and the color-preserving composite were read from
+the arXiv TeX source (astro-ph/0312483) of the paper by Lupton and
+collaborators [Lupton2004].
 """
 
 from __future__ import annotations
@@ -19,39 +20,39 @@ Array = NDArray[np.float64]
 
 @source(
     "Lupton2004",
-    where="Bölüm 2, dipnot: f(x) = asinh(α Q (x − m)) / Q",
+    where="Section 2, footnote: f(x) = asinh(α Q (x − m)) / Q",
     status="read",
-    note="Q → 0 limitinde doğrusal germe α(x − m); m en küçük değer (siyah nokta)",
+    note="in the limit Q → 0 the stretch is linear, α(x − m); m is the smallest value (black point)",
 )
 def asinh_stretch(image: ArrayLike, *, black: float, alpha: float, q: float = 8.0) -> Array:
-    """asinh germesi uygular: f(x) = asinh(α Q (x − m)) / Q.
+    """Apply the asinh stretch: f(x) = asinh(α Q (x − m)) / Q.
 
     Parameters
     ----------
-    goruntu : ndarray
-    siyah : float
-        Siyaha karşılık gelen değer ``m`` (genellikle gökyüzü düzeyi).
-    alfa : float
-        Doğrusal bölgenin eğimi α; ``1/alfa`` soluk yapının ölçeğidir.
+    image : ndarray
+    black : float
+        Value ``m`` that corresponds to black (usually the sky level).
+    alpha : float
+        Slope α of the linear region; ``1/alpha`` is the scale of the faint structure.
     q : float
-        Doğrusaldan logaritmiğe geçişin sertliği; ``q → 0`` doğrusal germedir.
+        Sharpness of the transition from linear to logarithmic; ``q → 0`` is a linear stretch.
 
     Returns
     -------
     ndarray
-        Gerilmiş değerler; alt sınır 0, üst sınır uygulanmaz.
+        Stretched values; the lower limit is 0, no upper limit is applied.
 
     References
     ----------
-    [Lupton2004] Bölüm 2, dipnot.
+    [Lupton2004] Section 2, footnote.
 
     Validity
     --------
-    ``siyah`` altındaki değerler 0'a kırpılır.
+    Values below ``black`` are clipped to 0.
 
     Verification
     ------------
-    tests/unit/test_visualization.py: küçük sinyalde doğrusal limit, tekdüzelik.
+    tests/unit/test_visualization.py: linear limit for a small signal, monotonicity.
     """
     x = np.asarray(image, dtype=float) - black
     if q <= 0:
@@ -61,69 +62,70 @@ def asinh_stretch(image: ArrayLike, *, black: float, alpha: float, q: float = 8.
 
 @source(
     "Lupton2004",
-    where="Bölüm 2, TeX etiketi EqIntensityStretch",
+    where="Section 2, TeX label EqIntensityStretch",
     status="read",
-    note="I = (r+g+b)/3; R = r f(I)/I, G = g f(I)/I, B = b f(I)/I; en büyük bileşen 1'i aşarsa üçü de ona bölünür",
+    note="I = (r+g+b)/3; R = r f(I)/I, G = g f(I)/I, B = b f(I)/I; if the largest component exceeds 1, all three are divided by it",
 )
 def lupton_rgb(
     red: ArrayLike, green: ArrayLike, blue: ArrayLike, *, black: float = 0.0, alpha: float, q: float = 8.0
 ) -> Array:
-    """Üç banttan renk koruyan RGB bileşimi üretir.
+    """Build a color-preserving RGB composite from three bands.
 
-    Germe toplam yeğinliğe I = (r + g + b)/3 uygulanır ve üç bant aynı
-    çarpanla f(I)/I ölçeklenir; böylece bir cismin rengi parlaklığına bağlı
-    olarak değişmez. Bileşenlerden biri 1'i aşarsa üçü birden en büyüğe
-    bölünür: yeğinlik kırpılır, renk korunur.
+    The stretch is applied to the total intensity I = (r + g + b)/3 and the
+    three bands are scaled by the same factor f(I)/I; so the color of an
+    object does not change with its brightness. If one of the components
+    exceeds 1, all three are divided by the largest: the intensity is
+    clipped, the color is preserved.
 
     Parameters
     ----------
-    kirmizi, yesil, mavi : ndarray (Y, X)
-        Uzun, orta ve kısa dalga boyu görüntüleri; aynı ızgarada, gökyüzü çıkarılmış.
-    siyah, alfa, q : float
-        ``asinh_ger`` ile aynı anlamda.
+    red, green, blue : ndarray (Y, X)
+        Long, middle and short wavelength images; on the same grid, sky subtracted.
+    black, alpha, q : float
+        Same meaning as in ``asinh_stretch``.
 
     Returns
     -------
     ndarray (Y, X, 3)
-        [0, 1] aralığında RGB.
+        RGB in the range [0, 1].
 
     References
     ----------
-    [Lupton2004] Bölüm 2, EqIntensityStretch.
+    [Lupton2004] Section 2, EqIntensityStretch.
 
     Validity
     --------
-    Bantların göreli ölçeği çağıran tarafından ayarlanır; ölçekleme renk dengesini belirler.
+    The relative scale of the bands is set by the caller; the scaling determines the color balance.
 
     Verification
     ------------
-    tests/unit/test_visualization.py: renk oranlarının korunumu, doymuş pikselde rengin korunması.
+    tests/unit/test_visualization.py: preservation of color ratios, preservation of color in a saturated pixel.
     """
     r, g, b = (np.clip(np.asarray(k, dtype=float) - black, 0.0, None) for k in (red, green, blue))
-    yeginlik = (r + g + b) / 3.0
+    intensity = (r + g + b) / 3.0
     with np.errstate(divide="ignore", invalid="ignore"):
-        carpan = np.where(yeginlik > 0, asinh_stretch(yeginlik, black=0.0, alpha=alpha, q=q) / yeginlik, 0.0)
-    rgb = np.stack([r * carpan, g * carpan, b * carpan], axis=-1)
-    en_buyuk = rgb.max(axis=-1, keepdims=True)
-    return np.where(en_buyuk > 1.0, rgb / np.maximum(en_buyuk, 1e-300), rgb)
+        factor = np.where(intensity > 0, asinh_stretch(intensity, black=0.0, alpha=alpha, q=q) / intensity, 0.0)
+    rgb = np.stack([r * factor, g * factor, b * factor], axis=-1)
+    largest = rgb.max(axis=-1, keepdims=True)
+    return np.where(largest > 1.0, rgb / np.maximum(largest, 1e-300), rgb)
 
 
 @source(
     "Lupton2004",
-    where="Bölüm 2: doğrusal eşleme ve en büyük değer M",
+    where="Section 2: linear mapping and the maximum value M",
     status="read",
-    note="alt ve üst sınırın yüzdeliklerden seçilmesi bu projenin kuralıdır; kaynak m ve M'yi kullanıcıya bırakır",
+    note="choosing the lower and upper limits from percentiles is this project's rule; the source leaves m and M to the user",
 )
 def percentile_scale(image: ArrayLike, low_percent: float = 1.0, high_percent: float = 99.5) -> Array:
-    """Görüntüyü iki yüzdelik arasında [0, 1] aralığına doğrusal eşler.
+    """Map the image linearly to the range [0, 1] between two percentiles.
 
     References
     ----------
-    [Lupton2004] Bölüm 2.
+    [Lupton2004] Section 2.
 
     Validity
     --------
-    Sonlu olmayan pikseller yüzdelik hesabına girmez ve çıktıda 0 olur.
+    Non-finite pixels do not enter the percentile computation and are 0 in the output.
 
     Verification
     ------------

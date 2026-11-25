@@ -1,17 +1,17 @@
-"""Moleküler bulutların kararlılığı, zaman ölçekleri ve yıldız oluşum hızı.
+"""Stability, timescales, and star formation rate of molecular clouds.
 
-Denklemler üç açık kaynaktan arXiv TeX dosyaları okunarak alınmıştır
-(25 Kasım 2026): McKee ve Ostriker'in ARA&A derlemesi (arXiv:0707.3514,
-[McKee2007]) ve Krumholz'un açık ders notları (arXiv:1511.03457,
-[Krumholz2015]). Derlemenin TeX kaynağında denklem numarası yoktur; ``yer``
-alanında TeX etiketi (``\\label``) verilmiştir.
+The equations were taken from the arXiv TeX files of two open sources
+(25 November 2026): the ARA&A review by McKee and Ostriker (arXiv:0707.3514,
+[McKee2007]) and the open lecture notes by Krumholz (arXiv:1511.03457,
+[Krumholz2015]). The TeX source of the review has no equation numbers; the
+``where`` field gives the TeX label (``\\label``) instead.
 
-Yazarlar Jeans niceliklerinde farklı sayısal çarpanlar kullanır; bu modülde
-iki tanım da ``tanim`` bağımsız değişkeniyle seçilebilir ve ayrım ilgili
-fonksiyonun belge dizgisinde açıkça belirtilmiştir.
+The authors use different numerical factors for the Jeans quantities. In this
+module both definitions can be selected with the ``definition`` argument, and
+the difference is stated explicitly in the docstring of the relevant function.
 
-Birimler SI'dır (kg, m, s, K, Pa); manyetik niceliklerde Gauss birimlerinden
-SI'ya dönüşüm kesin çarpanlarla (1 T = 10⁴ G, 1 Wb = 10⁸ Mx) yapılır.
+Units are SI (kg, m, s, K, Pa). For magnetic quantities the conversion from
+Gaussian units to SI uses exact factors (1 T = 10⁴ G, 1 Wb = 10⁸ Mx).
 """
 
 from __future__ import annotations
@@ -28,64 +28,65 @@ from kozmos.core.constants import BOLTZMANN, GRAVITATIONAL_CONSTANT, PROTON_MASS
 
 Array = NDArray[np.float64]
 
-# Hidrojen atomunun kütlesi m_H yerine proton kütlesi kullanılır; fark yaklaşık
-# %0,15'tir (elektron kütlesi eksi bağlanma enerjisi), kaynakların belirttiği
-# μ değerlerinin belirsizliğinin çok altındadır.
+# The proton mass is used in place of the hydrogen atom mass m_H. The difference
+# is about 0.15 % (electron mass minus binding energy), far below the uncertainty
+# of the μ values quoted by the sources.
 _M_H = PROTON_MASS.value
 
-# Ortalama molekül ağırlığı: H2 ve He (10 H başına 1 He) karışımı, PARÇACIK başına [Krumholz2015].
-# Yoğunluk fonksiyonlarının varsayılanı budur: n, bütün parçacıkların (H2 + He) sayı yoğunluğudur.
+# Mean molecular weight: mixture of H2 and He (1 He per 10 H), per PARTICLE [Krumholz2015].
+# This is the default of the density functions: n is the number density of all particles (H2 + He).
 MEAN_MOLECULAR_WEIGHT = 2.33
-# n yalnızca H2 moleküllerinin sayı yoğunluğuysa (gözlemlerde yaygın olan n_H2) molekül başına kütle 2,8 m_H,
-# n hidrojen çekirdeklerinin yoğunluğuysa (n_H) çekirdek başına kütle 1,4 m_H olur. Aynı helyum bolluğundan
-# türetilir (2,33 · 1,2 = 2,8; 2,8 / 2 = 1,4); n_H için 1,4 değeri [McKee2007] eq:tff sayısal örneğinde geçer.
+# If n is only the number density of H2 molecules (n_H2, common in observations), the mass per molecule is 2.8 m_H;
+# if n is the density of hydrogen nuclei (n_H), the mass per nucleus is 1.4 m_H. Both follow from the same helium
+# abundance (2.33 · 1.2 = 2.8; 2.8 / 2 = 1.4); the value 1.4 for n_H appears in the numerical example of
+# [McKee2007] eq:tff.
 MOLECULAR_WEIGHT_PER_H2 = 2.8
 MOLECULAR_WEIGHT_PER_H = 1.4
 
 
-def _positive(**degerler: ArrayLike) -> list[Array]:
-    """Bağımsız değişkenlerin kesin pozitif olduğunu sınar; dizilere çevirip döndürür."""
-    cikti = []
-    for name, d in degerler.items():
+def _positive(**values: ArrayLike) -> list[Array]:
+    """Check that the arguments are strictly positive; convert them to arrays and return them."""
+    out = []
+    for name, d in values.items():
         a = np.asarray(d, dtype=float)
         if np.any(~(a > 0.0)):
-            raise ValueError(f"{name} kesin pozitif olmalı")
-        cikti.append(a)
-    return cikti
+            raise ValueError(f"{name} must be strictly positive")
+        out.append(a)
+    return out
 
 
 @source(
     "Krumholz2015",
-    where="Bölüm 4 (Gas Flows and Turbulence), Reynolds ve Mach sayıları alt bölümündeki c_s ifadesi",
+    where="Section 4 (Gas Flows and Turbulence), the c_s expression in the Reynolds and Mach numbers subsection",
     status="read",
-    note="Kaynak μ = 2,33 alır ve 10 K için 0,18 km/s verir; μ bağımsız değişkendir",
+    note="The source takes μ = 2.33 and gives 0.18 km/s for 10 K; μ is an independent variable here",
 )
 def sound_speed_m_s(temperature_k: ArrayLike, mean_molecular_weight: float = MEAN_MOLECULAR_WEIGHT) -> Array:
-    """Eşısıl ses hızını hesaplar: c_s = sqrt(k_B T / (μ m_H)).
+    """Compute the isothermal sound speed: c_s = sqrt(k_B T / (μ m_H)).
 
     Parameters
     ----------
-    sicaklik_k : float ya da ndarray
-        Gaz sıcaklığı [K], pozitif.
-    ortalama_molekul_agirligi : float
-        Parçacık başına ortalama kütle, m_H biriminde; H2 ve He için 2,33.
+    temperature_k : float or ndarray
+        Gas temperature [K], positive.
+    mean_molecular_weight : float
+        Mean mass per particle in units of m_H; 2.33 for H2 and He.
 
     Returns
     -------
-    float ya da ndarray
-        Ses hızı [m/s].
+    float or ndarray
+        Sound speed [m/s].
 
     References
     ----------
-    [Krumholz2015] Bölüm 4.
+    [Krumholz2015] Section 4.
 
     Validity
     --------
-    Eşısıl (γ = 1) gaz; yoğunluk arttıkça gaz adyabatik olur ve geçersizleşir.
+    Isothermal (γ = 1) gas; as the density rises the gas becomes adiabatic and the result no longer applies.
 
     Verification
     ------------
-    tests/unit/test_star_formation.py: 10 K için 0,18 km/s (kaynaktaki değer).
+    tests/unit/test_star_formation.py: 0.18 km/s for 10 K (the value in the source).
     """
     (t,) = _positive(temperature_k=temperature_k)
     (mu,) = _positive(mean_molecular_weight=mean_molecular_weight)
@@ -94,404 +95,406 @@ def sound_speed_m_s(temperature_k: ArrayLike, mean_molecular_weight: float = MEA
 
 @source(
     "Krumholz2015",
-    where="Bölüm 4 (Gas Flows and Turbulence), Reynolds ve Mach sayıları alt bölümü: M ~ V/c_s",
+    where="Section 4 (Gas Flows and Turbulence), Reynolds and Mach numbers subsection: M ~ V/c_s",
     status="read",
 )
 def mach_number(velocity_m_s: ArrayLike, sound_speed_m_s: ArrayLike) -> Array:
-    """Mach sayısını hesaplar: M = V / c_s.
+    """Compute the Mach number: M = V / c_s.
 
-    M ≫ 1 ise basınç terimi akışın davranışında önemsizdir; kaynak, moleküler
-    bulut için M ~ 20 bulur. Isıl ve türbülanslı desteğin göreli ağırlığını verir.
+    For M ≫ 1 the pressure term is unimportant in the behavior of the flow; the
+    source finds M ~ 20 for a molecular cloud. It gives the relative weight of
+    thermal and turbulent support.
 
     Parameters
     ----------
-    hiz_m_s : float ya da ndarray
-        Tipik akış hızı ya da türbülans hız dağılımı [m/s], eksi olmayan.
-    ses_hizi_m_s : float ya da ndarray
-        Ses hızı [m/s], pozitif.
+    velocity_m_s : float or ndarray
+        Typical flow speed or turbulent velocity dispersion [m/s], non-negative.
+    sound_speed_m_s : float or ndarray
+        Sound speed [m/s], positive.
 
     Returns
     -------
-    float ya da ndarray
-        Boyutsuz Mach sayısı.
+    float or ndarray
+        Dimensionless Mach number.
 
     References
     ----------
-    [Krumholz2015] Bölüm 4.
+    [Krumholz2015] Section 4.
 
     Verification
     ------------
-    tests/unit/test_star_formation.py: ses hızına eşit hız için M = 1.
+    tests/unit/test_star_formation.py: M = 1 for a speed equal to the sound speed.
     """
     v = np.asarray(velocity_m_s, dtype=float)
     if np.any(v < 0):
-        raise ValueError("hız eksi olamaz")
-    (cs,) = _positive(ses_hizi=sound_speed_m_s)
+        raise ValueError("velocity cannot be negative")
+    (cs,) = _positive(sound_speed=sound_speed_m_s)
     return v / cs
 
 
 @source(
     "Krumholz2015",
-    where="Bölüm 8 (Giant Molecular Clouds), Scaling Relations: n = 3M / (4π R³ μ m_H)",
+    where="Section 8 (Giant Molecular Clouds), Scaling Relations: n = 3M / (4π R³ μ m_H)",
     status="read",
-    note="Kaynak μ = 2,3 (H2 molekülü başına) kullanır; burada μ bağımsız değişkendir",
+    note="The source uses μ = 2.3 (per H2 molecule); here μ is an independent variable",
 )
 def mass_density_kg_m3(number_density_m3: ArrayLike, mean_molecular_weight: float = MEAN_MOLECULAR_WEIGHT) -> Array:
-    """Sayı yoğunluğundan kütle yoğunluğunu hesaplar: ρ = μ m_H n.
+    """Compute the mass density from the number density: ρ = μ m_H n.
 
     Parameters
     ----------
-    sayi_yogunlugu_m3 : float ya da ndarray
-        Parçacık sayı yoğunluğu [m⁻³], eksi olmayan.
-    ortalama_molekul_agirligi : float
-        Parçacık başına ortalama kütle, m_H biriminde.
+    number_density_m3 : float or ndarray
+        Particle number density [m⁻³], non-negative.
+    mean_molecular_weight : float
+        Mean mass per particle in units of m_H.
 
     Returns
     -------
-    float ya da ndarray
-        Kütle yoğunluğu [kg/m³].
+    float or ndarray
+        Mass density [kg/m³].
 
     References
     ----------
-    [Krumholz2015] Bölüm 8.
+    [Krumholz2015] Section 8.
 
     Verification
     ------------
-    tests/unit/test_star_formation.py: sayı yoğunluğu ile gidiş-dönüş.
+    tests/unit/test_star_formation.py: round trip with the number density.
     """
     n = np.asarray(number_density_m3, dtype=float)
     if np.any(n < 0):
-        raise ValueError("sayı yoğunluğu eksi olamaz")
+        raise ValueError("number density cannot be negative")
     (mu,) = _positive(mean_molecular_weight=mean_molecular_weight)
     return n * mu * _M_H
 
 
 @source(
     "Krumholz2015",
-    where="Bölüm 8 (Giant Molecular Clouds), Scaling Relations: n = 3M / (4π R³ μ m_H)",
+    where="Section 8 (Giant Molecular Clouds), Scaling Relations: n = 3M / (4π R³ μ m_H)",
     status="read",
 )
 def number_density_m3(mass_density_kg_m3: ArrayLike, mean_molecular_weight: float = MEAN_MOLECULAR_WEIGHT) -> Array:
-    """Kütle yoğunluğundan sayı yoğunluğunu hesaplar: n = ρ / (μ m_H).
+    """Compute the number density from the mass density: n = ρ / (μ m_H).
 
     Parameters
     ----------
-    kutle_yogunlugu_kg_m3 : float ya da ndarray
-        Kütle yoğunluğu [kg/m³], eksi olmayan.
-    ortalama_molekul_agirligi : float
-        Parçacık başına ortalama kütle, m_H biriminde.
+    mass_density_kg_m3 : float or ndarray
+        Mass density [kg/m³], non-negative.
+    mean_molecular_weight : float
+        Mean mass per particle in units of m_H.
 
     Returns
     -------
-    float ya da ndarray
-        Sayı yoğunluğu [m⁻³].
+    float or ndarray
+        Number density [m⁻³].
 
     References
     ----------
-    [Krumholz2015] Bölüm 8.
+    [Krumholz2015] Section 8.
 
     Verification
     ------------
-    tests/unit/test_star_formation.py: ``kutle_yogunlugu_kg_m3`` ile gidiş-dönüş.
+    tests/unit/test_star_formation.py: round trip with ``mass_density_kg_m3``.
     """
     rho = np.asarray(mass_density_kg_m3, dtype=float)
     if np.any(rho < 0):
-        raise ValueError("yoğunluk eksi olamaz")
+        raise ValueError("density cannot be negative")
     (mu,) = _positive(mean_molecular_weight=mean_molecular_weight)
     return rho / (mu * _M_H)
 
 
 @source(
     "Krumholz2015",
-    where="Bölüm 8 (Giant Molecular Clouds), Mass Measurement, Optically Thick Lines: N = M / (μ m_H π R²)",
+    where="Section 8 (Giant Molecular Clouds), Mass Measurement, Optically Thick Lines: N = M / (μ m_H π R²)",
     status="read",
-    note="Kaynak N ile Σ arasındaki bağıntıyı ortalama sütun yoğunluğu için yazar; Σ = μ m_H N yeniden düzenlemedir",
+    note="The source writes the relation between N and Σ for the mean column density; Σ = μ m_H N is a rearrangement",
 )
 def surface_density_kg_m2(column_density_m2: ArrayLike, mean_molecular_weight: float = MEAN_MOLECULAR_WEIGHT) -> Array:
-    """Sütun yoğunluğundan yüzey yoğunluğunu hesaplar: Σ = μ m_H N.
+    """Compute the surface density from the column density: Σ = μ m_H N.
 
     Parameters
     ----------
-    sutun_yogunlugu_m2 : float ya da ndarray
-        Parçacık sütun yoğunluğu [m⁻²], eksi olmayan.
-    ortalama_molekul_agirligi : float
-        Parçacık başına ortalama kütle, m_H biriminde.
+    column_density_m2 : float or ndarray
+        Particle column density [m⁻²], non-negative.
+    mean_molecular_weight : float
+        Mean mass per particle in units of m_H.
 
     Returns
     -------
-    float ya da ndarray
-        Yüzey yoğunluğu [kg/m²].
+    float or ndarray
+        Surface density [kg/m²].
 
     References
     ----------
-    [Krumholz2015] Bölüm 8.
+    [Krumholz2015] Section 8.
 
     Verification
     ------------
-    tests/unit/test_star_formation.py: ``sutun_yogunlugu_m2`` ile gidiş-dönüş.
+    tests/unit/test_star_formation.py: round trip with ``column_density_m2``.
     """
     n = np.asarray(column_density_m2, dtype=float)
     if np.any(n < 0):
-        raise ValueError("sütun yoğunluğu eksi olamaz")
+        raise ValueError("column density cannot be negative")
     (mu,) = _positive(mean_molecular_weight=mean_molecular_weight)
     return n * mu * _M_H
 
 
 @source(
     "Krumholz2015",
-    where="Bölüm 8 (Giant Molecular Clouds), Mass Measurement, Optically Thick Lines: N = M / (μ m_H π R²)",
+    where="Section 8 (Giant Molecular Clouds), Mass Measurement, Optically Thick Lines: N = M / (μ m_H π R²)",
     status="read",
 )
 def column_density_m2(surface_density_kg_m2: ArrayLike, mean_molecular_weight: float = MEAN_MOLECULAR_WEIGHT) -> Array:
-    """Yüzey yoğunluğundan sütun yoğunluğunu hesaplar: N = Σ / (μ m_H).
+    """Compute the column density from the surface density: N = Σ / (μ m_H).
 
     Parameters
     ----------
-    yuzey_yogunlugu_kg_m2 : float ya da ndarray
-        Yüzey yoğunluğu [kg/m²], eksi olmayan.
-    ortalama_molekul_agirligi : float
-        Parçacık başına ortalama kütle, m_H biriminde.
+    surface_density_kg_m2 : float or ndarray
+        Surface density [kg/m²], non-negative.
+    mean_molecular_weight : float
+        Mean mass per particle in units of m_H.
 
     Returns
     -------
-    float ya da ndarray
-        Parçacık sütun yoğunluğu [m⁻²].
+    float or ndarray
+        Particle column density [m⁻²].
 
     References
     ----------
-    [Krumholz2015] Bölüm 8.
+    [Krumholz2015] Section 8.
 
     Verification
     ------------
-    tests/unit/test_star_formation.py: ``yuzey_yogunlugu_kg_m2`` ile gidiş-dönüş.
+    tests/unit/test_star_formation.py: round trip with ``surface_density_kg_m2``.
     """
     s = np.asarray(surface_density_kg_m2, dtype=float)
     if np.any(s < 0):
-        raise ValueError("yüzey yoğunluğu eksi olamaz")
+        raise ValueError("surface density cannot be negative")
     (mu,) = _positive(mean_molecular_weight=mean_molecular_weight)
     return s / (mu * _M_H)
 
 
-@source("McKee2007", where="TeX etiketi LJeans", status="read")
-@source("Krumholz2015", where="Bölüm 6 (Gravitational Instability and Collapse), λ_J = 2π/k_J", status="read")
+@source("McKee2007", where="TeX label LJeans", status="read")
+@source("Krumholz2015", where="Section 6 (Gravitational Instability and Collapse), λ_J = 2π/k_J", status="read")
 def jeans_length_m(sound_speed_m_s: ArrayLike, density_kg_m3: ArrayLike) -> Array:
-    """Jeans uzunluğunu hesaplar: λ_J = sqrt(π c_s² / (G ρ)).
+    """Compute the Jeans length: λ_J = sqrt(π c_s² / (G ρ)).
 
     Parameters
     ----------
-    ses_hizi_m_s : float ya da ndarray
-        Eşısıl ses hızı [m/s], pozitif.
-    yogunluk_kg_m3 : float ya da ndarray
-        Düzgün ortamın yoğunluğu [kg/m³], pozitif.
+    sound_speed_m_s : float or ndarray
+        Isothermal sound speed [m/s], positive.
+    density_kg_m3 : float or ndarray
+        Density of the uniform medium [kg/m³], positive.
 
     Returns
     -------
-    float ya da ndarray
-        Jeans uzunluğu [m]: kütleçekimsel parçalanmanın en küçük dalga boyu.
+    float or ndarray
+        Jeans length [m]: the smallest wavelength of gravitational fragmentation.
 
     References
     ----------
-    [McKee2007] LJeans; [Krumholz2015] Bölüm 6 (doğrusal analizden türetir).
-    İki kaynak aynı ifadeyi verir.
+    [McKee2007] LJeans; [Krumholz2015] Section 6 (derived from linear analysis).
+    The two sources give the same expression.
 
     Validity
     --------
-    Varsayılan μ = 2,33 parçacık başınadır: ``sayi_yogunlugu_m3`` bütün parçacıkların (H2 + He)
-    yoğunluğu olmalıdır. Yalnızca H2 yoğunluğu (n_H2) veriliyorsa ``H2_BASINA_MOLEKUL_AGIRLIGI`` (2,8),
-    hidrojen çekirdeği yoğunluğu (n_H) veriliyorsa ``H_BASINA_MOLEKUL_AGIRLIGI`` (1,4) kullanılmalıdır;
-    n_H2 varsayılanla verilirse yoğunluk yaklaşık %17 düşük, serbest düşme süresi %9 uzun çıkar.
-    Düzgün, sonsuz, eşısıl ortam ("Jeans hilesi"); yalnızca basınç desteği.
+    The default μ = 2.33 is per particle: the number density n must be the density of all particles (H2 + He).
+    If only the H2 density (n_H2) is given, use ``MOLECULAR_WEIGHT_PER_H2`` (2.8); if the density of
+    hydrogen nuclei (n_H) is given, use ``MOLECULAR_WEIGHT_PER_H`` (1.4). If n_H2 is passed with the default,
+    the density comes out about 17 % too low and the free-fall time 9 % too long.
+    Uniform, infinite, isothermal medium (the "Jeans swindle"); pressure support only.
 
     Verification
     ------------
-    tests/unit/test_star_formation.py: c_s = 0,2 km/s, ρ = 100 m_p için 3,4 pc.
+    tests/unit/test_star_formation.py: 3.4 pc for c_s = 0.2 km/s, ρ = 100 m_p.
     """
-    cs, rho = _positive(ses_hizi=sound_speed_m_s, density=density_kg_m3)
+    cs, rho = _positive(sound_speed=sound_speed_m_s, density=density_kg_m3)
     return np.sqrt(np.pi * cs**2 / (GRAVITATIONAL_CONSTANT.value * rho))
 
 
 @source(
     "McKee2007",
-    where="TeX etiketi LJeans, ardından gelen paragraf (M_J = 2,47 M_BE)",
+    where="TeX label LJeans, the paragraph that follows (M_J = 2.47 M_BE)",
     status="read",
-    note="tanim='kure': M_J = (4π/3)(λ_J/2)³ ρ (McKee-Ostriker, Binney-Tremaine 1987 tanımı)",
+    note="definition='sphere': M_J = (4π/3)(λ_J/2)³ ρ (McKee-Ostriker, definition of Binney-Tremaine 1987)",
 )
 @source(
     "Krumholz2015",
-    where="Bölüm 6, Jeans kütlesi tanımı ve dipnotu",
+    where="Section 6, definition of the Jeans mass and its footnote",
     status="read",
-    note="tanim='kup': M_J = ρ λ_J³ / 8 (kenarı λ_J/2 olan küp); aradaki oran 4π/3'tür",
+    note="definition='cube': M_J = ρ λ_J³ / 8 (cube of side λ_J/2); the ratio between the two is 4π/3",
 )
-def jeans_mass_kg(sound_speed_m_s: ArrayLike, density_kg_m3: ArrayLike, definition: str = "kure") -> Array:
-    """Jeans kütlesini hesaplar; çarpan yazara göre değişir.
+def jeans_mass_kg(sound_speed_m_s: ArrayLike, density_kg_m3: ArrayLike, definition: str = "sphere") -> Array:
+    """Compute the Jeans mass; the numerical factor depends on the author.
 
-    ``tanim='kure'``: M_J = (4π/3)(λ_J/2)³ ρ = (π^{5/2}/6) c_s³ / sqrt(G³ ρ)
-    ([McKee2007]; Bonnor-Ebert kütlesinin 2,47 katı).
-    ``tanim='kup'``: M_J = ρ λ_J³ / 8 = (π^{3/2}/8) c_s³ / sqrt(G³ ρ) ([Krumholz2015]).
-    Kaynaklar bu çarpanın belirsiz olduğunu açıkça söyler; ölçek bağıntısı
-    c_s³ / sqrt(G³ ρ) her iki tanımda aynıdır.
+    ``definition='sphere'``: M_J = (4π/3)(λ_J/2)³ ρ = (π^{5/2}/6) c_s³ / sqrt(G³ ρ)
+    ([McKee2007]; 2.47 times the Bonnor-Ebert mass).
+    ``definition='cube'``: M_J = ρ λ_J³ / 8 = (π^{3/2}/8) c_s³ / sqrt(G³ ρ) ([Krumholz2015]).
+    The sources state explicitly that this factor is uncertain; the scaling relation
+    c_s³ / sqrt(G³ ρ) is the same in both definitions.
 
     Parameters
     ----------
-    ses_hizi_m_s : float ya da ndarray
-        Eşısıl ses hızı [m/s], pozitif.
-    yogunluk_kg_m3 : float ya da ndarray
-        Yoğunluk [kg/m³], pozitif.
-    tanim : {"kure", "kup"}
-        Çarpan tanımı.
+    sound_speed_m_s : float or ndarray
+        Isothermal sound speed [m/s], positive.
+    density_kg_m3 : float or ndarray
+        Density [kg/m³], positive.
+    definition : {"sphere", "cube"}
+        Definition of the factor.
 
     Returns
     -------
-    float ya da ndarray
-        Jeans kütlesi [kg].
+    float or ndarray
+        Jeans mass [kg].
 
     References
     ----------
-    [McKee2007] LJeans sonrası paragraf; [Krumholz2015] Bölüm 6.
+    [McKee2007] paragraph after LJeans; [Krumholz2015] Section 6.
 
     Validity
     --------
-    ``jeans_boyu_m`` ile aynı.
+    Same as ``jeans_length_m``.
 
     Verification
     ------------
-    tests/unit/test_star_formation.py: iki tanımın oranı 4π/3; M_J = 2,47 M_BE.
+    tests/unit/test_star_formation.py: ratio of the two definitions is 4π/3; M_J = 2.47 M_BE.
     """
-    cs, rho = _positive(ses_hizi=sound_speed_m_s, density=density_kg_m3)
+    cs, rho = _positive(sound_speed=sound_speed_m_s, density=density_kg_m3)
     lam = np.sqrt(np.pi * cs**2 / (GRAVITATIONAL_CONSTANT.value * rho))
-    if definition == "kure":
+    if definition == "sphere":
         return (4.0 * np.pi / 3.0) * (lam / 2.0) ** 3 * rho
-    if definition == "kup":
+    if definition == "cube":
         return rho * lam**3 / 8.0
-    raise ValueError("tanim 'kure' ya da 'kup' olmalı")
+    raise ValueError("definition must be 'sphere' or 'cube'")
 
 
 @source(
     "McKee2007",
-    where="TeX etiketi MBE_def",
+    where="TeX label MBE_def",
     status="read",
-    note="Katsayı 1,182 (Krumholz2015 alıştırma çözümü 1,18 verir)",
+    note="Coefficient 1.182 (the exercise solution in Krumholz2015 gives 1.18)",
 )
-@source("Krumholz2015", where="problems/probsol2.tex, Bonnor-Ebert küresi alıştırmasının (h) şıkkı", status="read")
+@source("Krumholz2015", where="problems/probsol2.tex, part (h) of the Bonnor-Ebert sphere exercise", status="read")
 def bonnor_ebert_critical_mass_kg(sound_speed_m_s: ArrayLike, surface_pressure_pa: ArrayLike) -> Array:
-    """Bonnor-Ebert kütlesini hesaplar: M_BE = 1,182 c_s⁴ / sqrt(G³ P_0).
+    """Compute the Bonnor-Ebert mass: M_BE = 1.182 c_s⁴ / sqrt(G³ P_0).
 
-    Verilen yüzey basıncında hidrostatik dengede olabilen eşısıl, manyetik
-    alansız kürenin en büyük kütlesidir (kararlı ya da kararsız).
+    This is the largest mass of an isothermal sphere without a magnetic field
+    that can be in hydrostatic equilibrium at the given surface pressure
+    (stable or unstable).
 
     Parameters
     ----------
-    ses_hizi_m_s : float ya da ndarray
-        Eşısıl ses hızı [m/s], pozitif.
-    yuzey_basinci_pa : float ya da ndarray
-        Yüzeydeki dış basınç P_0 = ρ_0 c_s² [Pa], pozitif.
+    sound_speed_m_s : float or ndarray
+        Isothermal sound speed [m/s], positive.
+    surface_pressure_pa : float or ndarray
+        External pressure at the surface P_0 = ρ_0 c_s² [Pa], positive.
 
     Returns
     -------
-    float ya da ndarray
-        Kritik kütle [kg].
+    float or ndarray
+        Critical mass [kg].
 
     References
     ----------
-    [McKee2007] MBE_def; [Krumholz2015] probsol2 (alan: m_max = 1,18).
+    [McKee2007] MBE_def; [Krumholz2015] probsol2 (field: m_max = 1.18).
 
     Validity
     --------
-    Eşısıl, dönmeyen, manyetik alansız, türbülanssız küre.
+    Isothermal, non-rotating sphere without a magnetic field and without turbulence.
 
     Verification
     ------------
-    tests/unit/test_star_formation.py: T = 10 K, P/k_B = 3e5 cm⁻³ K için
-    kaynaklardaki 0,66 ve 0,67 güneş kütlesi; ODE'den türetilen katsayıyla uyum.
+    tests/unit/test_star_formation.py: 0.66 and 0.67 solar masses from the sources
+    for T = 10 K, P/k_B = 3e5 cm⁻³ K; agreement with the coefficient derived from the ODE.
     """
-    cs, p = _positive(ses_hizi=sound_speed_m_s, yuzey_basinci=surface_pressure_pa)
+    cs, p = _positive(sound_speed=sound_speed_m_s, surface_pressure=surface_pressure_pa)
     return 1.182 * cs**4 / np.sqrt(GRAVITATIONAL_CONSTANT.value**3 * p)
 
 
 @source(
     "McKee2007",
-    where="TeX etiketi MBE_def, sonraki paragraf: R_BE = 0,486 c_s / sqrt(G ρ_0)",
+    where="TeX label MBE_def, the next paragraph: R_BE = 0.486 c_s / sqrt(G ρ_0)",
     status="read",
 )
 def bonnor_ebert_radius_m(sound_speed_m_s: ArrayLike, surface_value_density_kg_m3: ArrayLike) -> Array:
-    """Kritik Bonnor-Ebert küresinin yarıçapını hesaplar: R_BE = 0,486 c_s / sqrt(G ρ_0).
+    """Compute the radius of the critical Bonnor-Ebert sphere: R_BE = 0.486 c_s / sqrt(G ρ_0).
 
     Parameters
     ----------
-    ses_hizi_m_s : float ya da ndarray
-        Eşısıl ses hızı [m/s], pozitif.
-    yuzeydeki_yogunluk_kg_m3 : float ya da ndarray
-        Kürenin yüzeyindeki yoğunluk ρ_0 [kg/m³], pozitif.
+    sound_speed_m_s : float or ndarray
+        Isothermal sound speed [m/s], positive.
+    surface_value_density_kg_m3 : float or ndarray
+        Density ρ_0 at the surface of the sphere [kg/m³], positive.
 
     Returns
     -------
-    float ya da ndarray
-        Yarıçap [m].
+    float or ndarray
+        Radius [m].
 
     References
     ----------
-    [McKee2007] MBE_def sonrası paragraf.
+    [McKee2007] paragraph after MBE_def.
 
     Validity
     --------
-    ``bonnor_ebert_kritik_kutle_kg`` ile aynı.
+    Same as ``bonnor_ebert_critical_mass_kg``.
 
     Verification
     ------------
-    tests/unit/test_star_formation.py: ODE'den türetilen ξ ve yoğunluk
-    karşıtlığıyla uyum; R_BE ≈ Jeans uzunluğunun 0,486/√π katı.
+    tests/unit/test_star_formation.py: agreement with ξ and the density contrast
+    derived from the ODE; R_BE ≈ 0.486/√π times the Jeans length.
     """
-    cs, rho = _positive(ses_hizi=sound_speed_m_s, yuzeydeki_yogunluk=surface_value_density_kg_m3)
+    cs, rho = _positive(sound_speed=sound_speed_m_s, surface_density=surface_value_density_kg_m3)
     return 0.486 * cs / np.sqrt(GRAVITATIONAL_CONSTANT.value * rho)
 
 
 def _be_ode(xi: float, y: list[float]) -> list[float]:
-    """Boyutsuz eşısıl küre denklemi: ψ'' + 2ψ'/ξ = exp(−ψ)."""
+    """Dimensionless isothermal sphere equation: ψ'' + 2ψ'/ξ = exp(−ψ)."""
     psi, dpsi = y
     return [dpsi, -2.0 * dpsi / xi + np.exp(-psi)]
 
 
 @lru_cache(maxsize=1)
 def _be_coefficients() -> tuple[float, float, float]:
-    """ODE'yi çözüp (m_max, ρ_c/ρ_s, ξ_s) üçlüsünü hesaplar.
+    """Solve the ODE and compute the triple (m_max, ρ_c/ρ_s, ξ_s).
 
-    m(ξ) = (4π)^{-1/2} ξ² ψ' exp(−ψ/2); kaynaktaki kütle integrali
-    ∫ ξ² e^{−ψ} dξ = ξ² ψ' özdeşliğiyle ve P_s = ρ_s c_s² ile elde edilir.
+    m(ξ) = (4π)^{-1/2} ξ² ψ' exp(−ψ/2); the mass integral in the source
+    ∫ ξ² e^{−ψ} dξ = ξ² ψ' is obtained from the identity and P_s = ρ_s c_s².
     """
     xi0 = 1e-4
-    cozum = solve_ivp(_be_ode, (xi0, 30.0), [xi0**2 / 6.0, xi0 / 3.0], rtol=1e-11, atol=1e-13, dense_output=True)
+    solution = solve_ivp(_be_ode, (xi0, 30.0), [xi0**2 / 6.0, xi0 / 3.0], rtol=1e-11, atol=1e-13, dense_output=True)
 
-    def eksi_m(xi: float) -> float:
-        psi, dpsi = cozum.sol(xi)
+    def neg_mass(xi: float) -> float:
+        psi, dpsi = solution.sol(xi)
         return float(-(xi**2) * dpsi * np.exp(-psi / 2.0) / np.sqrt(4.0 * np.pi))
 
-    izgara = np.linspace(2.0, 15.0, 2000)
-    en_iyi = izgara[int(np.argmin([eksi_m(x) for x in izgara]))]
-    r = minimize_scalar(eksi_m, bounds=(en_iyi - 0.05, en_iyi + 0.05), method="bounded", options={"xatol": 1e-10})
+    grid = np.linspace(2.0, 15.0, 2000)
+    best = grid[int(np.argmin([neg_mass(x) for x in grid]))]
+    r = minimize_scalar(neg_mass, bounds=(best - 0.05, best + 0.05), method="bounded", options={"xatol": 1e-10})
     xi_s = float(r.x)
-    psi_s = float(cozum.sol(xi_s)[0])
+    psi_s = float(solution.sol(xi_s)[0])
     return float(-r.fun), float(np.exp(psi_s)), xi_s
 
 
 @source(
     "Krumholz2015",
-    where="problems/probset2.tex (e) şıkkı (kütle ifadesi); probsol2.tex (c)-(d) şıkları (ODE), (f) şıkkı (m_max = 1,18, ρ_c/ρ_s = 14,0)",
+    where="problems/probset2.tex part (e) (mass expression); probsol2.tex parts (c)-(d) (ODE), part (f) (m_max = 1.18, ρ_c/ρ_s = 14.0)",
     status="read",
-    note="ODE ve m(ξ) = (4π)^{-1/2} ξ² ψ' e^{-ψ/2} ifadesi kaynaktan; yalnızca ξ_s ≈ 6,45 değeri kaynakta yoktur, sayısal çözümden gelir",
+    note="The ODE and the expression m(ξ) = (4π)^{-1/2} ξ² ψ' e^{-ψ/2} are from the source; only the value ξ_s ≈ 6.45 is not in the source and comes from the numerical solution",
 )
 def bonnor_ebert_critical_coefficients() -> tuple[float, float, float]:
-    """Eşısıl küre denkleminden Bonnor-Ebert kritik katsayılarını hesaplar.
+    """Compute the critical Bonnor-Ebert coefficients from the isothermal sphere equation.
 
-    ψ'' + 2ψ'/ξ = e^{−ψ} denklemi (ψ(0) = ψ'(0) = 0) sayısal çözülür;
-    boyutsuz kütle m = M sqrt(P_s) G^{3/2} / c_s⁴ en büyük değerine ulaştığında
-    küre kritiktir.
+    The equation ψ'' + 2ψ'/ξ = e^{−ψ} (ψ(0) = ψ'(0) = 0) is solved numerically;
+    the sphere is critical when the dimensionless mass m = M sqrt(P_s) G^{3/2} / c_s⁴
+    reaches its maximum.
 
     Returns
     -------
     tuple of float
-        (m_max, ρ_c/ρ_s, ξ_s): en büyük boyutsuz kütle (≈ 1,18), kritik
-        merkez/yüzey yoğunluk karşıtlığı (≈ 14,0) ve boyutsuz yüzey yarıçapı
-        ξ_s = R/r_0 (≈ 6,45).
+        (m_max, ρ_c/ρ_s, ξ_s): the largest dimensionless mass (≈ 1.18), the critical
+        central-to-surface density contrast (≈ 14.0), and the dimensionless surface
+        radius ξ_s = R/r_0 (≈ 6.45).
 
     References
     ----------
@@ -499,82 +502,85 @@ def bonnor_ebert_critical_coefficients() -> tuple[float, float, float]:
 
     Validity
     --------
-    ξ_s > ξ_kritik olan küreler kararsızdır; ρ_c/ρ_s > 14 kararsız demektir.
+    Spheres with ξ_s > ξ_critical are unstable; ρ_c/ρ_s > 14 means unstable.
 
     Verification
     ------------
-    tests/unit/test_star_formation.py: kaynaktaki 1,18 ve 14,0 ile; McKee2007'deki
-    1,182 ve R_BE = 0,486 c_s/sqrt(G ρ_0) ile tutarlılık.
+    tests/unit/test_star_formation.py: with 1.18 and 14.0 in the source; consistency
+    with 1.182 and R_BE = 0.486 c_s/sqrt(G ρ_0) in McKee2007.
     """
     return _be_coefficients()
 
 
-@source("McKee2007", where="TeX etiketi alpha_vir_def", status="read")
+@source("McKee2007", where="TeX label alpha_vir_def", status="read")
 @source(
-    "Krumholz2015", where="Bölüm 8 (Giant Molecular Clouds), Larson'un üçüncü yasası: α_vir = 5σ²R/(GM)", status="read"
+    "Krumholz2015",
+    where="Section 8 (Giant Molecular Clouds), Larson's third law: α_vir = 5σ²R/(GM)",
+    status="read",
 )
 def virial_parameter(velocity_dispersion_m_s: ArrayLike, radius_m: ArrayLike, mass_kg: ArrayLike) -> Array:
-    """Viryal parametreyi hesaplar: α_vir = 5 σ² R / (G M).
+    """Compute the virial parameter: α_vir = 5 σ² R / (G M).
 
-    Katsayı, viryal dengedeki düzgün, manyetik alansız küre için α_vir = 1
-    olacak biçimde seçilmiştir (bu küre hidrostatik dengede değildir).
-    α_vir ≲ 1 bağlı, ≫ 1 dış basınçla tutulan bulutlara karşılık gelir.
+    The coefficient is chosen so that α_vir = 1 for a uniform sphere in virial
+    equilibrium without a magnetic field (this sphere is not in hydrostatic
+    equilibrium). α_vir ≲ 1 corresponds to bound clouds and α_vir ≫ 1 to clouds
+    held by external pressure.
 
     Parameters
     ----------
-    hiz_dagilimi_m_s : float ya da ndarray
-        Tek boyutlu toplam (ısıl + türbülanslı) hız dağılımı σ [m/s], pozitif.
-    yaricap_m : float ya da ndarray
-        Bulut yarıçapı [m], pozitif.
-    kutle_kg : float ya da ndarray
-        Bulut kütlesi [kg], pozitif.
+    velocity_dispersion_m_s : float or ndarray
+        One-dimensional total (thermal + turbulent) velocity dispersion σ [m/s], positive.
+    radius_m : float or ndarray
+        Cloud radius [m], positive.
+    mass_kg : float or ndarray
+        Cloud mass [kg], positive.
 
     Returns
     -------
-    float ya da ndarray
-        Boyutsuz viryal parametre.
+    float or ndarray
+        Dimensionless virial parameter.
 
     References
     ----------
-    [McKee2007] alpha_vir_def; [Krumholz2015] Bölüm 8.
+    [McKee2007] alpha_vir_def; [Krumholz2015] Section 8.
 
     Validity
     --------
-    Manyetik terim ve yüzey basıncı hesaba katılmaz.
+    The magnetic term and the surface pressure are not taken into account.
 
     Verification
     ------------
-    tests/unit/test_star_formation.py: σ² = GM/(5R) için α_vir = 1; yüzey
-    yoğunluğu biçimiyle tutarlılık.
+    tests/unit/test_star_formation.py: α_vir = 1 for σ² = GM/(5R); consistency
+    with the surface density form.
     """
-    sigma, r, m = _positive(hiz_dagilimi=velocity_dispersion_m_s, radius=radius_m, mass=mass_kg)
+    sigma, r, m = _positive(velocity_dispersion=velocity_dispersion_m_s, radius=radius_m, mass=mass_kg)
     return 5.0 * sigma**2 * r / (GRAVITATIONAL_CONSTANT.value * m)
 
 
 @source(
     "McKee2007",
-    where="TeX etiketi alpha_vir_def",
+    where="TeX label alpha_vir_def",
     status="read",
-    note="M = π R² Σ yerine koymasıyla yazıldı; Krumholz2015 Bölüm 8'deki (5/π pc) σ_pc²/(GΣ) biçimiyle aynıdır",
+    note="Written by substituting M = π R² Σ; identical to the (5/π pc) σ_pc²/(GΣ) form in Section 8 of Krumholz2015",
 )
 def virial_parameter_from_surface_density(
     velocity_dispersion_m_s: ArrayLike, radius_m: ArrayLike, surface_density_kg_m2: ArrayLike
 ) -> Array:
-    """Viryal parametreyi yüzey yoğunluğundan hesaplar: α_vir = 5 σ² / (π G Σ R).
+    """Compute the virial parameter from the surface density: α_vir = 5 σ² / (π G Σ R).
 
     Parameters
     ----------
-    hiz_dagilimi_m_s : float ya da ndarray
-        Tek boyutlu hız dağılımı [m/s], pozitif.
-    yaricap_m : float ya da ndarray
-        Bulut yarıçapı [m], pozitif.
-    yuzey_yogunlugu_kg_m2 : float ya da ndarray
-        Ortalama yüzey yoğunluğu Σ = M/(π R²) [kg/m²], pozitif.
+    velocity_dispersion_m_s : float or ndarray
+        One-dimensional velocity dispersion [m/s], positive.
+    radius_m : float or ndarray
+        Cloud radius [m], positive.
+    surface_density_kg_m2 : float or ndarray
+        Mean surface density Σ = M/(π R²) [kg/m²], positive.
 
     Returns
     -------
-    float ya da ndarray
-        Boyutsuz viryal parametre.
+    float or ndarray
+        Dimensionless virial parameter.
 
     References
     ----------
@@ -582,220 +588,232 @@ def virial_parameter_from_surface_density(
 
     Validity
     --------
-    ``viryal_parametresi`` ile aynı; yüzey yoğunluğu izdüşüm dairesine göre alınır.
+    Same as ``virial_parameter``; the surface density is taken over the projected disk.
 
     Verification
     ------------
-    tests/unit/test_star_formation.py: M = π R² Σ ile ``viryal_parametresi`` eşitliği.
+    tests/unit/test_star_formation.py: equality with ``virial_parameter`` for M = π R² Σ.
     """
     sigma, r, s = _positive(
-        hiz_dagilimi=velocity_dispersion_m_s, radius=radius_m, yuzey_yogunlugu=surface_density_kg_m2
+        velocity_dispersion=velocity_dispersion_m_s, radius=radius_m, surface_density=surface_density_kg_m2
     )
     return 5.0 * sigma**2 / (np.pi * GRAVITATIONAL_CONSTANT.value * s * r)
 
 
 @source(
-    "McKee2007", where="TeX etiketi eq:tff", status="read", note="Sayısal değer n_H için He oranı %10 alınarak verilir"
+    "McKee2007",
+    where="TeX label eq:tff",
+    status="read",
+    note="The numerical value is given by taking the He fraction as 10 % for n_H",
 )
-@source("Krumholz2015", where="Bölüm 6, Jeans analizinden sonra t_ff tanımı; Bölüm 8 zaman ölçekleri", status="read")
+@source(
+    "Krumholz2015",
+    where="Section 6, definition of t_ff after the Jeans analysis; Section 8 timescales",
+    status="read",
+)
 def free_fall_time_s(density_kg_m3: ArrayLike) -> Array:
-    """Serbest düşme zamanını hesaplar: t_ff = sqrt(3π / (32 G ρ)).
+    """Compute the free-fall time: t_ff = sqrt(3π / (32 G ρ)).
 
-    Basınçsız, düzgün bir kürenin kendi çekimiyle bir noktaya çökme süresidir.
+    This is the time for a pressureless, uniform sphere to collapse to a point
+    under its own gravity.
 
     Parameters
     ----------
-    yogunluk_kg_m3 : float ya da ndarray
-        Ortalama kütle yoğunluğu [kg/m³], pozitif.
+    density_kg_m3 : float or ndarray
+        Mean mass density [kg/m³], positive.
 
     Returns
     -------
-    float ya da ndarray
-        Serbest düşme zamanı [s].
+    float or ndarray
+        Free-fall time [s].
 
     References
     ----------
-    [McKee2007] eq:tff; [Krumholz2015] Bölüm 6 ve 8.
+    [McKee2007] eq:tff; [Krumholz2015] Sections 6 and 8.
 
     Validity
     --------
-    Basınç, türbülans ve manyetik destek yok sayılır; gerçek bulutlar daha yavaş çöker.
+    Pressure, turbulence, and magnetic support are ignored; real clouds collapse more slowly.
 
     Verification
     ------------
-    tests/unit/test_star_formation.py: n_H = 10³ cm⁻³ için 1,37 milyon yıl.
+    tests/unit/test_star_formation.py: 1.37 million years for n_H = 10³ cm⁻³.
     """
     (rho,) = _positive(density=density_kg_m3)
     return np.sqrt(3.0 * np.pi / (32.0 * GRAVITATIONAL_CONSTANT.value * rho))
 
 
-@source("Krumholz2015", where="Bölüm 8 (Giant Molecular Clouds), Molecular Cloud Timescales: t_cr = R/σ", status="read")
+@source(
+    "Krumholz2015",
+    where="Section 8 (Giant Molecular Clouds), Molecular Cloud Timescales: t_cr = R/σ",
+    status="read",
+)
 def crossing_time_s(radius_m: ArrayLike, velocity_dispersion_m_s: ArrayLike) -> Array:
-    """Geçiş (crossing) zamanını hesaplar: t_cr = R / σ.
+    """Compute the crossing time: t_cr = R / σ.
 
-    σ olarak ses hızı verilirse ses geçiş zamanı, türbülans hız dağılımı
-    verilirse türbülans geçiş zamanı elde edilir.
+    If the sound speed is given as σ, the result is the sound crossing time; if
+    the turbulent velocity dispersion is given, it is the turbulent crossing time.
 
     Parameters
     ----------
-    yaricap_m : float ya da ndarray
-        Bulut yarıçapı [m], pozitif.
-    hiz_dagilimi_m_s : float ya da ndarray
-        Hız dağılımı ya da ses hızı [m/s], pozitif.
+    radius_m : float or ndarray
+        Cloud radius [m], positive.
+    velocity_dispersion_m_s : float or ndarray
+        Velocity dispersion or sound speed [m/s], positive.
 
     Returns
     -------
-    float ya da ndarray
-        Geçiş zamanı [s].
+    float or ndarray
+        Crossing time [s].
 
     References
     ----------
-    [Krumholz2015] Bölüm 8.
+    [Krumholz2015] Section 8.
 
     Verification
     ------------
-    tests/unit/test_star_formation.py: viryal bulutta t_cr ≈ 2 t_ff (kaynak: α_vir = 1
-    için serbest düşme zamanı geçiş zamanının yarısıdır).
+    tests/unit/test_star_formation.py: t_cr ≈ 2 t_ff in a virial cloud (source: for α_vir = 1
+    the free-fall time is half the crossing time).
     """
-    r, sigma = _positive(radius=radius_m, hiz_dagilimi=velocity_dispersion_m_s)
+    r, sigma = _positive(radius=radius_m, velocity_dispersion=velocity_dispersion_m_s)
     return r / sigma
 
 
 @source(
     "McKee2007",
-    where="TeX etiketi eq:mphi",
+    where="TeX label eq:mphi",
     status="read",
-    note="c_Φ = 0,17 Tomisaka (1988) değeridir (kaynakta aktarılmış, orijinali okunmadı)",
+    note="c_Φ = 0.17 is the value of Tomisaka (1988) (quoted in the source; the original was not read)",
 )
 @source(
     "Krumholz2015",
-    where="Bölüm 6, Magnetic Support and the Magnetic Critical Mass",
+    where="Section 6, Magnetic Support and the Magnetic Critical Mass",
     status="read",
-    note="Kaynak düzgün küre için sqrt(5/2)/(3π) = 0,17 türetir ve Tomisaka (1998) için 0,12 verir; McKee2007 ise 0,17 için başka bir makaleyi (Tomisaka, Ikeuchi ve Nakamura 1988) anar; iki özgün makale de okunmadı",
+    note="The source derives sqrt(5/2)/(3π) = 0.17 for a uniform sphere and gives 0.12 for Tomisaka (1998); McKee2007 cites a different paper for 0.17 (Tomisaka, Ikeuchi, and Nakamura 1988); neither original paper was read",
 )
 def magnetic_critical_mass_kg(magnetic_flux_wb: ArrayLike, c_phi: float = 0.17) -> Array:
-    """Manyetik kritik kütleyi hesaplar: M_Φ = c_Φ Φ / G^{1/2} (Gauss birimlerinde).
+    """Compute the magnetic critical mass: M_Φ = c_Φ Φ / G^{1/2} (in Gaussian units).
 
-    M > M_Φ ise bulut manyetik olarak süperkritiktir ve alan çöküşü
-    durduramaz; M < M_Φ ise çökemez. Φ = π R² B düzgün alan için akıdır.
-    SI'ya dönüşüm: Φ[Mx] = 10⁸ Φ[Wb], G_cgs = 10³ G_SI, kg = 10⁻³ g.
+    If M > M_Φ the cloud is magnetically supercritical and the field cannot
+    halt the collapse; if M < M_Φ it cannot collapse. Φ = π R² B is the flux
+    for a uniform field. Conversion to SI: Φ[Mx] = 10⁸ Φ[Wb], G_cgs = 10³ G_SI, kg = 10⁻³ g.
 
     Parameters
     ----------
-    manyetik_aki_wb : float ya da ndarray
-        Buluttan geçen manyetik akı [Wb], pozitif.
+    magnetic_flux_wb : float or ndarray
+        Magnetic flux through the cloud [Wb], positive.
     c_phi : float
-        İç yoğunluk ve alan dağılımına bağlı katsayı; 0,17 (kutupsal alan,
-        sabit kütle/akı oranı), düzgün küre için sqrt(5/2)/(3π) ≈ 0,168.
+        Coefficient that depends on the internal density and field distribution; 0.17 (polar field,
+        constant mass-to-flux ratio), sqrt(5/2)/(3π) ≈ 0.168 for a uniform sphere.
 
     Returns
     -------
-    float ya da ndarray
-        Kritik kütle [kg].
+    float or ndarray
+        Critical mass [kg].
 
     References
     ----------
-    [McKee2007] eq:mphi; [Krumholz2015] Bölüm 6.
+    [McKee2007] eq:mphi; [Krumholz2015] Section 6.
 
     Validity
     --------
-    Soğuk bulut, ideal MHD (akı donmuş); çift kutuplu ya da rastgele alanda
-    toplam akı kütleyi belirlemez.
+    Cold cloud, ideal MHD (flux frozen in); for a dipole or random field the
+    total flux does not determine the mass.
 
     Verification
     ------------
-    tests/unit/test_star_formation.py: levha eşdeğeriyle (Σ/B)_kr = 1/(2π√G)
-    tutarlılık; Φ ile doğrusal ölçekleme.
+    tests/unit/test_star_formation.py: consistency with the sheet equivalent (Σ/B)_cr = 1/(2π√G);
+    linear scaling with Φ.
     """
-    (phi,) = _positive(manyetik_aki=magnetic_flux_wb)
+    (phi,) = _positive(magnetic_flux=magnetic_flux_wb)
     if not c_phi > 0:
-        raise ValueError("c_phi pozitif olmalı")
+        raise ValueError("c_phi must be positive")
     g_cgs = GRAVITATIONAL_CONSTANT.value * 1e3
     return c_phi * (phi * 1e8) / np.sqrt(g_cgs) * 1e-3
 
 
 @source(
     "McKee2007",
-    where="TeX etiketi eq:mphi sonrası: G^{1/2}(Σ/B)_cr = 1/(2π) (sonsuz soğuk levha)",
+    where="After TeX label eq:mphi: G^{1/2}(Σ/B)_cr = 1/(2π) (infinite cold sheet)",
     status="read",
-    note="Kaynak değeri Nakano-Nakamura (1978) için aktarır; orijinali okunmadı. Normlu oran 2π√G Σ/B olarak yazıldı",
+    note="The source quotes the value for Nakano-Nakamura (1978); the original was not read. The normalized ratio was written as 2π√G Σ/B",
 )
 def normalized_mass_to_flux_ratio(surface_density_kg_m2: ArrayLike, magnetic_field_t: ArrayLike) -> Array:
-    """Kütle/akı oranının kritik değere oranını hesaplar: μ/μ_kr = 2π √G Σ / B.
+    """Compute the mass-to-flux ratio relative to its critical value: μ/μ_cr = 2π √G Σ / B.
 
-    Kritik değer G^{1/2}(Σ/B)_kr = 1/(2π) (Gauss birimlerinde). Oran 1'den
-    büyükse bulut manyetik olarak süperkritiktir.
+    The critical value is G^{1/2}(Σ/B)_cr = 1/(2π) (in Gaussian units). If the
+    ratio is greater than 1, the cloud is magnetically supercritical.
 
     Parameters
     ----------
-    yuzey_yogunlugu_kg_m2 : float ya da ndarray
-        Yüzey yoğunluğu [kg/m²], pozitif.
-    manyetik_alan_t : float ya da ndarray
-        Yüzeye dik alan bileşeni [T], pozitif. (1 T = 10⁴ G; Σ[g/cm²] = 0,1 Σ[kg/m²].)
+    surface_density_kg_m2 : float or ndarray
+        Surface density [kg/m²], positive.
+    magnetic_field_t : float or ndarray
+        Field component perpendicular to the surface [T], positive. (1 T = 10⁴ G; Σ[g/cm²] = 0.1 Σ[kg/m²].)
 
     Returns
     -------
-    float ya da ndarray
-        Boyutsuz normlu kütle/akı oranı.
+    float or ndarray
+        Dimensionless normalized mass-to-flux ratio.
 
     References
     ----------
-    [McKee2007] eq:mphi sonrası paragraf.
+    [McKee2007] paragraph after eq:mphi.
 
     Validity
     --------
-    Sonsuz soğuk levha; küresel bulutlar için c_Φ ≈ 0,17 ≈ 1/(2π) ile yaklaşık eşdeğer.
+    Infinite cold sheet; for spherical clouds it is approximately equivalent, since c_Φ ≈ 0.17 ≈ 1/(2π).
 
     Verification
     ------------
-    tests/unit/test_star_formation.py: Σ = B/(2π√G) için oran 1; küre M_Φ ile tutarlılık.
+    tests/unit/test_star_formation.py: ratio 1 for Σ = B/(2π√G); consistency with the spherical M_Φ.
     """
-    s, b = _positive(yuzey_yogunlugu=surface_density_kg_m2, manyetik_alan=magnetic_field_t)
+    s, b = _positive(surface_density=surface_density_kg_m2, magnetic_field=magnetic_field_t)
     g_cgs = GRAVITATIONAL_CONSTANT.value * 1e3
     return 2.0 * np.pi * np.sqrt(g_cgs) * (s * 0.1) / (b * 1e4)
 
 
 @source(
     "McKee2007",
-    where="TeX etiketi GMC_lws (Heyer ve Brunt 2004 PCA uyumu)",
+    where="TeX label GMC_lws (PCA fit of Heyer and Brunt 2004)",
     status="read",
-    note="Varsayılan 0,9 km/s ve 0,56, McKee2007'de aktarılan PCA uyumudur; L_pca bulut çapının yaklaşık dörtte biridir",
+    note="The defaults 0.9 km/s and 0.56 are the PCA fit quoted in McKee2007; L_pca is about a quarter of the cloud diameter",
 )
 @source(
     "Krumholz2015",
-    where="Bölüm 8 (Giant Molecular Clouds), Scaling Relations: Larson'un ikinci yasası",
+    where="Section 8 (Giant Molecular Clouds), Scaling Relations: Larson's second law",
     status="read",
-    note="Kaynakta aktarılan alternatifler: 0,72 ve 0,5 (Solomon 1987, Samanyolu), 0,44 ve 0,60 (Bolatto 2008); orijinalleri okunmadı",
+    note="Alternatives quoted in the source: 0.72 and 0.5 (Solomon 1987, Milky Way), 0.44 and 0.60 (Bolatto 2008); the originals were not read",
 )
 def linewidth_size_km_s(size_pc: ArrayLike, coefficient_km_s: float = 0.9, exponent: float = 0.56) -> Array:
-    """Larson doğrusal genişlik-boyut bağıntısını hesaplar: δv = a (L / 1 pc)^q.
+    """Compute the Larson linewidth-size relation: δv = a (L / 1 pc)^q.
 
     Parameters
     ----------
-    boyut_pc : float ya da ndarray
-        Ölçek ya da bulut yarıçapı [pc], pozitif.
-    katsayi_km_s : float
-        1 pc'teki hız dağılımı a [km/s].
-    us : float
-        Güç yasası üssü q (türbülans için ≈ 0,5; Kolmogorov 1/3).
+    size_pc : float or ndarray
+        Scale or cloud radius [pc], positive.
+    coefficient_km_s : float
+        Velocity dispersion a at 1 pc [km/s].
+    exponent : float
+        Power-law exponent q (≈ 0.5 for turbulence; Kolmogorov 1/3).
 
     Returns
     -------
-    float ya da ndarray
-        Hız dağılımı [km/s].
+    float or ndarray
+        Velocity dispersion [km/s].
 
     References
     ----------
-    [McKee2007] GMC_lws; [Krumholz2015] Bölüm 8.
+    [McKee2007] GMC_lws; [Krumholz2015] Section 8.
 
     Validity
     --------
-    Samanyolu'ndaki moleküler bulutlar ve içlerindeki 0,03-30 pc ölçekleri; boyut
-    tanımı (PCA ölçeği ya da bulut yarıçapı) normalizasyonu değiştirir.
+    Molecular clouds in the Milky Way and the scales of 0.03-30 pc within them; the
+    definition of size (PCA scale or cloud radius) changes the normalization.
 
     Verification
     ------------
-    tests/unit/test_star_formation.py: 1 pc'te a; üs ölçeklemesi; kaynaktaki alternatifler.
+    tests/unit/test_star_formation.py: a at 1 pc; scaling with the exponent; the alternatives in the source.
     """
     (size,) = _positive(size=size_pc)
     return coefficient_km_s * size**exponent
@@ -803,27 +821,27 @@ def linewidth_size_km_s(size_pc: ArrayLike, coefficient_km_s: float = 0.9, expon
 
 @source(
     "McKee2007",
-    where="TeX etiketi eq:mdssis (Shu genişleme dalgası çözümü)",
+    where="TeX label eq:mdssis (Shu expansion wave solution)",
     status="read",
-    note="Kaynak genel biçimi Φ c_s³/G (TeX eq:mds) yazar; Shu çözümü için Φ = 0,975",
+    note="The source writes the general form as Φ c_s³/G (TeX eq:mds); Φ = 0.975 for the Shu solution",
 )
 def isothermal_collapse_accretion_rate_kg_s(sound_speed_m_s: ArrayLike, coefficient: float = 0.975) -> Array:
-    """Eşısıl çekirdeğin çöküşünde protoyıldıza kütle akış hızını hesaplar: Ṁ = 0,975 c_s³ / G.
+    """Compute the mass accretion rate onto the protostar in isothermal core collapse: Ṁ = 0.975 c_s³ / G.
 
-    Shu genişleme dalgası çözümünde hız zamanla sabittir; dalganın içindeki
-    kütle 2Ṁt'dir ve yaklaşık yarısı protoyıldızdadır.
+    In the Shu expansion wave solution the rate is constant in time; the mass
+    inside the wave is 2Ṁt and about half of it is in the protostar.
 
     Parameters
     ----------
-    ses_hizi_m_s : float ya da ndarray
-        Eşısıl ses hızı [m/s], pozitif.
-    katsayi : float
-        Boyutsuz çarpan Φ; Shu için 0,975, Larson-Penston-Hunter çözümü daha büyüktür.
+    sound_speed_m_s : float or ndarray
+        Isothermal sound speed [m/s], positive.
+    coefficient : float
+        Dimensionless factor Φ; 0.975 for Shu, the Larson-Penston-Hunter solution is larger.
 
     Returns
     -------
-    float ya da ndarray
-        Kütle akış hızı [kg/s].
+    float or ndarray
+        Mass accretion rate [kg/s].
 
     References
     ----------
@@ -831,76 +849,80 @@ def isothermal_collapse_accretion_rate_kg_s(sound_speed_m_s: ArrayLike, coeffici
 
     Validity
     --------
-    Dönmesiz, manyetik alansız, eşısıl çekirdek; protoyıldız çıkışları hızı bir
-    ε_core < 1 çarpanıyla azaltır.
+    Non-rotating, isothermal core without a magnetic field; protostellar outflows reduce
+    the rate by a factor ε_core < 1.
 
     Verification
     ------------
-    tests/unit/test_star_formation.py: 10 K için 1,54e-6 güneş kütlesi/yıl.
+    tests/unit/test_star_formation.py: 1.54e-6 solar masses per year for 10 K.
     """
-    (cs,) = _positive(ses_hizi=sound_speed_m_s)
+    (cs,) = _positive(sound_speed=sound_speed_m_s)
     if not coefficient > 0:
-        raise ValueError("katsayı pozitif olmalı")
+        raise ValueError("coefficient must be positive")
     return coefficient * cs**3 / GRAVITATIONAL_CONSTANT.value
 
 
-@source("McKee2007", where="TeX etiketi eq:epsff", status="read")
-@source("Krumholz2015", where="Bölüm 8 (Giant Molecular Clouds), Depletion Time: ε_ff = t_ff / t_dep", status="read")
+@source("McKee2007", where="TeX label eq:epsff", status="read")
+@source(
+    "Krumholz2015",
+    where="Section 8 (Giant Molecular Clouds), Depletion Time: ε_ff = t_ff / t_dep",
+    status="read",
+)
 def free_fall_efficiency(free_fall_time_s: ArrayLike, depletion_time_s: ArrayLike) -> Array:
-    """Serbest düşme zamanı başına yıldız oluşum verimliliğini hesaplar: ε_ff = t_ff / t_dep.
+    """Compute the star formation efficiency per free-fall time: ε_ff = t_ff / t_dep.
 
-    Bir bulutun kütlesinin bir serbest düşme zamanında yıldıza dönüşen oranıdır.
+    This is the fraction of the mass of a cloud that is converted into stars in one free-fall time.
 
     Parameters
     ----------
-    serbest_dusme_zamani_s : float ya da ndarray
-        Serbest düşme zamanı [s], pozitif.
-    tuketme_zamani_s : float ya da ndarray
-        Gaz tüketme zamanı M/Ṁ_* [s], pozitif.
+    free_fall_time_s : float or ndarray
+        Free-fall time [s], positive.
+    depletion_time_s : float or ndarray
+        Gas depletion time M/Ṁ_* [s], positive.
 
     Returns
     -------
-    float ya da ndarray
-        Boyutsuz verimlilik.
+    float or ndarray
+        Dimensionless efficiency.
 
     References
     ----------
-    [McKee2007] eq:epsff; [Krumholz2015] Bölüm 8. Kaynaklar gözlenen tipik
-    değerin ε_ff ~ 0,01 olduğunu belirtir.
+    [McKee2007] eq:epsff; [Krumholz2015] Section 8. The sources state that the
+    typical observed value is ε_ff ~ 0.01.
 
     Verification
     ------------
-    tests/unit/test_star_formation.py: ``bulut_yildiz_olusum_hizi_kg_s`` ile gidiş-dönüş.
+    tests/unit/test_star_formation.py: round trip with ``cloud_star_formation_rate_kg_s``.
     """
-    tff, tdep = _positive(serbest_dusme_zamani=free_fall_time_s, tuketme_zamani=depletion_time_s)
+    tff, tdep = _positive(free_fall_time=free_fall_time_s, depletion_time=depletion_time_s)
     return tff / tdep
 
 
 @source(
     "McKee2007",
-    where="TeX etiketi eq:epsff",
+    where="TeX label eq:epsff",
     status="read",
-    note="Ṁ_* = ε_ff M / t_ff; ε_ff için kaynakta tipik değer ~0,01 (Krumholz2015 Bölüm 8-10)",
+    note="Ṁ_* = ε_ff M / t_ff; typical value for ε_ff in the source is ~0.01 (Krumholz2015 Sections 8-10)",
 )
 def cloud_star_formation_rate_kg_s(
     cloud_mass_kg: ArrayLike, mean_density_kg_m3: ArrayLike, ff_efficiency: float = 0.01
 ) -> Array:
-    """Bulutun yıldız oluşum hızını hesaplar: Ṁ_* = ε_ff M / t_ff.
+    """Compute the star formation rate of a cloud: Ṁ_* = ε_ff M / t_ff.
 
     Parameters
     ----------
-    bulut_kutlesi_kg : float ya da ndarray
-        Gaz kütlesi [kg], pozitif.
-    ortalama_yogunluk_kg_m3 : float ya da ndarray
-        Bulutun ortalama yoğunluğu [kg/m³]; t_ff bu yoğunlukla hesaplanır.
-    ff_verimliligi : float
-        Serbest düşme zamanı başına verimlilik ε_ff, [0, 1] aralığında;
-        gözlenen tipik değer ≈ 0,01.
+    cloud_mass_kg : float or ndarray
+        Gas mass [kg], positive.
+    mean_density_kg_m3 : float or ndarray
+        Mean density of the cloud [kg/m³]; t_ff is computed with this density.
+    ff_efficiency : float
+        Efficiency per free-fall time ε_ff, in the range [0, 1];
+        typical observed value ≈ 0.01.
 
     Returns
     -------
-    float ya da ndarray
-        Yıldız oluşum hızı [kg/s].
+    float or ndarray
+        Star formation rate [kg/s].
 
     References
     ----------
@@ -908,13 +930,13 @@ def cloud_star_formation_rate_kg_s(
 
     Validity
     --------
-    ε_ff ölçülen ya da varsayılan bir sabittir; bu fonksiyon onu öngörmez.
+    ε_ff is a measured or assumed constant; this function does not predict it.
 
     Verification
     ------------
-    tests/unit/test_star_formation.py: M/Ṁ_* = t_ff/ε_ff; ε_ff ile doğrusal ölçekleme.
+    tests/unit/test_star_formation.py: M/Ṁ_* = t_ff/ε_ff; linear scaling with ε_ff.
     """
     m, rho = _positive(mass=cloud_mass_kg, density=mean_density_kg_m3)
     if not 0.0 <= ff_efficiency <= 1.0:
-        raise ValueError("ε_ff [0, 1] aralığında olmalı")
+        raise ValueError("ε_ff must be in the range [0, 1]")
     return ff_efficiency * m / free_fall_time_s(rho)

@@ -1,162 +1,166 @@
-"""Arka plan, kaynak saptama ve açıklık fotometrisinin sentetik veriyle sınanması."""
+"""Test of background, source detection and aperture photometry with synthetic data."""
 
 import numpy as np
 import pytest
 
+from kozmos import photometry
 from kozmos.observing import detector
-from kozmos.photometry import sources
 
-BICIM = (256, 256)
+SHAPE = (256, 256)
 FWHM = 3.0
 
 
-def _alan(tohum, n_yildiz=40, gokyuzu=200.0, egim=0.0, gurultu=5.0):
-    u = np.random.default_rng(tohum)
-    # Kaynaklar birbirinden en az 12 piksel uzak olsun: örtüşme bu testin konusu değil.
-    konumlar = []
-    while len(konumlar) < n_yildiz:
-        aday = u.uniform(15, BICIM[0] - 15, 2)
-        if all(np.hypot(*(aday - k)) > 12 for k in konumlar):
-            konumlar.append(aday)
-    x, y = np.array(konumlar).T
-    flux = 10 ** u.uniform(3.0, 4.5, n_yildiz)
-    yy, xx = np.mgrid[: BICIM[0], : BICIM[1]]
-    zemin = gokyuzu + egim * (xx + yy)
-    image = zemin + detector.star_field(BICIM, x, y, flux, FWHM) + u.normal(0, gurultu, BICIM)
-    return image, zemin, x, y, flux
+def _field(seed, n_stars=40, sky=200.0, slope=0.0, noise=5.0):
+    rng = np.random.default_rng(seed)
+    # Sources are at least 12 pixels apart: overlap is not the subject of this test.
+    positions = []
+    while len(positions) < n_stars:
+        candidate = rng.uniform(15, SHAPE[0] - 15, 2)
+        if all(np.hypot(*(candidate - p)) > 12 for p in positions):
+            positions.append(candidate)
+    x, y = np.array(positions).T
+    flux = 10 ** rng.uniform(3.0, 4.5, n_stars)
+    yy, xx = np.mgrid[: SHAPE[0], : SHAPE[1]]
+    ground = sky + slope * (xx + yy)
+    image = ground + detector.star_field(SHAPE, x, y, flux, FWHM) + rng.normal(0, noise, SHAPE)
+    return image, ground, x, y, flux
 
 
-def test_arka_plan_duzeyi_yansiz():
-    image, _, *_ = _alan(111)
-    duzey, rms = sources.estimate_background(image)
-    assert duzey == pytest.approx(200.0, abs=0.3)  # yıldızlara karşın; düz ortalama yanlı olurdu
+def test_background_level_unbiased():
+    image, _, *_ = _field(111)
+    level, rms = photometry.estimate_background(image)
+    assert level == pytest.approx(200.0, abs=0.3)  # despite the stars; a plain mean would be biased
     assert rms == pytest.approx(5.0, rel=0.1)
     assert image.mean() - 200.0 > 1.0
 
 
-def test_arka_plan_haritasi_egimi_izler():
-    image, zemin, *_ = _alan(112, egim=0.05)
-    harita, rms = sources.background_map(image, cell=32)
-    ic = (slice(32, -32), slice(32, -32))
-    assert np.abs(harita[ic] / zemin[ic] - 1).max() < 0.01
+def test_background_map_follows_slope():
+    image, ground, *_ = _field(112, slope=0.05)
+    bkg_map, rms = photometry.background_map(image, cell=32)
+    interior = (slice(32, -32), slice(32, -32))
+    assert np.abs(bkg_map[interior] / ground[interior] - 1).max() < 0.01
     assert np.median(rms) == pytest.approx(5.0, rel=0.15)
-    # Dik eğimde hücre içi değişim gürültüye eklenir: rms haritası gerçek gürültüden büyük çıkar.
-    _, rms_dik = sources.background_map(_alan(112, egim=0.3)[0], cell=32)
-    assert np.median(rms_dik) > 5.5
+    # On a steep slope the variation within a cell adds to the noise: the rms map comes out larger than the true noise.
+    _, rms_steep = photometry.background_map(_field(112, slope=0.3)[0], cell=32)
+    assert np.median(rms_steep) > 5.5
 
 
-def test_kaynak_saptama_tamlik_ve_konum():
-    image, _, x, y, flux = _alan(113)
-    harita, rms = sources.background_map(image, cell=64)
-    bulunan = sources.detect_sources(image, harita, rms, threshold_sigma=4.0, min_pixels=5)
-    # Her gerçek yıldızın 1 piksel içinde bir saptaması var; fazladan saptama en çok 1.
-    uzaklik = np.hypot(bulunan.x[None, :] - x[:, None], bulunan.y[None, :] - y[:, None])
-    assert np.all(uzaklik.min(axis=1) < 1.0)
-    assert len(bulunan) - len(x) <= 1
-    assert np.all(np.diff(bulunan.flux) <= 0)  # akıya göre azalan sıra
-    # Parlak yıldızlarda merkez hatası 0,1 pikselin altında.
-    parlak = flux > 1e4
-    assert np.all(uzaklik.min(axis=1)[parlak] < 0.1)
+def test_source_detection_completeness_and_position():
+    image, _, x, y, flux = _field(113)
+    bkg_map, rms = photometry.background_map(image, cell=64)
+    found = photometry.detect_sources(image, bkg_map, rms, threshold_sigma=4.0, min_pixels=5)
+    # Every true star has a detection within 1 pixel; at most 1 extra detection.
+    distance = np.hypot(found.x[None, :] - x[:, None], found.y[None, :] - y[:, None])
+    assert np.all(distance.min(axis=1) < 1.0)
+    assert len(found) - len(x) <= 1
+    assert np.all(np.diff(found.flux) <= 0)  # decreasing order of flux
+    # For bright stars the center error is below 0.1 pixel.
+    bright = flux > 1e4
+    assert np.all(distance.min(axis=1)[bright] < 0.1)
 
 
-def test_yalniz_gurultude_yanlis_saptama_az():
-    u = np.random.default_rng(114)
-    gurultu = u.normal(0, 1, (512, 512))
-    assert len(sources.detect_sources(gurultu, 0.0, 1.0, threshold_sigma=3.0, min_pixels=5)) <= 2
-    # En az piksel koşulu olmasaydı 3σ üstünde yüzlerce tek piksel çıkardı.
-    assert len(sources.detect_sources(gurultu, 0.0, 1.0, threshold_sigma=3.0, min_pixels=1)) > 200
-    assert len(sources.detect_sources(np.zeros((8, 8)), 0.0, 1.0)) == 0
+def test_few_false_detections_in_pure_noise():
+    rng = np.random.default_rng(114)
+    noise = rng.normal(0, 1, (512, 512))
+    assert len(photometry.detect_sources(noise, 0.0, 1.0, threshold_sigma=3.0, min_pixels=5)) <= 2
+    # Without the minimum-pixel condition hundreds of single pixels above 3σ would appear.
+    assert len(photometry.detect_sources(noise, 0.0, 1.0, threshold_sigma=3.0, min_pixels=1)) > 200
+    assert len(photometry.detect_sources(np.zeros((8, 8)), 0.0, 1.0)) == 0
 
 
-def test_yumusatma_soluk_kaynagi_cikarir():
-    u = np.random.default_rng(115)
-    sahne = detector.star_field((64, 64), [32.0], [32.0], [60.0], 4.0)  # tepe ≈ 3,3; gürültü 1
-    image = sahne + u.normal(0, 1, (64, 64))
-    yumusak = sources.detect_sources(image, 0.0, 1.0, threshold_sigma=5.0, min_pixels=3, smoothing_fwhm=4.0)
-    assert len(sources.detect_sources(image, 0.0, 1.0, threshold_sigma=5.0, min_pixels=3)) == 0
-    assert len(yumusak) == 1 and abs(yumusak.x[0] - 32) < 1.5 and abs(yumusak.y[0] - 32) < 1.5
+def test_smoothing_recovers_faint_source():
+    rng = np.random.default_rng(115)
+    scene = detector.star_field((64, 64), [32.0], [32.0], [60.0], 4.0)  # peak ≈ 3.3; noise 1
+    image = scene + rng.normal(0, 1, (64, 64))
+    smoothed = photometry.detect_sources(image, 0.0, 1.0, threshold_sigma=5.0, min_pixels=3, smoothing_fwhm=4.0)
+    assert len(photometry.detect_sources(image, 0.0, 1.0, threshold_sigma=5.0, min_pixels=3)) == 0
+    assert len(smoothed) == 1 and abs(smoothed.x[0] - 32) < 1.5 and abs(smoothed.y[0] - 32) < 1.5
 
 
-def test_aciklik_alani_ve_cevrelenen_aki():
-    flux, alan = sources.aperture_photometry(np.ones((60, 60)), [30.2], [29.7], 7.5, subpixels=9)
-    assert alan[0] == pytest.approx(np.pi * 7.5**2, rel=2e-3) and flux[0] == pytest.approx(alan[0])
-    # Gauss PSF'te r yarıçapı içindeki akı kesri 1 − exp(−r²/2σ²).
+def test_aperture_area_and_enclosed_flux():
+    flux, area = photometry.aperture_photometry(np.ones((60, 60)), [30.2], [29.7], 7.5, subpixels=9)
+    assert area[0] == pytest.approx(np.pi * 7.5**2, rel=2e-3) and flux[0] == pytest.approx(area[0])
+    # For a Gaussian PSF the flux fraction within radius r is 1 − exp(−r²/2σ²).
     sigma = FWHM / 2.3548200450309493
-    sahne = 50.0 + detector.star_field((81, 81), [40.3], [39.8], [1e4], FWHM)
+    scene = 50.0 + detector.star_field((81, 81), [40.3], [39.8], [1e4], FWHM)
 
-    def kesir(r):
-        return sources.aperture_photometry(sahne, [40.3], [39.8], r, annulus=(15.0, 20.0), subpixels=9)[0][0] / 1e4
+    def fraction(r):
+        return photometry.aperture_photometry(scene, [40.3], [39.8], r, annulus=(15.0, 20.0), subpixels=9)[0][0] / 1e4
 
     for r in (5.0, 7.0, 9.0):
-        assert kesir(r) == pytest.approx(1 - np.exp(-(r**2) / (2 * sigma**2)), abs=5e-3)
-    # Dar açıklıkta yöntemin sınırı: piksel içinde akı düzgün sayıldığı için PSF'in dik olduğu
-    # yarıçaplarda kesir eksik çıkar (r = 2, FWHM = 3 için yaklaşık %4).
-    assert 0.02 < (1 - np.exp(-(2.0**2) / (2 * sigma**2))) - kesir(2.0) < 0.06
+        assert fraction(r) == pytest.approx(1 - np.exp(-(r**2) / (2 * sigma**2)), abs=5e-3)
+    # Limit of the method at a narrow aperture: since the flux is taken as uniform within a pixel, at radii
+    # where the PSF is steep the fraction comes out low (about 4% for r = 2, FWHM = 3).
+    assert 0.02 < (1 - np.exp(-(2.0**2) / (2 * sigma**2))) - fraction(2.0) < 0.06
 
 
-def test_aciklik_fotometrisi_gurultulu_alanda_yansiz():
-    image, _, x, y, flux = _alan(116, n_yildiz=30)
-    olculen, _ = sources.aperture_photometry(image, x, y, 6.0, annulus=(9.0, 12.0))
+def test_aperture_photometry_unbiased_in_noisy_field():
+    image, _, x, y, flux = _field(116, n_stars=30)
+    measured, _ = photometry.aperture_photometry(image, x, y, 6.0, annulus=(9.0, 12.0))
     sigma = FWHM / 2.3548200450309493
-    beklenen = flux * (1 - np.exp(-(6.0**2) / (2 * sigma**2)))
-    # Açıklıktaki gürültü: sqrt(π r²) · 5 ≈ 53; 30 yıldızın ortalama bağıl sapması yüzde birin altında.
-    assert np.mean(olculen / beklenen - 1) == pytest.approx(0.0, abs=0.01)
-    assert np.std((olculen - beklenen) / 60.0) < 2.0
+    expected = flux * (1 - np.exp(-(6.0**2) / (2 * sigma**2)))
+    # Noise in the aperture: sqrt(π r²) · 5 ≈ 53; the mean relative deviation of 30 stars is below one percent.
+    assert np.mean(measured / expected - 1) == pytest.approx(0.0, abs=0.01)
+    assert np.std((measured - expected) / 60.0) < 2.0
 
 
-def test_yakin_ciftler_ayristirilir():
-    u = np.random.default_rng(171)
+def test_close_pairs_are_deblended():
+    rng = np.random.default_rng(171)
     shape = (200, 200)
-    # 16 çift: aralık 2 FWHM (aralarında eyer var), akı oranı 1 ile 2 arasında; çiftler birbirinden uzak.
+    # 16 pairs: separation 2 FWHM (with a saddle between them), flux ratio between 1 and 2; pairs far from each other.
     cx, cy = (a.ravel() for a in np.meshgrid(np.arange(25, 200, 50.0), np.arange(25, 200, 50.0)))
-    angle = u.uniform(0, 2 * np.pi, 16)
-    fwhm, aralik = 3.0, 6.0
-    x = np.concatenate([cx - aralik / 2 * np.cos(angle), cx + aralik / 2 * np.cos(angle)])
-    y = np.concatenate([cy - aralik / 2 * np.sin(angle), cy + aralik / 2 * np.sin(angle)])
-    flux = np.concatenate([np.full(16, 4000.0), 4000.0 / u.uniform(1, 2, 16)])
-    image = 100.0 + detector.star_field(shape, x, y, flux, fwhm) + u.normal(0, 2.0, shape)
-    tek = sources.detect_sources(image, 100.0, 2.0, threshold_sigma=4.0, smoothing_fwhm=fwhm)
-    ayri = sources.detect_sources(image, 100.0, 2.0, threshold_sigma=4.0, smoothing_fwhm=fwhm, deblend_levels=32)
-    assert len(tek) == 16  # ayrıştırma olmadan her çift tek kaynak
-    # 200 gerçeklemeli ölçümde (rastgele yön, alt piksel konum) bu ayar oran 1-2 çiftlerinin %92-98'ini ayırır.
-    assert 29 <= len(ayri) <= 32
-    uzaklik = np.hypot(ayri.x[None, :] - x[:, None], ayri.y[None, :] - y[:, None]).min(axis=1)
-    assert np.sum(uzaklik < 1.0) >= 29  # ayrışan her bileşen bir pikselin içinde bulunur
-    # Toplam akı korunur: ayrıştırma pikselleri paylaştırır, eklemez ya da silmez.
-    assert ayri.flux.sum() == pytest.approx(tek.flux.sum(), rel=1e-12)
-    assert ayri.n_pixels.sum() == tek.n_pixels.sum()
+    angle = rng.uniform(0, 2 * np.pi, 16)
+    fwhm, separation = 3.0, 6.0
+    x = np.concatenate([cx - separation / 2 * np.cos(angle), cx + separation / 2 * np.cos(angle)])
+    y = np.concatenate([cy - separation / 2 * np.sin(angle), cy + separation / 2 * np.sin(angle)])
+    flux = np.concatenate([np.full(16, 4000.0), 4000.0 / rng.uniform(1, 2, 16)])
+    image = 100.0 + detector.star_field(shape, x, y, flux, fwhm) + rng.normal(0, 2.0, shape)
+    single = photometry.detect_sources(image, 100.0, 2.0, threshold_sigma=4.0, smoothing_fwhm=fwhm)
+    deblended = photometry.detect_sources(
+        image, 100.0, 2.0, threshold_sigma=4.0, smoothing_fwhm=fwhm, deblend_levels=32
+    )
+    assert len(single) == 16  # without deblending each pair is a single source
+    # In a measurement with 200 realizations (random orientation, subpixel position) this setting separates 92-98% of the ratio 1-2 pairs.
+    assert 29 <= len(deblended) <= 32
+    distance = np.hypot(deblended.x[None, :] - x[:, None], deblended.y[None, :] - y[:, None]).min(axis=1)
+    assert np.sum(distance < 1.0) >= 29  # every separated component is found within one pixel
+    # Total flux is conserved: deblending shares pixels, it does not add or remove them.
+    assert deblended.flux.sum() == pytest.approx(single.flux.sum(), rel=1e-12)
+    assert deblended.n_pixels.sum() == single.n_pixels.sum()
 
 
-def test_ayristirma_siniri_sig_eyer():
-    # Aynı aralıkta akı oranı büyüdükçe eyer sığlaşır. 200 gerçeklemeli ölçüm (2 FWHM aralık, rastgele yön):
-    # 32 düzey ve 0,005 karşıtlık oran 3'te çiftlerin %14'ünü, oran 4'te %1'ini ayırır;
-    # 128 düzey ve 0,001 karşıtlık oran 3'te %99'unu, oran 4'te %59'unu ayırır.
-    u = np.random.default_rng(173)
-    ortak = {"threshold_sigma": 4.0, "smoothing_fwhm": 3.0}
-    kaba = ince = 0
+def test_deblending_limit_shallow_saddle():
+    # At the same separation the saddle gets shallower as the flux ratio grows. Measurement with 200 realizations
+    # (2 FWHM separation, random orientation): 32 levels and a contrast of 0.005 separate 14% of the pairs at
+    # ratio 3 and 1% at ratio 4; 128 levels and a contrast of 0.001 separate 99% at ratio 3 and 59% at ratio 4.
+    rng = np.random.default_rng(173)
+    common = {"threshold_sigma": 4.0, "smoothing_fwhm": 3.0}
+    coarse = fine = 0
     for _ in range(20):
         image = 100.0 + detector.star_field((60, 60), [27.0, 33.0], [30.0, 30.0], [4000.0, 4000.0 / 3.0], 3.0)
-        image = image + u.normal(0, 2.0, (60, 60))
-        kaba += len(sources.detect_sources(image, 100.0, 2.0, deblend_levels=32, **ortak)) == 2
-        ince += len(sources.detect_sources(image, 100.0, 2.0, deblend_levels=128, contrast=0.001, **ortak)) == 2
-    assert kaba <= 5 and ince >= 17
+        image = image + rng.normal(0, 2.0, (60, 60))
+        coarse += len(photometry.detect_sources(image, 100.0, 2.0, deblend_levels=32, **common)) == 2
+        fine += len(photometry.detect_sources(image, 100.0, 2.0, deblend_levels=128, contrast=0.001, **common)) == 2
+    assert coarse <= 5 and fine >= 17
 
 
-def test_ayristirma_yalniz_yildizi_bolmez():
-    u = np.random.default_rng(172)
+def test_deblending_does_not_split_single_stars():
+    rng = np.random.default_rng(172)
     shape = (200, 200)
     x, y = (a.ravel().astype(float) for a in np.meshgrid(np.arange(20, 200, 40), np.arange(20, 200, 40)))
-    image = 100.0 + detector.star_field(shape, x, y, 10 ** u.uniform(2.6, 4.5, x.size), 3.0) + u.normal(0, 2.0, shape)
-    tek = sources.detect_sources(image, 100.0, 2.0, threshold_sigma=4.0, smoothing_fwhm=3.0)
-    ayri = sources.detect_sources(image, 100.0, 2.0, threshold_sigma=4.0, smoothing_fwhm=3.0, deblend_levels=32)
-    assert len(tek) == x.size and len(ayri) == x.size
+    image = (
+        100.0 + detector.star_field(shape, x, y, 10 ** rng.uniform(2.6, 4.5, x.size), 3.0) + rng.normal(0, 2.0, shape)
+    )
+    single = photometry.detect_sources(image, 100.0, 2.0, threshold_sigma=4.0, smoothing_fwhm=3.0)
+    deblended = photometry.detect_sources(image, 100.0, 2.0, threshold_sigma=4.0, smoothing_fwhm=3.0, deblend_levels=32)
+    assert len(single) == x.size and len(deblended) == x.size
 
 
-def test_arti_pikseli_olmayan_bolutun_merkezi_tanimli():
-    # Saptama görüntüsü ile ölçüm görüntüsü ayrışınca (yumuşatma) bölütün artı ağırlığı sıfır olabilir.
+def test_center_of_segment_without_positive_pixels_is_defined():
+    # When the detection image and the measurement image diverge (smoothing) the positive weight of a segment can be zero.
     image = np.zeros((40, 40))
     image[18:23, 18:23] = 5.0
-    liste = sources.detect_sources(
+    result = photometry.detect_sources(
         image, 6.0, 1.0, threshold_sigma=-2.0, min_pixels=5
-    )  # arka plan 6: bütün pikseller eksi
-    assert len(liste) >= 1 and np.all(np.isfinite(liste.x)) and np.all(np.isfinite(liste.y))
+    )  # background 6: all pixels negative
+    assert len(result) >= 1 and np.all(np.isfinite(result.x)) and np.all(np.isfinite(result.y))

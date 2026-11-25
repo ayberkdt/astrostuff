@@ -1,20 +1,20 @@
-"""Politroplar: Lane-Emden denklemi ve politrop kürelerin yapı nicelikleri.
+"""Polytropes: the Lane-Emden equation and structure quantities of polytropic spheres.
 
-Politrop hâl denklemi P = K ρ^{1+1/n} ve Lane-Emden denklemi [Liu1995]
-(arXiv:astro-ph/9512061) metninden, ξ_1 ve ρ_c/ρ̄ değerleri ile n = 0, 1, 5 için
-kapalı çözümler [Bludman2010] (arXiv:1008.4281) metninden 25 Kasım 2026'da
-okunmuştur. Kaynakların numaralı denklemleri ``Denk.`` ile, numarasız olanlar
-bölüm ya da tablo adıyla anılır.
+The polytropic equation of state P = K ρ^{1+1/n} and the Lane-Emden equation were read from the
+text of [Liu1995] (arXiv:astro-ph/9512061), and the ξ_1 and ρ_c/ρ̄ values and the closed-form
+solutions for n = 0, 1, 5 from the text of [Bludman2010] (arXiv:1008.4281), on 25 November 2026.
+Numbered equations of the sources are cited with ``Eq.``; unnumbered ones are cited by
+section or table name.
 
-Boyutsuz değişkenler [Liu1995] Denk. 3 ile aynıdır: ξ = A r,
-A² = 4πG ρ_c^{(n-1)/n} / ((n+1) K) ve θ = (ρ/ρ_c)^{1/n}. Bu modüldeki
-fonksiyonlar SI birimlerindedir; n dizi değil tek sayıdır, çünkü her n için ayrı
-bir diferansiyel denklem çözülür (sonuç önbelleğe alınır).
+The dimensionless variables are the same as in [Liu1995] Eq. 3: ξ = A r,
+A² = 4πG ρ_c^{(n-1)/n} / ((n+1) K) and θ = (ρ/ρ_c)^{1/n}. The functions in this module
+use SI units; n is a single number, not an array, because a separate differential equation
+is solved for each n (the result is cached).
 
-Ortalama molekül ağırlığı μ bu dosyada proton kütlesiyle çarpılır; [Liu1995] Denk. 42 atom hidrojeninin
-kütlesini kullanır (fark %0,05). ``olcekleme`` modülündeki Eddington fonksiyonları ise kaynakları
-[Bludman2010] gibi atomik kütle birimini kullanır; proton kütlesiyle farkı %0,73'tür. Aynı μ ile iki
-modülün sonuçları bu kadar ayrışır (Güneş, n = 3, μ = 0,62: merkez sıcaklığı 1,2241e7 ve 1,2151e7 K).
+In this file the mean molecular weight μ is multiplied by the proton mass; [Liu1995] Eq. 42 uses the mass of
+atomic hydrogen (difference 0.05%). The Eddington functions in the ``scaling`` module instead use the atomic
+mass unit, like their source [Bludman2010]; it differs from the proton mass by 0.73%. With the same μ the results
+of the two modules diverge by this much (Sun, n = 3, μ = 0.62: central temperature 1.2241e7 and 1.2151e7 K).
 """
 
 from __future__ import annotations
@@ -30,7 +30,7 @@ from kozmos.core.constants import BOLTZMANN, GRAVITATIONAL_CONSTANT, PROTON_MASS
 
 Array = NDArray[np.float64]
 
-# Merkezden ilk adım: Taylor serisi [Liu1995] Denk. 5, [Bludman2010] Tablo II.
+# First step from the center: Taylor series [Liu1995] Eq. 5, [Bludman2010] Table II.
 _XI_START = 1e-5
 _XI_END = 1e5
 
@@ -38,174 +38,176 @@ _XI_END = 1e5
 def _valid_n(n: float) -> float:
     n = float(n)
     if not 0.0 <= n < 5.0:
-        raise ValueError("politrop indisi 0 <= n < 5 olmalı (n >= 5 için yarıçap sonsuzdur)")
+        raise ValueError("the polytropic index must satisfy 0 <= n < 5 (the radius is infinite for n >= 5)")
     return n
 
 
 @lru_cache(maxsize=64)
 def _solve(n: float):  # type: ignore[no-untyped-def]
-    """Lane-Emden denklemini ilk sıfıra kadar yüksek doğrulukla çözer; (çözüm, ξ_1, θ'(ξ_1))."""
+    """Solve the Lane-Emden equation to the first zero with high accuracy; (solution, ξ_1, θ'(ξ_1))."""
 
-    def sag(x, y):  # type: ignore[no-untyped-def]
+    def rhs(x, y):  # type: ignore[no-untyped-def]
         return [y[1], -(max(y[0], 0.0) ** n) - 2.0 * y[1] / x]
 
-    def sifir(x, y):  # type: ignore[no-untyped-def]
+    def zero_crossing(x, y):  # type: ignore[no-untyped-def]
         return y[0]
 
-    sifir.terminal = True  # type: ignore[attr-defined]
-    sifir.direction = -1  # type: ignore[attr-defined]
+    zero_crossing.terminal = True  # type: ignore[attr-defined]
+    zero_crossing.direction = -1  # type: ignore[attr-defined]
     x0 = _XI_START
     y0 = [1.0 - x0**2 / 6.0 + n * x0**4 / 120.0, -x0 / 3.0 + n * x0**3 / 30.0]
-    c = solve_ivp(sag, (x0, _XI_END), y0, method="DOP853", rtol=1e-12, atol=1e-14, events=sifir, dense_output=True)
+    c = solve_ivp(
+        rhs, (x0, _XI_END), y0, method="DOP853", rtol=1e-12, atol=1e-14, events=zero_crossing, dense_output=True
+    )
     if c.t_events[0].size == 0:
-        raise ValueError(f"n = {n} için θ ilk sıfırına ulaşmadı")
+        raise ValueError(f"θ did not reach its first zero for n = {n}")
     return c.sol, float(c.t_events[0][0]), float(c.y_events[0][0][1])
 
 
-@source("Liu1995", where="Denk. 2, 4, 5 (Lane-Emden denklemi, merkez koşulları, kuvvet serisi)", status="read")
-@source("Bludman2010", where="Tablo II (Taylor serisi 1 - ξ²/6 + n ξ⁴/120 ...)", status="read")
+@source("Liu1995", where="Eq. 2, 4, 5 (Lane-Emden equation, central conditions, power series)", status="read")
+@source("Bludman2010", where="Table II (Taylor series 1 - ξ²/6 + n ξ⁴/120 ...)", status="read")
 def lane_emden_solve(n: float, n_points: int = 400) -> tuple[Array, Array, Array]:
-    """Lane-Emden denklemini merkezden ilk sıfıra kadar çözer.
+    """Solve the Lane-Emden equation from the center to the first zero.
 
     θ'' + (2/ξ) θ' = -θ^n,   θ(0) = 1,  θ'(0) = 0
 
     Parameters
     ----------
     n : float
-        Politrop indisi, 0 <= n < 5.
-    nokta_sayisi : int
-        [0, ξ_1] üzerindeki eşit aralıklı çıktı noktası sayısı (en az 2).
+        Polytropic index, 0 <= n < 5.
+    n_points : int
+        Number of equally spaced output points on [0, ξ_1] (at least 2).
 
     Returns
     -------
     xi, theta, dtheta_dxi : ndarray
-        Boyutsuz yarıçap, θ ve türevi. Son nokta θ = 0 yüzeyidir.
+        Dimensionless radius, θ and its derivative. The last point is the surface, θ = 0.
 
     References
     ----------
-    [Liu1995] Denk. 2, 4, 5; [Bludman2010] Tablo II.
+    [Liu1995] Eq. 2, 4, 5; [Bludman2010] Table II.
 
     Validity
     --------
-    n >= 5 için θ sıfıra ulaşmaz (n = 5'te sonsuz yarıçap). 0 < n < 1 için θ^n türevi
-    yüzeyde sonsuzdur; ξ_1 yine de bulunur (n = 0,5 için bağımsız bir çözücünün değeriyle 1e-8 içinde uyuşur).
+    For n >= 5, θ does not reach zero (infinite radius at n = 5). For 0 < n < 1 the derivative of θ^n
+    is infinite at the surface; ξ_1 is still found (for n = 0.5 it agrees with the value of an independent solver within 1e-8).
 
     Verification
     ------------
-    tests/unit/test_stars.py: n = 0, 1, 5 kapalı çözümleri ve [Bludman2010] Tablo I ξ_1 değerleri.
+    tests/unit/test_stars.py: closed-form solutions for n = 0, 1, 5 and the ξ_1 values of [Bludman2010] Table I.
     """
     if n_points < 2:
-        raise ValueError("nokta_sayisi en az 2 olmalı")
+        raise ValueError("n_points must be at least 2")
     n = _valid_n(n)
-    cozum, xi1, _ = _solve(n)
+    solution, xi1, _ = _solve(n)
     xi = np.linspace(0.0, xi1, int(n_points))
     theta = np.ones_like(xi)
     dtheta = np.zeros_like(xi)
-    iceride = xi >= _XI_START
-    y = cozum(xi[iceride])
-    theta[iceride], dtheta[iceride] = y[0], y[1]
-    kucuk = ~iceride
-    theta[kucuk] = 1.0 - xi[kucuk] ** 2 / 6.0 + n * xi[kucuk] ** 4 / 120.0
-    dtheta[kucuk] = -xi[kucuk] / 3.0 + n * xi[kucuk] ** 3 / 30.0
+    inside = xi >= _XI_START
+    y = solution(xi[inside])
+    theta[inside], dtheta[inside] = y[0], y[1]
+    small = ~inside
+    theta[small] = 1.0 - xi[small] ** 2 / 6.0 + n * xi[small] ** 4 / 120.0
+    dtheta[small] = -xi[small] / 3.0 + n * xi[small] ** 3 / 30.0
     return xi, theta, dtheta
 
 
-@source("Bludman2010", where="Tablo I, ξ_1n sütunu", status="read")
-@source("Liu1995", where="Denk. 2 (θ'nın ilk sıfırı yıldızın yüzeyidir)", status="read")
+@source("Bludman2010", where="Table I, ξ_1n column", status="read")
+@source("Liu1995", where="Eq. 2 (the first zero of θ is the surface of the star)", status="read")
 def lane_emden_first_zero(n: float) -> float:
-    """Lane-Emden fonksiyonunun ilk sıfırını bulur: θ(ξ_1) = 0.
+    """Find the first zero of the Lane-Emden function: θ(ξ_1) = 0.
 
     Parameters
     ----------
     n : float
-        Politrop indisi, 0 <= n < 5.
+        Polytropic index, 0 <= n < 5.
 
     Returns
     -------
     float
-        ξ_1, yıldızın boyutsuz yarıçapı (R = ξ_1 / A).
+        ξ_1, the dimensionless radius of the star (R = ξ_1 / A).
 
     References
     ----------
-    [Bludman2010] Tablo I; [Liu1995] Denk. 2.
+    [Bludman2010] Table I; [Liu1995] Eq. 2.
 
     Validity
     --------
-    n >= 5 için ξ_1 sonsuzdur; ``ValueError`` verilir.
+    ξ_1 is infinite for n >= 5; ``ValueError`` is raised.
 
     Verification
     ------------
-    tests/unit/test_stars.py: n = 0, 1, 1,5, 2, 3, 4, 4,5 için Tablo I değerleri (dört anlamlı basamak).
+    tests/unit/test_stars.py: Table I values for n = 0, 1, 1.5, 2, 3, 4, 4.5 (four significant digits).
     """
     return _solve(_valid_n(n))[1]
 
 
-@source("Liu1995", where="Denk. 38 (m = 4π ρ_c r³ (-θ'/ξ))", status="read")
+@source("Liu1995", where="Eq. 38 (m = 4π ρ_c r³ (-θ'/ξ))", status="read")
 @source(
     "Bludman2010",
-    where="Tablo I (0ω_3 = 2,018) ve Sec. II, M = 4π 0ω_3 (K/πG)^{3/2}",
+    where="Table I (0ω_3 = 2.018) and Section II, M = 4π 0ω_3 (K/πG)^{3/2}",
     status="read",
-    note="Tablodaki 0ω_n sütunu yalnızca n = 3 için -ξ_1² θ'(ξ_1) ile aynıdır; diğer n için farklı normalleştirme kullanır",
+    note="the 0ω_n column in the table equals -ξ_1² θ'(ξ_1) only for n = 3; for other n it uses a different normalization",
 )
 def lane_emden_mass_coefficient(n: float) -> float:
-    """Boyutsuz toplam kütleyi hesaplar: ω_n = -ξ_1² θ'(ξ_1).
+    """Compute the dimensionless total mass: ω_n = -ξ_1² θ'(ξ_1).
 
-    M = 4π ρ_c (R/ξ_1)³ ω_n   ([Liu1995] Denk. 38, r = R'de)
+    M = 4π ρ_c (R/ξ_1)³ ω_n   ([Liu1995] Eq. 38, at r = R)
 
     Parameters
     ----------
     n : float
-        Politrop indisi, 0 <= n < 5.
+        Polytropic index, 0 <= n < 5.
 
     Returns
     -------
     float
-        ω_n; n = 3 için 2,018.
+        ω_n; 2.018 for n = 3.
 
     References
     ----------
-    [Liu1995] Denk. 38; [Bludman2010] Tablo I ve Sec. II.
+    [Liu1995] Eq. 38; [Bludman2010] Table I and Section II.
 
     Verification
     ------------
-    tests/unit/test_stars.py: n = 3 için 2,018 ve ξ_1³ / (3 ρ_c/ρ̄) özdeşliği.
+    tests/unit/test_stars.py: 2.018 for n = 3 and the identity ξ_1³ / (3 ρ_c/ρ̄).
     """
     _, xi1, dtheta1 = _solve(_valid_n(n))
     return -(xi1**2) * dtheta1
 
 
-@source("Bludman2010", where="Tablo I, ρ_cn/ρ̄_n sütunu; ρ̄_n = 3M/4πR³ tanımı", status="read")
-@source("Liu1995", where="Denk. 38 (r = R'de m = M)", status="read")
+@source("Bludman2010", where="Table I, ρ_cn/ρ̄_n column; definition ρ̄_n = 3M/4πR³", status="read")
+@source("Liu1995", where="Eq. 38 (m = M at r = R)", status="read")
 def lane_emden_central_to_mean_density(n: float) -> float:
-    """Merkez yoğunluğun ortalama yoğunluğa oranını hesaplar.
+    """Compute the ratio of central density to mean density.
 
     ρ_c / ρ̄ = ξ_1 / (-3 θ'(ξ_1))
 
     Parameters
     ----------
     n : float
-        Politrop indisi, 0 <= n < 5.
+        Polytropic index, 0 <= n < 5.
 
     Returns
     -------
     float
-        ρ_c/ρ̄ >= 1; n = 0'da 1, n = 3'te 54,18.
+        ρ_c/ρ̄ >= 1; 1 at n = 0 and 54.18 at n = 3.
 
     References
     ----------
-    [Bludman2010] Tablo I; [Liu1995] Denk. 38.
+    [Bludman2010] Table I; [Liu1995] Eq. 38.
 
     Verification
     ------------
-    tests/unit/test_stars.py: n = 0 (1), n = 1 (π²/3) ve Tablo I değerleri.
+    tests/unit/test_stars.py: n = 0 (1), n = 1 (π²/3) and the Table I values.
     """
     _, xi1, dtheta1 = _solve(_valid_n(n))
     return xi1 / (-3.0 * dtheta1)
 
 
-@source("Bludman2010", where="Tablo II (n = 0, 1, 5 satırları)", status="read")
+@source("Bludman2010", where="Table II (rows n = 0, 1, 5)", status="read")
 def lane_emden_analytic(xi: ArrayLike, n: int) -> Array:
-    """Lane-Emden denkleminin kapalı çözümlerini hesaplar: n = 0, 1, 5.
+    """Compute the closed-form solutions of the Lane-Emden equation for n = 0, 1, 5.
 
     n = 0:  θ = 1 - ξ²/6
     n = 1:  θ = sin ξ / ξ
@@ -213,103 +215,103 @@ def lane_emden_analytic(xi: ArrayLike, n: int) -> Array:
 
     Parameters
     ----------
-    xi : float ya da ndarray
-        Boyutsuz yarıçap, ξ >= 0.
+    xi : float or ndarray
+        Dimensionless radius, ξ >= 0.
     n : {0, 1, 5}
-        Politrop indisi.
+        Polytropic index.
 
     Returns
     -------
-    float ya da ndarray
-        θ(ξ). n = 0 ve 1 için ξ_1'den sonrası fiziksel değildir (θ < 0).
+    float or ndarray
+        θ(ξ). For n = 0 and 1, the region beyond ξ_1 is unphysical (θ < 0).
 
     References
     ----------
-    [Bludman2010] Tablo II.
+    [Bludman2010] Table II.
 
     Verification
     ------------
-    tests/unit/test_stars.py: n = 0 ve n = 1 için sayısal çözümle 1e-9 içinde uyum; n = 5 için denklemin kalıntısı
-    (n = 5 sayısal olarak çözülmez: yarıçap sonsuzdur).
+    tests/unit/test_stars.py: agreement with the numerical solution within 1e-9 for n = 0 and n = 1; residual of the equation for n = 5
+    (n = 5 is not solved numerically: the radius is infinite).
     """
     x = np.asarray(xi, dtype=float)
     if np.any(x < 0):
-        raise ValueError("ξ eksi olamaz")
+        raise ValueError("ξ cannot be negative")
     if n == 0:
         return 1.0 - x**2 / 6.0
     if n == 1:
         return np.sinc(x / np.pi)
     if n == 5:
         return (1.0 + x**2 / 3.0) ** -0.5
-    raise ValueError("kapalı çözüm yalnızca n = 0, 1, 5 için vardır")
+    raise ValueError("a closed-form solution exists only for n = 0, 1, 5")
 
 
-@source("Liu1995", where="Denk. 38 (r = R'de), ρ̄ tanımı için [Bludman2010] Tablo I", status="read")
+@source("Liu1995", where="Eq. 38 (at r = R), [Bludman2010] Table I for the definition of ρ̄", status="read")
 def polytrope_central_density_kg_m3(mass_kg: ArrayLike, radius_m: ArrayLike, n: float) -> Array:
-    """Verilen kütle ve yarıçapa sahip politropun merkez yoğunluğunu hesaplar.
+    """Compute the central density of a polytrope with the given mass and radius.
 
     ρ_c = (ρ_c/ρ̄) · 3M / (4π R³)
 
     Parameters
     ----------
-    kutle_kg : float ya da ndarray
-        Toplam kütle [kg].
-    yaricap_m : float ya da ndarray
-        Yarıçap [m].
+    mass_kg : float or ndarray
+        Total mass [kg].
+    radius_m : float or ndarray
+        Radius [m].
     n : float
-        Politrop indisi, 0 <= n < 5.
+        Polytropic index, 0 <= n < 5.
 
     Returns
     -------
-    float ya da ndarray
-        Merkez yoğunluk [kg m^-3].
+    float or ndarray
+        Central density [kg m^-3].
 
     References
     ----------
-    [Liu1995] Denk. 38.
+    [Liu1995] Eq. 38.
 
     Verification
     ------------
-    tests/unit/test_stars.py: n = 3 Güneş modeli için 76,39 g cm^-3 ([Liu1995] sayısal değeri).
+    tests/unit/test_stars.py: 76.39 g cm^-3 for the n = 3 solar model (numerical value of [Liu1995]).
     """
     m = np.asarray(mass_kg, dtype=float)
     r = np.asarray(radius_m, dtype=float)
     return lane_emden_central_to_mean_density(n) * 3.0 * m / (4.0 * np.pi * r**3)
 
 
-@source("Liu1995", where="Denk. 3 (A² tanımı, A = ξ_1/R)", status="read")
+@source("Liu1995", where="Eq. 3 (definition of A², A = ξ_1/R)", status="read")
 def polytrope_k_coefficient_si(mass_kg: ArrayLike, radius_m: ArrayLike, n: float) -> Array:
-    """Verilen kütle ve yarıçaptan politrop sabitini hesaplar: P = K ρ^{1+1/n}.
+    """Compute the polytropic constant from the given mass and radius: P = K ρ^{1+1/n}.
 
     K = 4π G ρ_c^{(n-1)/n} R² / ((n+1) ξ_1²)
 
     Parameters
     ----------
-    kutle_kg, yaricap_m : float ya da ndarray
-        Kütle [kg] ve yarıçap [m].
+    mass_kg, radius_m : float or ndarray
+        Mass [kg] and radius [m].
     n : float
-        Politrop indisi, 0 < n < 5 (n = 0'da K tanımsızdır).
+        Polytropic index, 0 < n < 5 (K is undefined at n = 0).
 
     Returns
     -------
-    float ya da ndarray
-        K [Pa m^{3(1+1/n)} kg^{-(1+1/n)}], yani P'yi Pa, ρ'yu kg m^-3 verir.
+    float or ndarray
+        K [Pa m^{3(1+1/n)} kg^{-(1+1/n)}], that is, it gives P in Pa for ρ in kg m^-3.
 
     References
     ----------
-    [Liu1995] Denk. 3.
+    [Liu1995] Eq. 3.
 
     Validity
     --------
-    Sabit K'yi kütle ve yarıçap birlikte belirler; n = 3'te K yalnızca kütleye bağlıdır.
+    The constant K is determined by mass and radius together; for n = 3, K depends only on the mass.
 
     Verification
     ------------
-    tests/unit/test_stars.py: n = 3 Güneş modeli için 3,84e14 dyn cm^-2 g^{-4/3} ([Araujo2011]).
+    tests/unit/test_stars.py: 3.84e14 dyn cm^-2 g^{-4/3} for the n = 3 solar model ([Araujo2011]).
     """
     n = _valid_n(n)
     if n == 0.0:
-        raise ValueError("n = 0 için K tanımsızdır (hâl denklemi P = K ρ^∞)")
+        raise ValueError("K is undefined for n = 0 (equation of state P = K ρ^∞)")
     xi1 = lane_emden_first_zero(n)
     r = np.asarray(radius_m, dtype=float)
     rho_c = polytrope_central_density_kg_m3(mass_kg, radius_m, n)
@@ -318,35 +320,35 @@ def polytrope_k_coefficient_si(mass_kg: ArrayLike, radius_m: ArrayLike, n: float
 
 @source(
     "Liu1995",
-    where="Denk. 41 (P = K ρ_c^{(n+1)/n} ω^{n+1}, merkezde ω = 1) ve Denk. 3",
+    where="Eq. 41 (P = K ρ_c^{(n+1)/n} ω^{n+1}, ω = 1 at the center) and Eq. 3",
     status="read",
-    note="Denk. 41 ile Denk. 3 birleştirilince P_c = 4π G R² ρ_c² / ((n+1) ξ_1²); n = 0'ı da kapsar",
+    note="combining Eq. 41 with Eq. 3 gives P_c = 4π G R² ρ_c² / ((n+1) ξ_1²); this includes n = 0",
 )
 def polytrope_central_pressure_pa(mass_kg: ArrayLike, radius_m: ArrayLike, n: float) -> Array:
-    """Verilen kütle ve yarıçaptaki politropun merkez basıncını hesaplar.
+    """Compute the central pressure of a polytrope with the given mass and radius.
 
     P_c = K ρ_c^{(n+1)/n} = 4π G R² ρ_c² / ((n+1) ξ_1²)
 
     Parameters
     ----------
-    kutle_kg, yaricap_m : float ya da ndarray
-        Kütle [kg] ve yarıçap [m].
+    mass_kg, radius_m : float or ndarray
+        Mass [kg] and radius [m].
     n : float
-        Politrop indisi, 0 <= n < 5.
+        Polytropic index, 0 <= n < 5.
 
     Returns
     -------
-    float ya da ndarray
-        Merkez basıncı [Pa].
+    float or ndarray
+        Central pressure [Pa].
 
     References
     ----------
-    [Liu1995] Denk. 41 ve Denk. 3.
+    [Liu1995] Eq. 41 and Eq. 3.
 
     Verification
     ------------
-    tests/unit/test_stars.py: n = 3 Güneş için 1,24e17 dyn cm^-2 ([Liu1995]'in aktardığı sayısal değer);
-    n = 0 için düzgün küre kapalı çözümü (2π/3) G ρ² R².
+    tests/unit/test_stars.py: 1.24e17 dyn cm^-2 for the n = 3 Sun (numerical value quoted by [Liu1995]);
+    closed-form solution for a uniform sphere for n = 0, (2π/3) G ρ² R².
     """
     n = _valid_n(n)
     xi1 = lane_emden_first_zero(n)
@@ -355,86 +357,86 @@ def polytrope_central_pressure_pa(mass_kg: ArrayLike, radius_m: ArrayLike, n: fl
     return 4.0 * np.pi * GRAVITATIONAL_CONSTANT.value * r**2 * rho_c**2 / ((n + 1.0) * xi1**2)
 
 
-@source("Liu1995", where="Denk. 3 ve Denk. 38", status="read")
+@source("Liu1995", where="Eq. 3 and Eq. 38", status="read")
 @source(
     "Bludman2010",
-    where="Tablo I, son sütun (M ~ R^{(n-3)/(n-1)})",
+    where="Table I, last column (M ~ R^{(n-3)/(n-1)})",
     status="read",
-    note="üs, tablodaki 1 - ω̃_n ile n = 0, 1,5, 2, 4 için tek tek sınandı",
+    note="the exponent was checked one by one against 1 - ω̃_n in the table for n = 0, 1.5, 2, 4",
 )
 def polytrope_radius_m(mass_kg: ArrayLike, k_si: float, n: float) -> Array:
-    """Verilen kütle ve politrop sabiti için yıldızın yarıçapını çözer.
+    """Solve for the radius of the star for the given mass and polytropic constant.
 
     M = 4π (ω_n/ξ_1³) B^{n/(n-1)} R^{(n-3)/(n-1)},   B = (n+1) K ξ_1² / (4π G)
 
     Parameters
     ----------
-    kutle_kg : float ya da ndarray
-        Toplam kütle [kg].
+    mass_kg : float or ndarray
+        Total mass [kg].
     k_si : float
-        Politrop sabiti K (``politrop_k_katsayisi_si`` ile aynı birim).
+        Polytropic constant K (same unit as ``polytrope_k_coefficient_si``).
     n : float
-        Politrop indisi, 0 < n < 5 ve n ∉ {1, 3} (n = 1 ve 3'te yarıçap kütleden bağımsızdır).
+        Polytropic index, 0 < n < 5 and n ∉ {1, 3} (for n = 1 and 3 the radius is independent of the mass).
 
     Returns
     -------
-    float ya da ndarray
-        Yarıçap [m]. n = 3/2 için R ∝ M^{-1/3} (göreli olmayan dejenere gaz).
+    float or ndarray
+        Radius [m]. R ∝ M^{-1/3} for n = 3/2 (non-relativistic degenerate gas).
 
     References
     ----------
-    [Liu1995] Denk. 3 ve 38; [Bludman2010] Tablo I.
+    [Liu1995] Eq. 3 and 38; [Bludman2010] Table I.
 
     Verification
     ------------
-    tests/unit/test_stars.py: K'dan yarıçapa gidiş-dönüş; n = 3/2'de kütle sekiz kat artınca yarıçap yarıya iner.
+    tests/unit/test_stars.py: round trip from K to radius; for n = 3/2, when the mass increases eightfold the radius halves.
     """
     n = _valid_n(n)
     if n <= 0.0 or n in (1.0, 3.0):
-        raise ValueError("yarıçap bu yolla yalnızca 0 < n < 5, n ∉ {1, 3} için bulunur")
+        raise ValueError("the radius can be found this way only for 0 < n < 5, n ∉ {1, 3}")
     if k_si <= 0:
-        raise ValueError("K pozitif olmalı")
+        raise ValueError("K must be positive")
     xi1 = lane_emden_first_zero(n)
     omega = lane_emden_mass_coefficient(n)
     b = (n + 1.0) * k_si * xi1**2 / (4.0 * np.pi * GRAVITATIONAL_CONSTANT.value)
     m = np.asarray(mass_kg, dtype=float)
-    ic = m * xi1**3 / (4.0 * np.pi * omega * b ** (n / (n - 1.0)))
-    return ic ** ((n - 1.0) / (n - 3.0))
+    base = m * xi1**3 / (4.0 * np.pi * omega * b ** (n / (n - 1.0)))
+    return base ** ((n - 1.0) / (n - 3.0))
 
 
-@source("Liu1995", where="Denk. 42 (T = μ m_p K ρ_c^{1/n} ω / k, merkezde ω = 1)", status="read")
+@source("Liu1995", where="Eq. 42 (T = μ m_p K ρ_c^{1/n} ω / k, ω = 1 at the center)", status="read")
 def polytrope_central_temperature_k(
     mass_kg: ArrayLike, radius_m: ArrayLike, n: float, mean_molecular_weight: float
 ) -> Array:
-    """İdeal gaz politropunun merkez sıcaklığını hesaplar.
+    """Compute the central temperature of an ideal-gas polytrope.
 
     T_c = μ m_p P_c / (k ρ_c)
 
     Parameters
     ----------
-    kutle_kg, yaricap_m : float ya da ndarray
-        Kütle [kg] ve yarıçap [m].
+    mass_kg, radius_m : float or ndarray
+        Mass [kg] and radius [m].
     n : float
-        Politrop indisi, 0 <= n < 5.
-    ortalama_molekul_agirligi : float
-        μ, parçacık başına ortalama kütle (m_p biriminde).
+        Polytropic index, 0 <= n < 5.
+    mean_molecular_weight : float
+        μ, mean mass per particle (in units of m_p).
 
     Returns
     -------
-    float ya da ndarray
-        Merkez sıcaklığı [K].
+    float or ndarray
+        Central temperature [K].
 
     References
     ----------
-    [Liu1995] Denk. 42.
+    [Liu1995] Eq. 42.
 
     Validity
     --------
-    Yalnızca radyasyon basıncı ve dejenerelik yoksayılabiliyorsa ideal gaz hâl denklemi geçerlidir.
+    The ideal-gas equation of state is valid only if radiation pressure and degeneracy can be ignored.
 
     Verification
     ------------
-    tests/unit/test_stars.py: n = 3, μ = 0,62 Güneş için 1,2e7 K ([Liu1995] metni).
+    tests/unit/test_stars.py: 1.2e7 K for the n = 3, μ = 0.62 Sun ([Liu1995] text).
     """
     pc = polytrope_central_pressure_pa(mass_kg, radius_m, n)
     rho_c = polytrope_central_density_kg_m3(mass_kg, radius_m, n)
@@ -443,34 +445,34 @@ def polytrope_central_temperature_k(
 
 @source(
     "Liu1995",
-    where="Denk. 44 ve 45 (E_g; yüzeyde Φ = 0 ve P = 0)",
+    where="Eq. 44 and 45 (E_g; Φ = 0 and P = 0 at the surface)",
     status="read",
-    note="Denk. 44'te r = R, m = M alınır; ilk terim kalır: -3/(5-n) G M²/R",
+    note="in Eq. 44 take r = R, m = M; the first term remains: -3/(5-n) G M²/R",
 )
 def polytrope_gravitational_energy_j(mass_kg: ArrayLike, radius_m: ArrayLike, n: float) -> Array:
-    """Politropun kendi çekim bağlanma enerjisini hesaplar.
+    """Compute the gravitational self-binding energy of a polytrope.
 
     E_g = -3/(5-n) · G M² / R
 
     Parameters
     ----------
-    kutle_kg, yaricap_m : float ya da ndarray
-        Kütle [kg] ve yarıçap [m].
+    mass_kg, radius_m : float or ndarray
+        Mass [kg] and radius [m].
     n : float
-        Politrop indisi, 0 <= n < 5.
+        Polytropic index, 0 <= n < 5.
 
     Returns
     -------
-    float ya da ndarray
-        E_g [J], eksi işaretli.
+    float or ndarray
+        E_g [J], negative.
 
     References
     ----------
-    [Liu1995] Denk. 44, 45.
+    [Liu1995] Eq. 44, 45.
 
     Verification
     ------------
-    tests/unit/test_stars.py: n = 0 için -3/5, n = 1 için -3/4 GM²/R (kapalı çözümler).
+    tests/unit/test_stars.py: -3/5 for n = 0 and -3/4 GM²/R for n = 1 (closed-form solutions).
     """
     n = _valid_n(n)
     m = np.asarray(mass_kg, dtype=float)
@@ -478,46 +480,46 @@ def polytrope_gravitational_energy_j(mass_kg: ArrayLike, radius_m: ArrayLike, n:
     return -3.0 / (5.0 - n) * GRAVITATIONAL_CONSTANT.value * m**2 / r
 
 
-@source("McKee2007", where="TeX etiketleri eq:iddot, eq:calt (viriyal teoremi)", status="read")
+@source("McKee2007", where="TeX labels eq:iddot, eq:calt (virial theorem)", status="read")
 @source(
     "Liu1995",
-    where="Denk. 44 ve 45",
+    where="Eq. 44 and 45",
     status="read",
-    note="Denk. 44 üç terimlidir; yüzeyde P = 0 ve Denk. 45 ile E_g = -3/(5-n) G M²/R olur. Durağan, yüzey terimsiz, manyetik alansız küre için 2T + W = 0; T = (3/2)(k/μ m_p) M T̄ kütle ağırlıklı ortalamadır",
+    note="Eq. 44 has three terms; with P = 0 at the surface and Eq. 45, E_g = -3/(5-n) G M²/R. For a stationary sphere with no surface term and no magnetic field, 2T + W = 0; T = (3/2)(k/μ m_p) M T̄ with T̄ the mass-weighted mean",
 )
 def virial_mean_temperature_k(
     mass_kg: ArrayLike, radius_m: ArrayLike, mean_molecular_weight: float, n: float = 3.0
 ) -> Array:
-    """Viriyal teoreminden kütle ağırlıklı ortalama sıcaklığı hesaplar.
+    """Compute the mass-weighted mean temperature from the virial theorem.
 
     2T + W = 0,  T = (3/2) (k / μ m_p) M T̄,  W = -3/(5-n) G M²/R
     ⇒  T̄ = G M μ m_p / ((5-n) k R)
 
     Parameters
     ----------
-    kutle_kg, yaricap_m : float ya da ndarray
-        Kütle [kg] ve yarıçap [m].
-    ortalama_molekul_agirligi : float
-        μ (m_p biriminde).
+    mass_kg, radius_m : float or ndarray
+        Mass [kg] and radius [m].
+    mean_molecular_weight : float
+        μ (in units of m_p).
     n : float
-        W'nin hesaplandığı politrop indisi; varsayılan 3 (Eddington standart modeli).
+        Polytropic index used to compute W; the default is 3 (Eddington standard model).
 
     Returns
     -------
-    float ya da ndarray
-        Kütle ağırlıklı ortalama sıcaklık [K].
+    float or ndarray
+        Mass-weighted mean temperature [K].
 
     References
     ----------
-    [McKee2007] viriyal teoremi (eq:iddot, eq:calt); [Liu1995] Denk. 44.
+    [McKee2007] virial theorem (eq:iddot, eq:calt); [Liu1995] Eq. 44.
 
     Validity
     --------
-    Radyasyon basıncı yoksayılır; ideal gaz ve durağan denge varsayılır.
+    Radiation pressure is ignored; an ideal gas and stationary equilibrium are assumed.
 
     Verification
     ------------
-    tests/unit/test_stars.py: 2T + W = 0 özdeşliği; n = 3 Güneş için merkez sıcaklığının altında kalması.
+    tests/unit/test_stars.py: identity 2T + W = 0; for the n = 3 Sun it stays below the central temperature.
     """
     n = _valid_n(n)
     m = np.asarray(mass_kg, dtype=float)

@@ -1,125 +1,125 @@
-# Yol haritası
+# Roadmap
 
-Aşamalar bağımlılık sırasındadır: her aşama yalnızca kendinden öncekilere dayanır ve bir kabul projesiyle kapanır. Süre verilmemiştir; ilerleme kabul ölçütleriyle ölçülür. Projeler [08_ornek_projects](08_ornek_projects/) altında tanımlıdır.
+The phases are in dependency order: each phase rests only on the ones before it and closes with an acceptance project. No durations are given; progress is measured by the acceptance criteria. The projects are defined under [08_example_projects](08_example_projects/).
 
-## Aşama 0: İskelet (tamamlandı)
+## Phase 0: Skeleton (done)
 
-- Git deposu, `pyproject.toml`, `src/kozmos` yerleşimi, `ruff`, `mypy`, `pytest`, `hypothesis`.
-- `_kaynak.py`: `@kaynak` dekoratörü, kütük, kaynakça okuyucu.
-- `tests/test_source_rule.py`: kaynak kuralının makine denetimi.
-- `bibliography/` klasörü depo kökündedir; `dogrula.py` sürekli denetime bağlanır.
-- Karar: tanımlayıcıların dili (Türkçe ASCII ya da İngilizce).
+- Git repository, `pyproject.toml`, `src/kozmos` layout, `ruff`, `mypy`, `pytest`, `hypothesis`.
+- `_sources.py`: the `@source` decorator, the registry, the bibliography reader.
+- `tests/test_source_rule.py`: machine check of the source rule.
+- The `bibliography/` folder is at the repository root; `verify.py` is tied to continuous checking.
+- Decision: the language of identifiers (Turkish ASCII or English).
 
-Kabul: kaynak göstermeyen örnek bir fonksiyon testi düşürür; gösteren geçirir. Bu davranış geliştirme sırasında gözlenmiştir: kaynaksız bırakılan `tum_sabitler` fonksiyonu kural testini düşürmüş ve gerekçeli altyapı muafiyeti bu yüzden eklenmiştir.
+Acceptance: an example function that cites no source makes the test fail; one that cites a source passes. This behavior was observed during development: the `all_constants` function, left without a source, made the rule test fail, and the justified infrastructure exemption was added for this reason.
 
-## Aşama 1: Temel (kısmen)
+## Phase 1: Foundation (partial)
 
-Yazılanlar: `temel/sabitler.py`, `temel/aci.py`, `istatistik/uyum.py`, `istatistik/saglam.py`. Kalanlar: `temel/vektor.py`, `temel/sayisal/`, belirsizlik yayılımı, Hubble 1929 tablosu.
+Written: `core/constants.py`, `core/angles.py`, `statistics/fitting.py`, `statistics/robust.py`. Remaining: `core/vectors.py`, `core/numerical/`, uncertainty propagation, the Hubble 1929 table.
 
-- `temel/sabitler.py` [CODATA2022; Prsa2016], `temel/birimler.py`, `temel/aci.py`, `temel/vektor.py`.
-- `temel/sayisal/`: kök bulma, integral, ADD çözücüler, enterpolasyon.
-- `istatistik/`: dağılımlar, sağlam istatistik, doğrusal uyum, belirsizlik yayılımı.
-- `io/tablo.py`.
+- `core/constants.py` [CODATA2022; Prsa2016], `core/units.py`, `core/angles.py`, `core/vectors.py`.
+- `core/numerical/`: root finding, integrals, ODE solvers, interpolation.
+- `statistics/`: distributions, robust statistics, linear fitting, uncertainty propagation.
+- `io/table.py`.
 
-Kabul: Hubble projesi Basamak 0 [Hubble1929].
+Acceptance: Hubble project Step 0 [Hubble1929].
 
-## Aşama 2: Zaman ve koordinat (kısmen)
+## Phase 2: Time and coordinates (partial)
 
-Yazılanlar: `zaman/julyen.py` (takvim, ERA, GMST, eğiklik), `zaman/olcekler.py` (TAI − UTC), `koordinat/donusum.py` (galaktik, ufuk), `efemeris/kepler.py`. Kalanlar: TDB dönüşümü, presesyon ve nutasyon, kırılma, Güneş ve Ay konumları, planlayıcı.
+Written: `time/julian.py` (calendar, ERA, GMST, obliquity), `time/scales.py` (TAI − UTC), `coordinates/transforms.py` (galactic, horizontal), `ephemeris/kepler.py`. Remaining: the TDB transform, precession and nutation, refraction, Sun and Moon positions, the planner.
 
-- `zaman/`: Jülyen tarihi, ölçek dönüşümleri, yıldız zamanı.
-- `koordinat/`: küresel dönüşümler, Düzey 1 presesyon ve nutasyon, ufuk dönüşümü, kırılma.
-- `efemeris/`: Kepler çözücü, elemanlar, Düzey 1 Güneş, Ay ve gezegenler.
-- `gozlem/planlama.py`, `gozlem/hava_kutlesi.py`.
+- `time/`: Julian date, scale transforms, sidereal time.
+- `coordinates/`: spherical transforms, Level 1 precession and nutation, horizontal transform, refraction.
+- `ephemeris/`: Kepler solver, elements, Level 1 Sun, Moon and planets.
+- `observing/planning.py`, `observing/airmass.py`.
 
-Kabul: P1 (gözlem gecesi planlayıcı). ERFA ile Düzey 1 doğruluk sınırları içinde uyum.
+Acceptance: P1 (observing night planner). Agreement with ERFA within the Level 1 accuracy limits.
 
-## Aşama 3: Kozmoloji ve çıkarım (tamamlandı)
+## Phase 3: Cosmology and inference (done)
 
-Yazılanlar: `kozmoloji/uzaklik.py`, `kozmoloji/hubble_diyagrami.py`, `istatistik/mcmc.py`, `arsiv/pantheon.py`, `projects/hubble/hubble_analysis.py`. Analiz Ωm = 0,332 ± 0,018 ve H0 = 73,53 ± 1,00 km s⁻¹ Mpc⁻¹ vermiştir; yayımlanan değerler 0,334 ± 0,018 ve 73,6 ± 1,1'dir [Brout2022]. Kayıt: `projects/hubble/result.json`.
+Written: `cosmology/distances.py`, `cosmology/hubble_diagram.py`, `statistics/mcmc.py`, `archives/pantheon.py`, `projects/hubble/hubble_analysis.py`. The analysis gave Ωm = 0.332 ± 0.018 and H0 = 73.53 ± 1.00 km s⁻¹ Mpc⁻¹; the published values are 0.334 ± 0.018 and 73.6 ± 1.1 [Brout2022]. Record: `projects/hubble/result.json`.
 
-- `kozmoloji/friedmann.py`, `kozmoloji/uzaklik.py`.
-- `istatistik/mcmc.py`: Metropolis-Hastings, topluluk örnekleyici, tanılar.
-- `arsiv/pantheon.py`, `arsiv/onbellek.py`.
+- `cosmology/friedmann.py`, `cosmology/distances.py`.
+- `statistics/mcmc.py`: Metropolis-Hastings, ensemble sampler, diagnostics.
+- `archives/pantheon.py`, `archives/cache.py`.
 
-Kabul: Hubble projesi Basamak 1-3. Bu aşama projenin ilk bilim sonucunu verir ve dedektör ya da görüntü işleme gerektirmediği için öne alınmıştır.
+Acceptance: Hubble project Steps 1-3. This phase gives the project's first scientific result and was moved forward because it needs no detector or image processing.
 
-## Aşama 4: Işınım ve dedektör modeli (başlandı)
+## Phase 4: Radiation and detector model (started)
 
-Yazılanlar: `isinim/kadir.py`, `isinim/kizilotesi.py` (2MASS ve WISE sıfır noktaları), `gozlem/dedektor.py` (sinyal modeli, sentetik ham kare, yıldız alanı, CCD denklemi), `gozlem/planlama.py` (görünürlük, meridyen geçişi), `io/fits.py` (birincil görüntü birimi). Kalanlar: filtreler ve sentetik fotometri, sönümleme, FITS uzantıları.
+Written: `radiation/magnitudes.py`, `radiation/infrared.py` (2MASS and WISE zero points), `observing/detector.py` (signal model, synthetic raw frame, star field, CCD equation), `observing/planning.py` (visibility, meridian transit), `io/fits.py` (primary image unit). Remaining: filters and synthetic photometry, extinction, FITS extensions.
 
-- `isinim/`: kara cisim, kadir sistemleri, filtreler, sentetik fotometri, sönümleme.
-- `gozlem/dedektor.py`, `gozlem/sinyal_gurultu.py`; sentetik görüntü üreteci.
-- `io/fits.py`: okuyucu ve yazıcı.
+- `radiation/`: blackbody, magnitude systems, filters, synthetic photometry, extinction.
+- `observing/detector.py`, `observing/signal_to_noise.py`; synthetic image generator.
+- `io/fits.py`: reader and writer.
 
-Kabul: Vega ve Güneş sentetik fotometrisi; sentetik CCD karesinin üretimi.
+Acceptance: synthetic photometry of Vega and the Sun; generation of a synthetic CCD frame.
 
-## Aşama 5: Görüntü indirgeme ve fotometri (başlandı)
+## Phase 5: Image reduction and photometry (started)
 
-Yazılanlar: `indirgeme/kalibrasyon.py` (kare birleştirme, bias/karanlık/düz alan düzeltmesi, foton aktarımı), `fotometri/kaynak.py` (arka plan haritası, kaynak saptama, açıklık fotometrisi), `arsiv/tap.py`, `arsiv/gaia.py`, `arsiv/skyview.py`, `gorsel/germe.py`. Gaia HR diyagramı (P4) ile optik ve kızılötesi karşılaştırması üretildi. Sonradan eklenenler: `indirgeme/kozmik_isin.py` (L.A.Cosmic), `indirgeme/gokyuzu.py` (durağan ve dinamik gökyüzü modeli), kaynak ayrıştırma (`kaynak_bul(..., ayristirma_duzeyi=)`), `astrometri/wcs.py` (TAN izdüşümü), `astrometri/eslestirme.py` (katalog çapraz eşleme), `arsiv/ikimass.py`, `arsiv/heasarc.py` ve FITS görüntü uzantıları. Saptama ve astrometri gerçek 2MASS görüntüsünde kataloğa karşı ölçüldü (`examples/real_image_validation.py`). Ardından `astrometri/cozum.py` (yaklaşık WCS'ten katalogla çözüm) yazıldı; kozmik ışın temizliği gerçek HST STIS karesinde, gökyüzü çıkarma ve yığma gerçek ESO SOFI dizisinde sınandı (`examples/cosmic_rays_real_data.py`, `examples/infrared_reduction.py`). Sonra üçgen eşlemeyle kör astrometrik çözüm (`astrometri/ucgen.py`) ve kubbe düz alanı eklendi; sınamalar ikinci bir STIS alanına ve ikinci bir SOFI dizisine genişletildi. Kalanlar: PSF fotometrisi, dizinli (bütün gök) astrometrik çözücü, fotometrik kalibrasyonun kitaplık fonksiyonu olarak yazılması. Ayrıntı: [05_veri_bilimi/06_optik_ve_kizilotesi_gozlem.md](05_veri_bilimi/06_optik_ve_kizilotesi_gozlem.md).
+Written: `reduction/calibration.py` (frame combining, bias/dark/flat-field correction, photon transfer), `photometry/` (`background.py`, `detection.py`, `aperture.py`) (background map, source detection, aperture photometry), `archives/tap.py`, `archives/gaia.py`, `archives/skyview.py`, `visualization/stretch.py`. The Gaia HR diagram (P4) and the optical and infrared comparison were produced. Added later: `reduction/cosmic_rays.py` (L.A.Cosmic), `reduction/sky.py` (static and dynamic sky model), source deblending (`detect_sources(..., deblend_levels=)`), `astrometry/wcs.py` (TAN projection), `astrometry/matching.py` (catalog cross-matching), `archives/twomass.py`, `archives/heasarc.py` and FITS image extensions. Detection and astrometry were measured against the catalog on a real 2MASS image (`examples/real_image_validation.py`). Then `astrometry/solve.py` (solution from an approximate WCS with a catalog) was written; cosmic-ray cleaning was tested on a real HST STIS frame, and sky subtraction and stacking on a real ESO SOFI sequence (`examples/cosmic_rays_real_data.py`, `examples/infrared_reduction.py`). Then the blind astrometric solution by triangle matching (`astrometry/triangles.py`) and the dome flat were added; the tests were extended to a second STIS field and a second SOFI sequence. Remaining: PSF photometry, an indexed (all-sky) astrometric solver, writing photometric calibration as a library function. Details: [05_data_science/06_optical_and_infrared_observing.md](05_data_science/06_optical_and_infrared_observing.md).
 
-- `indirgeme/`: kalibrasyon, kozmik ışın, arka plan, birleştirme.
-- `fotometri/`: kaynak saptama, açıklık ve PSF fotometrisi, kalibrasyon.
-- `astrometri/`: TAN izdüşümü, katalog eşleme, WCS uyumu.
-- `arsiv/tap.py`, `arsiv/gaia.py`, `io/votable.py`.
+- `reduction/`: calibration, cosmic rays, background, combining.
+- `photometry/`: source detection, aperture and PSF photometry, calibration.
+- `astrometry/`: TAN projection, catalog matching, WCS fitting.
+- `archives/tap.py`, `archives/gaia.py`, `io/votable.py`.
 
-Kabul: P2 (indirgeme hattı), P3 (açık küme), P4 (Gaia HR diyagramı).
+Acceptance: P2 (reduction pipeline), P3 (open cluster), P4 (Gaia HR diagram).
 
-## Aşama 6: Zaman serisi (başlandı)
+## Phase 6: Time series (started)
 
-Yazılanlar: `zamanserisi/periyodogram.py` (klasik ve yüzen ortalamalı Lomb-Scargle).
+Written: `timeseries/periodogram.py` (classical and floating-mean Lomb-Scargle).
 
-- `zamanserisi/`: periyodogram, katlama, eğilim giderme, BLS ve TLS.
-- Geçiş modeli; barisentrik düzeltme (`zaman` modülünün Düzey 2'ye çıkarılması).
-- MAST erişimi.
+- `timeseries/`: periodogram, folding, detrending, BLS and TLS.
+- Transit model; barycentric correction (raising the `time` module to Level 2).
+- MAST access.
 
-Kabul: P5 (ötegezegen geçişi), P6 (Sefeid dönem-ışınım gücü bağıntısı).
+Acceptance: P5 (exoplanet transit), P6 (Cepheid period-luminosity relation).
 
-## Aşama 7: Tayf
+## Phase 7: Spectroscopy
 
-- `tayf/`: iz bulma, en iyi çıkarım, dalga boyu ve akı kalibrasyonu, çizgi ölçümü, kırmızıya kayma.
-- SDSS erişimi.
+- `spectroscopy/`: trace finding, optimal extraction, wavelength and flux calibration, line measurement, redshift.
+- SDSS access.
 
-Kabul: P7 (kırmızıya kayma ölçümü).
+Acceptance: P7 (redshift measurement).
 
-## Aşama 8: Yüksek doğruluk ve dinamik
+## Phase 8: High accuracy and dynamics
 
-- `koordinat/` Düzey 2 ve 3: IAU 2006/2000A, tam indirgeme zinciri.
-- `efemeris/`: DE440 okuyucu, N cisim integratörleri, yörünge belirleme.
-- `gokada/`: potansiyeller, yörüngeler, dönme eğrileri.
+- `coordinates/` Levels 2 and 3: IAU 2006/2000A, the full reduction chain.
+- `ephemeris/`: DE440 reader, N-body integrators, orbit determination.
+- `galaxies/`: potentials, orbits, rotation curves.
 
-Kabul: P8, P9, P10. ERFA ile `1e-10` rad uyum.
+Acceptance: P8, P9, P10. Agreement with ERFA to `1e-10` rad.
 
-## Aşama 9: Yıldız astrofiziği (başlandı)
+## Phase 9: Stellar astrophysics (started)
 
-Yazılanlar: `yildiz/` (politroplar, ölçekleme bağıntıları, Chandrasekhar kütlesi, başlangıç kütle fonksiyonları), `yildizolusumu/` (Jeans, Bonnor-Ebert, viryal parametre, Kennicutt-Schmidt, Toomre Q) ve `karadelik/` (Schwarzschild ve Kerr yarıçapları, yığılma, Hawking ışınımı, birleşen çiftler). Ayrıntı: [04_fizik/08_kara_delik_yildiz_ve_yildiz_olusumu.md](04_fizik/08_kara_delik_yildiz_ve_yildiz_olusumu.md).
+Written: `stars/` (polytropes, scaling relations, Chandrasekhar mass, initial mass functions), `star_formation/` (Jeans, Bonnor-Ebert, virial parameter, Kennicutt-Schmidt, Toomre Q) and `black_holes/` (Schwarzschild and Kerr radii, accretion, Hawking radiation, merging binaries). Details: [04_physics/08_black_holes_stars_and_star_formation.md](04_physics/08_black_holes_stars_and_star_formation.md).
 
-- `yildiz/`: politroplar, basit yapı modeli, izokron okuma ve uydurma, kütle fonksiyonu.
+- `stars/`: polytropes, simple structure model, reading and fitting isochrones, mass function.
 
-Kabul: P11; P3'ün izokron uyumunun olabilirlik tabanlı sürümü.
+Acceptance: P11; the likelihood-based version of the isochrone fit of P3.
 
-## Aşama 10: İleri analizler
+## Phase 10: Advanced analyses
 
-- Hubble projesi Basamak 4-5: seçim etkileri, birleşik sondalar.
-- İç içe örnekleme, hiyerarşik modeller, Gauss süreçleri.
-- Görüntü farkı ve geçici kaynaklar; çekimsel dalga; büyük ölçekli yapı.
+- Hubble project Steps 4-5: selection effects, combined probes.
+- Nested sampling, hierarchical models, Gaussian processes.
+- Image differencing and transients; gravitational waves; large-scale structure.
 
-Her konu başlamadan önce kendi saha taraması yapılır.
+A field survey of its own is made before each topic is started.
 
-## Aşamalar arası kurallar
+## Rules between phases
 
-- Bir aşama, kabul projesi yayımlanmış sonucu yeniden üretmeden kapanmaz.
-- Her modül dört sınamadan geçer ([06_mimari/03_test_ve_dogrulama.md](06_mimari/03_test_ve_dogrulama.md)).
-- Bir fonksiyon yazılmadan önce atıf verilen kaynağın ilgili bölümü okunur ([02_saha_arastirmasi/04_arastirmanin_sinirlari.md](02_saha_arastirmasi/04_arastirmanin_sinirlari.md)).
-- Yeni kaynak önce `kaynaklar.bib` dosyasına eklenir ve `dogrula.py` ile sınanır.
-- Kapsam büyümesi ileri aşama listesine yazılır; yürüyen aşamaya eklenmez.
+- A phase does not close until its acceptance project reproduces a published result.
+- Every module passes four tests ([06_architecture/03_testing_and_verification.md](06_architecture/03_testing_and_verification.md)).
+- Before a function is written, the relevant section of the cited source is read ([02_field_survey/04_limits_of_the_survey.md](02_field_survey/04_limits_of_the_survey.md)).
+- A new source is first added to `references.bib` and tested with `verify.py`.
+- Scope growth is written to the advanced-phase list; it is not added to the running phase.
 
-## İlk adımlar
+## First steps
 
-İlk dört adım (tanımlayıcı dili, iskelet, kaynakların okunması, sabitlerin aktarılması) tamamlanmıştır. Sıradakiler:
+The first four steps (the language of identifiers, the skeleton, reading the sources, transferring the constants) are done. The next ones:
 
-1. `bekliyor` durumundaki 16 kaynak kaydının kapatılması ([DURUM.md](DURUM.md) listesi): CCD sinyal-gürültü denklemi, Gauss PSF, kaynak saptama, açıklık fotometrisi, Kerr ISCO enerjisi, buharlaşma süresi, Salpeter eğimi. Kepler, Planck, sağlam kestirici ve indirgeme kayıtları açık kaynaklardan okunarak kapatılmıştır.
-2. Hubble 1929 tablosunun makaleden aktarılması (Basamak 0).
-3. Aşama 1'in kalanı: sayısal yöntemler, sağlam istatistik, belirsizlik yayılımı.
-4. Aşama 2'nin kalanı: UTC ve TDB, presesyon ve nutasyon, gözlem planlayıcı (P1).
-5. Hubble projesinde yayımlanan ve bulunan `H0` belirsizliği arasındaki farkın (1,1 ve 1,0) incelenmesi.
+1. Done: every source record is now in the `read` state (the list is in [STATUS.md](STATUS.md)). The last pending records (the CCD signal-to-noise equation, Kerr ISCO energy, Salpeter slope, nuclear timescale) were closed by reading the original papers and open lecture notes.
+2. Transferring the Hubble 1929 table from the paper (Step 0).
+3. The remainder of Phase 1: numerical methods, robust statistics, uncertainty propagation.
+4. The remainder of Phase 2: UTC and TDB, precession and nutation, the observing planner (P1).
+5. Done as far as open data allows: the `H0` uncertainty was checked with a closed-form solution and against the four released chains, which all give ±1.0; the published ±1.1 comes from a PolyChord run that was not released (see the README).

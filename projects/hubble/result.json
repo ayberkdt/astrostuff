@@ -1,119 +1,119 @@
 {
- "zaman": "2026-11-25T13:10:26+00:00",
- "sure_s": 690.9,
- "kod": {
+ "time": "2026-11-25T13:10:26+00:00",
+ "duration_s": 690.9,
+ "code": {
   "kozmos": "0.1.0",
-  "git": "e19b7aace3fe6c1577495593a93b0b60bbc7a56a (çalışma ağacı kirli)"
+  "git": "e19b7aace3fe6c1577495593a93b0b60bbc7a56a (working tree dirty)"
  },
- "ortam": {
+ "environment": {
   "python": "3.12.1",
   "numpy": "2.2.6",
   "scipy": "1.14.1"
  },
- "parametreler": {
-  "adim": 2000,
-  "tohum": 20261125,
-  "z_alt": 0.01,
+ "parameters": {
+  "steps": 2000,
+  "seed": 20261125,
+  "z_min": 0.01,
   "h0_nominal": 70.0
  },
- "veri": {
+ "data": {
   "Pantheon+SH0ES.dat": {
    "sha256": "1cb0fc379ef066afdc2ffd1857681cc478024570d8a3eba284fb645775198cf8",
-   "bayt": 579283
+   "bytes": 579283
   },
   "Pantheon+SH0ES_STAT+SYS.cov": {
    "sha256": "abf806d966485e64afdb359c87bffc0ecc00d05eff0a31ced66f247385df0fdc",
-   "bayt": 33284960
+   "bytes": 33284960
   },
   "Pantheon+SH0ES_STATONLY.cov": {
    "sha256": "9f177129a332735d3637affd20054080d5260815f3ca0809120c05b2c902297f",
-   "bayt": 31827416
+   "bytes": 31827416
   }
  },
- "kovaryans_en_buyuk_asimetri": 3.0000000000038676e-08,
- "analiz_1_yalniz_sn": {
-  "ortalama": 0.3323134773548214,
-  "standart_sapma": 0.018223207822834438,
-  "en_olasi": 0.33249999999999996,
-  "ki_kare_min": 1387.101281600815,
-  "serbestlik_derecesi": 1578
+ "covariance_max_asymmetry": 3.0000000000038676e-08,
+ "analysis_1_sn_only": {
+  "mean": 0.3323134773548214,
+  "std": 0.018223207822834438,
+  "most_probable": 0.33249999999999996,
+  "chi2_min": 1387.101281600815,
+  "degrees_of_freedom": 1578
  },
- "analiz_2_sn_ve_sefeid": {
+ "analysis_2_sn_and_cepheids": {
   "h0": {
-   "ortalama": 73.53193135156619,
-   "standart_sapma": 1.0020583538385743,
-   "yuzdelikler_16_50_84": [
+   "mean": 73.53193135156619,
+   "std": 1.0020583538385743,
+   "percentiles_16_50_84": [
     72.53762820685328,
     73.52914243045379,
     74.53521491496936
    ]
   },
   "omega_m": {
-   "ortalama": 0.3310234515613341,
-   "standart_sapma": 0.017922378062281925,
-   "yuzdelikler_16_50_84": [
+   "mean": 0.3310234515613341,
+   "std": 0.017922378062281925,
+   "percentiles_16_50_84": [
     0.31295222812501367,
     0.3310150960600495,
     0.34891503366518517
    ]
   },
-  "mutlak_kadir": {
-   "ortalama": -19.24435115239848,
-   "standart_sapma": 0.029201557429403776,
-   "yuzdelikler_16_50_84": [
+  "absolute_magnitude": {
+   "mean": -19.24435115239848,
+   "std": 0.029201557429403776,
+   "percentiles_16_50_84": [
     -19.27344798537599,
     -19.24449092877896,
     -19.215036722899907
    ]
   },
-  "tanilar": {
-   "adim": 2000,
-   "yuruyucu": 32,
-   "atilan_isinma": 180,
-   "oz_ilinti_suresi": [
+  "diagnostics": {
+   "steps": 2000,
+   "walkers": 32,
+   "burn_in_discarded": 180,
+   "autocorrelation_time": [
     35.39134016770967,
     32.398968083221746,
     36.00405188067358
    ],
-   "etkin_ornek_sayisi": [
+   "effective_sample_size": [
     1645.6003000738858,
     1797.58811609066,
     1617.5957137552714
    ],
-   "bolunmus_rhat": [
+   "split_rhat": [
     1.0159625956752063,
     1.0274705220863194,
     1.018083392249459
    ],
-   "rhat_sira_normallestirilmis": [
+   "rank_normalized_rhat": [
     1.0159674221147579,
     1.027397756483555,
     1.0180720694128493
    ],
-   "ortalama_kabul_orani": 0.65190625,
-   "zincir_yeterince_uzun": true
+   "mean_acceptance_fraction": 0.65190625,
+   "chain_long_enough": true
   },
-  "ki_kare_min": 1452.6484342627336,
-  "serbestlik_derecesi": 1654,
-  "en_olasi": {
+  "chi2_min": 1452.6484342627336,
+  "degrees_of_freedom": 1654,
+  "most_probable": {
    "h0": 73.53048253177454,
    "omega_m": 0.3297473251665244,
-   "mutlak_kadir": -19.244410829725165
+   "absolute_magnitude": -19.244410829725165
   }
  },
- "yayimlanan": {
-  "omega_m_duz_lcdm": {
-   "deger": 0.334,
-   "belirsizlik": 0.018,
-   "kaynak": "Brout2022, düz ΛCDM, yalnızca SN"
+ "published": {
+  "omega_m_flat_lcdm": {
+   "value": 0.334,
+   "uncertainty": 0.018,
+   "source": "Brout2022, flat ΛCDM, SN only"
   },
-  "h0_duz_lcdm": {
-   "deger": 73.6,
-   "belirsizlik": 1.1,
-   "kaynak": "Brout2022, düz ΛCDM, Pantheon+ ve SH0ES"
+  "h0_flat_lcdm": {
+   "value": 73.6,
+   "uncertainty": 1.1,
+   "source": "Brout2022, flat ΛCDM, Pantheon+ and SH0ES"
   }
  },
- "karsilastirma_sigma": {
+ "comparison_sigma": {
   "omega_m": -0.06584336565031747,
   "h0": -0.04574529760091803
  }

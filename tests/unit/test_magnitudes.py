@@ -9,27 +9,27 @@ from kozmos.core import constants
 from kozmos.radiation import magnitudes
 
 
-def test_gunes_bolometrik_kadiri():
-    # IAU 2015 B2: nominal Güneş ışınım gücü M_Bol ≈ 4,74 mag'a karşılık gelir [Mamajek2015].
+def test_solar_bolometric_magnitude():
+    # IAU 2015 B2: the nominal solar luminosity corresponds to M_Bol ≈ 4.74 mag [Mamajek2015].
     assert float(magnitudes.absolute_bolometric_magnitude(constants.SOLAR_LUMINOSITY.value)) == pytest.approx(
         4.74, abs=0.005
     )
     assert float(magnitudes.absolute_bolometric_magnitude(constants.BOLOMETRIC_ZERO_POINT_LUMINOSITY.value)) == 0.0
 
 
-def test_uzaklik_modulu():
+def test_distance_modulus():
     assert float(magnitudes.distance_modulus_from_pc(10.0)) == 0.0
     assert float(magnitudes.distance_modulus_from_pc(1e6)) == pytest.approx(25.0)
 
 
-def test_planck_integrali_stefan_boltzmann():
+def test_planck_integral_stefan_boltzmann():
     # ∫ B_ν dν = σ T⁴ / π
     t = 5772.0
     integral, _ = quad(lambda nu: float(magnitudes.planck_frequency(nu, t)), 1e11, 3e16, limit=200)
     assert integral == pytest.approx(float(magnitudes.blackbody_flux(t)) / math.pi, rel=1e-8)
 
 
-def test_wien_tepe_dalgaboyu():
+def test_wien_peak_wavelength():
     t = 5772.0
     peak = minimize_scalar(
         lambda lam: -float(magnitudes.planck_wavelength(lam, t)),
@@ -40,20 +40,20 @@ def test_wien_tepe_dalgaboyu():
     assert peak * t == pytest.approx(constants.WIEN_WAVELENGTH.value, rel=1e-6)
 
 
-def test_gunes_isinim_gucu_nominal_degerlerden():
-    # L = 4π R² σ T⁴; nominal R, T_eff ve L birbiriyle binde bir içinde tutarlıdır [Prsa2016].
-    isinim_gucu = (
+def test_solar_luminosity_from_nominal_values():
+    # L = 4π R² σ T⁴; the nominal R, T_eff and L agree to one part in a thousand [Prsa2016].
+    luminosity = (
         4
         * math.pi
         * constants.SOLAR_RADIUS.value**2
         * float(magnitudes.blackbody_flux(constants.SOLAR_EFFECTIVE_TEMPERATURE.value))
     )
-    assert isinim_gucu == pytest.approx(constants.SOLAR_LUMINOSITY.value, rel=1e-3)
+    assert luminosity == pytest.approx(constants.SOLAR_LUMINOSITY.value, rel=1e-3)
 
 
-def test_turetilmis_sabitler_nist_basamaklariyla():
-    # NIST tablosundaki kesik basamaklar: 5.670 374 419... e-8 ve 1.438 776 877... e-2.
-    # Tablo yuvarlamaz, keser; bu yüzden karşılaştırma baştaki basamaklarla yapılır.
+def test_derived_constants_match_nist_digits():
+    # Truncated digits in the NIST table: 5.670 374 419... e-8 and 1.438 776 877... e-2.
+    # The table truncates instead of rounding; the comparison therefore uses the leading digits.
     assert f"{constants.STEFAN_BOLTZMANN.value:.14e}".startswith("5.670374419")
     assert f"{constants.SECOND_RADIATION_CONSTANT.value:.14e}".startswith("1.438776877")
     assert np.isclose(constants.PARSEC.value, 3.0856775814913673e16, rtol=1e-15)

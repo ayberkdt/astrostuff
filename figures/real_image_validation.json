@@ -1,23 +1,23 @@
 {
-  "goruntu": {
-    "tarama": "2MASS-K (SkyView)",
-    "merkez_derece": [
+  "image": {
+    "survey": "2MASS-K (SkyView)",
+    "center_deg": [
       85.42,
       -1.9
     ],
-    "olcek_yaysaniye_piksel": 1.0,
-    "piksel": 540
+    "scale_arcsec_pix": 1.0,
+    "pixels": 540
   },
-  "katalog": {
-    "toplam": 581,
-    "goruntude_k_saptanmis": 420
+  "catalog": {
+    "total": 581,
+    "k_detected_in_image": 420
   },
-  "saptanan_kaynak": 281,
-  "saptanan_kaynak_ayristirmasiz": 258,
-  "esleme_yaricapi_yaysaniye": 2.0,
-  "saflik": 0.8540925266903915,
-  "katalog_tamligi": {
-    "k_orta": [
+  "detected_sources": 281,
+  "detected_sources_without_deblending": 258,
+  "match_radius_arcsec": 2.0,
+  "purity": 0.8540925266903915,
+  "catalog_completeness": {
+    "k_center": [
       6.5,
       7.5,
       8.5,
@@ -29,7 +29,7 @@
       14.5,
       15.5
     ],
-    "katalog_sayisi": [
+    "catalog_count": [
       1,
       2,
       9,
@@ -41,7 +41,7 @@
       80,
       19
     ],
-    "bulunan": [
+    "found": [
       0,
       2,
       9,
@@ -54,44 +54,44 @@
       0
     ]
   },
-  "astrometri_yaysaniye": {
-    "cift_sayisi": 241,
-    "ortanca_d_ra_cos_dec": 0.1604813206190609,
-    "ortanca_d_dec": 0.03116422879676506,
-    "sacilim_d_ra": 0.1405812211855419,
-    "sacilim_d_dec": 0.12869696526182905,
-    "ortanca_ayriklik": 0.2301994048392217
+  "astrometry_arcsec": {
+    "pair_count": 241,
+    "median_d_ra_cos_dec": 0.1604813206190609,
+    "median_d_dec": 0.03116422879676506,
+    "scatter_d_ra": 0.1405812211855419,
+    "scatter_d_dec": 0.12869696526182905,
+    "median_separation": 0.2301994048392217
   },
-  "fotometri": {
-    "yildiz_sayisi": 40,
-    "sifir_noktasi_kadir": 19.838512409314653,
-    "sacilim_kadir": 0.021029355475492603,
-    "psf_fwhm_piksel": 3.2143293614672457
+  "photometry": {
+    "star_count": 40,
+    "zero_point_mag": 19.838512409314653,
+    "scatter_mag": 0.021029355475492603,
+    "psf_fwhm_pix": 3.2143293614672457
   },
-  "astrometrik_cozum": {
-    "bozulma": {
-      "donme_derece": 0.4,
-      "olcek_carpani": 1.004,
-      "kaydirma_piksel": [
+  "astrometric_solution": {
+    "distortion": {
+      "rotation_deg": 0.4,
+      "scale_factor": 1.004,
+      "shift_pix": [
         18.0,
         -14.0
       ]
     },
-    "bozuk_wcs_en_buyuk_hata_yaysaniye": 25.752724027168345,
-    "kaydirma_oyu": 252,
-    "kaydirma_sonrasi_en_buyuk_hata_yaysaniye": 3.1906639408866506,
-    "cozum_en_buyuk_hata_yaysaniye": 0.42793952000197566,
-    "cozume_giren_yildiz": 246,
-    "katalog_artik_rms_yaysaniye": 0.26826799804955026,
-    "kor_cozum": {
-      "ucgen_eslemesinde_atanan_cift": 24,
-      "cozume_giren_yildiz": 246,
-      "basliktan_en_buyuk_fark_yaysaniye": 0.42784555312563854,
-      "katalog_artik_rms_yaysaniye": 0.26827295440262333,
-      "olcek_yaysaniye_piksel": 0.9998428944871279
+    "distorted_wcs_max_error_arcsec": 25.752724027168345,
+    "shift_votes": 252,
+    "post_shift_max_error_arcsec": 3.1906639408866506,
+    "solution_max_error_arcsec": 0.42793952000197566,
+    "stars_in_solution": 246,
+    "catalog_residual_rms_arcsec": 0.26826799804955026,
+    "blind_solution": {
+      "pairs_assigned_in_triangle_match": 24,
+      "stars_in_solution": 246,
+      "max_difference_from_header_arcsec": 0.42784555312563854,
+      "catalog_residual_rms_arcsec": 0.26827295440262333,
+      "scale_arcsec_pix": 0.9998428944871279
     }
   },
-  "yapay_yildiz": {
+  "artificial_stars": {
     "k": [
       10.5,
       11.0,
@@ -106,7 +106,7 @@
       15.5,
       16.0
     ],
-    "bulunma_kesri": [
+    "recovery_fraction": [
       0.9625,
       0.975,
       0.96875,
@@ -120,6 +120,6 @@
       0.01875,
       0.03125
     ],
-    "tohum": 20261125
+    "seed": 20261125
   }
 }

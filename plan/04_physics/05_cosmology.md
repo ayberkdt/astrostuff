@@ -1,87 +1,87 @@
-# Kozmoloji
+# Cosmology
 
-Hedef modül: `kozmoloji/`. Uçtan uca uygulaması: [../08_ornek_projects/01_hubble_diyagrami.md](../08_ornek_projects/01_hubble_diyagrami.md).
+Target module: `cosmology/`. End-to-end application: [../08_example_projects/01_hubble_diagram.md](../08_example_projects/01_hubble_diagram.md).
 
-Denklemler planlama düzeyindedir; kodlanmadan önce anılan kaynaktan okunur.
+The equations are at planning level; they are read from the cited source before they are coded.
 
-## 1. Genişleyen evren
+## 1. The expanding universe
 
-- Friedmann-Lemaître-Robertson-Walker metriği, ölçek çarpanı `a(t)`, kırmızıya kayma `1 + z = 1/a`.
-- Friedmann denklemi ve boyutsuz Hubble parametresi [Hogg1999, Denk. 14; CarrollPressTurner1992]:
+- Friedmann-Lemaître-Robertson-Walker metric, scale factor `a(t)`, redshift `1 + z = 1/a`.
+- Friedmann equation and the dimensionless Hubble parameter [Hogg1999, Eq. 14; CarrollPressTurner1992]:
 
   `E(z) = H(z)/H0 = sqrt( Ωr(1+z)⁴ + Ωm(1+z)³ + Ωk(1+z)² + Ω_DE f(z) )`
 
-  `Ωk = 1 − Ωm − Ωr − Ω_DE`. Kozmolojik sabit için `f = 1`; sabit `w` için `f = (1+z)^{3(1+w)}`; `w(a) = w0 + wa(1 − a)` parametrelemesi için `f = (1+z)^{3(1+w0+wa)} exp(−3 wa z/(1+z))` [ChevallierPolarski2001; Linder2003].
-- Radyasyon yoğunluğu: fotonlar CMB sıcaklığından, nötrinolar etkin tür sayısından; kütleli nötrinolar ayrı terimdir ve ilk aşamada kütlesiz alınır.
-- Hubble uzaklığı `D_H = c/H0` ve Hubble zamanı `t_H = 1/H0`.
-- Kırmızıya kayma, uzaklaşma hızı ve ufuk kavramlarının yaygın yanlış yorumları [DavisLineweaver2004].
+  `Ωk = 1 − Ωm − Ωr − Ω_DE`. For a cosmological constant `f = 1`; for constant `w`, `f = (1+z)^{3(1+w)}`; for the parametrization `w(a) = w0 + wa(1 − a)`, `f = (1+z)^{3(1+w0+wa)} exp(−3 wa z/(1+z))` [ChevallierPolarski2001; Linder2003].
+- Radiation density: photons from the CMB temperature, neutrinos from the effective number of species; massive neutrinos are a separate term and are taken as massless in the first stage.
+- Hubble distance `D_H = c/H0` and Hubble time `t_H = 1/H0`.
+- Common misinterpretations of redshift, recession velocity and horizon [DavisLineweaver2004].
 
-## 2. Uzaklık ölçüleri
+## 2. Distance measures
 
-Tümü Hogg'un derlemesindeki tanımları izler [Hogg1999]:
+All follow the definitions in Hogg's review [Hogg1999]:
 
-- Eşyürüyen uzaklık (bakış doğrultusu): `D_C = D_H ∫₀ᶻ dz′/E(z′)` (Denk. 15)
-- Enine eşyürüyen uzaklık `D_M`: `Ωk > 0` için `(D_H/√Ωk) sinh(√Ωk D_C/D_H)`, `Ωk = 0` için `D_C`, `Ωk < 0` için `sin` biçimi (Denk. 16)
-- Açısal çap uzaklığı: `D_A = D_M/(1+z)` (Denk. 18)
-- Işınım gücü uzaklığı: `D_L = (1+z) D_M` (Denk. 21)
-- Uzaklık modülü: `μ = 5 log10(D_L / 10 pc)` (Denk. 25)
-- Eşyürüyen hacim elemanı (Denk. 28), geriye bakış zamanı (Denk. 30), evrenin yaşı
-- İki kırmızıya kayma arasındaki açısal çap uzaklığı (merceklenme için, Denk. 19)
+- Comoving distance (line of sight): `D_C = D_H ∫₀ᶻ dz′/E(z′)` (Eq. 15)
+- Transverse comoving distance `D_M`: `(D_H/√Ωk) sinh(√Ωk D_C/D_H)` for `Ωk > 0`, `D_C` for `Ωk = 0`, the `sin` form for `Ωk < 0` (Eq. 16)
+- Angular diameter distance: `D_A = D_M/(1+z)` (Eq. 18)
+- Luminosity distance: `D_L = (1+z) D_M` (Eq. 21)
+- Distance modulus: `μ = 5 log10(D_L / 10 pc)` (Eq. 25)
+- Comoving volume element (Eq. 28), lookback time (Eq. 30), age of the universe
+- Angular diameter distance between two redshifts (for lensing, Eq. 19)
 
-Denklem numaraları Hogg'un arXiv sürümünden hatırlanmıştır ve kodlama sırasında teyit edilecektir.
+The equation numbers were recalled from memory from Hogg's arXiv version and will be verified during coding.
 
-Düşük `z` açılımı: `D_L ≈ (c z/H0) [1 + (1 − q0) z/2 + …]`; yavaşlama parametresi `q0` ve sarsım `j0` ile kozmografik açılım [Riess2022, Denk. 5 dolayı]. Sayısal integralin `z → 0` limitinde bu açılıma yakınsaması özellik testidir.
+Low-`z` expansion: `D_L ≈ (c z/H0) [1 + (1 − q0) z/2 + …]`; cosmographic expansion with the deceleration parameter `q0` and the jerk `j0` [Riess2022, around Eq. 5]. The convergence of the numerical integral to this expansion in the `z → 0` limit is a property test.
 
-Kâhin: `astropy.cosmology`. Bağımsız karşılaştırma: Wright'ın hesaplayıcısının yöntemi [Wright2006].
+Oracle: `astropy.cosmology`. Independent comparison: the method of Wright's calculator [Wright2006].
 
-## 3. Hubble sabitinin ölçüm yolları
+## 3. Ways of measuring the Hubble constant
 
-**Yerel uzaklık merdiveni.** Üç basamak [Riess2022]:
+**Local distance ladder.** Three rungs [Riess2022]:
 
-1. Geometrik çapa: Samanyolu Sefeidlerinin Gaia paralaksları, Büyük Macellan Bulutu'nun örten çift uzaklığı, NGC 4258'in mazer uzaklığı.
-2. Birincil gösterge: Sefeid dönem-ışınım gücü bağıntısıyla Tür Ia süpernova konak gökadalarının uzaklığı; almaşık olarak TRGB ve JAGB [Freedman2019; Freedman2025].
-3. Hubble akışı: standartlaştırılmış Tür Ia süpernovaların `0,023 < z < 0,15` aralığındaki kadir-kırmızıya kayma bağıntısı.
+1. Geometric anchors: Gaia parallaxes of Milky Way Cepheids, the eclipsing binary distance of the Large Magellanic Cloud, the maser distance of NGC 4258.
+2. Primary indicator: distances to the host galaxies of Type Ia supernovae from the Cepheid period-luminosity relation; alternatively TRGB and JAGB [Freedman2019; Freedman2025].
+3. Hubble flow: the magnitude-redshift relation of standardized Type Ia supernovae in the range `0.023 < z < 0.15`.
 
-`H0`, süpernovaların mutlak kadiri `M_B` ile tam dejeneredir: Hubble diyagramı tek başına yalnızca `H0` ve `M_B` birleşimini verir, mutlak ölçek birinci ve ikinci basamaktan gelir. Bu dejenerasyon projede açıkça gösterilir.
+`H0` is fully degenerate with the absolute magnitude `M_B` of the supernovae: the Hubble diagram alone gives only the combination of `H0` and `M_B`, and the absolute scale comes from the first and second rungs. This degeneracy is shown explicitly in the project.
 
-**Ters uzaklık merdiveni ve erken evren.** CMB güç tayfından ΛCDM varsayımıyla türetilen `H0` [Planck2020]; BAO ölçümlerinin ses ufkuyla kalibrasyonu [DESI2025; DESI2025DR2].
+**Inverse distance ladder and the early universe.** `H0` derived from the CMB power spectrum under the ΛCDM assumption [Planck2020]; calibration of BAO measurements with the sound horizon [DESI2025; DESI2025DR2].
 
-**Bağımsız yollar.** Çekimsel dalga standart sirenleri [Abbott2017], mercek zaman gecikmeleri, kozmik kronometreler (`H(z)` doğrudan) [Moresco2022].
+**Independent routes.** Gravitational wave standard sirens [Abbott2017], lens time delays, cosmic chronometers (`H(z)` directly) [Moresco2022].
 
-**Güncel durum.** Araştırma sırasında okunan değerler:
+**Current status.** Values read during the survey:
 
-- SH0ES Sefeid merdiveni: `H0 = 73,04 ± 1,04 km s⁻¹ Mpc⁻¹` [Riess2022]. Değer makalenin arXiv özet sayfasından okundu.
-- CCHP, yalnızca TRGB: `70,39 ± 1,22 (ist.) ± 1,33 (sis.) ± 0,70 (σ_SN)` [Freedman2025]. Değer arXiv:2408.06153 özet sayfasından okundu; makalenin sürümleri arasında değer değişmiştir, kullanılacak sürüm kaydedilmelidir.
-- Planck 2018 ΛCDM değeri (yaklaşık 67,4 ± 0,5) bu oturumda kaynağından okunmamıştır [Planck2020].
+- SH0ES Cepheid ladder: `H0 = 73.04 ± 1.04 km s⁻¹ Mpc⁻¹` [Riess2022]. The value was read from the arXiv abstract page of the paper.
+- CCHP, TRGB only: `70.39 ± 1.22 (stat.) ± 1.33 (sys.) ± 0.70 (σ_SN)` [Freedman2025]. The value was read from the abstract page of arXiv:2408.06153; the value changed between versions of the paper, so the version to be used must be recorded.
+- The Planck 2018 ΛCDM value (about 67.4 ± 0.5) was not read from its source in this session [Planck2020].
 
-Yerel ve erken evren değerleri arasındaki fark "Hubble gerilimi" olarak anılır; çözüm önerilerinin derlemesi [DiValentino2021]. Sefeid ve TRGB tabanlı merdivenler arasındaki fark da açık bir tartışmadır. 2025-2026 yayınlarının (CosmoVerse raporu, DESI DR2, Union3.1, DES-SN5YR yeniden kalibrasyonu) taranması yapılacaklar listesindedir; araştırmada bunların yalnızca arama özetleri görülmüştür.
+The difference between the local and early-universe values is called the "Hubble tension"; a review of proposed solutions is [DiValentino2021]. The difference between Cepheid-based and TRGB-based ladders is also an open debate. A survey of the 2025-2026 publications (the CosmoVerse report, DESI DR2, Union3.1, the DES-SN5YR recalibration) is on the to-do list; during the survey only their search summaries were seen.
 
-## 4. Tür Ia süpernovaların standartlaştırılması
+## 4. Standardization of Type Ia supernovae
 
-- Parlaklık-sönme hızı bağıntısı [Phillips1993] ve renk düzeltmesi [Tripp1998].
-- Tripp bağıntısı: `μ = m_B − M_B + α x1 − β c − δ_bias + δ_konak`. `x1` gerilme, `c` renk parametresi; SALT2 ve SALT3 ışık eğrisi modellerinden uydurulur [Guy2007; Kenworthy2021].
-- Konak gökada kütle basamağı ve yanlılık düzeltmesi [KesslerScolnic2017; Brout2022].
-- Özel hız düzeltmesi: düşük `z`'de kırmızıya kaymanın CMB çerçevesine ve akış modeline göre düzeltilmesi [Carr2022].
-- Işık eğrisi uydurma yeniden yazılmaz; `sncosmo` kullanılır ve Pantheon+ derlemesinin yayımlanmış uzaklık modülleri girdi alınır [Scolnic2022].
+- Luminosity-decline rate relation [Phillips1993] and color correction [Tripp1998].
+- Tripp relation: `μ = m_B − M_B + α x1 − β c − δ_bias + δ_host`. `x1` is the stretch, `c` the color parameter; they are fitted from the SALT2 and SALT3 light curve models [Guy2007; Kenworthy2021].
+- Host galaxy mass step and bias correction [KesslerScolnic2017; Brout2022].
+- Peculiar velocity correction: correcting the redshift at low `z` to the CMB frame and with a flow model [Carr2022].
+- Light curve fitting is not rewritten; `sncosmo` is used, and the published distance moduli of the Pantheon+ compilation are taken as input [Scolnic2022].
 
-## 5. Olabilirlik
+## 5. Likelihood
 
-Kovaryanslı Gauss olabilirliği: `χ² = Δμᵀ C⁻¹ Δμ`, `Δμ_i = μ_i − μ_model(z_i; θ)`; `C` istatistik ve sistematik kovaryansın toplamıdır [Brout2022].
+Gaussian likelihood with covariance: `χ² = Δμᵀ C⁻¹ Δμ`, `Δμ_i = μ_i − μ_model(z_i; θ)`; `C` is the sum of the statistical and systematic covariance [Brout2022].
 
-- `M_B` (eşdeğer olarak `H0`) üzerinde analitik marjinalleştirme: düz önselle kapalı biçim [Conley2011, Ek C]. Ek numarası kodlama sırasında teyit edilecek.
-- Sefeid çapalı süpernovaların eklenmesi dejenerasyonu kırar: Pantheon+SH0ES veri dosyasında bu süpernovalar işaretlidir ve model değeri yerine Sefeid uzaklığıyla karşılaştırılır [Brout2022].
-- Birleşik olabilirlik: SN + BAO + CMB sıkıştırılmış uzaklık önselleri (ileri aşama).
+- Analytic marginalization over `M_B` (equivalently `H0`): closed form with a flat prior [Conley2011, Appendix C]. The appendix number will be verified during coding.
+- Including Cepheid-anchored supernovae breaks the degeneracy: these supernovae are flagged in the Pantheon+SH0ES data file and are compared with the Cepheid distance instead of the model value [Brout2022].
+- Joint likelihood: SN + BAO + CMB compressed distance priors (advanced stage).
 
-## 6. Erken evren ve yapı oluşumu (ileri aşama)
+## 6. Early universe and structure formation (advanced stage)
 
-- Isıl tarih, yeniden birleşme, ses ufku `r_s` (uydurma formülü [EisensteinHu1998]).
-- Doğrusal büyüme çarpanı `D(z)` ve büyüme hızı `f ≈ Ωm(z)^0,55`.
-- Madde güç tayfı ve aktarım fonksiyonu; Boltzmann kodları (CAMB, CLASS) yeniden yazılmaz, kâhin ve girdi kaynağıdır [Dodelson2020].
+- Thermal history, recombination, sound horizon `r_s` (fitting formula [EisensteinHu1998]).
+- Linear growth factor `D(z)` and growth rate `f ≈ Ωm(z)^0.55`.
+- Matter power spectrum and transfer function; Boltzmann codes (CAMB, CLASS) are not rewritten, they are an oracle and a source of input [Dodelson2020].
 
-## Test durumları
+## Test cases
 
-- Einstein-de Sitter evreninde kapalı çözümler: `D_C = 2 D_H [1 − (1+z)^(−1/2)]`, yaş `(2/3) t_H`.
-- `Ωk ≠ 0` için `sinh/sin` dallarının `Ωk → 0` limitinde sürekliliği.
-- `astropy.cosmology` ile `0 < z < 1100` aralığında bağıl fark `1e-8` altında.
-- Hogg'un şekillerinin yeniden üretimi [Hogg1999, Şek. 1-6].
-- Pantheon+ ile düz ΛCDM uyumu yayımlanan `Ωm` aralığını vermelidir [Brout2022]; yayımlanan değer kodlama sırasında makaleden okunacak.
+- Closed-form solutions in an Einstein-de Sitter universe: `D_C = 2 D_H [1 − (1+z)^(−1/2)]`, age `(2/3) t_H`.
+- Continuity of the `sinh/sin` branches in the `Ωk → 0` limit for `Ωk ≠ 0`.
+- Relative difference below `1e-8` against `astropy.cosmology` over `0 < z < 1100`.
+- Reproduction of Hogg's figures [Hogg1999, Fig. 1-6].
+- The fit of flat ΛCDM to Pantheon+ must give the published `Ωm` range [Brout2022]; the published value will be read from the paper during coding.

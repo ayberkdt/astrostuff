@@ -1,9 +1,9 @@
-"""İndirilen verinin yerel önbelleği ve kaynak kaydı.
+"""Local cache of downloaded data and its provenance record.
 
-Her indirme, dosyanın yanındaki ``KAYNAK_KAYDI.json`` dosyasına adresi,
-SHA-256 özeti, boyutu, zamanı ve atıf metniyle işlenir. Aynı istek ikinci kez
-ağa çıkmaz. İlkeler ``plan/05_data_science/05_data_management_and_reproducibility.md``
-belgesindedir [Wilson2017].
+Each download is recorded in a ``SOURCE_RECORD.json`` file next to the data file,
+with its URL, SHA-256 digest, size, time and attribution text. The same request
+never goes to the network a second time. The principles are in
+``plan/05_data_science/05_data_management_and_reproducibility.md`` [Wilson2017].
 """
 
 from __future__ import annotations
@@ -25,12 +25,12 @@ USER_AGENT = "kozmos/0.2 (python-urllib)"
 def _digest(path: Path) -> str:
     h = hashlib.sha256()
     with path.open("rb") as f:
-        for parca in iter(lambda: f.read(1 << 20), b""):
-            h.update(parca)
+        for chunk in iter(lambda: f.read(1 << 20), b""):
+            h.update(chunk)
     return h.hexdigest()
 
 
-@infrastructure("ağ ve dosya altyapısı; denklem uygulamaz")
+@infrastructure("network and file infrastructure; applies no equation")
 def download(
     url: str,
     target: Path,
@@ -42,49 +42,50 @@ def download(
     attempts: int = 3,
     wait_s: float = 5.0,
 ) -> Path:
-    """Bir adresi (isteğe bağlı sorgu parametreleriyle) dosyaya indirir ve kaydını yazar.
+    """Download a URL (optionally with query parameters) to a file and write its record.
 
-    Dosya varsa ve ``yenile`` verilmemişse ağa çıkılmaz. İndirme önce geçici
-    bir dosyaya yapılır; yarıda kesilen indirme hedefi bozmaz. Geçici ağ hataları
-    (bağlantı kopması, zaman aşımı, 5xx yanıtı) ``deneme_sayisi`` kez, aralarında
-    ``bekleme_s`` saniye beklenerek yeniden denenir; 4xx yanıtları yeniden denenmez.
-    Son deneme de başarısızsa hata, kaç deneme yapıldığıyla birlikte yükseltilir.
+    If the file exists and ``refresh`` is not set, the network is not used. The
+    download goes to a temporary file first; an interrupted download does not
+    damage the target. Transient network errors (dropped connection, timeout,
+    5xx response) are retried ``attempts`` times, waiting ``wait_s`` seconds
+    between tries; 4xx responses are not retried. If the last attempt also
+    fails, the error is raised together with the number of attempts made.
     """
     target = Path(target)
     if target.exists() and not refresh:
         return target
     target.parent.mkdir(parents=True, exist_ok=True)
-    tam_url = url + ("?" + urllib.parse.urlencode(parameters) if parameters else "")
-    istek = urllib.request.Request(tam_url, headers={"User-Agent": USER_AGENT})
-    gecici = target.with_name(target.name + ".kismi")
-    for deneme in range(1, attempts + 1):
+    full_url = url + ("?" + urllib.parse.urlencode(parameters) if parameters else "")
+    request = urllib.request.Request(full_url, headers={"User-Agent": USER_AGENT})
+    partial = target.with_name(target.name + ".partial")
+    for attempt in range(1, attempts + 1):
         try:
-            with urllib.request.urlopen(istek, timeout=timeout_s) as yanit, gecici.open("wb") as f:  # noqa: S310
-                for parca in iter(lambda: yanit.read(1 << 20), b""):
-                    f.write(parca)
+            with urllib.request.urlopen(request, timeout=timeout_s) as response, partial.open("wb") as f:  # noqa: S310
+                for chunk in iter(lambda: response.read(1 << 20), b""):
+                    f.write(chunk)
             break
-        except urllib.error.HTTPError as hata:
-            if hata.code < 500 or deneme == attempts:
+        except urllib.error.HTTPError as error:
+            if error.code < 500 or attempt == attempts:
                 raise
-        except (urllib.error.URLError, TimeoutError, ConnectionError) as hata:
-            if deneme == attempts:
-                raise OSError(f"{attempts} denemede indirilemedi: {tam_url} ({hata})") from hata
+        except (urllib.error.URLError, TimeoutError, ConnectionError) as error:
+            if attempt == attempts:
+                raise OSError(f"download failed after {attempts} attempts: {full_url} ({error})") from error
         time.sleep(wait_s)
-    gecici.replace(target)
-    kayit_yolu = target.parent / "KAYNAK_KAYDI.json"
-    kayit = json.loads(kayit_yolu.read_text(encoding="utf-8")) if kayit_yolu.exists() else {}
-    kayit[target.name] = {
-        "url": tam_url,
+    partial.replace(target)
+    record_path = target.parent / "SOURCE_RECORD.json"
+    record = json.loads(record_path.read_text(encoding="utf-8")) if record_path.exists() else {}
+    record[target.name] = {
+        "url": full_url,
         "sha256": _digest(target),
-        "bayt": target.stat().st_size,
-        "indirme_zamani": dt.datetime.now(dt.UTC).isoformat(timespec="seconds"),
-        "atif": attribution,
+        "bytes": target.stat().st_size,
+        "downloaded_at": dt.datetime.now(dt.UTC).isoformat(timespec="seconds"),
+        "attribution": attribution,
     }
-    kayit_yolu.write_text(json.dumps(kayit, ensure_ascii=False, indent=1), encoding="utf-8")
+    record_path.write_text(json.dumps(record, ensure_ascii=False, indent=1), encoding="utf-8")
     return target
 
 
-@infrastructure("istek için kararlı dosya adı üretir; denklem uygulamaz")
+@infrastructure("builds a stable file name for a request; applies no equation")
 def key(*parts: str) -> str:
-    """İstek parçalarından 16 haneli kararlı bir özet üretir (önbellek dosya adı için)."""
+    """Build a stable 16-character digest from request parts (for the cache file name)."""
     return hashlib.sha256("\x1f".join(parts).encode("utf-8")).hexdigest()[:16]

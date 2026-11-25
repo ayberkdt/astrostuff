@@ -1,47 +1,47 @@
-# Vizyon ve kapsam
+# Vision and scope
 
-## Amaç
+## Purpose
 
-Gökbilim ve astrofizik hesaplarını, gözlem verisinin indirgenmesinden kozmolojik parametre kestirimine kadar, kendi yazdığımız bir Python kitaplığında toplamak. Kitaplığın ayırt edici özelliği izlenebilirliktir: her fonksiyon uyguladığı denklemin yayımlanmış kaynağını denklem numarasıyla gösterir ve bağımsız bir uygulamaya karşı sınanır.
+To gather astronomy and astrophysics calculations, from the reduction of observational data to the estimation of cosmological parameters, in a Python library that we write ourselves. The distinguishing feature of the library is traceability: every function cites the published source of the equation it implements, with the equation number, and is tested against an independent implementation.
 
-Olgun kitaplıklar bu hesapların çoğunu yapmaktadır ([02_saha_arastirmasi/01_yazilim_ekosistemi.md](02_saha_arastirmasi/01_yazilim_ekosistemi.md)). Yeniden yazmanın gerekçesi üçtür:
+Mature libraries already do most of these calculations ([02_field_survey/01_software_ecosystem.md](02_field_survey/01_software_ecosystem.md)). There are three reasons for rewriting them:
 
-1. **Anlama.** Bir indirgeme zincirinin ya da uzaklık hesabının her adımını yazan kişi, sonucun hangi varsayıma ne kadar duyarlı olduğunu bilir.
-2. **İzlenebilirlik.** Hazır kitaplıkta bir sayının hangi denklemden, hangi sabitle, hangi yaklaşımla çıktığını bulmak kaynak kodu kazmayı gerektirir. Burada bu bilgi fonksiyonun arayüzündedir.
-3. **Doğrulanmış yeniden üretim.** Olgun kitaplıklar test kâhini olarak kullanılır; iki bağımsız uygulamanın uyuşması tek birinin sonucundan güçlü kanıttır.
+1. **Understanding.** A person who writes every step of a reduction chain or a distance calculation knows how sensitive the result is to each assumption.
+2. **Traceability.** In a ready-made library, finding out which equation, which constant and which approximation a number came from means digging through the source code. Here this information is part of the function's interface.
+3. **Verified reproduction.** Mature libraries are used as test oracles; the agreement of two independent implementations is stronger evidence than the result of one.
 
-## Kapsam
+## Scope
 
-Dört katman:
+Four layers:
 
-- **Hesap altyapısı:** sabitler, birimler, açılar, zaman ölçekleri, koordinat dönüşümleri, sayısal yöntemler, istatistik.
-- **Gözlem:** planlama, dedektör ve atmosfer modeli, görüntü indirgeme, fotometri, astrometri, tayf, zaman serisi. "Yer gözlemi" yer tabanlı (teleskopla, yeryüzünden) astronomik gözlem olarak yorumlanmıştır; Dünya'nın uydudan gözlemi (uzaktan algılama) kapsamda değildir.
-- **Astrofizik modelleme:** ışınım, yörünge mekaniği, yıldız yapısı ve popülasyonları, gökada dinamiği, kozmoloji.
-- **Uçtan uca analiz:** açık veriden yayımlanmış sonuçların yeniden üretimi; ilk hedef Hubble diyagramı ve Hubble sabiti.
+- **Calculation infrastructure:** constants, units, angles, time scales, coordinate transforms, numerical methods, statistics.
+- **Observing:** planning, detector and atmosphere model, image reduction, photometry, astrometry, spectroscopy, time series. "Ground observation" is interpreted as ground-based (with a telescope, from the Earth's surface) astronomical observation; observing the Earth from a satellite (remote sensing) is not in scope.
+- **Astrophysical modeling:** radiation, orbital mechanics, stellar structure and populations, galaxy dynamics, cosmology.
+- **End-to-end analysis:** reproduction of published results from open data; the first target is the Hubble diagram and the Hubble constant.
 
-## Kapsam dışı
+## Out of scope
 
-- Büyük kodların yeniden yazımı: yıldız evrimi (MESA), Boltzmann çözücüler (CAMB, CLASS), hidrodinamik ve kozmolojik benzetim, ışınım aktarımı kodları, süpernova ışık eğrisi modelleri (SALT). Bunlar kullanılır ya da çıktıları okunur.
-- Genel makine öğrenmesi algoritmaları; `scikit-learn` kullanılır.
-- Teleskop ve kamera denetimi, gerçek zamanlı işletim.
-- Grafik arayüz.
+- Rewriting large codes: stellar evolution (MESA), Boltzmann solvers (CAMB, CLASS), hydrodynamic and cosmological simulation, radiative transfer codes, supernova light-curve models (SALT). These are used, or their outputs are read.
+- General machine learning algorithms; `scikit-learn` is used.
+- Telescope and camera control, real-time operation.
+- A graphical user interface.
 
-Sınırın ölçütü: bir algoritma birkaç yüz satırda, yayımlanmış denklemlerden yazılabiliyor ve bağımsız bir uygulamaya karşı sınanabiliyorsa kapsamdadır.
+The criterion for the boundary: an algorithm is in scope if it can be written in a few hundred lines from published equations and tested against an independent implementation.
 
-## Başarı ölçütleri
+## Success criteria
 
-- Her açık fonksiyonun kaynağı, geçerlilik aralığı ve doğrulama testi vardır; bu kural makineyle denetlenir.
-- Her modül bir kâhine karşı belgelenmiş tolerans içinde uyuşur.
-- Her aşama yayımlanmış bir sonucu yeniden üreten bir projeyle kapanır.
-- Bir analiz, çalıştırma kaydından yeniden koşturulduğunda aynı sonucu verir.
+- Every public function has a source, a validity range and a verification test; this rule is checked by machine.
+- Every module agrees with an oracle within a documented tolerance.
+- Every phase closes with a project that reproduces a published result.
+- An analysis re-run from its run record gives the same result.
 
-## Hedef kullanıcı
+## Target user
 
-Kitaplığı yazan ve kullanan kişi aynıdır: gözlem yapan, veriyi kendi indirgeyen ve sonucu yayımlanmış değerlerle karşılaştırmak isteyen araştırmacı. Kod öğretici olacak kadar okunur, bilim sonucu verecek kadar doğru olmalıdır; ikisi çatıştığında doğruluk önce gelir ve okunurluk belge dizgisiyle sağlanır.
+The person who writes the library and the person who uses it are the same: a researcher who observes, reduces the data themselves and wants to compare the result with published values. The code must be readable enough to teach and correct enough to give scientific results; when the two conflict, correctness comes first, and readability is provided by the docstrings.
 
-## Açık kararlar
+## Open decisions
 
-- **Paket adı:** `kozmos` (PyPI'da boş).
-- **Tanımlayıcı dili:** ilk sürüm Türkçe ASCII tanımlayıcılarla yazılmıştır (`isinim_gucu_uzakligi_mpc`); plan figuresiyle aynı adlar kullanılır. İngilizceye geçiş istenirse kod tabanı küçükken yapılmalıdır.
-- **Lisans:** depo tüm hakları saklı olarak yayımlanmıştır (`LICENSE`). Zaman, açı ve koordinat fonksiyonları ERFA kaynak kodundaki algoritmaları izler; ERFA'nın telif ve lisans bildirimi `THIRD_PARTY_NOTICES.md` dosyasındadır ve türetilen bölümlerin yükümlülükleri depo sahibince değerlendirilmelidir. SOFA'nın kendi lisansı bu çalışmada okunmamıştır; SOFA kaynak kodundan doğrudan aktarım yapılmamıştır.
-- **Hızlandırma:** NumPy yeterli olmadığında Numba ya da JAX; karar ölçümle verilir.
+- **Package name:** `kozmos` (free on PyPI).
+- **Identifier language:** identifiers are English snake_case with unit suffixes (`luminosity_distance_mpc`); the same names are used in the plan documents. The first version was written with Turkish ASCII identifiers and was later renamed to English.
+- **License:** the repository is published with all rights reserved (`LICENSE`). The time, angle and coordinate functions follow the algorithms in the ERFA source code; the copyright and licence notice of ERFA is in `THIRD_PARTY_NOTICES.md`, and the obligations of the derived parts must be assessed by the owner of the repository. The licence of SOFA itself has not been read in this work; nothing was transferred directly from the SOFA source code.
+- **Acceleration:** Numba or JAX when NumPy is not enough; the decision is made by measurement.

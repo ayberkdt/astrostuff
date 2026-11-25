@@ -1,8 +1,8 @@
-"""İki cisim problemi: Kepler denklemi ve temel bağıntılar.
+"""Two-body problem: Kepler's equation and basic relations.
 
-Denklemler Murray ve Correia'nın derleme bölümünün arXiv TeX kaynağından
-(1009.1738, ``Chapter2.tex``) okunmuştur [MurrayCorreia2010]; denklemler
-oradaki TeX etiketleriyle anılır.
+The equations were read from the arXiv TeX source (1009.1738, ``Chapter2.tex``)
+of the review chapter by Murray and Correia [MurrayCorreia2010]; equations are
+cited by the TeX labels used there.
 """
 
 from __future__ import annotations
@@ -18,28 +18,28 @@ Array = NDArray[np.float64]
 
 @source(
     "MurrayCorreia2010",
-    where="TeX etiketi eq37 (Kepler denklemi), eq38-eq39 (Newton-Raphson)",
+    where="TeX label eq37 (Kepler's equation), eq38-eq39 (Newton-Raphson)",
     status="read",
-    note="kaynak başlangıç için E0 = M önerir; burada E0 = M + e sin M, e > 0,8 için π·işaret(M) (bu projenin seçimi)",
+    note="the source suggests E0 = M as the starting value; here E0 = M + e sin M, and π·sign(M) for e > 0.8 (this project's choice)",
 )
 def eccentric_anomaly(
     mean_anomaly_rad: ArrayLike, eccentricity: ArrayLike, *, tolerance: float = 1e-14, max_iterations: int = 50
 ) -> Array:
-    """Kepler denklemini eliptik yörünge için çözer: M = E − e sin E.
+    """Solve Kepler's equation for an elliptic orbit: M = E − e sin E.
 
     Parameters
     ----------
-    ortalama_anomali_rad : float ya da ndarray
-        Ortalama anomali M [rad].
-    dis_merkezlik : float ya da ndarray
-        Dış merkezlik, 0 <= e < 1.
-    tolerans : float
-        Yinelemenin durma ölçütü, |ΔE| [rad].
+    mean_anomaly_rad : float or ndarray
+        Mean anomaly M [rad].
+    eccentricity : float or ndarray
+        Eccentricity, 0 <= e < 1.
+    tolerance : float
+        Stopping criterion of the iteration, |ΔE| [rad].
 
     Returns
     -------
-    float ya da ndarray
-        Dış merkezli anomali E [rad]; M ile aynı 2π dalında.
+    float or ndarray
+        Eccentric anomaly E [rad], on the same 2π branch as M.
 
     References
     ----------
@@ -47,8 +47,8 @@ def eccentric_anomaly(
 
     Validity
     --------
-    0 <= e < 1. e → 1 ve M → 0 yakınında Newton yinelemesi yavaşlar;
-    e <= 0,999 için sınanmıştır.
+    0 <= e < 1. The Newton iteration slows down near e → 1 and M → 0;
+    tested for e <= 0.999.
 
     Verification
     ------------
@@ -57,29 +57,29 @@ def eccentric_anomaly(
     m = np.asarray(mean_anomaly_rad, dtype=float)
     e = np.asarray(eccentricity, dtype=float)
     if np.any((e < 0) | (e >= 1)):
-        raise ValueError("dış merkezlik [0, 1) aralığında olmalı")
+        raise ValueError("eccentricity must be in the range [0, 1)")
     m, e = np.broadcast_arrays(m, e)
-    m_ind = wrap_pm_pi(m)
-    buyuk_e = m_ind + e * np.sin(m_ind)
-    # Yüksek dış merkezlikte E0 = π·işaret(M) Newton için güvenli başlangıçtır.
-    buyuk_e = np.where(e > 0.8, np.pi * np.sign(m_ind + 1e-300), buyuk_e)
+    m_wrapped = wrap_pm_pi(m)
+    ecc_anomaly = m_wrapped + e * np.sin(m_wrapped)
+    # At high eccentricity, E0 = π·sign(M) is a safe starting value for Newton.
+    ecc_anomaly = np.where(e > 0.8, np.pi * np.sign(m_wrapped + 1e-300), ecc_anomaly)
     for _ in range(max_iterations):
-        f = buyuk_e - e * np.sin(buyuk_e) - m_ind
-        delta = f / (1.0 - e * np.cos(buyuk_e))
-        buyuk_e = buyuk_e - delta
+        f = ecc_anomaly - e * np.sin(ecc_anomaly) - m_wrapped
+        delta = f / (1.0 - e * np.cos(ecc_anomaly))
+        ecc_anomaly = ecc_anomaly - delta
         if np.all(np.abs(delta) < tolerance):
             break
-    return buyuk_e + (m - m_ind)
+    return ecc_anomaly + (m - m_wrapped)
 
 
 @source(
     "MurrayCorreia2010",
-    where="TeX etiketi eq17 ve eq33",
+    where="TeX label eq17 and eq33",
     status="read",
-    note="r = a(1−e²)/(1+e cos f) = a(1−e cos E); tan(f/2) = sqrt((1+e)/(1−e)) tan(E/2) bu ikisinden türetilir (türetim bu projede)",
+    note="r = a(1−e²)/(1+e cos f) = a(1−e cos E); tan(f/2) = sqrt((1+e)/(1−e)) tan(E/2) is derived from these two (the derivation is in this project)",
 )
 def true_anomaly(eccentric_anomaly_rad: ArrayLike, eccentricity: ArrayLike) -> Array:
-    """Dış merkezli anomaliden gerçek anomaliyi hesaplar.
+    """Compute the true anomaly from the eccentric anomaly.
 
     References
     ----------
@@ -87,24 +87,24 @@ def true_anomaly(eccentric_anomaly_rad: ArrayLike, eccentricity: ArrayLike) -> A
 
     Verification
     ------------
-    tests/property/test_kepler_property.py: yörünge denklemi r = a(1 − e cos E) = a(1 − e²)/(1 + e cos f).
+    tests/property/test_kepler_property.py: orbit equation r = a(1 − e cos E) = a(1 − e²)/(1 + e cos f).
     """
-    buyuk_e = np.asarray(eccentric_anomaly_rad, dtype=float)
+    ecc_anomaly = np.asarray(eccentric_anomaly_rad, dtype=float)
     e = np.asarray(eccentricity, dtype=float)
-    f = 2.0 * np.arctan2(np.sqrt(1.0 + e) * np.sin(buyuk_e / 2.0), np.sqrt(1.0 - e) * np.cos(buyuk_e / 2.0))
-    # E ile aynı 2π dalında kal.
-    return f + TWO_PI * np.round((buyuk_e - f) / TWO_PI)
+    f = 2.0 * np.arctan2(np.sqrt(1.0 + e) * np.sin(ecc_anomaly / 2.0), np.sqrt(1.0 - e) * np.cos(ecc_anomaly / 2.0))
+    # Stay on the same 2π branch as E.
+    return f + TWO_PI * np.round((ecc_anomaly - f) / TWO_PI)
 
 
-@source("MurrayCorreia2010", where="TeX etiketi eq19", status="read", note="T² = 4π² a³ / [G(m1 + m2)]")
+@source("MurrayCorreia2010", where="TeX label eq19", status="read", note="T² = 4π² a³ / [G(m1 + m2)]")
 def orbital_period_s(semi_major_axis_m: ArrayLike, gm_m3_s2: ArrayLike) -> Array:
-    """Yörünge dönemini hesaplar: P = 2π sqrt(a³/μ).
+    """Compute the orbital period: P = 2π sqrt(a³/μ).
 
     Parameters
     ----------
-    yari_buyuk_eksen_m : float ya da ndarray
-        Yarı büyük eksen [m].
-    kutle_parametresi_m3_s2 : float ya da ndarray
+    yari_ecc_anomalyksen_m : float ya da ndarray
+        Semi-major axis [m].
+    gm_m3_s2 : float or ndarray
         μ = G(m1 + m2) [m³ s⁻²].
 
     References
@@ -113,15 +113,15 @@ def orbital_period_s(semi_major_axis_m: ArrayLike, gm_m3_s2: ArrayLike) -> Array
 
     Verification
     ------------
-    tests/unit/test_kepler.py: 1 au ve nominal GM_Güneş için bir Gauss yılı dolayı [Prsa2016].
+    tests/unit/test_kepler.py: about one Gaussian year for 1 au and the nominal GM_Sun [Prsa2016].
     """
     a = np.asarray(semi_major_axis_m, dtype=float)
     return TWO_PI * np.sqrt(a**3 / np.asarray(gm_m3_s2, dtype=float))
 
 
-@source("MurrayCorreia2010", where="TeX etiketi eq30", status="read", note="v² = G(m1 + m2)(2/r − 1/a)")
+@source("MurrayCorreia2010", where="TeX label eq30", status="read", note="v² = G(m1 + m2)(2/r − 1/a)")
 def orbital_speed_m_s(distance_m: ArrayLike, semi_major_axis_m: ArrayLike, gm_m3_s2: ArrayLike) -> Array:
-    """Yörünge hızını vis-viva denkleminden hesaplar.
+    """Compute the orbital speed from the vis-viva equation.
 
     References
     ----------
@@ -129,7 +129,7 @@ def orbital_speed_m_s(distance_m: ArrayLike, semi_major_axis_m: ArrayLike, gm_m3
 
     Verification
     ------------
-    tests/unit/test_kepler.py: dairesel yörüngede v = sqrt(μ/r).
+    tests/unit/test_kepler.py: v = sqrt(μ/r) on a circular orbit.
     """
     r = np.asarray(distance_m, dtype=float)
     a = np.asarray(semi_major_axis_m, dtype=float)

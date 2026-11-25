@@ -1,13 +1,13 @@
-"""FITS dosyalarının birincil görüntü biriminin okunması ve yazılması.
+"""Reading and writing the primary image unit of FITS files.
 
-Biçim kuralları FITS standardının 4.0 sürümünden (NASA FITS destek bürosunun
-PDF belgesi) okunmuştur [FITS2018]: 2880 baytlık bloklar, 80 karakterlik
-anahtar kayıtları, ``BITPIX`` yorumu (Tablo 8), ölçekleme (Denk. 3) ve büyük
-uçlu bayt sırası (Bölüm 5).
+The format rules were read from version 4.0 of the FITS standard (the PDF
+document of the NASA FITS support office) [FITS2018]: 2880-byte blocks,
+80-character header cards, the ``BITPIX`` interpretation (Table 8), scaling
+(Eq. 3) and big-endian byte order (Section 5).
 
-Kapsam: birincil HDU ve ``IMAGE`` uzantılarındaki görüntü dizileri. Tablo
-uzantıları listelenir ama içerikleri çözülmez; sıkıştırılmış görüntüler ve
-``CONTINUE`` kayıtları okunmaz.
+Scope: image arrays in the primary HDU and in ``IMAGE`` extensions. Table
+extensions are listed but their contents are not decoded; compressed images and
+``CONTINUE`` cards are not read.
 """
 
 from __future__ import annotations
@@ -19,25 +19,25 @@ from numpy.typing import ArrayLike, NDArray
 
 from kozmos._sources import source
 
-BLOCK = 2880  # [FITS2018] "FITS block": 2880 sekiz bitlik bayt
-CARD = 80  # anahtar kaydı uzunluğu
-_BITPIX_DTYPE = {8: ">u1", 16: ">i2", 32: ">i4", 64: ">i8", -32: ">f4", -64: ">f8"}  # [FITS2018] Tablo 8
+BLOCK = 2880  # [FITS2018] "FITS block": 2880 eight-bit bytes
+CARD = 80  # length of a header card
+_BITPIX_DTYPE = {8: ">u1", 16: ">i2", 32: ">i4", 64: ">i8", -32: ">f4", -64: ">f8"}  # [FITS2018] Table 8
 
 Header = dict[str, bool | int | float | str]
 
 
 def _parse_value(text: str) -> bool | int | float | str:
-    """Değer alanını (10. karakterden sonrası, yorum ayrılmış) Python değerine çevirir."""
+    """Convert a value field (after the 10th character, comment separated) to a Python value."""
     m = text.strip()
     if m.startswith("'"):
-        son = 1
-        while True:  # dizgi içindeki '' tek tırnak demektir
-            son = m.index("'", son)
-            if m[son : son + 2] == "''":
-                son += 2
+        end = 1
+        while True:  # '' inside a string means a single quote
+            end = m.index("'", end)
+            if m[end : end + 2] == "''":
+                end += 2
                 continue
             break
-        return m[1:son].replace("''", "'").rstrip()
+        return m[1:end].replace("''", "'").rstrip()
     m = m.split("/", 1)[0].strip()
     if m in ("T", "F"):
         return m == "T"
@@ -49,227 +49,227 @@ def _parse_value(text: str) -> bool | int | float | str:
 
 @source(
     "FITS2018",
-    where="Bölüm 3.3.1 ve 4.1: başlık blokları, anahtar kaydı bileşenleri; END anahtarı",
+    where="Section 3.3.1 and 4.1: header blocks, header card components; END keyword",
     status="read",
-    note="anahtar adı 1-8. baytlar; değer göstergesi '= ' 9-10. baytlar; başlık 2880 baytlık bloklarda, END ile biter",
+    note="keyword name is bytes 1-8; value indicator '= ' is bytes 9-10; the header is in 2880-byte blocks and ends with END",
 )
 @source(
     "Hierarch2009",
-    where="FITS kayıtlı kurallar sayfası: 'The HIERARCH Keyword Convention', Description",
+    where="FITS registered conventions page: 'The HIERARCH Keyword Convention', Description",
     status="read",
-    note="HIERARCH kaydının 10-80. baytları boşlukla ayrılmış sınıflandırma sözcükleri, ardından '=' ve serbest "
-    "biçimli değer taşır. Kuralın tam belgesi (hierarch.pdf) okunmadı; yalnızca kayıt sayfasındaki tanım uygulandı",
+    note="bytes 10-80 of a HIERARCH card hold space-separated classification words, then '=' and a free-format "
+    "value. The full document of the convention (hierarch.pdf) was not read; only the definition on the registry page was applied",
 )
 def parse_header(raw: bytes) -> tuple[Header, int]:
-    """Bir FITS başlığını anahtar-değer sözlüğüne çözer.
+    """Parse a FITS header into a key-value dictionary.
 
     Parameters
     ----------
-    ham : bytes
-        Dosyanın başından itibaren baytlar (en az başlığın tamamı).
+    raw : bytes
+        Bytes from the start of the file (at least the whole header).
 
     Returns
     -------
-    (başlık, veri_başlangıcı) : anahtar → değer sözlüğü ve veri biriminin bayt konumu.
+    (header, data_start) : key → value dictionary and the byte position of the data unit.
 
     References
     ----------
-    [FITS2018] Bölüm 3.3.1, 4.1; [Hierarch2009] Description.
+    [FITS2018] Section 3.3.1, 4.1; [Hierarch2009] Description.
 
     Validity
     --------
-    ESO'nun ``HIERARCH`` kayıtları, sözcükleri tek boşlukla birleştirilmiş anahtarla saklanır
-    (``HIERARCH ESO DET DIT = 6.0`` → ``baslik["ESO DET DIT"]``). ``COMMENT``, ``HISTORY`` ve
-    değer göstergesi taşımayan kayıtlar atlanır;
-    ``CONTINUE`` ile uzatılmış dizgiler birleştirilmez. Aynı anahtar yinelenirse son değer kalır.
+    ESO ``HIERARCH`` cards are stored with a key whose words are joined by single spaces
+    (``HIERARCH ESO DET DIT = 6.0`` → ``header["ESO DET DIT"]``). ``COMMENT``, ``HISTORY`` and
+    cards without a value indicator are skipped;
+    strings extended with ``CONTINUE`` are not joined. If the same key is repeated, the last value is kept.
 
     Verification
     ------------
-    tests/unit/test_fits.py: astropy.io.fits ile başlık değerlerinin karşılaştırılması; HIERARCH kartları.
+    tests/unit/test_fits.py: comparison of header values with astropy.io.fits; HIERARCH cards.
     """
     header: Header = {}
-    konum = 0
+    position = 0
     while True:
-        if konum + CARD > len(raw):
-            raise ValueError("END anahtarı bulunamadı; başlık eksik")
-        kayit = raw[konum : konum + CARD].decode("ascii", errors="replace")
-        konum += CARD
-        key = kayit[:8].rstrip()
+        if position + CARD > len(raw):
+            raise ValueError("END keyword not found; header is incomplete")
+        card = raw[position : position + CARD].decode("ascii", errors="replace")
+        position += CARD
+        key = card[:8].rstrip()
         if key == "END":
             break
-        if kayit[8:10] == "= " and key:
-            header[key] = _parse_value(kayit[10:])
-        elif key == "HIERARCH" and "=" in kayit[9:]:
-            name, _, value = kayit[9:].partition("=")
+        if card[8:10] == "= " and key:
+            header[key] = _parse_value(card[10:])
+        elif key == "HIERARCH" and "=" in card[9:]:
+            name, _, value = card[9:].partition("=")
             header[" ".join(name.split())] = _parse_value(value)
-    veri_baslangici = -(-konum // BLOCK) * BLOCK
-    return header, veri_baslangici
+    data_start = -(-position // BLOCK) * BLOCK
+    return header, data_start
 
 
 def _data_bytes(header: Header) -> int:
-    """Bir HDU'nun veri biriminin dolgusuz bayt sayısı ([FITS2018] Denk. 1 ve 2)."""
+    """Number of bytes of the data unit of an HDU, without padding ([FITS2018] Eq. 1 and 2)."""
     axis = int(header.get("NAXIS", 0))
     if axis == 0:
         return 0
-    eleman = 1
+    elements = 1
     for i in range(1, axis + 1):
-        eleman *= int(header[f"NAXIS{i}"])
-    return abs(int(header["BITPIX"])) // 8 * int(header.get("GCOUNT", 1)) * (int(header.get("PCOUNT", 0)) + eleman)
+        elements *= int(header[f"NAXIS{i}"])
+    return abs(int(header["BITPIX"])) // 8 * int(header.get("GCOUNT", 1)) * (int(header.get("PCOUNT", 0)) + elements)
 
 
 @source(
     "FITS2018",
-    where="Denk. 1 ve 2 (veri boyutu), Bölüm 3.3-3.4 (HDU sırası), XTENSION anahtarı",
+    where="Eq. 1 and 2 (data size), Section 3.3-3.4 (HDU order), XTENSION keyword",
     status="read",
-    note="N_bit = |BITPIX| × GCOUNT × (PCOUNT + NAXIS1 × ... × NAXISm); her HDU 2880 baytın katında başlar",
+    note="N_bit = |BITPIX| × GCOUNT × (PCOUNT + NAXIS1 × ... × NAXISm); each HDU starts at a multiple of 2880 bytes",
 )
 def list_hdus(path: Path | str) -> list[tuple[str, Header, int]]:
-    """Dosyadaki bütün HDU'ları sırayla listeler.
+    """List all HDUs in the file, in order.
 
     Returns
     -------
-    list[(tür, başlık, veri_başlangıcı)]
-        Tür birincil HDU için ``"PRIMARY"``, uzantılar için ``XTENSION`` değeridir
+    list[(kind, header, data_start)]
+        The kind is ``"PRIMARY"`` for the primary HDU and the ``XTENSION`` value for extensions
         (``"IMAGE"``, ``"BINTABLE"``, ``"TABLE"``).
 
     References
     ----------
-    [FITS2018] Denk. 1, 2; Bölüm 3.3-3.4.
+    [FITS2018] Eq. 1, 2; Section 3.3-3.4.
 
     Validity
     --------
-    Dosyanın tamamı belleğe okunur. Rastgele gruplar (``GROUPS = T``) desteklenmez.
+    The whole file is read into memory. Random groups (``GROUPS = T``) are not supported.
 
     Verification
     ------------
-    tests/unit/test_fits.py: astropy.io.fits ile aynı HDU sayısı, türleri ve boyutları.
+    tests/unit/test_fits.py: same number, kinds and sizes of HDUs as astropy.io.fits.
     """
     raw = Path(path).read_bytes()
-    liste: list[tuple[str, Header, int]] = []
-    konum = 0
-    while konum < len(raw) and raw[konum : konum + CARD].strip():
-        header, uzunluk = parse_header(raw[konum:])
-        if not liste and header.get("SIMPLE") is not True:
-            raise ValueError("SIMPLE = T değil; standart FITS dosyası değil")
-        tur = "PRIMARY" if not liste else str(header.get("XTENSION", "?")).strip()
-        veri_baslangici = konum + uzunluk
-        liste.append((tur, header, veri_baslangici))
-        konum = veri_baslangici + -(-_data_bytes(header) // BLOCK) * BLOCK
-    return liste
+    hdus: list[tuple[str, Header, int]] = []
+    position = 0
+    while position < len(raw) and raw[position : position + CARD].strip():
+        header, length = parse_header(raw[position:])
+        if not hdus and header.get("SIMPLE") is not True:
+            raise ValueError("SIMPLE is not T; not a standard FITS file")
+        kind = "PRIMARY" if not hdus else str(header.get("XTENSION", "?")).strip()
+        data_start = position + length
+        hdus.append((kind, header, data_start))
+        position = data_start + -(-_data_bytes(header) // BLOCK) * BLOCK
+    return hdus
 
 
 @source(
     "FITS2018",
-    where="Tablo 8 (BITPIX), Denk. 3 (BZERO, BSCALE), Bölüm 5 (büyük uçlu bayt sırası), Şekil 1 (eksen sırası)",
+    where="Table 8 (BITPIX), Eq. 3 (BZERO, BSCALE), Section 5 (big-endian byte order), Fig. 1 (axis order)",
     status="read",
-    note="fiziksel değer = BZERO + BSCALE × dizi değeri; 1. eksenin indisi en hızlı değişir, bu yüzden dizi "
-    "(NAXISm, ..., NAXIS1) biçimindedir",
+    note="physical value = BZERO + BSCALE × array value; the index of axis 1 varies fastest, so the array has "
+    "shape (NAXISm, ..., NAXIS1)",
 )
 def read_fits(path: Path | str, hdu: int = 0) -> tuple[NDArray[np.float64], Header]:
-    """FITS dosyasındaki bir görüntü dizisini ve başlığını okur.
+    """Read an image array and its header from a FITS file.
 
     Parameters
     ----------
-    yol : Path
+    path : Path
     hdu : int
-        Okunacak HDU'nun sırası; 0 birincil HDU'dur. ``IMAGE`` uzantıları da okunur.
+        Index of the HDU to read; 0 is the primary HDU. ``IMAGE`` extensions are also read.
 
     Returns
     -------
-    (veri, başlık) : veri ``float64`` dizisidir; biçimi ``(NAXISn, ..., NAXIS1)``, yani
-    iki boyutlu görüntüde ``veri[y, x]``. Ölçekleme (``BSCALE``, ``BZERO``) uygulanmıştır.
+    (data, header) : data is a ``float64`` array of shape ``(NAXISn, ..., NAXIS1)``, that is
+    ``data[y, x]`` for a two-dimensional image. Scaling (``BSCALE``, ``BZERO``) has been applied.
 
     References
     ----------
-    [FITS2018] Tablo 8, Denk. 3, Bölüm 5, Şekil 1.
+    [FITS2018] Table 8, Eq. 3, Section 5, Fig. 1.
 
     Validity
     --------
-    Yalnızca görüntü dizileri: veri taşımayan HDU (``NAXIS = 0``) ya da tablo
-    uzantısı ``ValueError`` verir. ``BLANK`` ile işaretlenmiş tamsayı pikseller ``nan`` yapılır.
+    Image arrays only: an HDU without data (``NAXIS = 0``) or a table
+    extension raises ``ValueError``. Integer pixels marked with ``BLANK`` become ``nan``.
 
     Verification
     ------------
-    tests/unit/test_fits.py: astropy.io.fits.getdata ile tam eşitlik; yaz-oku gidiş-dönüşü; çok uzantılı dosya.
+    tests/unit/test_fits.py: exact equality with astropy.io.fits.getdata; write-read round trip; multi-extension file.
     """
     raw = Path(path).read_bytes()
-    liste = list_hdus(path)
-    if not 0 <= hdu < len(liste):
-        raise ValueError(f"dosyada {len(liste)} HDU var; {hdu} yok")
-    tur, header, initial = liste[hdu]
-    if tur not in ("PRIMARY", "IMAGE"):
-        raise ValueError(f"HDU {hdu} bir görüntü değil ({tur}); tablo uzantıları çözülmez")
+    hdus = list_hdus(path)
+    if not 0 <= hdu < len(hdus):
+        raise ValueError(f"the file has {len(hdus)} HDUs; there is no HDU {hdu}")
+    kind, header, initial = hdus[hdu]
+    if kind not in ("PRIMARY", "IMAGE"):
+        raise ValueError(f"HDU {hdu} is not an image ({kind}); table extensions are not decoded")
     axis = int(header.get("NAXIS", 0))
     if axis == 0:
-        raise ValueError(f"HDU {hdu} veri içermiyor (NAXIS = 0)")
+        raise ValueError(f"HDU {hdu} contains no data (NAXIS = 0)")
     shape = tuple(int(header[f"NAXIS{i}"]) for i in range(axis, 0, -1))
-    tip = np.dtype(_BITPIX_DTYPE[int(header["BITPIX"])])
+    dtype = np.dtype(_BITPIX_DTYPE[int(header["BITPIX"])])
     n = int(np.prod(shape))
-    dizi = np.frombuffer(raw, dtype=tip, count=n, offset=initial).reshape(shape)
-    data = dizi.astype(np.float64)
-    if "BLANK" in header and tip.kind in "iu":
-        data[dizi == int(header["BLANK"])] = np.nan
+    array = np.frombuffer(raw, dtype=dtype, count=n, offset=initial).reshape(shape)
+    data = array.astype(np.float64)
+    if "BLANK" in header and dtype.kind in "iu":
+        data[array == int(header["BLANK"])] = np.nan
     data = float(header.get("BZERO", 0.0)) + float(header.get("BSCALE", 1.0)) * data
     return data, header
 
 
 def _card(key: str, value: bool | int | float | str) -> str:
     if isinstance(value, bool):
-        alan = f"{'T' if value else 'F':>20}"
+        field = f"{'T' if value else 'F':>20}"
     elif isinstance(value, int):
-        alan = f"{value:>20d}"
+        field = f"{value:>20d}"
     elif isinstance(value, float):
-        alan = f"{value:>20.14G}"
+        field = f"{value:>20.14G}"
     else:
-        alan = "'" + f"{str(value).replace(chr(39), chr(39) * 2):<8}" + "'"
-    return f"{key:<8}= {alan}".ljust(CARD)[:CARD]
+        field = "'" + f"{str(value).replace(chr(39), chr(39) * 2):<8}" + "'"
+    return f"{key:<8}= {field}".ljust(CARD)[:CARD]
 
 
 @source(
     "FITS2018",
-    where="Bölüm 3.3.1, 4.4.1 (zorunlu anahtarlar), Tablo 8, Bölüm 5",
+    where="Section 3.3.1, 4.4.1 (mandatory keywords), Table 8, Section 5",
     status="read",
-    note="SIMPLE, BITPIX, NAXIS, NAXISn sırayla; başlık boşlukla, veri sıfırla 2880 baytın katına doldurulur",
+    note="SIMPLE, BITPIX, NAXIS, NAXISn in order; the header is padded with spaces and the data with zeros to a multiple of 2880 bytes",
 )
 def write_fits(path: Path | str, data: ArrayLike, header: Header | None = None) -> None:
-    """Bir diziyi birincil HDU olarak FITS dosyasına yazar.
+    """Write an array to a FITS file as the primary HDU.
 
     Parameters
     ----------
-    yol : Path
-    veri : ndarray
-        ``float64`` ya da ``float32`` olarak (BITPIX −64 / −32) yazılır; tamsayı diziler
-        ``int16``/``int32`` olarak yazılır.
-    baslik : dict, isteğe bağlı
-        Ek anahtarlar (ad en çok 8 karakter, büyük harf). Zorunlu anahtarlar veriden üretilir.
+    path : Path
+    data : ndarray
+        Written as ``float64`` or ``float32`` (BITPIX −64 / −32); integer arrays are
+        written as ``int16``/``int32``.
+    header : dict, optional
+        Extra keywords (name at most 8 characters, upper case). The mandatory keywords are produced from the data.
 
     References
     ----------
-    [FITS2018] Bölüm 3.3.1, 4.4.1, Tablo 8, Bölüm 5.
+    [FITS2018] Section 3.3.1, 4.4.1, Table 8, Section 5.
 
     Validity
     --------
-    68 karakterden uzun dizgi değerleri kesilir; yorum alanı yazılmaz.
+    String values longer than 68 characters are truncated; the comment field is not written.
 
     Verification
     ------------
-    tests/unit/test_fits.py: yazılan dosyanın astropy.io.fits ile okunması ve doğrulanması.
+    tests/unit/test_fits.py: reading the written file with astropy.io.fits and checking it.
     """
-    dizi = np.asarray(data)
-    bitpix = {"f": {4: -32, 8: -64}, "i": {2: 16, 4: 32, 8: 64}, "u": {1: 8}}.get(dizi.dtype.kind, {}).get(
-        dizi.dtype.itemsize
+    array = np.asarray(data)
+    bitpix = {"f": {4: -32, 8: -64}, "i": {2: 16, 4: 32, 8: 64}, "u": {1: 8}}.get(array.dtype.kind, {}).get(
+        array.dtype.itemsize
     )
     if bitpix is None:
-        dizi, bitpix = dizi.astype(np.float64), -64
-    kayitlar = [_card("SIMPLE", True), _card("BITPIX", bitpix), _card("NAXIS", dizi.ndim)]
-    kayitlar += [_card(f"NAXIS{i + 1}", n) for i, n in enumerate(dizi.shape[::-1])]
-    zorunlu = {"SIMPLE", "BITPIX", "NAXIS", "END"} | {f"NAXIS{i + 1}" for i in range(dizi.ndim)}
+        array, bitpix = array.astype(np.float64), -64
+    cards = [_card("SIMPLE", True), _card("BITPIX", bitpix), _card("NAXIS", array.ndim)]
+    cards += [_card(f"NAXIS{i + 1}", n) for i, n in enumerate(array.shape[::-1])]
+    mandatory = {"SIMPLE", "BITPIX", "NAXIS", "END"} | {f"NAXIS{i + 1}" for i in range(array.ndim)}
     for key, value in (header or {}).items():
-        if key.upper() not in zorunlu:
-            kayitlar.append(_card(key.upper()[:8], value))
-    kayitlar.append("END".ljust(CARD))
-    bas = "".join(kayitlar).encode("ascii")
-    bas += b" " * (-len(bas) % BLOCK)
-    govde = dizi.astype(_BITPIX_DTYPE[bitpix]).tobytes()
-    govde += b"\x00" * (-len(govde) % BLOCK)
-    Path(path).write_bytes(bas + govde)
+        if key.upper() not in mandatory:
+            cards.append(_card(key.upper()[:8], value))
+    cards.append("END".ljust(CARD))
+    header_bytes = "".join(cards).encode("ascii")
+    header_bytes += b" " * (-len(header_bytes) % BLOCK)
+    body = array.astype(_BITPIX_DTYPE[bitpix]).tobytes()
+    body += b"\x00" * (-len(body) % BLOCK)
+    Path(path).write_bytes(header_bytes + body)

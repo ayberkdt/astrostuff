@@ -1,20 +1,22 @@
-"""H0 belirsizliğinin zincirden bağımsız, kapalı biçimli denetimi.
+"""Closed-form check of the H0 uncertainty, independent of the chain.
 
-Soru: bu depodaki zincir H0 = 73,53 ± 1,00 verirken yayımlanan değer neden
-73,6 ± 1,1 [Brout2022]?
+Question: why does the chain in this repository give H0 = 73.53 ± 1.00 while
+the published value is 73.6 ± 1.1 [Brout2022]?
 
-Yöntem: Ωm sabitken model, M ve x = 5 log10(H0 / 70) parametrelerinde
-doğrusaldır. Hubble akışındaki süpernovalarda artık m − M − μ(z; 70, Ωm) + x,
-kalibratörlerde m − M − μ_Sefeid olur. Doğrusal Gauss modelinde parametre
-kovaryansı (Aᵀ C⁻¹ A)⁻¹'dir; örnekleyiciye, zincir uzunluğuna ve yakınsamaya
-bağlı değildir. Ωm'in katkısı, Ωm ızgarasındaki en iyi x'in saçılımından
-toplam varyans yasasıyla eklenir.
+Method: with Ωm fixed, the model is linear in the parameters M and
+x = 5 log10(H0 / 70). For supernovae in the Hubble flow the residual is
+m − M − μ(z; 70, Ωm) + x, for calibrators m − M − μ_Cepheid. In a linear
+Gaussian model the parameter covariance is (Aᵀ C⁻¹ A)⁻¹; it does not depend
+on the sampler, the chain length or convergence. The contribution of Ωm is
+added through the law of total variance from the scatter of the best x on the
+Ωm grid.
 
-İkinci denetim yayımlanan zincirin kendisidir: Pantheon+ veri sürümündeki
-dört ``Pantheon+SH0ES_*.txt.gz`` zinciri (emcee) indirilir ve H0 saçılımı
-zincirin baş kısmı atılarak ve atılmadan ölçülür.
+The second check is the published chain itself: the four
+``Pantheon+SH0ES_*.txt.gz`` chains (emcee) of the Pantheon+ data release are
+downloaded and the H0 scatter is measured with and without discarding the
+beginning of the chain.
 
-Kullanım:
+Usage:
     python projects/hubble/h0_uncertainty_check.py
 """
 
@@ -31,60 +33,60 @@ from kozmos.archives import cache, pantheon
 from kozmos.cosmology.distances import Cosmology, distance_modulus, transverse_comoving_distance_mpc
 
 ROOT = Path(__file__).resolve().parents[2]
-BURASI = Path(__file__).resolve().parent
+HERE = Path(__file__).resolve().parent
 H0_NOMINAL = 70.0
 
 
-def cozum(
-    s: dict, covariance: np.ndarray, z_min: float, z_ust: float = np.inf, zhel_ile: bool = False
+def solve_closed_form(
+    s: dict, covariance: np.ndarray, z_min: float, z_max: float = np.inf, use_zhel: bool = False
 ) -> dict[str, float]:
-    """Kapalı biçimli çözüm. ``zhel_ile``: veri sürümündeki CosmoSIS olabilirliğinin uzaklık tanımı,
-    d_L = (1 + z_HEL) D_M(z_HD); yanlışsa d_L = (1 + z_HD) D_M(z_HD)."""
+    """Closed-form solution. ``use_zhel``: the distance definition of the CosmoSIS likelihood in the data release,
+    d_L = (1 + z_HEL) D_M(z_HD); if false, d_L = (1 + z_HD) D_M(z_HD)."""
     z = s["zHD"]
-    kal = s["IS_CALIBRATOR"] == 1
-    secim = kal | ((z > z_min) & (z < z_ust))
-    z, kal = z[secim], kal[secim]
-    m = s["m_b_corr"][secim]
-    carpan = linalg.cho_factor(covariance[np.ix_(secim, secim)], lower=True)
-    design = np.column_stack([np.ones(z.size), np.where(kal, 0.0, -1.0)])  # sütunlar: M, x
-    ters_kov = np.linalg.inv(design.T @ linalg.cho_solve(carpan, design))
+    calibrator = s["IS_CALIBRATOR"] == 1
+    selection = calibrator | ((z > z_min) & (z < z_max))
+    z, calibrator = z[selection], calibrator[selection]
+    m = s["m_b_corr"][selection]
+    factor = linalg.cho_factor(covariance[np.ix_(selection, selection)], lower=True)
+    design = np.column_stack([np.ones(z.size), np.where(calibrator, 0.0, -1.0)])  # columns: M, x
+    parameter_covariance = np.linalg.inv(design.T @ linalg.cho_solve(factor, design))
 
-    def uyum(omega_m: float) -> tuple[float, float]:
+    def fit(omega_m: float) -> tuple[float, float]:
         cosmology = Cosmology.flat(H0_NOMINAL, omega_m)
-        if zhel_ile:
-            model = 5.0 * np.log10((1.0 + s["zHEL"][secim]) * transverse_comoving_distance_mpc(z, cosmology)) + 25.0
+        if use_zhel:
+            model = 5.0 * np.log10((1.0 + s["zHEL"][selection]) * transverse_comoving_distance_mpc(z, cosmology)) + 25.0
         else:
             model = distance_modulus(z, cosmology)
-        mu = np.where(kal, s["CEPH_DIST"][secim], model)
-        p = ters_kov @ (design.T @ linalg.cho_solve(carpan, m - mu))
+        mu = np.where(calibrator, s["CEPH_DIST"][selection], model)
+        p = parameter_covariance @ (design.T @ linalg.cho_solve(factor, m - mu))
         residual = m - mu - design @ p
-        return float(p[1]), float(residual @ linalg.cho_solve(carpan, residual))
+        return float(p[1]), float(residual @ linalg.cho_solve(factor, residual))
 
-    izgara = np.linspace(0.20, 0.50, 121)
-    x, ki = np.array([uyum(o) for o in izgara]).T
-    agirlik = np.exp(-0.5 * (ki - ki.min()))
-    agirlik /= agirlik.sum()
-    x_ort = float(agirlik @ x)
-    # Toplam varyans: Ωm sabitkenki varyans + Ωm sonsalı boyunca en iyi x'in varyansı.
-    var_x = float(ters_kov[1, 1] + agirlik @ (x - x_ort) ** 2)
-    h0 = H0_NOMINAL * 10 ** (x_ort / 5.0)
-    donusum = h0 * np.log(10.0) / 5.0
+    grid = np.linspace(0.20, 0.50, 121)
+    x, chi2 = np.array([fit(o) for o in grid]).T
+    weight = np.exp(-0.5 * (chi2 - chi2.min()))
+    weight /= weight.sum()
+    x_mean = float(weight @ x)
+    # Total variance: variance at fixed Ωm + variance of the best x across the Ωm posterior.
+    var_x = float(parameter_covariance[1, 1] + weight @ (x - x_mean) ** 2)
+    h0 = H0_NOMINAL * 10 ** (x_mean / 5.0)
+    conversion = h0 * np.log(10.0) / 5.0
     return {
-        "sn_sayisi": int(secim.sum()),
-        "kalibrator": int(kal.sum()),
+        "n_sn": int(selection.sum()),
+        "calibrators": int(calibrator.sum()),
         "h0": h0,
-        "sigma_h0_omega_m_sabit": float(donusum * np.sqrt(ters_kov[1, 1])),
-        "sigma_h0": float(donusum * np.sqrt(var_x)),
-        "omega_m": float(agirlik @ izgara),
+        "sigma_h0_omega_m_fixed": float(conversion * np.sqrt(parameter_covariance[1, 1])),
+        "sigma_h0": float(conversion * np.sqrt(var_x)),
+        "omega_m": float(weight @ grid),
     }
 
 
-ZINCIR_KOKU = (
+CHAIN_URL_ROOT = (
     "https://raw.githubusercontent.com/PantheonPlusSH0ES/DataRelease/main/Pantheon%2B_Data/5_COSMOLOGY/chains/"
     "Pantheon%2BSH0ES/Pantheon%2BSH0ES_"
 )
-# Makaledeki değerler: Brout ve ark. (2022) TeX makroları \fLCDMHPanSH, \oLCDMHPanSH, \HPanSH, \wwaHPanSH.
-YAYIMLANAN = {
+# Values in the paper: Brout et al. (2022) TeX macros \fLCDMHPanSH, \oLCDMHPanSH, \HPanSH, \wwaHPanSH.
+PUBLISHED = {
     "FlatLambdaCDM": (73.6, 1.1),
     "LambdaCDM": (73.4, 1.1),
     "FlatwCDM": (73.5, 1.1),
@@ -92,73 +94,71 @@ YAYIMLANAN = {
 }
 
 
-def yayimlanan_zincirler() -> dict[str, object]:
-    """Veri sürümündeki dört zincirin H0 ortalaması ve saçılımı; baş kısım atılarak ve atılmadan."""
-    sonuc = {}
-    for model, (h0_makale, sigma_makale) in YAYIMLANAN.items():
+def published_chains() -> dict[str, object]:
+    """H0 mean and scatter of the four chains in the data release, with and without discarding the beginning."""
+    result = {}
+    for model, (h0_paper, sigma_paper) in PUBLISHED.items():
         path = cache.download(
-            f"{ZINCIR_KOKU}{model}.txt.gz",
+            f"{CHAIN_URL_ROOT}{model}.txt.gz",
             ROOT / "data" / "raw" / "pantheon" / f"Pantheon+SH0ES_{model}.txt.gz",
-            attribution="Pantheon+SH0ES veri sürümü, 5_COSMOLOGY/chains",
+            attribution="Pantheon+SH0ES data release, 5_COSMOLOGY/chains",
         )
-        with gzip.open(path, "rt") as dosya:
-            basliklar = dosya.readline().lstrip("#").split()
-            ornekleyici = dosya.readline().strip()
+        with gzip.open(path, "rt") as file:
+            header = file.readline().lstrip("#").split()
+            sampler = file.readline().strip()
         chain = np.loadtxt(path, comments="#")
-        h0 = 100.0 * chain[:, basliklar.index("cosmological_parameters--h0")]
+        h0 = 100.0 * chain[:, header.index("cosmological_parameters--h0")]
         n = h0.size
-        kesitler = {}
-        for name, bas in (
-            ("tamami", 0.0),
-            ("ilk_yuzde_10_atilmis", 0.10),
-            ("ilk_yuzde_25_atilmis", 0.25),
-            ("son_yari", 0.5),
+        slices = {}
+        for name, start in (
+            ("all", 0.0),
+            ("first_10_percent_discarded", 0.10),
+            ("first_25_percent_discarded", 0.25),
+            ("second_half", 0.5),
         ):
-            s = h0[int(bas * n) :]
-            kesitler[name] = {"ornek": int(s.size), "h0": float(s.mean()), "sigma_h0": float(s.std())}
-        sonuc[model] = {
-            "makale": {"h0": h0_makale, "sigma_h0": sigma_makale},
-            "ornekleyici_satiri": ornekleyici,
-            "ornek_sayisi": int(n),
-            "kesitler": kesitler,
+            s = h0[int(start * n) :]
+            slices[name] = {"samples": int(s.size), "h0": float(s.mean()), "sigma_h0": float(s.std())}
+        result[model] = {
+            "paper": {"h0": h0_paper, "sigma_h0": sigma_paper},
+            "sampler_line": sampler,
+            "n_samples": int(n),
+            "slices": slices,
         }
-    return sonuc
+    return result
 
 
 def main() -> None:
     raw = pantheon.load(ROOT / "data" / "raw" / "pantheon")
     s = raw.columns
     stat_only = pantheon.load(ROOT / "data" / "raw" / "pantheon", stat_only=True).covariance
-    sonuc = {
-        "aciklama": "kapalı biçimli doğrusal Gauss çözümü; örnekleyici yok",
-        "yayimlanan": {"h0": 73.6, "sigma": 1.1, "kaynak": "Brout2022 TeX makrosu \\fLCDMHPanSH"},
-        "zincir": json.loads((BURASI / "sonuc.json").read_text(encoding="utf-8"))["analiz_2_sn_ve_sefeid"]["h0"],
-        "secenekler": {
-            "stat+sys, z > 0.01 (zincirle aynı seçim)": cozum(s, raw.covariance, 0.01),
-            "stat+sys, z > 0.01, yayımlanan olabilirliğin uzaklık tanımı (zHEL)": cozum(
-                s, raw.covariance, 0.01, zhel_ile=True
+    result = {
+        "description": "closed-form linear Gaussian solution; no sampler",
+        "published": {"h0": 73.6, "sigma": 1.1, "source": "Brout2022 TeX macro \\fLCDMHPanSH"},
+        "chain": json.loads((HERE / "result.json").read_text(encoding="utf-8"))["analysis_2_sn_and_cepheids"]["h0"],
+        "options": {
+            "stat+sys, z > 0.01 (same selection as the chain)": solve_closed_form(s, raw.covariance, 0.01),
+            "stat+sys, z > 0.01, distance definition of the published likelihood (zHEL)": solve_closed_form(
+                s, raw.covariance, 0.01, use_zhel=True
             ),
-            "stat+sys, kesim yok (bütün süpernovalar)": cozum(s, raw.covariance, -1.0),
-            "stat+sys, z > 0.0233": cozum(s, raw.covariance, 0.0233),
-            "stat+sys, 0.0233 < z < 0.15": cozum(s, raw.covariance, 0.0233, 0.15),
-            "yalnız istatistik, z > 0.01": cozum(s, stat_only, 0.01),
+            "stat+sys, no cut (all supernovae)": solve_closed_form(s, raw.covariance, -1.0),
+            "stat+sys, z > 0.0233": solve_closed_form(s, raw.covariance, 0.0233),
+            "stat+sys, 0.0233 < z < 0.15": solve_closed_form(s, raw.covariance, 0.0233, 0.15),
+            "stat only, z > 0.01": solve_closed_form(s, stat_only, 0.01),
         },
     }
-    sonuc["yayimlanan_zincirler"] = yayimlanan_zincirler()
-    (BURASI / "h0_belirsizlik_denetimi.json").write_text(
-        json.dumps(sonuc, ensure_ascii=False, indent=1), encoding="utf-8"
-    )
-    for name, c in sonuc["secenekler"].items():
+    result["published_chains"] = published_chains()
+    (HERE / "h0_uncertainty_check.json").write_text(json.dumps(result, ensure_ascii=False, indent=1), encoding="utf-8")
+    for name, c in result["options"].items():
         print(
-            f"{name:68s} N={c['sn_sayisi']:5d} H0={c['h0']:.2f} ± {c['sigma_h0']:.3f} "
-            f"(Ωm sabit: {c['sigma_h0_omega_m_sabit']:.3f})  Ωm={c['omega_m']:.3f}"
+            f"{name:68s} N={c['n_sn']:5d} H0={c['h0']:.2f} ± {c['sigma_h0']:.3f} "
+            f"(Ωm fixed: {c['sigma_h0_omega_m_fixed']:.3f})  Ωm={c['omega_m']:.3f}"
         )
-    print("zincir:", sonuc["zincir"]["ortalama"], sonuc["zincir"]["standart_sapma"])
-    for model, z in sonuc["yayimlanan_zincirler"].items():
-        tam, kirpik = z["kesitler"]["tamami"], z["kesitler"]["ilk_yuzde_10_atilmis"]
+    print("chain:", result["chain"]["mean"], result["chain"]["std"])
+    for model, z in result["published_chains"].items():
+        whole, trimmed = z["slices"]["all"], z["slices"]["first_10_percent_discarded"]
         print(
-            f"{model:14s} {z['ornekleyici_satiri']} makale {z['makale']['h0']} ± {z['makale']['sigma_h0']} | zincir tamamı "
-            f"{tam['h0']:.2f} ± {tam['sigma_h0']:.3f} | ilk %10 atılmış {kirpik['h0']:.2f} ± {kirpik['sigma_h0']:.3f}"
+            f"{model:14s} {z['sampler_line']} paper {z['paper']['h0']} ± {z['paper']['sigma_h0']} | whole chain "
+            f"{whole['h0']:.2f} ± {whole['sigma_h0']:.3f} | first 10% discarded {trimmed['h0']:.2f} ± {trimmed['sigma_h0']:.3f}"
         )
 
 

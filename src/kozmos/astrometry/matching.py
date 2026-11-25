@@ -1,9 +1,9 @@
-"""Gökyüzünde iki kaynak listesinin konuma göre eşlenmesi.
+"""Positional matching of two source lists on the sky.
 
-Açısal ayrıklık birim vektörler arasındaki açıdır (ERFA ``sepp.c``)
-[ERFA2023]. En yakın komşu araması birim vektörlerin üç boyutlu uzayında
-k-d ağacıyla yapılır; kiriş uzunluğu 2 sin(θ/2) açıyla tekdüze arttığı için
-kirişe göre en yakın komşu, açıya göre en yakın komşudur.
+The angular separation is the angle between unit vectors (ERFA ``sepp.c``)
+[ERFA2023]. The nearest-neighbor search is done with a k-d tree in the
+three-dimensional space of unit vectors; because the chord length 2 sin(θ/2) increases
+monotonically with the angle, the nearest neighbor by chord is the nearest neighbor by angle.
 """
 
 from __future__ import annotations
@@ -22,16 +22,16 @@ Array = NDArray[np.float64]
 
 @dataclass(frozen=True, slots=True)
 class Match:
-    """Birinci listedeki her kaynağın ikinci listedeki en yakın komşusu.
+    """Nearest neighbor in the second list of each source in the first list.
 
     Attributes
     ----------
-    indis : ndarray[int]
-        İkinci listedeki en yakın kaynağın indisi.
-    ayriklik_yaysaniye : ndarray
-        O kaynağa açısal uzaklık [yay saniyesi].
-    eslesti : ndarray[bool]
-        Ayrıklık verilen yarıçapın içindeyse doğru.
+    index : ndarray[int]
+        Index of the nearest source in the second list.
+    separation_arcsec : ndarray
+        Angular distance to that source [arcsec].
+    matched : ndarray[bool]
+        True if the separation is within the given radius.
     """
 
     index: NDArray[np.int64]
@@ -43,7 +43,7 @@ class Match:
     "ERFA2023",
     where="sepp.c, s2c.c",
     status="read",
-    note="kiriş = |a − b| = 2 sin(θ/2) ⇒ θ = 2 asin(kiriş/2) (türetim bu projede); komşu araması scipy cKDTree",
+    note="chord = |a − b| = 2 sin(θ/2) ⇒ θ = 2 asin(chord/2) (derivation in this project); neighbor search with scipy cKDTree",
 )
 def cross_match(
     ra1_deg: ArrayLike,
@@ -52,14 +52,18 @@ def cross_match(
     dec2_deg: ArrayLike,
     radius_arcsec: float,
 ) -> Match:
-    """Birinci listedeki her kaynak için ikinci listedeki en yakın kaynağı bulur.
+    """Find the nearest source in the second list for each source in the first list.
 
     Parameters
     ----------
-    sag_acikllik1_derece, dik_acikllik1_derece : ndarray (N,)
-    sag_acikllik2_derece, dik_acikllik2_derece : ndarray (M,)
-    yaricap_yaysaniye : float
-        Eşleşme sayılacak en büyük ayrıklık.
+    ra1_deg, dec1_deg : ndarray (N,)
+    ra2_deg, dec2_deg : ndarray (M,)
+    radius_arcsec : float
+        Largest separation counted as a match.
+
+    Returns
+    -------
+    Match
 
     References
     ----------
@@ -67,15 +71,15 @@ def cross_match(
 
     Validity
     --------
-    Eşleme tek yönlüdür: ikinci listedeki bir kaynak birden çok kaynağın en
-    yakın komşusu olabilir. Öz hareket ve dönem farkı düzeltilmez.
+    The matching is one-directional: a source in the second list can be the nearest
+    neighbor of more than one source. Proper motion and epoch difference are not corrected.
 
     Verification
     ------------
-    tests/oracle/test_wcs_oracle.py: astropy match_to_catalog_sky ile aynı indisler ve ayrıklıklar.
+    tests/oracle/test_wcs_oracle.py: same indices and separations as astropy match_to_catalog_sky.
     """
     a = spherical_to_unit_vector(np.radians(ra1_deg), np.radians(dec1_deg))
     b = spherical_to_unit_vector(np.radians(ra2_deg), np.radians(dec2_deg))
-    kiris, index = cKDTree(np.atleast_2d(b)).query(np.atleast_2d(a), k=1)
-    ayriklik = np.degrees(2.0 * np.arcsin(np.clip(kiris / 2.0, 0.0, 1.0))) * 3600.0
-    return Match(index.astype(np.int64), ayriklik, ayriklik <= radius_arcsec)
+    chord, index = cKDTree(np.atleast_2d(b)).query(np.atleast_2d(a), k=1)
+    separation = np.degrees(2.0 * np.arcsin(np.clip(chord / 2.0, 0.0, 1.0))) * 3600.0
+    return Match(index.astype(np.int64), separation, separation <= radius_arcsec)

@@ -1,8 +1,9 @@
-"""Kadir, uzaklık modülü ve kara cisim ışınımı.
+"""Magnitudes, distance modulus and blackbody radiation.
 
-Bolometrik kadir sıfır noktası IAU 2015 B2 kararından [Mamajek2015], uzaklık
-modülü tanımı [Hogg1999] Denk. 25'ten okunmuştur. Planck fonksiyonu
-astropy'nin ``BlackBody`` modelinin kaynak kodundan okunmuştur [Astropy2022]. Sabitler CODATA 2022 değerleridir [CODATA2022].
+The bolometric magnitude zero point was read from IAU 2015 Resolution B2
+[Mamajek2015] and the distance modulus definition from [Hogg1999] Eq. 25. The
+Planck function was read from the source code of the astropy ``BlackBody``
+model [Astropy2022]. Constants are CODATA 2022 values [CODATA2022].
 """
 
 from __future__ import annotations
@@ -16,74 +17,74 @@ from kozmos.core.constants import BOLOMETRIC_ZERO_POINT_LUMINOSITY, BOLTZMANN, P
 Array = NDArray[np.float64]
 
 
-@source("Mamajek2015", where="M_Bol tanımı; L_0 = 3,0128e28 W", status="read", note="M_Bol = −2,5 log10(L / L_0)")
+@source("Mamajek2015", where="M_Bol definition; L_0 = 3.0128e28 W", status="read", note="M_Bol = −2,5 log10(L / L_0)")
 def absolute_bolometric_magnitude(luminosity_w: ArrayLike) -> Array:
-    """Işınım gücünden mutlak bolometrik kadiri hesaplar.
+    """Compute the absolute bolometric magnitude from the luminosity.
 
-    M_Bol = −2,5 log10(L / L_0), L_0 = 3,0128 × 10²⁸ W.
+    M_Bol = −2.5 log10(L / L_0), L_0 = 3.0128 × 10²⁸ W.
 
     Parameters
     ----------
-    isinim_gucu_w : float ya da ndarray
-        Işınım gücü [W], pozitif.
+    luminosity_w : float or ndarray
+        Luminosity [W], positive.
 
     References
     ----------
-    [Mamajek2015] L_0 tanımı.
+    [Mamajek2015] L_0 definition.
 
     Verification
     ------------
-    tests/unit/test_magnitudes.py: nominal Güneş ışınım gücü için 4,74 mag (kararda bildirilen değer).
+    tests/unit/test_magnitudes.py: 4.74 mag for the nominal solar luminosity (the value given in the resolution).
     """
     return -2.5 * np.log10(np.asarray(luminosity_w, dtype=float) / BOLOMETRIC_ZERO_POINT_LUMINOSITY.value)
 
 
-@source("Mamajek2015", where="M_Bol tanımı; L_0 = 3,0128e28 W", status="read")
+@source("Mamajek2015", where="M_Bol definition; L_0 = 3.0128e28 W", status="read")
 def luminosity_from_bolometric_magnitude_w(absolute_bolometric_magnitude_mag: ArrayLike) -> Array:
-    """Mutlak bolometrik kadirden ışınım gücünü hesaplar: L = L_0 · 10^(−0,4 M_Bol).
+    """Compute the luminosity from the absolute bolometric magnitude: L = L_0 · 10^(−0.4 M_Bol).
 
     References
     ----------
-    [Mamajek2015] L_0 tanımı.
+    [Mamajek2015] L_0 definition.
 
     Verification
     ------------
-    tests/property/test_magnitudes_property.py: ``mutlak_bolometrik_kadir`` ile gidiş-dönüş.
+    tests/property/test_magnitudes_property.py: round trip with ``absolute_bolometric_magnitude``.
     """
     m = np.asarray(absolute_bolometric_magnitude_mag, dtype=float)
     return BOLOMETRIC_ZERO_POINT_LUMINOSITY.value * 10.0 ** (-0.4 * m)
 
 
-@source("Hogg1999", where="Denk. 25", status="read", note="DM = 5 log10(D_L / 10 pc)")
+@source("Hogg1999", where="Eq. 25", status="read", note="DM = 5 log10(D_L / 10 pc)")
 def distance_modulus_from_pc(distance_pc: ArrayLike) -> Array:
-    """Parsek cinsinden uzaklıktan uzaklık modülünü hesaplar.
+    """Compute the distance modulus from a distance in parsecs.
 
     References
     ----------
-    [Hogg1999] Denk. 25.
+    [Hogg1999] Eq. 25.
 
     Validity
     --------
-    Sönümleme ve K düzeltmesi içermez.
+    Does not include extinction or the K correction.
 
     Verification
     ------------
-    tests/unit/test_magnitudes.py: 10 pc için 0 mag.
+    tests/unit/test_magnitudes.py: 0 mag for 10 pc.
     """
     return 5.0 * np.log10(np.asarray(distance_pc, dtype=float) / 10.0)
 
 
-@source("Hogg1999", where="Denk. 25", status="read")
+@source("Hogg1999", where="Eq. 25", status="read")
 def pc_from_distance_modulus(distance_modulus_mag: ArrayLike) -> Array:
-    """Uzaklık modülünden parsek cinsinden uzaklığı hesaplar: d = 10^(μ/5 + 1).
+    """Compute the distance in parsecs from the distance modulus: d = 10^(μ/5 + 1).
 
     References
     ----------
-    [Hogg1999] Denk. 25.
+    [Hogg1999] Eq. 25.
 
     Verification
     ------------
-    tests/property/test_magnitudes_property.py: ``uzaklik_modulu_pc`` ile gidiş-dönüş.
+    tests/property/test_magnitudes_property.py: round trip with ``distance_modulus_from_pc``.
     """
     return 10.0 ** (np.asarray(distance_modulus_mag, dtype=float) / 5.0 + 1.0)
 
@@ -92,16 +93,16 @@ def pc_from_distance_modulus(distance_modulus_mag: ArrayLike) -> Array:
     "Astropy2022",
     where="modeling/physical_models.py, BlackBody.evaluate",
     status="read",
-    note="bb_nu = 2 h ν³ / (c² expm1(hν/kT)); astropy 8.0.0 kaynak kodu. Ders kitabı künyesi [RybickiLightman1979] okunmadı",
+    note="bb_nu = 2 h ν³ / (c² expm1(hν/kT)); astropy 8.0.0 source code. The textbook citation [RybickiLightman1979] was not read",
 )
 def planck_frequency(frequency_hz: ArrayLike, temperature_k: ArrayLike) -> Array:
-    """Kara cismin özgül yeğinliğini frekans başına hesaplar.
+    """Compute the specific intensity of a blackbody per unit frequency.
 
     B_ν(T) = (2 h ν³ / c²) / (exp(hν / kT) − 1)
 
     Returns
     -------
-    float ya da ndarray
+    float or ndarray
         B_ν [W m⁻² Hz⁻¹ sr⁻¹].
 
     References
@@ -110,12 +111,12 @@ def planck_frequency(frequency_hz: ArrayLike, temperature_k: ArrayLike) -> Array
 
     Validity
     --------
-    ν > 0, T > 0. Küçük hν/kT için ``expm1`` kullanılır; büyük değerlerde üs
-    taşması sıfıra iner.
+    ν > 0, T > 0. ``expm1`` is used for small hν/kT; for large values the
+    exponential overflow resolves to zero.
 
     Verification
     ------------
-    tests/unit/test_magnitudes.py: frekans integrali σT⁴/π; tests/oracle/test_radiation_oracle.py: astropy BlackBody.
+    tests/unit/test_magnitudes.py: frequency integral equals σT⁴/π; tests/oracle/test_radiation_oracle.py: astropy BlackBody.
     """
     nu = np.asarray(frequency_hz, dtype=float)
     t = np.asarray(temperature_k, dtype=float)
@@ -128,14 +129,14 @@ def planck_frequency(frequency_hz: ArrayLike, temperature_k: ArrayLike) -> Array
     "Astropy2022",
     where="modeling/physical_models.py, BlackBody.evaluate",
     status="read",
-    note="B_λ = B_ν c/λ² dönüşümüyle (türetim bu projede): B_λ = (2hc²/λ⁵) / (exp(hc/λkT) − 1)",
+    note="from the transformation B_λ = B_ν c/λ² (derivation in this project): B_λ = (2hc²/λ⁵) / (exp(hc/λkT) − 1)",
 )
 def planck_wavelength(wavelength_m: ArrayLike, temperature_k: ArrayLike) -> Array:
-    """Kara cismin özgül yeğinliğini dalga boyu başına hesaplar.
+    """Compute the specific intensity of a blackbody per unit wavelength.
 
     Returns
     -------
-    float ya da ndarray
+    float or ndarray
         B_λ [W m⁻³ sr⁻¹].
 
     References
@@ -144,7 +145,7 @@ def planck_wavelength(wavelength_m: ArrayLike, temperature_k: ArrayLike) -> Arra
 
     Verification
     ------------
-    tests/unit/test_magnitudes.py: tepe dalga boyu Wien sabitiyle uyuşur [CODATA2022].
+    tests/unit/test_magnitudes.py: the peak wavelength agrees with the Wien constant [CODATA2022].
     """
     lam = np.asarray(wavelength_m, dtype=float)
     t = np.asarray(temperature_k, dtype=float)
@@ -157,17 +158,17 @@ def planck_wavelength(wavelength_m: ArrayLike, temperature_k: ArrayLike) -> Arra
     "CODATA2022",
     where="Stefan-Boltzmann constant",
     status="read",
-    note="F = σ T⁴; yasanın kendisi için ders kitabı künyesi bekliyor",
+    note="F = σ T⁴; the textbook citation for the law itself is still pending",
 )
 def blackbody_flux(temperature_k: ArrayLike) -> Array:
-    """Kara cisim yüzeyinden çıkan toplam akıyı hesaplar: F = σ T⁴ [W m⁻²].
+    """Compute the total flux leaving a blackbody surface: F = σ T⁴ [W m⁻²].
 
     References
     ----------
-    [CODATA2022] Stefan-Boltzmann sabiti.
+    [CODATA2022] Stefan-Boltzmann constant.
 
     Verification
     ------------
-    tests/unit/test_magnitudes.py: nominal Güneş yarıçapı ve etkin sıcaklığından nominal ışınım gücü [Prsa2016].
+    tests/unit/test_magnitudes.py: nominal luminosity from the nominal solar radius and effective temperature [Prsa2016].
     """
     return STEFAN_BOLTZMANN.value * np.asarray(temperature_k, dtype=float) ** 4

@@ -1,74 +1,74 @@
-# Sayısal yöntemler
+# Numerical methods
 
-Hedef modül: `temel/sayisal/`.
+Target module: `core/numerics/`.
 
-SciPy çalışma zamanı bağımlılığıdır, dolayısıyla genel amaçlı integral, kök bulma ve en iyileme oradan kullanılabilir. Aşağıdaki yöntemler yine de yazılır: astronomiye özgü olanlar (Kepler çözücü, simplektik integratör) SciPy'de yoktur, temel olanlar ise öğrenme amacıyla yazılıp SciPy'ye karşı sınanır. Hangi fonksiyonun üretimde kullanılacağı her modülde açıkça seçilir.
+SciPy is a runtime dependency, so general-purpose integration, root finding and optimization can be taken from it. The methods below are still written: the astronomy-specific ones (Kepler solver, symplectic integrator) are not in SciPy, and the basic ones are written for learning and tested against SciPy. Which function will be used in production is chosen explicitly in each module.
 
-## 1. Kayan nokta aritmetiği
+## 1. Floating point arithmetic
 
-- IEEE 754 çift duyarlık: yaklaşık 15,95 ondalık basamak, `ε ≈ 2,22e-16` [Goldberg1991].
-- İptal hatası: yakın sayıların farkı. Örnekler: küçük açıda `1 − cos θ`, küçük `z`'de uzaklık farkları, JD'nin tek `float64` ile tutulması.
-- Dengeli toplama: Kahan ve Neumaier toplaması; uzun serilerin (nutasyon) toplanmasında [Higham2002, Böl. 4].
-- `log1p`, `expm1`, `hypot`, `atan2` kullanımı kural olarak yazılır.
-- Koşul sayısı ve geriye dönük kararlılık: bir sonucun kaç basamağına güvenilebileceğinin ölçüsü [Higham2002, Böl. 1].
+- IEEE 754 double precision: about 15.95 decimal digits, `ε ≈ 2.22e-16` [Goldberg1991].
+- Cancellation error: the difference of nearby numbers. Examples: `1 − cos θ` at a small angle, distance differences at small `z`, holding JD in a single `float64`.
+- Compensated summation: Kahan and Neumaier summation; for summing long series (nutation) [Higham2002, Section 4].
+- Using `log1p`, `expm1`, `hypot`, `atan2` is written down as a rule.
+- Condition number and backward stability: a measure of how many digits of a result can be trusted [Higham2002, Section 1].
 
-## 2. Kök bulma
+## 2. Root finding
 
-- İkiye bölme, Newton-Raphson, sekant, Brent yöntemi [Press2007, Böl. 9].
-- **Kepler denklemi** `M = E − e sin E`: Newton ve Halley yinelemesi, başlangıç tahmini seçimi, `e → 1` yakınında yakınsama. Yinelemesiz çözüm: Markley'in beşinci dereceden düzeltmeli yöntemi [Markley1995]. Hiperbolik (`M = e sinh H − H`) ve evrensel değişkenli biçim [Vallado2022, Böl. 2].
-- Test: `[0, 2π) × [0, 1)` ızgarasında `|E − e sin E − M| < 1e-14`.
+- Bisection, Newton-Raphson, secant, Brent's method [Press2007, Section 9].
+- **Kepler's equation** `M = E − e sin E`: Newton and Halley iteration, choice of starting guess, convergence near `e → 1`. A solution without iteration: Markley's fifth-order corrected method [Markley1995]. The hyperbolic (`M = e sinh H − H`) and universal variable forms [Vallado2022, Section 2].
+- Test: `|E − e sin E − M| < 1e-14` on the grid `[0, 2π) × [0, 1)`.
 
-## 3. Sayısal integral
+## 3. Numerical integration
 
-- Yamuk, Simpson, Romberg; Gauss-Legendre ve uyarlamalı Gauss-Kronrod [Press2007, Böl. 4].
-- Kozmolojik uzaklık integrali `∫ dz / E(z)`: düzgün integrand, sabit dereceli Gauss-Legendre yeter; vektörleştirilmiş birikimli integral (çok sayıda `z` için tek geçiş) ayrı fonksiyondur.
-- Sentetik fotometri integralleri: tablolanmış tayf ve filtre eğrisi üzerinde yamuk kuralı; ızgara yeniden örnekleme hatası ölçülür.
-- Tekil ya da salınımlı integrandlar için değişken dönüşümü.
+- Trapezoid, Simpson, Romberg; Gauss-Legendre and adaptive Gauss-Kronrod [Press2007, Section 4].
+- Cosmological distance integral `∫ dz / E(z)`: a smooth integrand, so fixed-order Gauss-Legendre is enough; a vectorized cumulative integral (a single pass for many `z`) is a separate function.
+- Synthetic photometry integrals: the trapezoid rule over a tabulated spectrum and filter curve; the grid resampling error is measured.
+- Change of variables for singular or oscillatory integrands.
 
-## 4. Adi diferansiyel denklemler
+## 4. Ordinary differential equations
 
-- Açık Runge-Kutta: RK4; gömülü çiftle adım denetimi, Dormand-Prince 5(4) [DormandPrince1980; Hairer1993, Böl. II].
-- **Simplektik yöntemler:** leapfrog (kick-drift-kick), Yoshida'nın dördüncü dereceden bileşimi [Yoshida1990]. Hamilton sistemlerinde enerji hatası sınırlı kalır; RK4'te birikir. Karşılaştırma testi Kepler yörüngesinde 10⁴ dönem boyunca enerji hatasını ölçer.
-- **Wisdom-Holman haritası:** Kepler hareketi ile gezegenler arası etkileşimin ayrıştırılması [WisdomHolman1991; ReinTamayo2015].
-- **Yüksek dereceli uyarlamalı integratör:** Gauss-Radau aralıklı 15. derece yöntem, yakın geçişler için [ReinSpiegel2015].
-- Katı sistemler (yıldız yapısı, tepkime ağları): kapalı yöntemler, SciPy `solve_ivp` (`Radau`, `BDF`) üzerinden.
-- İki noktalı sınır değer problemi: atış yöntemi ve gevşetme; Lane-Emden ve yıldız yapısı denklemleri için.
+- Explicit Runge-Kutta: RK4; step control with an embedded pair, Dormand-Prince 5(4) [DormandPrince1980; Hairer1993, Section II].
+- **Symplectic methods:** leapfrog (kick-drift-kick), Yoshida's fourth-order composition [Yoshida1990]. In Hamiltonian systems the energy error stays bounded; in RK4 it accumulates. The comparison test measures the energy error over 10⁴ periods on a Kepler orbit.
+- **Wisdom-Holman map:** the splitting of Kepler motion and the interaction between planets [WisdomHolman1991; ReinTamayo2015].
+- **High-order adaptive integrator:** a 15th-order method with Gauss-Radau spacing, for close encounters [ReinSpiegel2015].
+- Stiff systems (stellar structure, reaction networks): implicit methods, through SciPy `solve_ivp` (`Radau`, `BDF`).
+- Two-point boundary value problem: shooting method and relaxation; for the Lane-Emden and stellar structure equations.
 
-## 5. İnterpolasyon ve yaklaşım
+## 5. Interpolation and approximation
 
-- Doğrusal, kübik spline, Lagrange, Chebyshev [Press2007, Böl. 3 ve 5].
-- **Chebyshev efemerisi:** JPL DE dosyaları konumu zaman aralıkları üzerinde Chebyshev katsayılarıyla saklar; değerlendirme Clenshaw özyinelemesiyle yapılır, hız türev serisinden gelir [Park2021].
-- Görüntü yeniden örnekleme: en yakın komşu, çift doğrusal, çift kübik, Lanczos çekirdeği; akı korunumu ve gürültü ilintisi üzerindeki etkisi.
-- Tayfın yeniden örneklenmesi: akı koruyan yeniden kutulama.
+- Linear, cubic spline, Lagrange, Chebyshev [Press2007, Section 3 and 5].
+- **Chebyshev ephemeris:** the JPL DE files store position as Chebyshev coefficients over time intervals; evaluation is done with Clenshaw recursion, and velocity comes from the derivative series [Park2021].
+- Image resampling: nearest neighbor, bilinear, bicubic, Lanczos kernel; the effect on flux conservation and noise correlation.
+- Spectrum resampling: flux-conserving rebinning.
 
-## 6. Doğrusal cebir
+## 6. Linear algebra
 
-- En küçük kareler: normal denklemler yerine QR ya da SVD; koşul sayısı raporlanır [Press2007, Böl. 15].
-- Kovaryans matrisiyle `χ² = rᵀ C⁻¹ r`: ters alınmaz; Cholesky ayrışımı ve üçgen çözümle hesaplanır. Pantheon+ kovaryansı 1701 × 1701 boyutundadır [Brout2022]; bu yol hem daha hızlı hem daha kararlıdır.
-- Temel bileşen analizi: SVD üzerinden.
+- Least squares: QR or SVD instead of the normal equations; the condition number is reported [Press2007, Section 15].
+- `χ² = rᵀ C⁻¹ r` with a covariance matrix: the inverse is not taken; it is computed with a Cholesky decomposition and a triangular solve. The Pantheon+ covariance is 1701 × 1701 [Brout2022]; this path is both faster and more stable.
+- Principal component analysis: through SVD.
 
-## 7. Fourier yöntemleri
+## 7. Fourier methods
 
-- Ayrık Fourier dönüşümü, örnekleme teoremi, Nyquist frekansı, örtüşme, sızıntı ve pencere fonksiyonları [Press2007, Böl. 12-13].
-- Evrişim ve çapraz ilinti FFT ile: PSF evrişimi, görüntü hizalama (faz ilintisi), tayfsal kırmızıya kayma ölçümü [TonryDavis1979].
-- Eşit aralıklı olmayan örnekleme: Lomb-Scargle [VanderPlas2018]; ayrıntı [../05_veri_bilimi/04_zaman_serisi.md](../05_veri_bilimi/04_zaman_serisi.md) dosyasında.
+- Discrete Fourier transform, sampling theorem, Nyquist frequency, aliasing, leakage and window functions [Press2007, Section 12-13].
+- Convolution and cross-correlation with the FFT: PSF convolution, image alignment (phase correlation), spectral redshift measurement [TonryDavis1979].
+- Unevenly spaced sampling: Lomb-Scargle [VanderPlas2018]; details are in [../05_data_science/04_time_series.md](../05_data_science/04_time_series.md).
 
-## 8. En iyileme
+## 8. Optimization
 
-- Doğrusal olmayan en küçük kareler: Gauss-Newton ve Levenberg-Marquardt; Jacobian'ın analitik ya da sonlu farkla hesabı [Press2007, Böl. 15].
-- Türevsiz yöntem: Nelder-Mead. Yarı-Newton: BFGS.
-- Parametre kovaryansı: en iyi noktada `(JᵀWJ)⁻¹`; yalnızca olabilirlik yaklaşık Gauss ise geçerlidir.
+- Nonlinear least squares: Gauss-Newton and Levenberg-Marquardt; computing the Jacobian analytically or by finite differences [Press2007, Section 15].
+- Derivative-free method: Nelder-Mead. Quasi-Newton: BFGS.
+- Parameter covariance: `(JᵀWJ)⁻¹` at the best point; valid only if the likelihood is approximately Gaussian.
 
-## 9. Rastgele sayılar ve Monte Carlo
+## 9. Random numbers and Monte Carlo
 
-- `numpy.random.Generator` (PCG64); üreteç argüman olarak geçirilir.
-- Ters dönüşüm, ret örneklemesi, önem örneklemesi [Press2007, Böl. 7].
-- Belirsizlik yayılımı için Monte Carlo ve doğrusal yayılımla karşılaştırma.
+- `numpy.random.Generator` (PCG64); the generator is passed as an argument.
+- Inverse transform, rejection sampling, importance sampling [Press2007, Section 7].
+- Monte Carlo for uncertainty propagation and comparison with linear propagation.
 
-## 10. Özel fonksiyonlar
+## 10. Special functions
 
-Eliptik integraller (geçiş modeli [MandelAgol2002]), gama ve tamamlanmamış gama (`χ²` olasılığı), hata fonksiyonu, Bessel fonksiyonları (Airy deseni), Legendre polinomları ve küresel harmonikler (çekim alanı, CMB). Tümü `scipy.special` üzerinden kullanılır; yeniden yazılmaz.
+Elliptic integrals (transit model [MandelAgol2002]), gamma and incomplete gamma (`χ²` probability), the error function, Bessel functions (Airy pattern), Legendre polynomials and spherical harmonics (gravity field, CMB). All are used through `scipy.special`; they are not rewritten.
 
-## Doğrulama
+## Verification
 
-Her yöntem kapalı çözümü bilinen problemde yakınsama derecesiyle sınanır: adım yarıya indiğinde hata `2^p` kat düşmelidir. Yakınsama derecesi testi, uygulamanın yalnızca çalıştığını değil kuramın öngördüğü hızda yakınsadığını gösterir.
+Each method is tested by its convergence order on a problem with a known closed-form solution: when the step is halved, the error must drop by a factor of `2^p`. The convergence order test shows not merely that the implementation works but that it converges at the rate the theory predicts.

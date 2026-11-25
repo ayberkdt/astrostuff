@@ -1,12 +1,12 @@
-# Üçüncü taraf bildirimleri
+# Third-party notices
 
-Bu depo üçüncü taraf kaynak kodu ya da ham verisi barındırmaz; üçüncü taraf veriden türetilmiş birkaç şekil içerir. Aşağıdaki bildirimler bazı fonksiyonların izlediği kaynak kodu ve şekillerin dayandığı veriler içindir.
+This repository hosts no third-party source code or raw data; it contains a few figures derived from third-party data. The notices below cover the source code that some functions follow and the data on which the figures rest.
 
 ## ERFA (Essential Routines for Fundamental Astronomy)
 
-`kozmos.time.julian`, `kozmos.core.angles` ve `kozmos.coordinates.transforms` modüllerindeki fonksiyonlar, ERFA C kitaplığının kaynak dosyalarındaki algoritmaları ve katsayıları izleyerek Python'da yeniden yazılmıştır (`cal2jd.c`, `jd2cal.c`, `era00.c`, `gmst06.c`, `obl06.c`, `sepp.c`, `s2c.c`, `c2s.c`, `anp.c`, `anpm.c`, `icrs2g.c`, `hd2ae.c`, `ae2hd.c`, `erfam.h`). ERFA, IAU SOFA kitaplığından izinle türetilmiştir. Bu depo SOFA'nın kendisini değil, SOFA'dan türetilmiş bir kitaplığı kaynak almıştır.
+The functions in the `kozmos.time.julian`, `kozmos.core.angles` and `kozmos.coordinates.transforms` modules were rewritten in Python by following the algorithms and coefficients in the source files of the ERFA C library (`cal2jd.c`, `jd2cal.c`, `era00.c`, `gmst06.c`, `obl06.c`, `sepp.c`, `s2c.c`, `c2s.c`, `anp.c`, `anpm.c`, `icrs2g.c`, `hd2ae.c`, `ae2hd.c`, `erfam.h`). ERFA is derived, with permission, from the IAU SOFA library. This repository took as its source not SOFA itself but a library derived from SOFA.
 
-ERFA kaynak dosyalarındaki telif ve lisans bildirimi:
+The copyright and licence notice in the ERFA source files:
 
 ```
 Copyright (C) 2013-2023, NumFOCUS Foundation.
@@ -47,83 +47,83 @@ ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 POSSIBILITY OF SUCH DAMAGE.
 ```
 
-Bu bildirimin burada bulunması bir hukuki değerlendirme değildir; ERFA'dan türetilen bölümlerin lisans yükümlülükleri depo sahibi tarafından ayrıca değerlendirilmelidir.
+The presence of this notice here is not a legal assessment; the licence obligations of the parts derived from ERFA must be assessed separately by the owner of the repository.
 
-## Veri
+## Data
 
-Analizlerin kullandığı veri setleri depoya konmaz; çalışma anında kaynağından indirilir. Pantheon+SH0ES veri sürümünün deposunda lisans dosyası yoktur; veri Scolnic ve ark. (2022), Brout ve ark. (2022) ve Riess ve ark. (2022) makalelerine atıfla kullanılır.
+The datasets used by the analyses are not put in the repository; they are downloaded from their source at run time. The repository of the Pantheon+SH0ES data release has no licence file; the data is used with reference to the papers of Scolnic et al. (2022), Brout et al. (2022) and Riess et al. (2022).
 
-## Şekillerde kullanılan tarama verileri
+## Survey data used in the figures
 
-`figures/` klasöründeki bazı şekiller üçüncü taraf gözlem verisinden türetilmiştir. Depodaki hak saklama bu şekilleri kapsamaz; her biri aşağıdaki koşullara tabidir. Koşullar 25 Kasım 2026'da ilgili sayfalardan okunmuştur.
+Some of the figures in the `figures/` folder are derived from third-party observational data. The reservation of rights in the repository does not cover these figures; each is subject to the terms below. The terms were read from the relevant pages on 25 November 2026.
 
-| Şekil | Veri | Koşul |
+| Figure | Data | Terms |
 |---|---|---|
-| `optik_kizilotesi.png` (sol panel) | Digitized Sky Survey 2, kırmızı bant | CC BY-NC-SA 4.0; kamu malı değildir |
-| `optik_kizilotesi.png` (orta panel), `alev_bulutsusu_jhk.png`, `gercek_goruntu_dogrulamasi.png` | 2MASS görüntüleri ve Nokta Kaynak Kataloğu | Görüntü galerisindeki görüntüler kamu malıdır; teşekkür metni istenir |
-| `optik_kizilotesi.png` (sağ panel) | WISE 12 µm | Teşekkür metni istenir; lisans ifadesi okunan sayfada yoktur |
-| `hr_diyagrami.png` | Gaia DR3 | CC BY-NC 3.0 IGO |
-| `gokyuzu_haritasi.png` | Parlak Yıldız Kataloğu, 5. baskı (HEASARC `bsc5p`) | Aşağıdaki nota bakınız |
-| `hubble_diyagrami.png` | Pantheon+SH0ES veri sürümü | Okunmadı |
-| `kozmik_isin_gercek_veri.png` | Hubble STIS, program 8310 (MAST); ölçümlerde program 7245 de kullanılır | MAST veri kullanım sayfası: NASA politikası gereği CC0; teşekkür metni beklenir |
-| `kizilotesi_indirgeme.png` | ESO NTT/SOFI, program 184.D-1152(F) | CC BY 4.0; telif hakkı ESO'dadır |
+| `optical_infrared.png` (left panel) | Digitized Sky Survey 2, red band | CC BY-NC-SA 4.0; not public domain |
+| `optical_infrared.png` (middle panel), `flame_nebula_jhk.png`, `real_image_validation.png` | 2MASS images and Point Source Catalog | Images in the image gallery are public domain; an acknowledgement text is requested |
+| `optical_infrared.png` (right panel) | WISE 12 µm | An acknowledgement text is requested; the page that was read has no licence statement |
+| `hr_diagram.png` | Gaia DR3 | CC BY-NC 3.0 IGO |
+| `sky_map.png` | Bright Star Catalogue, 5th edition (HEASARC `bsc5p`) | See the note below |
+| `hubble_diagram.png` | Pantheon+SH0ES data release | Not read |
+| `cosmic_rays_real_data.png` | Hubble STIS, program 8310 (MAST); program 7245 is also used in the measurements | MAST data use page: CC0 under NASA policy; an acknowledgement text is expected |
+| `infrared_reduction.png` | ESO NTT/SOFI, program 184.D-1152(F) | CC BY 4.0; the copyright is held by ESO |
 
 ### Digitized Sky Survey
 
-MAST'ın veri kullanım sayfası (`archive.stsci.edu/publishing/data-use`) DSS verisinin kamu malı olmadığını, bilimsel, eğitsel ve kâr amacı gütmeyen amaçlarla (web siteleri dahil) serbestçe kullanılabildiğini ve Creative Commons Atıf-GayriTicari-AynıLisanslaPaylaş 4.0 (CC BY-NC-SA 4.0) lisansına bağlı olduğunu bildirir. Bu yüzden `optik_kizilotesi.png` şekli de CC BY-NC-SA 4.0 ile paylaşılır ve ticari amaçla kullanılamaz.
+The data use page of MAST (`archive.stsci.edu/publishing/data-use`) states that DSS data is not in the public domain, that it can be used freely for scientific, educational and not-for-profit purposes (including web sites), and that it is bound by the Creative Commons Attribution-NonCommercial-ShareAlike 4.0 (CC BY-NC-SA 4.0) licence. For this reason the figure `optical_infrared.png` is also shared under CC BY-NC-SA 4.0 and cannot be used for commercial purposes.
 
-Hak sahibi, kullanılan plakaya göre değişir: 1993 öncesi güney taramalarında UK SERC/PPARC (bugün STFC), 1993 sonrası güney taramalarında Anglo-Australian Observatory Board, POSS-II kuzey taramalarında California Institute of Technology, kalan malzemede Association of Universities for Research in Astronomy, Inc. Şekildeki alanın (δ = −1,9°) hangi plakadan geldiği SkyView başlığından okunmamıştır; hak sahibi bu dördünden biridir.
+The rights holder varies with the plate used: UK SERC/PPARC (today STFC) for southern surveys before 1993, the Anglo-Australian Observatory Board for southern surveys after 1993, the California Institute of Technology for the POSS-II northern surveys, and the Association of Universities for Research in Astronomy, Inc. for the remaining material. Which plate the field in the figure (δ = −1.9°) came from was not read from the SkyView header; the rights holder is one of these four.
 
 ### 2MASS
 
-IRSA'nın 2MASS sık sorulan sorular sayfası, görüntü galerilerindeki görüntülerin kamu malı olduğunu bildirir ve şu teşekkür metinlerini ister:
+The 2MASS frequently asked questions page of IRSA states that the images in the image galleries are in the public domain and requests the following acknowledgement texts:
 
 > This publication makes use of data products from the Two Micron All Sky Survey, which is a joint project of the University of Massachusetts and the Infrared Processing and Analysis Center/California Institute of Technology, funded by the National Aeronautics and Space Administration and the National Science Foundation.
 
 > Atlas Image mosaic obtained as part of the Two Micron All Sky Survey (2MASS), a joint project of the University of Massachusetts and the Infrared Processing and Analysis Center/California Institute of Technology, funded by the National Aeronautics and Space Administration and the National Science Foundation.
 
-Kamu malı ifadesi sayfada görüntü galerileri için geçer. Bu depodaki kesitler galeriden değil, SkyView'ın Atlas görüntülerinden yeniden örneklediği FITS dosyalarından üretilmiştir; ifadenin bu kesitleri de kapsadığı ayrıca doğrulanmamıştır.
+On the page, the public domain statement applies to the image galleries. The cutouts in this repository were produced not from the gallery but from FITS files that SkyView resampled from the Atlas images; that the statement also covers these cutouts has not been verified separately.
 
 ### WISE
 
-WISE Tüm Gökyüzü Sürümü açıklayıcı ekinin giriş bölümü şu teşekkür metnini ister:
+The introduction of the WISE All-Sky Release Explanatory Supplement requests the following acknowledgement text:
 
 > This publication makes use of data products from the Wide-field Infrared Survey Explorer, which is a joint project of the University of California, Los Angeles, and the Jet Propulsion Laboratory/California Institute of Technology, funded by the National Aeronautics and Space Administration.
 
-Şekildeki veri taşımayan bölgenin nedeni aynı ekin uyarı notlarındadır (bölüm I.4.c.vii): doymuş pikseller tek pozlarda maskelenir ve Atlas görüntüsüne girmez; doyma sınırını aşan parlak bölgelerde yoğunluk ve belirsizlik haritaları NaN değeri taşır.
+The reason for the region in the figure that carries no data is in the caveat notes of the same supplement (section I.4.c.vii): saturated pixels are masked in single exposures and do not enter the Atlas image; in bright regions above the saturation limit, the intensity and uncertainty maps carry the value NaN.
 
 ### IRSA
 
-Gaia ve 2MASS katalog sorguları IRSA üzerinden yapılmıştır. IRSA'nın "Acknowledging IRSA" sayfası şu metni ister:
+The Gaia and 2MASS catalog queries were made through IRSA. The "Acknowledging IRSA" page of IRSA requests the following text:
 
 > This research has made use of the NASA/IPAC Infrared Science Archive, which is funded by the National Aeronautics and Space Administration and operated by the California Institute of Technology.
 
 ### Gaia
 
-ESA'nın Gaia lisans sayfası (`cosmos.esa.int/web/gaia-users/license`) Gaia verisinin CC BY-NC 3.0 IGO lisansıyla dağıtıldığını bildirir; ticari kullanım için ESA'nın arşiv koşullarına yönlendirir. Katalog verisi bu depoda barındırılmaz. Gaia'nın künye sayfası her veri sürümünün kendi teşekkür metnini verdiğini söyler; DR3'ün teşekkür metni okunmamıştır ve buraya eklenmemiştir.
+The Gaia licence page of ESA (`cosmos.esa.int/web/gaia-users/license`) states that Gaia data is distributed under the CC BY-NC 3.0 IGO licence; for commercial use it refers to the archive terms of ESA. The catalog data is not hosted in this repository. The citation page of Gaia says that each data release gives its own acknowledgement text; the acknowledgement text of DR3 has not been read and has not been added here.
 
-### Parlak Yıldız Kataloğu
+### Bright Star Catalogue
 
-HEASARC'ın `bsc5p` sayfasındaki lisans notu, kataloğun yalnızca bilimsel araştırma amacıyla sunulduğunu, telif hakkının HEASARC'ta olmadığını ve ticari kullanım koşullarını açıklayamayacağını bildirir; basılı son sürümün (4. baskı) telif hakkı Yale University Observatory'dedir. Katalog bu depoda barındırılmaz; `gokyuzu_haritasi.png` katalogdaki konum ve kadirlerden çizilmiştir.
+The licence note on the `bsc5p` page of HEASARC states that the catalog is offered only for scientific research, that the copyright is not held by HEASARC, and that HEASARC cannot explain the terms of commercial use; the copyright of the last printed edition (4th edition) is held by Yale University Observatory. The catalog is not hosted in this repository; `sky_map.png` is drawn from the positions and magnitudes in the catalog.
 
 ### Hubble (MAST)
 
-MAST'ın veri kullanım sayfası, DSS gibi sayılan istisnalar dışındaki MAST verisinin kamu malı olduğunu ve NASA politikası gereği CC0 ile lisanslandığını bildirir; yayınlarda görevin ve STScI'nin anılmasını bekler. MAST'ın görev teşekkürleri sayfasındaki Hubble metni:
+The data use page of MAST states that MAST data, apart from exceptions such as DSS, is in the public domain and is licensed under CC0 under NASA policy; it expects the mission and STScI to be mentioned in publications. The Hubble text on the mission acknowledgements page of MAST:
 
 > This research is based on observations made with the NASA/ESA Hubble Space Telescope obtained from the Space Telescope Science Institute, which is operated by the Association of Universities for Research in Astronomy, Inc., under NASA contract NAS5-26555. These observations are associated with programs 8310 and 7245.
 
 ### ESO
 
-ESO Veri Erişim Politikası (`archive.eso.org/cms/eso-data-access-policy.html`), arşivdeki bütün verinin telif hakkının ESO'da kaldığını ve verinin Creative Commons Atıf 4.0 (CC BY 4.0) ile dağıtıldığını bildirir; verinin ESO kaynaklı olduğu belirtilmeli ve dosya başlıkları korunmalıdır. Ham veri kullanan yayınlar için istenen metin:
+The ESO Data Access Policy (`archive.eso.org/cms/eso-data-access-policy.html`) states that the copyright of all data in the archive remains with ESO and that the data is distributed under Creative Commons Attribution 4.0 (CC BY 4.0); it must be stated that the data originates from ESO, and the file headers must be kept. The text requested for publications that use raw data:
 
 > Based on observations collected at the European Southern Observatory under ESO programme 184.D-1152(F).
 
-Ham kareler bu depoda barındırılmaz; `kizilotesi_indirgeme.png` onlardan türetilmiştir ve CC BY 4.0 koşuluyla paylaşılır.
+The raw frames are not hosted in this repository; `infrared_reduction.png` is derived from them and is shared under the CC BY 4.0 terms.
 
-### SkyView ve Pantheon+
+### SkyView and Pantheon+
 
-Görüntü kesitleri NASA SkyView servisinden indirilmiştir; SkyView'ın kendi teşekkür sayfasına ulaşılamamıştır (istek "File Not Found" döndürmüştür). Pantheon+SH0ES veri sürümünün kullanım koşulları okunmamıştır; veri bu depoda barındırılmaz, `hubble_diyagrami.png` ondan türetilmiştir.
+The image cutouts were downloaded from the NASA SkyView service; the acknowledgement page of SkyView itself could not be reached (the request returned "File Not Found"). The terms of use of the Pantheon+SH0ES data release have not been read; the data is not hosted in this repository, and `hubble_diagram.png` is derived from it.
 
-## Yayınlar
+## Publications
 
-Fonksiyonların dayandığı yayınlar `bibliography/references.bib` dosyasında listelenmiştir; denklemler bu yayınlardan alınmış, metinleri kopyalanmamıştır.
+The publications on which the functions rest are listed in `bibliography/references.bib`; the equations were taken from these publications, and their texts were not copied.

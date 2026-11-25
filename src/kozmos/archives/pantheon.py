@@ -1,9 +1,9 @@
-"""Pantheon+SH0ES veri sürümüne erişim.
+"""Access to the Pantheon+SH0ES data release.
 
-Veri yeniden dağıtılmaz; GitHub'daki resmî depodan indirilir ve yerel
-önbellekte SHA-256 özetiyle birlikte tutulur. Dosya biçimi ve sütun
-tanımları deponun ``README`` dosyasından 25 Kasım 2026'da okunmuştur
-[Scolnic2022; Brout2022].
+The data are not redistributed; they are downloaded from the official GitHub
+repository and kept in a local cache together with their SHA-256 digest. The
+file format and column definitions were read from the repository ``README``
+file on 25 November 2026 [Scolnic2022; Brout2022].
 """
 
 from __future__ import annotations
@@ -26,23 +26,23 @@ BASE_URL = (
     "https://raw.githubusercontent.com/PantheonPlusSH0ES/DataRelease/main/Pantheon%2B_Data/4_DISTANCES_AND_COVAR/"
 )
 FILES = {
-    "tablo": "Pantheon+SH0ES.dat",
-    "kovaryans": "Pantheon+SH0ES_STAT+SYS.cov",
-    "kovaryans_istatistik": "Pantheon+SH0ES_STATONLY.cov",
+    "table": "Pantheon+SH0ES.dat",
+    "covariance": "Pantheon+SH0ES_STAT+SYS.cov",
+    "covariance_stat_only": "Pantheon+SH0ES_STATONLY.cov",
 }
 ATTRIBUTION = "Scolnic et al. 2022 [Scolnic2022]; Brout et al. 2022 [Brout2022]; Riess et al. 2022 [Riess2022]"
 
 
 @dataclass(frozen=True, slots=True)
 class PantheonData:
-    """Pantheon+SH0ES tablosu ve kovaryansı.
+    """Pantheon+SH0ES table and covariance.
 
     Attributes
     ----------
-    sutunlar : dict[str, ndarray]
-        Sütun adı → değerler (1701 satır). Adlar veri dosyasındaki gibidir.
-    kovaryans : ndarray, biçim (1701, 1701)
-        İstatistik + sistematik kovaryans [mag²].
+    columns : dict[str, ndarray]
+        Column name → values (1701 rows). Names are as in the data file.
+    covariance : ndarray, shape (1701, 1701)
+        Statistical + systematic covariance [mag²].
     """
 
     columns: dict[str, np.ndarray]
@@ -55,140 +55,140 @@ class PantheonData:
 def _digest(path: Path) -> str:
     h = hashlib.sha256()
     with path.open("rb") as f:
-        for parca in iter(lambda: f.read(1 << 20), b""):
-            h.update(parca)
+        for chunk in iter(lambda: f.read(1 << 20), b""):
+            h.update(chunk)
     return h.hexdigest()
 
 
 @source(
     "Scolnic2022",
-    where="veri deposu, 4_DISTANCES_AND_COVAR",
+    where="data repository, 4_DISTANCES_AND_COVAR",
     status="read",
-    note="indirme adresi ve dosya adları GitHub API'sinden okundu",
+    note="download address and file names were read from the GitHub API",
 )
 def download(cache: Path, *, refresh: bool = False) -> dict[str, Path]:
-    """Veri dosyalarını önbelleğe indirir ve kaynak kaydını yazar.
+    """Download the data files to the cache and write the provenance record.
 
     Parameters
     ----------
-    onbellek : Path
-        Dosyaların yazılacağı dizin (sürüm denetimi dışında tutulur).
-    yenile : bool
-        Doğruysa var olan dosyalar yeniden indirilir.
+    cache : Path
+        Directory the files are written to (kept out of version control).
+    refresh : bool
+        If true, existing files are downloaded again.
 
     Returns
     -------
     dict[str, Path]
-        ``"tablo"``, ``"kovaryans"``, ``"kovaryans_istatistik"`` → yerel yol.
+        ``"table"``, ``"covariance"``, ``"covariance_stat_only"`` → local path.
 
     References
     ----------
-    [Scolnic2022] veri deposu.
+    [Scolnic2022] data repository.
 
     Validity
     --------
-    Depoda lisans dosyası yoktur; veri yalnızca yerelde kullanılır, yeniden dağıtılmaz.
+    The repository has no license file; the data are used locally only and are not redistributed.
 
     Verification
     ------------
-    tests/unit/test_pantheon.py (ağ gerektirir, ``-m ag``).
+    tests/unit/test_pantheon.py (needs the network, ``-m network``).
     """
     cache.mkdir(parents=True, exist_ok=True)
-    kayit_yolu = cache / "KAYNAK_KAYDI.json"
-    kayit = json.loads(kayit_yolu.read_text(encoding="utf-8")) if kayit_yolu.exists() else {}
-    yollar: dict[str, Path] = {}
-    for name, dosya in FILES.items():
-        target = cache / dosya
+    record_path = cache / "SOURCE_RECORD.json"
+    record = json.loads(record_path.read_text(encoding="utf-8")) if record_path.exists() else {}
+    paths: dict[str, Path] = {}
+    for name, file_name in FILES.items():
+        target = cache / file_name
         if refresh or not target.exists():
-            url = BASE_URL + dosya.replace("+", "%2B")
-            gecici = target.with_suffix(target.suffix + ".kismi")
-            with urllib.request.urlopen(url, timeout=120) as yanit, gecici.open("wb") as f:  # noqa: S310
-                for parca in iter(lambda: yanit.read(1 << 20), b""):
-                    f.write(parca)
-            gecici.replace(target)
-            kayit[dosya] = {
+            url = BASE_URL + file_name.replace("+", "%2B")
+            partial = target.with_suffix(target.suffix + ".partial")
+            with urllib.request.urlopen(url, timeout=120) as response, partial.open("wb") as f:  # noqa: S310
+                for chunk in iter(lambda: response.read(1 << 20), b""):
+                    f.write(chunk)
+            partial.replace(target)
+            record[file_name] = {
                 "url": url,
                 "sha256": _digest(target),
-                "bayt": target.stat().st_size,
-                "indirme_zamani": dt.datetime.now(dt.UTC).isoformat(timespec="seconds"),
-                "atif": ATTRIBUTION,
+                "bytes": target.stat().st_size,
+                "downloaded_at": dt.datetime.now(dt.UTC).isoformat(timespec="seconds"),
+                "attribution": ATTRIBUTION,
             }
-            kayit_yolu.write_text(json.dumps(kayit, ensure_ascii=False, indent=1), encoding="utf-8")
-        yollar[name] = target
-    return yollar
+            record_path.write_text(json.dumps(record, ensure_ascii=False, indent=1), encoding="utf-8")
+        paths[name] = target
+    return paths
 
 
 @source(
     "Brout2022",
-    where="veri deposu README: .cov biçimi",
+    where="data repository README: .cov format",
     status="read",
-    note="ilk satır N, ardından satır başına bir eleman, sırayla N×N",
+    note="first line is N, then one element per line, in order, N×N",
 )
 def read_covariance(path: Path) -> Array:
-    """``.cov`` dosyasını N×N matrise okur.
+    """Read a ``.cov`` file into an N×N matrix.
 
     References
     ----------
-    [Brout2022] veri deposu README.
+    [Brout2022] data repository README.
 
     Verification
     ------------
-    tests/unit/test_pantheon.py: simetri ve pozitif tanımlılık.
+    tests/unit/test_pantheon.py: symmetry and positive definiteness.
     """
     flat = np.loadtxt(path)
     n = int(flat[0])
     if flat.size != n * n + 1:
-        raise ValueError(f"beklenen {n * n + 1} sayı, okunan {flat.size}")
+        raise ValueError(f"expected {n * n + 1} numbers, read {flat.size}")
     return flat[1:].reshape(n, n)
 
 
-@source("Brout2022", where="veri deposu README: sütun tanımları", status="read")
+@source("Brout2022", where="data repository README: column definitions", status="read")
 def read_table(path: Path) -> dict[str, np.ndarray]:
-    """``Pantheon+SH0ES.dat`` tablosunu sütun sözlüğüne okur.
+    """Read the ``Pantheon+SH0ES.dat`` table into a column dictionary.
 
-    ``CID`` dizgi, diğer sütunlar ``float64`` okunur.
+    ``CID`` is read as a string, the other columns as ``float64``.
 
     References
     ----------
-    [Brout2022] veri deposu README.
+    [Brout2022] data repository README.
 
     Verification
     ------------
-    tests/unit/test_pantheon.py: 1701 satır, 47 sütun.
+    tests/unit/test_pantheon.py: 1701 rows, 47 columns.
     """
     with path.open(encoding="utf-8") as f:
-        basliklar = f.readline().split()
-        satirlar = [s.split() for s in f if s.strip()]
+        headers = f.readline().split()
+        rows = [s.split() for s in f if s.strip()]
     columns: dict[str, np.ndarray] = {}
-    for i, name in enumerate(basliklar):
-        degerler = [s[i] for s in satirlar]
-        columns[name] = np.array(degerler) if name == "CID" else np.array(degerler, dtype=float)
+    for i, name in enumerate(headers):
+        values = [row[i] for row in rows]
+        columns[name] = np.array(values) if name == "CID" else np.array(values, dtype=float)
     return columns
 
 
-@source("Brout2022", where="veri deposu README", status="read")
+@source("Brout2022", where="data repository README", status="read")
 def load(cache: Path, *, stat_only: bool = False) -> PantheonData:
-    """Veriyi (gerekirse indirerek) okur.
+    """Read the data, downloading them if needed.
 
     Parameters
     ----------
-    onbellek : Path
-    yalniz_istatistik : bool
-        Doğruysa yalnızca istatistik kovaryans okunur.
+    cache : Path
+    stat_only : bool
+        If true, only the statistical covariance is read.
 
     References
     ----------
-    [Brout2022] veri deposu README.
+    [Brout2022] data repository README.
 
     Verification
     ------------
     tests/unit/test_pantheon.py
     """
-    yollar = download(cache)
-    npy = cache / ("kovaryans_istatistik.npy" if stat_only else "kovaryans.npy")
+    paths = download(cache)
+    npy = cache / ("covariance_stat_only.npy" if stat_only else "covariance.npy")
     if npy.exists():
-        kov = np.load(npy)
+        cov = np.load(npy)
     else:
-        kov = read_covariance(yollar["kovaryans_istatistik" if stat_only else "kovaryans"])
-        np.save(npy, kov)
-    return PantheonData(read_table(yollar["tablo"]), kov)
+        cov = read_covariance(paths["covariance_stat_only" if stat_only else "covariance"])
+        np.save(npy, cov)
+    return PantheonData(read_table(paths["table"]), cov)

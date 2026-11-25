@@ -1,46 +1,46 @@
-# Test ve doğrulama
+# Testing and verification
 
-Bir fonksiyon dört bağımsız sınamadan geçince doğrulanmış sayılır. Sınamalar farklı hata türlerini yakalar; biri diğerinin yerini tutmaz.
+A function counts as verified when it has passed four independent tests. The tests catch different kinds of errors; one does not take the place of another.
 
-## Dört sınama
+## The four tests
 
-**1. Kaynağın çalışılmış örneği (`tests/unit`).** Kaynakta sayısal örnek varsa test o örneği yeniden üretir ve kaynağı sayfasıyla anar. Meeus'un kitabındaki numaralı örnekler [Meeus1998], SOFA yemek kitaplarındaki örnek çıktılar [SOFA2023] ve Hogg'un şekilleri [Hogg1999] bu türün başlıca kaynaklarıdır. Yakaladığı hata: denklemin yanlış aktarılması.
+**1. Worked example of the source (`tests/unit`).** If the source has a numerical example, the test reproduces that example and cites the source with its page. The numbered examples in Meeus's book [Meeus1998], the example outputs in the SOFA cookbooks [SOFA2023] and the figures of Hogg [Hogg1999] are the main sources of this kind. The error it catches: the equation was transcribed wrongly.
 
-**2. Kâhin karşılaştırması (`tests/oracle`).** Aynı girdi bağımsız bir uygulamaya verilir ve fark toleransın altında olmalıdır. Kâhinler: koordinat ve zaman için ERFA ve Astropy, efemeris için Skyfield ve JPL Horizons, kozmoloji için `astropy.cosmology`, fotometri için photutils ve sep, periyodogram için `astropy.timeseries`, örnekleme için emcee. Girdiler tanım kümesini tarayan sabit tohumlu rastgele noktalar ve elle seçilmiş sınır durumlarıdır. Yakaladığı hata: örnekte görünmeyen bölgelerdeki sapma.
+**2. Oracle comparison (`tests/oracle`).** The same input is given to an independent implementation, and the difference must be below the tolerance. The oracles: ERFA and Astropy for coordinates and time, Skyfield and JPL Horizons for ephemerides, `astropy.cosmology` for cosmology, photutils and sep for photometry, `astropy.timeseries` for the periodogram, emcee for sampling. The inputs are random points with a fixed seed that scan the domain, and hand-picked boundary cases. The error it catches: deviation in regions the example does not show.
 
-Kâhin de yanılabilir. Fark çıktığında önce kaynağa dönülür; kâhin farklı bir model ya da sabit kullanıyorsa fark belgelenir ve tolerans buna göre konur.
+An oracle can also be wrong. When a difference appears, one first goes back to the source; if the oracle uses a different model or constant, the difference is documented and the tolerance is set accordingly.
 
-**3. Özellik testi (`tests/property`).** `hypothesis` ile üretilen girdilerde değişmezler sınanır:
+**3. Property test (`tests/property`).** Invariants are tested on inputs generated with `hypothesis`:
 
-- gidiş-dönüş: `galaktik_den_ekvatoral(ekvatoral_den_galaktik(x)) = x`
-- korunum: dönme matrisleri ortogonaldir, determinant +1'dir; iki cisim integrasyonunda enerji ve açısal momentum korunur
-- limit: `z → 0` için `D_L → cz/H0`; `e → 0` için eksantrik anomali ortalama anomaliye gider
-- simetri ve tekdüzelik: hava kütlesi zenit açısıyla artar; eşyürüyen uzaklık `z` ile artar
-- boyut: çıktının birimi girdilerin birimlerinden beklenen birimdir
+- round trip: `equatorial_to_galactic(galactic_to_equatorial(x)) = x`
+- conservation: rotation matrices are orthogonal and have determinant +1; in the two-body integration, energy and angular momentum are conserved
+- limit: for `z → 0`, `D_L → cz/H0`; for `e → 0`, the eccentric anomaly goes to the mean anomaly
+- symmetry and monotonicity: airmass increases with zenith angle; comoving distance increases with `z`
+- dimension: the unit of the output is the unit expected from the units of the inputs
 
-Yakaladığı hata: kutup, sıfır geçişi, 0/2π sarması gibi sınır durumları.
+The error it catches: boundary cases such as the pole, the zero crossing and the 0/2π wrap.
 
-**4. Uçtan uca bilim testi (`projects`).** Bir analiz bilinen bir sonucu yeniden üretir: Pantheon+ verisinden yayımlanan `H0` ve `Ωm` aralığı, bilinen bir ötegezegenin dönemi ve geçiş derinliği, bir açık kümenin yayımlanmış uzaklık modülü. Yakaladığı hata: tek tek doğru fonksiyonların yanlış birleştirilmesi.
+**4. End-to-end science test (`projects`).** An analysis reproduces a known result: the published `H0` and `Ωm` range from the Pantheon+ data, the period and transit depth of a known exoplanet, the published distance modulus of an open cluster. The error it catches: individually correct functions combined wrongly.
 
-## Tolerans
+## Tolerance
 
-Tolerans her test için ayrı yazılır ve gerekçesi yorum satırında durur. Başlangıç değerleri:
+The tolerance is written separately for each test, and its rationale stays in a comment line. Starting values:
 
-- Kapalı biçimli dönüşümler (küresel trigonometri, birim dönüşümü): bağıl `1e-12`.
-- Seri açılımına dayanan modeller (presesyon, nutasyon): kâhinle aynı model kullanılıyorsa `1e-10` rad; farklı modelde kaynakların bildirdiği model farkı.
-- Sayısal integral ve kök bulma: istenen toleransın on katı.
-- Gürültülü veriyle çalışan algoritmalar (fotometri, periyodogram): sentetik veride gerçeğe karşı, beklenen istatistik belirsizliğin katı olarak.
+- Closed-form transforms (spherical trigonometry, unit conversion): relative `1e-12`.
+- Models based on series expansions (precession, nutation): `1e-10` rad if the same model as the oracle is used; for a different model, the model difference reported by the sources.
+- Numerical integrals and root finding: ten times the requested tolerance.
+- Algorithms that work with noisy data (photometry, periodogram): on synthetic data against the truth, as a multiple of the expected statistical uncertainty.
 
-Bu değerler başlangıç önerisidir; ilk testler yazılırken ölçülen farkla yeniden konur ve değişiklik kaydedilir.
+These values are a starting proposal; when the first tests are written they are set again from the measured difference, and the change is recorded.
 
-## Sentetik veri
+## Synthetic data
 
-Gözlem verisi işleyen her modülün yanında bir üreteç bulunur: bilinen parametrelerle yapay CCD görüntüsü (yıldız alanı, PSF, gökyüzü arka planı, Poisson ve okuma gürültüsü, bias, karanlık akım, düz alan, kozmik ışın), yapay tayf ve yapay ışık eğrisi. Algoritma önce gerçeğin bilindiği sentetik veride, sonra gerçek veride sınanır. Enjeksiyon-geri kazanım deneyleri (bilinen sinyali gerçek veriye ekleyip geri bulma) tamlık ve yanlılık ölçümünün standart aracıdır.
+Next to every module that processes observational data there is a generator: an artificial CCD image with known parameters (star field, PSF, sky background, Poisson and read noise, bias, dark current, flat field, cosmic rays), an artificial spectrum and an artificial light curve. An algorithm is tested first on synthetic data where the truth is known, and then on real data. Injection-recovery experiments (adding a known signal to real data and finding it again) are the standard tool for measuring completeness and bias.
 
-## Referans veri
+## Reference data
 
-`veri/referans` altında küçük, sürüm denetimindeki dosyalar durur: kâhin çıktıları (hangi kütüphanenin hangi sürümüyle üretildiği başlıkta yazılı), kaynaklardan aktarılmış örnek tabloları ve küçük gerçek veri kesitleri. Büyük veri indirilir ve `data/raw` altında, sürüm denetimi dışında, SHA-256 özetiyle kayıtlı tutulur.
+Small files under version control are kept in `data/reference`: oracle outputs (with the header stating which version of which library produced them), example tables transferred from sources, and small cutouts of real data. Large data is downloaded and kept under `data/raw`, outside version control, recorded with its SHA-256 digest.
 
-## Sürekli denetim
+## Continuous checking
 
-Her değişiklikte: `ruff`, `mypy --strict`, birim ve özellik testleri, kaynak kuralı testi. Kâhin testleri `dogrulama` bağımlılıklarını gerektirdiğinden ayrı işaretlenir (`pytest -m kahin`) ve en az birleştirme öncesinde koşulur. Ağ gerektiren testler `-m ag` ile ayrılır ve varsayılan koşuda çalışmaz.
+On every change: `ruff`, `mypy --strict`, the unit and property tests, the source rule test. The oracle tests need the `verification` dependencies, so they are marked separately (`pytest -m oracle`) and run at least before merging. Tests that need the network are separated with `-m network` and do not run in the default run.

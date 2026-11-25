@@ -1,69 +1,69 @@
-# Zaman serisi çözümlemesi
+# Time series analysis
 
-Hedef modül: `zamanserisi/`.
+Target module: `timeseries/`.
 
-Astronomik zaman serileri eşit aralıklı değildir (gündüz, hava, mevsim boşlukları), gürültüleri nokta nokta değişir ve çoğu kez ilintilidir. Yöntemler bu üç özelliğe göre seçilir.
+Astronomical time series are not evenly spaced (gaps from day, weather and season), their noise varies from point to point, and it is often correlated. Methods are chosen according to these three properties.
 
-## 1. Veri modeli ve ön işleme
+## 1. Data model and preprocessing
 
-- Işık eğrisi kabı: zaman (ölçeği ve referansı belirtilmiş, tercihen `BJD_TDB`), akı ya da kadir, belirsizlik, kalite bayrağı, bant [Eastman2010].
-- Aykırı değer ayıklama: hareketli medyana göre sigma kırpma; geçiş gibi gerçek sinyali kesmemek için tek yönlü kırpma.
-- **Eğilim giderme:** hareketli medyan, çift ağırlıklı süzgeç, Savitzky-Golay, spline, Gauss süreci. Pencere genişliği aranan sinyalin süresinden uzun seçilir; aksi halde sinyal bastırılır. Kâhin: `wotan`.
-- Sistematik giderme: ortak eğilimlerin temel bileşenlerle modellenmesi (uzay teleskobu verisinde); piksel düzeyinde bağlanım.
-- Kutulama ve faz katlama.
+- Light curve container: time (scale and reference stated, preferably `BJD_TDB`), flux or magnitude, uncertainty, quality flag, band [Eastman2010].
+- Outlier removal: sigma clipping relative to a moving median; one-sided clipping so as not to cut a real signal such as a transit.
+- **Detrending:** moving median, biweight filter, Savitzky-Golay, spline, Gaussian process. The window width is chosen longer than the duration of the sought signal; otherwise the signal is suppressed. Oracle: `wotan`.
+- Systematics removal: modeling common trends with principal components (in space telescope data); pixel-level regression.
+- Binning and phase folding.
 
-## 2. Dönem arama
+## 2. Period search
 
-**Lomb-Scargle periyodogramı.** Eşit aralıklı olmayan veride sinüs uydurmanın `χ²` iyileşmesi olarak yorumlanır [Lomb1976; Scargle1982]. Uygulama ayrıntıları VanderPlas'ın derlemesini izler [VanderPlas2018]:
+**Lomb-Scargle periodogram.** Interpreted as the `χ²` improvement of a sinusoid fit to unevenly spaced data [Lomb1976; Scargle1982]. Implementation details follow VanderPlas's review [VanderPlas2018]:
 
-- Yüzen ortalama (genelleştirilmiş) biçim ve ölçüm hatası ağırlıkları.
-- Frekans ızgarası: çözünürlük `1/T`'nin kesri (aşırı örnekleme katsayısı 5 ve üstü); üst sınır seçimi. Eşit aralıklı olmayan veride Nyquist frekansı iyi tanımlı değildir.
-- Pencere fonksiyonu ve takma adlar: günlük (`±1 gün⁻¹`), yıllık ve örnekleme kaynaklı tepeler. Pencere periyodogramı her analizde çizilir.
-- Yanlış alarm olasılığı: analitik yaklaşımlar ve bootstrap.
-- Çok terimli (Fourier serisi) uzantı: sinüs dışı biçimler için.
-- Hızlı algoritma: `O(N log N)` yaklaşımı; önce doğrudan `O(N·N_f)` biçim yazılır.
+- Floating-mean (generalized) form and measurement error weights.
+- Frequency grid: resolution as a fraction of `1/T` (oversampling factor of 5 or more); choice of the upper limit. For unevenly spaced data the Nyquist frequency is not well defined.
+- Window function and aliases: daily (`±1 day⁻¹`), yearly and sampling-induced peaks. The window periodogram is plotted in every analysis.
+- False alarm probability: analytic approximations and bootstrap.
+- Multi-term (Fourier series) extension: for non-sinusoidal shapes.
+- Fast algorithm: the `O(N log N)` approximation; the direct `O(N·N_f)` form is written first.
 
-**Faz saçılımı yöntemleri.** Katlanmış ışık eğrisinin saçılımını en küçükleyen dönem; sinüs dışı biçimlerde (örten çift) güçlüdür [Stellingwerf1978].
+**Phase dispersion methods.** The period that minimizes the scatter of the folded light curve; strong for non-sinusoidal shapes (eclipsing binaries) [Stellingwerf1978].
 
-**Dönemin inceltilmesi ve belirsizliği:** tepe çevresinde model uydurma; MCMC ile sonsal dağılım. Periyodogram tepesinin genişliği belirsizlik değildir.
+**Refining the period and its uncertainty:** model fitting around the peak; the posterior distribution with MCMC. The width of the periodogram peak is not the uncertainty.
 
-Kâhin: `astropy.timeseries.LombScargle`.
+Oracle: `astropy.timeseries.LombScargle`.
 
-## 3. Geçiş arama
+## 3. Transit search
 
-- **Kutu en küçük kareler (BLS):** dönem, süre ve evre ızgarasında kutu biçimli çukur araması; sinyal artık oranı ve sinyal saptama verimi istatistikleri [Kovacs2002].
-- **Geçiş en küçük kareler (TLS):** kutu yerine kenar kararmalı gerçekçi geçiş biçimi; küçük gezegenlerde daha duyarlıdır [HippkeHeller2019].
-- Dönem ızgarası: frekansta düzgün değil, yıldız yoğunluğuna bağlı en iyi örnekleme.
-- Doğrulama sınamaları: tek-çift geçiş derinliği farkı, ikincil tutulma, merkez kayması; örten çift yanlış pozitiflerinin ayıklanması.
+- **Box least squares (BLS):** search for a box-shaped dip over a grid of period, duration and phase; the signal residue and signal detection efficiency statistics [Kovacs2002].
+- **Transit least squares (TLS):** a realistic limb-darkened transit shape instead of a box; more sensitive for small planets [HippkeHeller2019].
+- Period grid: not uniform in frequency, optimal sampling that depends on the stellar density.
+- Vetting tests: odd-even transit depth difference, secondary eclipse, centroid shift; removing eclipsing binary false positives.
 
-Kâhinler: `astropy.timeseries.BoxLeastSquares`, `transitleastsquares`.
+Oracles: `astropy.timeseries.BoxLeastSquares`, `transitleastsquares`.
 
-## 4. Model uydurma
+## 4. Model fitting
 
-- Geçiş modeli: yarıçap oranı, ölçeklenmiş yarı büyük eksen, eğim, kenar kararma katsayıları, geçiş ortası zamanı [MandelAgol2002; Winn2010]. Kâhin: `batman` [Kreidberg2015].
-- Uzun pozlarda modelin poz süresi üzerinden integrali.
-- Zonklayan değişenler: Fourier ayrışımı, genlik ve evre oranları; Sefeid ve RR Lyrae sınıflaması.
-- Örten çiftler: en küçük zamanları ve O-C diyagramı; dönem değişimi.
-- Süpernova ışık eğrileri: şablon uydurma `sncosmo` üzerinden [Guy2007].
+- Transit model: radius ratio, scaled semi-major axis, inclination, limb darkening coefficients, mid-transit time [MandelAgol2002; Winn2010]. Oracle: `batman` [Kreidberg2015].
+- Integration of the model over the exposure time for long exposures.
+- Pulsating variables: Fourier decomposition, amplitude and phase ratios; classification of Cepheids and RR Lyrae.
+- Eclipsing binaries: times of minima and the O-C diagram; period change.
+- Supernova light curves: template fitting through `sncosmo` [Guy2007].
 
-## 5. İlintili gürültü
+## 5. Correlated noise
 
-- Kırmızı gürültünün varlığında beyaz gürültü varsayımı belirsizlikleri küçük gösterir.
-- Tanı: kutulanmış artıkların RMS'inin `1/√N` ile ölçeklenip ölçeklenmediği.
-- Gauss süreci ile gürültünün ve sinyalin birlikte modellenmesi [RasmussenWilliams2006; ForemanMackey2017].
-- Stokastik değişkenlik: yapı fonksiyonu, sönümlü rastgele yürüyüş (etkin gökada çekirdekleri) [Ivezic2020, Böl. 10].
+- In the presence of red noise, the white noise assumption makes the uncertainties look smaller.
+- Diagnostic: whether the RMS of the binned residuals scales as `1/√N`.
+- Modeling the noise and the signal together with a Gaussian process [RasmussenWilliams2006; ForemanMackey2017].
+- Stochastic variability: structure function, damped random walk (active galactic nuclei) [Ivezic2020, Section 10].
 
-## 6. Diğer yöntemler
+## 6. Other methods
 
-- Dalgacık dönüşümü: zamanla değişen dönemler.
-- Öz ilinti fonksiyonu: yıldız dönme dönemi.
-- Bayesçi bloklar: patlama ve parlama saptama [Ivezic2020, Böl. 5].
-- Geçici kaynak sınıflaması: öznitelik çıkarımı ve denetimli öğrenme (ZTF ve Rubin uyarı akışları) [Bellm2019].
+- Wavelet transform: time-varying periods.
+- Autocorrelation function: stellar rotation period.
+- Bayesian blocks: detecting outbursts and flares [Ivezic2020, Section 5].
+- Transient classification: feature extraction and supervised learning (ZTF and Rubin alert streams) [Bellm2019].
 
-## 7. Doğrulama
+## 7. Verification
 
-- Sentetik ışık eğrisi: bilinen dönem, genlik, gerçekçi örnekleme ve gürültü. Geri kazanım oranı S/N'ye ve gözlem sayısına karşı ölçülür.
-- Enjeksiyon-geri kazanım: gerçek ışık eğrisine yapay geçiş eklenir; saptama verimi haritası çıkarılır.
-- Yayımlanmış bir TESS gezegeninin dönemi, derinliği ve süresi yeniden elde edilir [Ricker2015].
-- OGLE ya da Gaia Sefeidlerinin katalog dönemleri yeniden bulunur.
-- Periyodogram değerleri `astropy` ile aynı ızgarada `1e-10` düzeyinde uyuşur.
+- Synthetic light curve: known period, amplitude, realistic sampling and noise. The recovery rate is measured against S/N and the number of observations.
+- Injection-recovery: an artificial transit is added to a real light curve; a detection efficiency map is produced.
+- The period, depth and duration of a published TESS planet are recovered [Ricker2015].
+- The catalog periods of OGLE or Gaia Cepheids are found again.
+- Periodogram values agree with `astropy` on the same grid at the `1e-10` level.

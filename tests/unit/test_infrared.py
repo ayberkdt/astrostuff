@@ -4,27 +4,27 @@ import pytest
 from kozmos.radiation import infrared
 
 
-def test_sifir_noktalari_tablo_degerleri():
-    # [Cohen2003] Tablo 2 ve [Wright2010] Bölüm 4.4'ten okunan değerler.
-    beklenen = {"J": 1594.0, "H": 1024.0, "Ks": 666.7, "W1": 306.681, "W2": 170.663, "W3": 29.0448, "W4": 8.2839}
-    for name, flux in beklenen.items():
+def test_zero_points_table_values():
+    # Values read from [Cohen2003] Table 2 and [Wright2010] Section 4.4.
+    expected = {"J": 1594.0, "H": 1024.0, "Ks": 666.7, "W1": 306.681, "W2": 170.663, "W3": 29.0448, "W4": 8.2839}
+    for name, flux in expected.items():
         assert float(infrared.flux_jy_from_vega_magnitude(0.0, name)) == flux
         assert float(infrared.flux_jy_from_vega_magnitude(2.5, name)) == pytest.approx(flux / 10.0)
     with pytest.raises(ValueError):
         infrared.band("Z")
 
 
-def test_gidis_donus_ve_ab_farki():
+def test_round_trip_and_ab_offset():
     magnitude = np.array([-1.0, 5.0, 14.3])
     for name in infrared.BANDS:
         assert infrared.vega_magnitude_from_flux(
             infrared.flux_jy_from_vega_magnitude(magnitude, name), name
         ) == pytest.approx(magnitude, abs=1e-12)
-    # Ks: 2,5 log10(3631 / 666,7) = 1,840 mag.
+    # Ks: 2.5 log10(3631 / 666.7) = 1.840 mag.
     assert infrared.vega_ab_offset("Ks") == pytest.approx(1.840, abs=1e-3)
-    # Dalga boyu arttıkça Vega'nın akısı düşer, AB − Vega farkı büyür.
-    farklar = [infrared.vega_ab_offset(a) for a in ("J", "H", "Ks", "W1", "W2", "W3", "W4")]
-    assert all(b > a for a, b in zip(farklar, farklar[1:], strict=False))
+    # As the wavelength increases, Vega's flux drops and the AB − Vega offset grows.
+    offsets = [infrared.vega_ab_offset(a) for a in ("J", "H", "Ks", "W1", "W2", "W3", "W4")]
+    assert all(b > a for a, b in zip(offsets, offsets[1:], strict=False))
 
 
 def test_wien():

@@ -1,23 +1,22 @@
-"""Kaynakça ve paket envanterini kaynağından doğrular; kanıtı dosyaya yazar.
+"""Verify the bibliography and the package inventory against their sources; write the evidence to files.
 
-Üç denetim yapar ve sonucu ``dogrulama_kaydi.json`` ile ``DOGRULAMA_OZETI.md``
-dosyalarına kaydeder:
+Three checks are made and the result is saved to ``verification_record.json``
+and ``VERIFICATION_SUMMARY.md``:
 
-1. ``kaynaklar.bib`` içindeki her giriş için künyeyi dış kayıtla karşılaştırır:
-   DOI -> Crossref (bulunamazsa DataCite), eprint -> arXiv API, ISBN -> Open Library.
-   Başlık benzerliği ve yıl farkı ölçülür.
-2. ``paketler.txt`` içindeki her paket için PyPI JSON API'sinden son sürümü ve
-   yükleme tarihini okur.
-3. ``plan/`` altındaki Markdown dosyalarında geçen ``[Anahtar]`` atıflarının ve
-   ``src/`` altındaki ``@kaynak`` kayıtlarının ``kaynaklar.bib`` içinde tanımlı
-   olduğunu denetler.
+1. For every entry in the ``references*.bib`` files, compare the bibliographic data
+   with an external record: DOI -> Crossref (DataCite if not found), eprint -> arXiv API,
+   ISBN -> Open Library. Title similarity and year difference are measured.
+2. For every package in ``packages.txt``, read the latest version and upload date
+   from the PyPI JSON API.
+3. Check that the ``[Key]`` citations in the Markdown files under ``plan/`` and the
+   ``@source`` records under ``src/`` are defined in the ``references*.bib`` files.
 
-Kullanım:
-    python dogrula.py            # üç denetim
-    python dogrula.py --yalniz atif   # yalnızca atıf denetimi (ağ gerekmez)
+Usage:
+    python bibliography/verify.py                  # all three checks
+    python bibliography/verify.py --only citations # citation check only (no network needed)
 
-Çıkış kodu: tanımsız atıf ya da uyuşmayan künye varsa 1, yoksa 0.
-Dış servislere yalnızca DOI, arXiv kimliği, ISBN ve paket adı gönderilir.
+Exit code: 1 if there is an undefined citation or a mismatching entry, 0 otherwise.
+Only the DOI, arXiv identifier, ISBN and package name are sent to external services.
 """
 
 from __future__ import annotations
@@ -36,43 +35,43 @@ import xml.etree.ElementTree as ET
 from difflib import SequenceMatcher
 from pathlib import Path
 
-DIZIN = Path(__file__).resolve().parent
-ROOT = DIZIN.parent
+HERE = Path(__file__).resolve().parent
+ROOT = HERE.parent
 PLAN = ROOT / "plan"
-USER_AGENT = "bibliography-dogrulama/1.0 (python-urllib)"
-BASLIK_ESIGI = 0.80
-YIL_TOLERANSI = 1  # çevrimiçi ve basılı yayın yılı bir yıl ayrışabilir
+USER_AGENT = "bibliography-verification/1.0 (python-urllib)"
+TITLE_THRESHOLD = 0.80
+YEAR_TOLERANCE = 1  # the online and print publication years can differ by one year
 
 
-def getir(url: str, deneme: int = 3) -> tuple[int, bytes]:
-    """URL'yi okur; (HTTP durumu, gövde) döndürür. Ağ hatasında durum 0'dır."""
-    istek = urllib.request.Request(url, headers={"User-Agent": USER_AGENT, "Accept": "application/json, */*"})
-    for i in range(deneme):
+def fetch(url: str, attempts: int = 3) -> tuple[int, bytes]:
+    """Read the URL; return (HTTP status, body). The status is 0 on a network error."""
+    request = urllib.request.Request(url, headers={"User-Agent": USER_AGENT, "Accept": "application/json, */*"})
+    for i in range(attempts):
         try:
-            with urllib.request.urlopen(istek, timeout=30) as yanit:
-                return yanit.status, yanit.read()
-        except urllib.error.HTTPError as hata:
-            if hata.code in (429, 500, 502, 503, 504) and i < deneme - 1:
+            with urllib.request.urlopen(request, timeout=30) as response:
+                return response.status, response.read()
+        except urllib.error.HTTPError as error:
+            if error.code in (429, 500, 502, 503, 504) and i < attempts - 1:
                 time.sleep(2 * (i + 1))
                 continue
-            return hata.code, b""
+            return error.code, b""
         except (urllib.error.URLError, TimeoutError, OSError):
-            if i < deneme - 1:
+            if i < attempts - 1:
                 time.sleep(2 * (i + 1))
                 continue
             return 0, b""
     return 0, b""
 
 
-def sadelestir(text: str) -> str:
-    """Başlığı karşılaştırma için küçük harfli ASCII sözcük dizisine indirger."""
+def simplify(text: str) -> str:
+    """Reduce a title to a lowercase ASCII word string for comparison."""
     text = re.sub(r"<[^>]+>", " ", text)
     text = unicodedata.normalize("NFKD", text).encode("ascii", "ignore").decode()
     return " ".join(re.sub(r"[^a-z0-9 ]", " ", text.lower()).split())
 
 
-def benzerlik(a: str, b: str) -> float:
-    a, b = sadelestir(a), sadelestir(b)
+def similarity(a: str, b: str) -> float:
+    a, b = simplify(a), simplify(b)
     if not a or not b:
         return 0.0
     if a in b or b in a:
@@ -80,269 +79,277 @@ def benzerlik(a: str, b: str) -> float:
     return round(SequenceMatcher(None, a, b).ratio(), 3)
 
 
-def bib_oku(path: Path) -> dict[str, dict[str, str]]:
-    """Tek satırlık girişlerden oluşan .bib dosyasını sözlüğe çevirir."""
-    girisler: dict[str, dict[str, str]] = {}
-    for satir in path.read_text(encoding="utf-8").splitlines():
-        eslesme = re.match(r"@(\w+)\{([^,]+),\s*(.*)\}\s*$", satir.strip())
-        if not eslesme:
+def read_bib(path: Path) -> dict[str, dict[str, str]]:
+    """Convert a .bib file made of one-line entries into a dictionary."""
+    entries: dict[str, dict[str, str]] = {}
+    for line in path.read_text(encoding="utf-8").splitlines():
+        match = re.match(r"@(\w+)\{([^,]+),\s*(.*)\}\s*$", line.strip())
+        if not match:
             continue
-        tur, key, govde = eslesme.groups()
-        alanlar = {"tur": tur}
-        for name, value in re.findall(r"(\w+)=\{((?:[^{}]|\{[^{}]*\})*)\}", govde):
-            alanlar[name] = value.replace("{", "").replace("}", "")
-        girisler[key] = alanlar
-    return girisler
+        kind, key, body = match.groups()
+        fields = {"type": kind}
+        for name, value in re.findall(r"(\w+)=\{((?:[^{}]|\{[^{}]*\})*)\}", body):
+            fields[name] = value.replace("{", "").replace("}", "")
+        entries[key] = fields
+    return entries
 
 
 def crossref(doi: str) -> dict | None:
-    durum, govde = getir("https://api.crossref.org/works/" + urllib.parse.quote(doi, safe="/"))
-    if durum != 200:
+    status, body = fetch("https://api.crossref.org/works/" + urllib.parse.quote(doi, safe="/"))
+    if status != 200:
         return None
-    m = json.loads(govde)["message"]
+    m = json.loads(body)["message"]
     year = None
-    for alan in ("published-print", "issued", "published-online", "published"):
-        parca = m.get(alan, {}).get("date-parts", [[None]])[0]
-        if parca and parca[0]:
-            year = parca[0]
+    for field in ("published-print", "issued", "published-online", "published"):
+        part = m.get(field, {}).get("date-parts", [[None]])[0]
+        if part and part[0]:
+            year = part[0]
             break
-    yazar = m.get("author", [{}])
-    ilk = yazar[0].get("family") or yazar[0].get("name") if yazar else None
+    authors = m.get("author", [{}])
+    first = authors[0].get("family") or authors[0].get("name") if authors else None
     return {
-        "kaynak": "Crossref",
-        "baslik": (m.get("title") or [""])[0],
-        "yil": year,
-        "ilk_yazar": ilk,
-        "yayin": (m.get("container-title") or [m.get("publisher", "")])[0],
-        "cilt": m.get("volume"),
-        "sayfa": m.get("page") or m.get("article-number"),
+        "source": "Crossref",
+        "title": (m.get("title") or [""])[0],
+        "year": year,
+        "first_author": first,
+        "publication": (m.get("container-title") or [m.get("publisher", "")])[0],
+        "volume": m.get("volume"),
+        "page": m.get("page") or m.get("article-number"),
     }
 
 
 def datacite(doi: str) -> dict | None:
-    durum, govde = getir("https://api.datacite.org/dois/" + urllib.parse.quote(doi, safe="/"))
-    if durum != 200:
+    status, body = fetch("https://api.datacite.org/dois/" + urllib.parse.quote(doi, safe="/"))
+    if status != 200:
         return None
-    a = json.loads(govde)["data"]["attributes"]
-    yaratan = a.get("creators") or [{}]
+    a = json.loads(body)["data"]["attributes"]
+    creators = a.get("creators") or [{}]
     return {
-        "kaynak": "DataCite",
-        "baslik": (a.get("titles") or [{}])[0].get("title", ""),
-        "yil": a.get("publicationYear"),
-        "ilk_yazar": yaratan[0].get("familyName") or yaratan[0].get("name"),
-        "yayin": a.get("publisher") if isinstance(a.get("publisher"), str) else str(a.get("publisher")),
+        "source": "DataCite",
+        "title": (a.get("titles") or [{}])[0].get("title", ""),
+        "year": a.get("publicationYear"),
+        "first_author": creators[0].get("familyName") or creators[0].get("name"),
+        "publication": a.get("publisher") if isinstance(a.get("publisher"), str) else str(a.get("publisher")),
     }
 
 
-def arxiv(kimlik: str) -> dict | None:
-    durum, govde = getir("https://export.arxiv.org/api/query?id_list=" + urllib.parse.quote(kimlik, safe="/"))
-    if durum != 200:
+def arxiv(identifier: str) -> dict | None:
+    status, body = fetch("https://export.arxiv.org/api/query?id_list=" + urllib.parse.quote(identifier, safe="/"))
+    if status != 200:
         return None
-    name = {"a": "http://www.w3.org/2005/Atom", "x": "http://arxiv.org/schemas/atom"}
-    giris = ET.fromstring(govde).find("a:entry", name)
-    if giris is None or giris.find("a:title", name) is None or giris.find("a:published", name) is None:
+    ns = {"a": "http://www.w3.org/2005/Atom", "x": "http://arxiv.org/schemas/atom"}
+    entry = ET.fromstring(body).find("a:entry", ns)
+    if entry is None or entry.find("a:title", ns) is None or entry.find("a:published", ns) is None:
         return None
-    yazar = giris.find("a:author/a:name", name)
-    dergi = giris.find("x:journal_ref", name)
-    doi = giris.find("x:doi", name)
+    author = entry.find("a:author/a:name", ns)
+    journal = entry.find("x:journal_ref", ns)
+    doi = entry.find("x:doi", ns)
     return {
-        "kaynak": "arXiv",
-        "baslik": " ".join((giris.findtext("a:title", "", name)).split()),
-        "yil": int(giris.findtext("a:published", "0000", name)[:4]),
-        "ilk_yazar": yazar.text.split()[-1] if yazar is not None and yazar.text else None,
-        "yayin": dergi.text if dergi is not None else None,
+        "source": "arXiv",
+        "title": " ".join((entry.findtext("a:title", "", ns)).split()),
+        "year": int(entry.findtext("a:published", "0000", ns)[:4]),
+        "first_author": author.text.split()[-1] if author is not None and author.text else None,
+        "publication": journal.text if journal is not None else None,
         "doi": doi.text if doi is not None else None,
     }
 
 
 def openlibrary(isbn: str) -> dict | None:
-    durum, govde = getir(f"https://openlibrary.org/isbn/{isbn}.json")
-    if durum != 200:
+    status, body = fetch(f"https://openlibrary.org/isbn/{isbn}.json")
+    if status != 200:
         return None
-    k = json.loads(govde)
+    k = json.loads(body)
     year = re.search(r"(1[89]|20)\d\d", k.get("publish_date", ""))
-    header = k.get("title", "")
+    title = k.get("title", "")
     if k.get("subtitle"):
-        header += ": " + k["subtitle"]
+        title += ": " + k["subtitle"]
     return {
-        "kaynak": "Open Library",
-        "baslik": header,
-        "yil": int(year.group()) if year else None,
-        "ilk_yazar": None,
-        "yayin": ", ".join(k.get("publishers", [])),
+        "source": "Open Library",
+        "title": title,
+        "year": int(year.group()) if year else None,
+        "first_author": None,
+        "publication": ", ".join(k.get("publishers", [])),
     }
 
 
-def kunye_denetle(key: str, g: dict[str, str]) -> dict:
-    kayit: dict = {"anahtar": key, "bib_baslik": g.get("title"), "bib_yil": g.get("year")}
-    dis = None
+def check_entry(key: str, g: dict[str, str]) -> dict:
+    record: dict = {"key": key, "bib_title": g.get("title"), "bib_year": g.get("year")}
+    external = None
     if "doi" in g:
-        kayit["kimlik"] = "doi:" + g["doi"]
-        dis = crossref(g["doi"]) or datacite(g["doi"])
+        record["identifier"] = "doi:" + g["doi"]
+        external = crossref(g["doi"]) or datacite(g["doi"])
     elif "eprint" in g:
-        kayit["kimlik"] = "arXiv:" + g["eprint"]
-        dis = arxiv(g["eprint"])
-        time.sleep(3)  # arXiv API kullanım kuralı
+        record["identifier"] = "arXiv:" + g["eprint"]
+        external = arxiv(g["eprint"])
+        time.sleep(3)  # arXiv API usage rule
     elif "isbn" in g:
-        kayit["kimlik"] = "isbn:" + g["isbn"]
-        dis = openlibrary(g["isbn"])
+        record["identifier"] = "isbn:" + g["isbn"]
+        external = openlibrary(g["isbn"])
     else:
-        kayit.update(kimlik=g.get("url"), durum="ELLE", aciklama="DOI, arXiv ya da ISBN yok; elle doğrulanacak")
-        return kayit
-    if dis is None:
-        kayit.update(durum="BULUNAMADI", aciklama="dış kayıt okunamadı")
-        return kayit
-    kayit["dis"] = dis
-    b = benzerlik(g.get("title", ""), dis["baslik"])
-    kayit["baslik_benzerligi"] = b
-    yil_farki = None
-    if dis.get("yil") and g.get("year", "").isdigit():
-        yil_farki = abs(int(dis["yil"]) - int(g["year"]))
-    kayit["yil_farki"] = yil_farki
-    sorun = []
-    if b < BASLIK_ESIGI:
-        sorun.append(f"başlık benzerliği {b}")
-    # arXiv yılı ön baskı yılıdır; kitapta baskı yılı değişir. Yıl yalnızca DOI kaydında bağlayıcıdır.
-    if "doi" in g and yil_farki is not None and yil_farki > YIL_TOLERANSI:
-        sorun.append(f"yıl farkı {yil_farki}")
-    kayit["durum"] = "UYUSMUYOR" if sorun else "DOGRULANDI"
-    if sorun:
-        kayit["aciklama"] = "; ".join(sorun)
-    return kayit
+        record.update(
+            identifier=g.get("url"),
+            status="MANUAL",
+            description="no DOI, arXiv identifier or ISBN; to be verified by hand",
+        )
+        return record
+    if external is None:
+        record.update(status="NOT_FOUND", description="external record could not be read")
+        return record
+    record["external"] = external
+    b = similarity(g.get("title", ""), external["title"])
+    record["title_similarity"] = b
+    year_difference = None
+    if external.get("year") and g.get("year", "").isdigit():
+        year_difference = abs(int(external["year"]) - int(g["year"]))
+    record["year_difference"] = year_difference
+    problems = []
+    if b < TITLE_THRESHOLD:
+        problems.append(f"title similarity {b}")
+    # The arXiv year is the preprint year; the edition year of a book varies. The year is binding only for a DOI record.
+    if "doi" in g and year_difference is not None and year_difference > YEAR_TOLERANCE:
+        problems.append(f"year difference {year_difference}")
+    record["status"] = "MISMATCH" if problems else "VERIFIED"
+    if problems:
+        record["description"] = "; ".join(problems)
+    return record
 
 
 def pypi(name: str) -> dict:
-    durum, govde = getir(f"https://pypi.org/pypi/{name}/json")
-    if durum != 200:
-        return {"paket": name, "durum": "BULUNAMADI", "http": durum}
-    v = json.loads(govde)
-    surum = v["info"]["version"]
-    dosyalar = v.get("urls") or []
-    tarih = min((d["upload_time_iso_8601"][:10] for d in dosyalar), default=None)
-    tum = [d["upload_time_iso_8601"][:10] for ds in v.get("releases", {}).values() for d in ds]
+    status, body = fetch(f"https://pypi.org/pypi/{name}/json")
+    if status != 200:
+        return {"package": name, "status": "NOT_FOUND", "http": status}
+    v = json.loads(body)
+    version = v["info"]["version"]
+    files = v.get("urls") or []
+    date = min((d["upload_time_iso_8601"][:10] for d in files), default=None)
+    all_dates = [d["upload_time_iso_8601"][:10] for ds in v.get("releases", {}).values() for d in ds]
     return {
-        "paket": name,
-        "durum": "OKUNDU",
-        "surum": surum,
-        "surum_tarihi": tarih,
-        "son_yukleme": max(tum, default=None),
+        "package": name,
+        "status": "READ",
+        "version": version,
+        "version_date": date,
+        "last_upload": max(all_dates, default=None),
         "python": v["info"].get("requires_python"),
-        "ozet": v["info"].get("summary"),
+        "summary": v["info"].get("summary"),
     }
 
 
-def atif_denetle(anahtarlar: set[str]) -> dict:
-    """plan/ altındaki .md dosyalarında [Anahtar] atıflarını bulur."""
-    # [Anahtar], [Anahtar, Böl. 3] ve [Anahtar1; Anahtar2, Denk. 5] biçimleri; Markdown bağlantıları hariç.
-    ayrac = re.compile(r"\[([^\[\]]+)\](?!\()")
-    key = re.compile(r"^([A-Za-z]+(?:19|20)\d\d[A-Za-z0-9]*)(?=$|,)")
-    kullanim: dict[str, list[str]] = {}
-    for dosya in sorted(PLAN.rglob("*.md")):
-        if dosya.name == "DOGRULAMA_OZETI.md":
+def check_citations(keys: set[str]) -> dict:
+    """Find the [Key] citations in the .md files under plan/ and the @source records in src/."""
+    # Forms [Key], [Key, Section 3] and [Key1; Key2, Eq. 5]; Markdown links are excluded.
+    bracket = re.compile(r"\[([^\[\]]+)\](?!\()")
+    key_pattern = re.compile(r"^([A-Za-z]+(?:19|20)\d\d[A-Za-z0-9]*)(?=$|,)")
+    usage: dict[str, list[str]] = {}
+    for file in sorted(PLAN.rglob("*.md")):
+        if file.name == "VERIFICATION_SUMMARY.md":
             continue
-        goreli = dosya.relative_to(PLAN).as_posix()
-        for grup in ayrac.findall(dosya.read_text(encoding="utf-8")):
-            for parca in grup.split(";"):
-                eslesme = key.match(parca.strip())
-                if eslesme and goreli not in kullanim.setdefault(eslesme.group(1), []):
-                    kullanim[eslesme.group(1)].append(goreli)
-    # Kaynak kodundaki @kaynak("Anahtar", ...) kayıtları ve Sabit(..., "Anahtar", ...) tanımları.
-    for dosya in sorted((ROOT / "src").rglob("*.py")):
-        text = dosya.read_text(encoding="utf-8")
-        goreli = dosya.relative_to(ROOT).as_posix()
-        for a in re.findall(r'kaynak\(\s*"([A-Za-z]+(?:19|20)\d\d[A-Za-z0-9]*)"', text):
-            if goreli not in kullanim.setdefault(a, []):
-                kullanim[a].append(goreli)
+        relative = file.relative_to(PLAN).as_posix()
+        for group in bracket.findall(file.read_text(encoding="utf-8")):
+            for part in group.split(";"):
+                match = key_pattern.match(part.strip())
+                if match and relative not in usage.setdefault(match.group(1), []):
+                    usage[match.group(1)].append(relative)
+    # The @source("Key", ...) records in the source code.
+    for file in sorted((ROOT / "src").rglob("*.py")):
+        text = file.read_text(encoding="utf-8")
+        relative = file.relative_to(ROOT).as_posix()
+        for a in re.findall(r'\bsource\(\s*"([A-Za-z]+(?:19|20)\d\d[A-Za-z0-9]*)"', text):
+            if relative not in usage.setdefault(a, []):
+                usage[a].append(relative)
     return {
-        "tanimsiz": {a: d for a, d in sorted(kullanim.items()) if a not in anahtarlar},
-        "kullanilmayan": sorted(anahtarlar - set(kullanim)),
-        "kullanilan_sayisi": len([a for a in kullanim if a in anahtarlar]),
+        "undefined": {a: d for a, d in sorted(usage.items()) if a not in keys},
+        "unused": sorted(keys - set(usage)),
+        "used_count": len([a for a in usage if a in keys]),
     }
 
 
-def ozet_yaz(kayit: dict) -> str:
-    s = [f"# Doğrulama özeti\n\nÜretim: `dogrula.py`, {kayit['zaman']}. Ayrıntı: `dogrulama_kaydi.json`.\n"]
-    if "kunyeler" in kayit:
-        say: dict[str, int] = {}
-        for k in kayit["kunyeler"]:
-            say[k["durum"]] = say.get(k["durum"], 0) + 1
-        s.append("## Künyeler\n")
-        s.append(", ".join(f"{d}: {n}" for d, n in sorted(say.items())) + f" (toplam {len(kayit['kunyeler'])}).\n")
-        for durum, header in (
-            ("UYUSMUYOR", "Uyuşmayan"),
-            ("BULUNAMADI", "Dış kaydı okunamayan"),
-            ("ELLE", "Elle doğrulanacak"),
+def write_summary(record: dict) -> str:
+    s = [
+        f"# Verification summary\n\nGenerated by `verify.py`, {record['time']}. Details: `verification_record.json`.\n"
+    ]
+    if "entries" in record:
+        counts: dict[str, int] = {}
+        for k in record["entries"]:
+            counts[k["status"]] = counts.get(k["status"], 0) + 1
+        s.append("## Entries\n")
+        s.append(", ".join(f"{d}: {n}" for d, n in sorted(counts.items())) + f" (total {len(record['entries'])}).\n")
+        for status, heading in (
+            ("MISMATCH", "Mismatching"),
+            ("NOT_FOUND", "External record could not be read"),
+            ("MANUAL", "To be verified by hand"),
         ):
-            secili = [k for k in kayit["kunyeler"] if k["durum"] == durum]
-            if secili:
-                s.append(f"### {header}\n")
-                for k in secili:
-                    dis = k.get("dis", {})
-                    ek = f" → dış kayıt: «{dis.get('baslik')}» ({dis.get('yil')})" if dis else ""
-                    s.append(f"- `{k['anahtar']}` ({k.get('kimlik')}): {k.get('aciklama', '')}{ek}")
+            selected = [k for k in record["entries"] if k["status"] == status]
+            if selected:
+                s.append(f"### {heading}\n")
+                for k in selected:
+                    external = k.get("external", {})
+                    extra = (
+                        f" → external record: «{external.get('title')}» ({external.get('year')})" if external else ""
+                    )
+                    s.append(f"- `{k['key']}` ({k.get('identifier')}): {k.get('description', '')}{extra}")
                 s.append("")
-        s.append("### Doğrulanan\n")
-        for k in kayit["kunyeler"]:
-            if k["durum"] == "DOGRULANDI":
-                d = k["dis"]
-                where = ", ".join(str(x) for x in (d.get("yayin"), d.get("cilt"), d.get("sayfa")) if x)
+        s.append("### Verified\n")
+        for k in record["entries"]:
+            if k["status"] == "VERIFIED":
+                d = k["external"]
+                where = ", ".join(str(x) for x in (d.get("publication"), d.get("volume"), d.get("page")) if x)
                 s.append(
-                    f"- `{k['anahtar']}`: {d.get('ilk_yazar') or ''} {d.get('yil')}, «{d['baslik']}». {where} [{d['kaynak']}, {k['kimlik']}]"
+                    f"- `{k['key']}`: {d.get('first_author') or ''} {d.get('year')}, «{d['title']}». {where} [{d['source']}, {k['identifier']}]"
                 )
         s.append("")
-    if "paketler" in kayit:
-        s.append("## Paketler (PyPI)\n")
-        for p in kayit["paketler"]:
-            if p["durum"] == "OKUNDU":
-                s.append(f"- `{p['paket']}` {p['surum']} ({p['surum_tarihi']}); Python {p['python']}")
+    if "packages" in record:
+        s.append("## Packages (PyPI)\n")
+        for p in record["packages"]:
+            if p["status"] == "READ":
+                s.append(f"- `{p['package']}` {p['version']} ({p['version_date']}); Python {p['python']}")
             else:
-                s.append(f"- `{p['paket']}`: PyPI'da bulunamadı (HTTP {p['http']})")
+                s.append(f"- `{p['package']}`: not found on PyPI (HTTP {p['http']})")
         s.append("")
-    if "atiflar" in kayit:
-        a = kayit["atiflar"]
-        s.append("## Atıf denetimi\n")
-        s.append(f"Plan figuresinde kullanılan tanımlı anahtar: {a['kullanilan_sayisi']}.\n")
-        if a["tanimsiz"]:
-            s.append("Tanımsız anahtarlar:\n")
-            s += [f"- `{k}`: {', '.join(v)}" for k, v in a["tanimsiz"].items()]
+    if "citations" in record:
+        a = record["citations"]
+        s.append("## Citation check\n")
+        s.append(f"Defined keys used in the plan and the source code: {a['used_count']}.\n")
+        if a["undefined"]:
+            s.append("Undefined keys:\n")
+            s += [f"- `{k}`: {', '.join(v)}" for k, v in a["undefined"].items()]
         else:
-            s.append("Tanımsız anahtar yok.")
-        s.append(f"\nKaynakçada olup planda anılmayan: {len(a['kullanilmayan'])}.")
+            s.append("No undefined keys.")
+        s.append(f"\nIn the bibliography but not cited in the plan or the code: {len(a['unused'])}.")
     return "\n".join(s) + "\n"
 
 
 def main() -> int:
-    ayristirici = argparse.ArgumentParser(description=__doc__.splitlines()[0])
-    ayristirici.add_argument("--yalniz", choices=["kunye", "paket", "atif"], help="tek denetimi koş")
-    secim = ayristirici.parse_args().yalniz
+    parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
+    parser.add_argument("--only", choices=["entries", "packages", "citations"], help="run a single check")
+    selection = parser.parse_args().only
     bib: dict[str, dict[str, str]] = {}
-    for dosya in sorted(DIZIN.glob("*.bib")):
-        bib.update(bib_oku(dosya))
-    kayit_yolu = DIZIN / "dogrulama_kaydi.json"
-    # Kısmi koşu önceki koşunun diğer bölümlerini korur.
-    kayit: dict = json.loads(kayit_yolu.read_text(encoding="utf-8")) if kayit_yolu.exists() and secim else {}
-    kayit["zaman"] = dt.datetime.now(dt.UTC).strftime("%Y-%m-%d %H:%M UTC")
+    for file in sorted(HERE.glob("*.bib")):
+        bib.update(read_bib(file))
+    record_path = HERE / "verification_record.json"
+    # A partial run keeps the other sections of the previous run.
+    record: dict = json.loads(record_path.read_text(encoding="utf-8")) if record_path.exists() and selection else {}
+    record["time"] = dt.datetime.now(dt.UTC).strftime("%Y-%m-%d %H:%M UTC")
 
-    if secim in (None, "kunye"):
-        kayit["kunyeler"] = []
+    if selection in (None, "entries"):
+        record["entries"] = []
         for key, g in bib.items():
-            sonuc = kunye_denetle(key, g)
-            kayit["kunyeler"].append(sonuc)
-            print(f"{sonuc['durum']:<11} {key}", flush=True)
+            result = check_entry(key, g)
+            record["entries"].append(result)
+            print(f"{result['status']:<11} {key}", flush=True)
             time.sleep(0.15)
-    if secim in (None, "paket"):
-        adlar = [s.strip() for s in (DIZIN / "paketler.txt").read_text(encoding="utf-8").splitlines()]
-        kayit["paketler"] = [pypi(a) for a in adlar if a and not a.startswith("#")]
-        for p in kayit["paketler"]:
-            print(f"{p['durum']:<11} {p['paket']} {p.get('surum', '')}", flush=True)
-    if secim in (None, "atif"):
-        kayit["atiflar"] = atif_denetle(set(bib))
-        print(f"tanımsız atıf: {len(kayit['atiflar']['tanimsiz'])}")
+    if selection in (None, "packages"):
+        names = [s.strip() for s in (HERE / "packages.txt").read_text(encoding="utf-8").splitlines()]
+        record["packages"] = [pypi(a) for a in names if a and not a.startswith("#")]
+        for p in record["packages"]:
+            print(f"{p['status']:<11} {p['package']} {p.get('version', '')}", flush=True)
+    if selection in (None, "citations"):
+        record["citations"] = check_citations(set(bib))
+        print(f"undefined citations: {len(record['citations']['undefined'])}")
 
-    kayit_yolu.write_text(json.dumps(kayit, ensure_ascii=False, indent=1), encoding="utf-8")
-    (DIZIN / "DOGRULAMA_OZETI.md").write_text(ozet_yaz(kayit), encoding="utf-8")
-    hatali = [k for k in kayit.get("kunyeler", []) if k["durum"] == "UYUSMUYOR"]
-    return 1 if hatali or kayit.get("atiflar", {}).get("tanimsiz") else 0
+    record_path.write_text(json.dumps(record, ensure_ascii=False, indent=1), encoding="utf-8")
+    (HERE / "VERIFICATION_SUMMARY.md").write_text(write_summary(record), encoding="utf-8")
+    mismatched = [k for k in record.get("entries", []) if k["status"] == "MISMATCH"]
+    return 1 if mismatched or record.get("citations", {}).get("undefined") else 0
 
 
 if __name__ == "__main__":

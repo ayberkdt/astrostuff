@@ -16,3 +16,4 @@ projects/hubble/chain.npy
 projects/hubble/run_log.txt
 figures/*.dw.json
 figures/*.cvd.png
+figures/*.denetim.txt

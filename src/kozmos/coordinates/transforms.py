@@ -1,9 +1,10 @@
-"""Koordinat sistemleri arası dönüşümler.
+"""Transformations between coordinate systems.
 
-Galaktik dönüşüm matrisi ve ufuk dönüşümü ERFA kaynak dosyalarından
-okunmuştur [ERFA2023]: ``icrs2g.c``, ``hd2ae.c``, ``ae2hd.c``. Galaktik
-sistemin tanımı Hipparcos kataloğundaki biçimdir; ERFA matrisi bu tanımdan
-tam duyarlıkla türetir ve katalog kaynağı olarak ESA SP-1200'ü anar.
+The Galactic transformation matrix and the horizon transformation were read
+from the ERFA source files [ERFA2023]: ``icrs2g.c``, ``hd2ae.c``, ``ae2hd.c``.
+The definition of the Galactic system is the one in the Hipparcos catalogue;
+ERFA derives the matrix from this definition at full precision and cites
+ESA SP-1200 as the catalogue source.
 """
 
 from __future__ import annotations
@@ -16,7 +17,7 @@ from kozmos.core.angles import spherical_to_unit_vector, unit_vector_to_spherica
 
 Array = NDArray[np.float64]
 
-# ICRS → galaktik dönme matrisi; icrs2g.c içindeki 30 basamaklı değerler.
+# ICRS to Galactic rotation matrix; the 30-digit values in icrs2g.c.
 ICRS_TO_GALACTIC = np.array(
     [
         [-0.054875560416215368492398900454, -0.873437090234885048760383168409, -0.483835015548713226831774175116],
@@ -30,19 +31,19 @@ ICRS_TO_GALACTIC = np.array(
     "ERFA2023",
     where="icrs2g.c",
     status="read",
-    note="kuzey galaktik kutup α = 192.85948°, δ = 27.12825°; çıkış düğümü boylamı 32.93192° (Hipparcos tanımı)",
+    note="north Galactic pole α = 192.85948°, δ = 27.12825°; longitude of the ascending node 32.93192° (Hipparcos definition)",
 )
 def icrs_to_galactic(ra_rad: ArrayLike, dec_rad: ArrayLike) -> tuple[Array, Array]:
-    """ICRS sağ açıklık ve dik açıklığını galaktik boylam ve enleme çevirir.
+    """Convert ICRS right ascension and declination to Galactic longitude and latitude.
 
     Parameters
     ----------
-    sag_acikllik_rad, dik_acikllik_rad : float ya da ndarray
-        ICRS koordinatları [rad].
+    ra_rad, dec_rad : float or ndarray
+        ICRS coordinates [rad].
 
     Returns
     -------
-    (l, b) : galaktik boylam [0, 2π) ve enlem [−π/2, π/2] [rad].
+    (l, b) : Galactic longitude [0, 2π) and latitude [−π/2, π/2] [rad].
 
     References
     ----------
@@ -50,19 +51,24 @@ def icrs_to_galactic(ra_rad: ArrayLike, dec_rad: ArrayLike) -> tuple[Array, Arra
 
     Validity
     --------
-    Dönme matrisi sabittir; dönem ya da öz hareket düzeltmesi yapılmaz.
+    The rotation matrix is constant; no epoch or proper-motion correction is applied.
 
     Verification
     ------------
-    tests/oracle/test_coordinates_oracle.py: erfa.icrs2g ile fark < 1e-14 rad.
+    tests/oracle/test_coordinates_oracle.py: difference from erfa.icrs2g < 1e-14 rad.
     """
     v = spherical_to_unit_vector(ra_rad, dec_rad)
     return unit_vector_to_spherical(v @ ICRS_TO_GALACTIC.T)
 
 
-@source("ERFA2023", where="icrs2g.c", status="read", note="ters dönüşüm matrisin devriğidir; g2icrs.c ayrıca okunmadı")
+@source(
+    "ERFA2023",
+    where="icrs2g.c",
+    status="read",
+    note="the inverse transformation is the transpose of the matrix; g2icrs.c was not read separately",
+)
 def galactic_to_icrs(longitude_rad: ArrayLike, latitude_rad: ArrayLike) -> tuple[Array, Array]:
-    """Galaktik boylam ve enlemi ICRS sağ açıklık ve dik açıklığına çevirir.
+    """Convert Galactic longitude and latitude to ICRS right ascension and declination.
 
     References
     ----------
@@ -70,7 +76,7 @@ def galactic_to_icrs(longitude_rad: ArrayLike, latitude_rad: ArrayLike) -> tuple
 
     Verification
     ------------
-    tests/oracle/test_coordinates_oracle.py: erfa.g2icrs ile fark < 1e-14 rad; gidiş-dönüş.
+    tests/oracle/test_coordinates_oracle.py: difference from erfa.g2icrs < 1e-14 rad; round trip.
     """
     v = spherical_to_unit_vector(longitude_rad, latitude_rad)
     return unit_vector_to_spherical(v @ ICRS_TO_GALACTIC)
@@ -80,24 +86,25 @@ def galactic_to_icrs(longitude_rad: ArrayLike, latitude_rad: ArrayLike) -> tuple
     "ERFA2023",
     where="hd2ae.c",
     status="read",
-    note="azimut kuzeyden doğuya; birim vektör bileşenleri hd2ae.c içindeki x, y, z",
+    note="azimuth from north through east; unit-vector components are x, y, z in hd2ae.c",
 )
 def hour_angle_to_horizontal(
     hour_angle_rad: ArrayLike, dec_rad: ArrayLike, latitude_rad: ArrayLike
 ) -> tuple[Array, Array]:
-    """Saat açısı ve dik açıklığı azimut ve yüksekliğe çevirir.
+    """Convert hour angle and declination to azimuth and altitude.
 
     Parameters
     ----------
-    saat_acisi_rad : float ya da ndarray
-        Yerel saat açısı H = yerel yıldız zamanı − sağ açıklık [rad].
-    dik_acikllik_rad : float ya da ndarray
-    enlem_rad : float ya da ndarray
-        Gözlemcinin enlemi [rad].
+    hour_angle_rad : float or ndarray
+        Local hour angle H = local sidereal time − right ascension [rad].
+    dec_rad : float or ndarray
+        Declination [rad].
+    latitude_rad : float or ndarray
+        Observer latitude [rad].
 
     Returns
     -------
-    (azimut, yükseklik) : azimut [0, 2π), kuzeyden doğuya; yükseklik [−π/2, π/2] [rad].
+    (azimuth, altitude) : azimuth [0, 2π), from north through east; altitude [−π/2, π/2] [rad].
 
     References
     ----------
@@ -105,12 +112,12 @@ def hour_angle_to_horizontal(
 
     Validity
     --------
-    Saf geometrik dönmedir: kırılma, aberasyon ve günlük paralaks içermez.
-    Zenitte azimut tanımsızdır ve 0 döner.
+    A pure geometric rotation: no refraction, aberration or diurnal parallax.
+    At the zenith the azimuth is undefined and 0 is returned.
 
     Verification
     ------------
-    tests/oracle/test_coordinates_oracle.py: erfa.hd2ae ile fark < 1e-13 rad.
+    tests/oracle/test_coordinates_oracle.py: difference from erfa.hd2ae < 1e-13 rad.
     """
     h = np.asarray(hour_angle_rad, dtype=float)
     d = np.asarray(dec_rad, dtype=float)
@@ -119,19 +126,19 @@ def hour_angle_to_horizontal(
     y = -np.sin(h) * np.cos(d)
     z = np.cos(h) * np.cos(d) * np.cos(p) + np.sin(d) * np.sin(p)
     r = np.hypot(x, y)
-    azimut = np.where(r != 0.0, np.arctan2(y, x), 0.0)
-    return wrap_0_2pi(azimut), np.arctan2(z, r)
+    azimuth = np.where(r != 0.0, np.arctan2(y, x), 0.0)
+    return wrap_0_2pi(azimuth), np.arctan2(z, r)
 
 
 @source("ERFA2023", where="ae2hd.c", status="read")
 def horizontal_to_hour_angle(
     azimuth_rad: ArrayLike, altitude_rad: ArrayLike, latitude_rad: ArrayLike
 ) -> tuple[Array, Array]:
-    """Azimut ve yüksekliği saat açısı ve dik açıklığa çevirir.
+    """Convert azimuth and altitude to hour angle and declination.
 
     Returns
     -------
-    (saat açısı, dik açıklık) : saat açısı (−π, π] [rad].
+    (hour angle, declination) : hour angle (−π, π] [rad].
 
     References
     ----------
@@ -139,7 +146,7 @@ def horizontal_to_hour_angle(
 
     Verification
     ------------
-    tests/oracle/test_coordinates_oracle.py: erfa.ae2hd ile fark < 1e-13 rad; gidiş-dönüş.
+    tests/oracle/test_coordinates_oracle.py: difference from erfa.ae2hd < 1e-13 rad; round trip.
     """
     a = np.asarray(azimuth_rad, dtype=float)
     e = np.asarray(altitude_rad, dtype=float)
@@ -153,25 +160,25 @@ def horizontal_to_hour_angle(
 
 @source(
     "ERFA2023",
-    where="hd2ae.c (z bileşeni)",
+    where="hd2ae.c (z component)",
     status="read",
-    note="sec z yalnızca düzlem-paralel atmosfer yaklaşımıdır; yaklaşımın kaynağı [KastenYoung1989] okunmadı",
+    note="the secant of the zenith distance is only the plane-parallel atmosphere approximation; the source of the approximation, [KastenYoung1989], was not read",
 )
 def airmass_plane_parallel(altitude_rad: ArrayLike) -> Array:
-    """Düzlem-paralel atmosfer yaklaşımıyla hava kütlesini hesaplar: X = 1 / sin(h).
+    """Compute the airmass in the plane-parallel atmosphere approximation: X = 1 / sin(h).
 
     References
     ----------
-    [ERFA2023] hd2ae.c (yükseklik tanımı).
+    [ERFA2023] hd2ae.c (definition of altitude).
 
     Validity
     --------
-    Yükseklik 30° üstünde yaklaşık binde birkaç doğruluk beklenir (sınanmadı);
-    ufka yakın bölgede küresel atmosfer formülleri gerekir. Ufkun altında ``nan`` döner.
+    Above 30° altitude an accuracy of a few parts per thousand is expected (not tested);
+    near the horizon, spherical-atmosphere formulas are needed. Below the horizon ``nan`` is returned.
 
     Verification
     ------------
-    tests/oracle/test_coordinates_oracle.py: zenitte 1, 30° yükseklikte 2.
+    tests/oracle/test_coordinates_oracle.py: 1 at the zenith, 2 at 30° altitude.
     """
     h = np.asarray(altitude_rad, dtype=float)
     with np.errstate(divide="ignore", invalid="ignore"):
