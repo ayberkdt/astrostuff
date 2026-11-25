@@ -128,15 +128,15 @@ TT_EKSI_TAI = Sabit("TT − TAI", 32.184, "s", 0.0, "ERFA2023", "erfam.h ERFA_TT
 
 # --- Türetilmiş sabitler -------------------------------------------------------------
 # Parsek: 1 yay saniyelik paralaksa karşılık gelen uzaklık, au · 648000/π.
-# Bu tanım IAU 2015 B2 kararının notunda geçer; metinden okunmadığı için teyit bekliyor.
+# Tanım IAU 2015 B2 kararının arXiv metnindeki son nottan okundu [Mamajek2015].
 PARSEK = Sabit(
     "parsek",
     ASTRONOMIK_BIRIM.deger * 648_000.0 / math.pi,
     "m",
     0.0,
     "Mamajek2015",
-    "parsek tanımı notu",
-    teyit="bekliyor",
+    "son not: parsek tam olarak (648000/π) au",
+    teyit="okundu",
     turetim="au · 648000 / pi",
 )
 MEGAPARSEK = Sabit(
@@ -145,8 +145,8 @@ MEGAPARSEK = Sabit(
     "m",
     0.0,
     "Mamajek2015",
-    "parsek tanımı notu",
-    teyit="bekliyor",
+    "son not: parsek tam olarak (648000/π) au",
+    teyit="okundu",
     turetim="1e6 · parsek",
 )
 JULYEN_YILI_SANIYE = Sabit(

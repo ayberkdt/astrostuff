@@ -76,7 +76,6 @@ def gerdirme_carpani(uretec: np.random.Generator, boyut: int | tuple[int, ...], 
     teyit="okundu",
     not_="Y = X_j + Z (X_k − X_j); kabul q = min(1, Z^{N−1} p(Y)/p(X_k)); topluluk iki yarıya bölünür",
 )
-@kaynak("GoodmanWeare2010", yer="gerdirme hamlesi", teyit="bekliyor")
 def topluluk_ornekle(
     log_olasilik: Callable[[Dizi], float],
     baslangic: ArrayLike,
@@ -104,7 +103,7 @@ def topluluk_ornekle(
 
     Kaynaklar
     ---------
-    [ForemanMackey2013] Denk. proposal, acceptance, Algoritma 3; [GoodmanWeare2010].
+    [ForemanMackey2013] Denk. proposal, acceptance, Algoritma 3.
 
     Geçerlilik
     ----------
@@ -148,9 +147,10 @@ def topluluk_ornekle(
 
 @kaynak(
     "ForemanMackey2013",
-    yer="Bölüm 3 (öz ilinti süresi)",
-    teyit="bekliyor",
-    not_="Sokal pencereleme: en küçük M, M >= c·τ(M); uygulama ayrıntısı kaynaktan teyit edilmedi",
+    yer="Bölüm 3, 'Autocorrelation time': τ_f ve C_f(T) denklemleri",
+    teyit="okundu",
+    not_="τ = 1 + 2 Σ C(T)/C(0). Toplamın kesildiği pencere kuralı (en küçük M, M >= c·τ(M), c = 5) makalede yoktur; "
+    "emcee belgelerindeki uygulamadan hatırlanmıştır ve teyit edilmemiştir",
 )
 def oz_ilinti_suresi(zincir: ArrayLike, c: float = 5.0) -> Dizi:
     """Tümleşik öz ilinti süresini parametre başına kestirir.

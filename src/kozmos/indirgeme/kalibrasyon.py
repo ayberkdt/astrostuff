@@ -1,9 +1,8 @@
 """Görüntü indirgeme: kare birleştirme, bias/karanlık/düz alan düzeltmesi, foton aktarımı.
 
-Adımlar ve varyans yayılımı [Howell2006] kitabının 3. ve 4. bölümlerine,
-kazanç ve okuma gürültüsü ölçümü foton aktarım yöntemine [Janesick2007]
-dayanır. İki kaynağın metni de bu çalışmada açılmamıştır; kayıtlar
-"bekliyor" durumundadır ve fonksiyonlar gerçeğin bilindiği sentetik
+İndirgeme denklemi astropy CCD indirgeme rehberinden [CraigChambers2026], kazanç
+ve okuma gürültüsü formülleri IRAF ``findgain`` görevinin belgesinden
+[IRAF2026] okunmuştur. Varyans yayılımı bu projenin modelidir ve sentetik
 karelerle sınanır.
 """
 
@@ -37,10 +36,11 @@ class IndirgenmisKare:
 
 
 @kaynak(
-    "Howell2006",
-    yer="Bölüm 4: kalibrasyon karelerinin birleştirilmesi",
-    teyit="bekliyor",
-    not_="piksel piksel sigma kırpma, ardından ortalama ya da ortanca",
+    "CraigChambers2026",
+    yer="defter 01-05 'Calibration overview': 'Every image has noise'",
+    teyit="okundu",
+    not_="kalibrasyon kareleri gürültüyü azaltmak için çok sayıda kareden birleştirilir; sigma kırpmalı "
+    "birleştirmenin ayrıntısı (defter 01-06) okunmadı",
 )
 def birlestir(kareler: ArrayLike, *, yontem: str = "ortalama", sigma: float | None = 3.0) -> tuple[Dizi, Dizi]:
     """Aynı sahnenin karelerini piksel piksel birleştirir.
@@ -58,7 +58,7 @@ def birlestir(kareler: ArrayLike, *, yontem: str = "ortalama", sigma: float | No
 
     Kaynaklar
     ---------
-    [Howell2006] Bölüm 4.
+    [CraigChambers2026] defter 01-05.
 
     Geçerlilik
     ----------
@@ -82,10 +82,11 @@ def birlestir(kareler: ArrayLike, *, yontem: str = "ortalama", sigma: float | No
 
 
 @kaynak(
-    "Janesick2007",
-    yer="foton aktarım yöntemi: iki düz ve iki bias karesinden kazanç ve okuma gürültüsü",
-    teyit="bekliyor",
-    not_="g = [(F̄1 + F̄2) − (B̄1 + B̄2)] / [var(F1 − F2) − var(B1 − B2)]; R = g · σ(B1 − B2) / √2",
+    "IRAF2026",
+    yer="noao/obsutil/src/doc/findgain.hlp, ALGORITHM",
+    teyit="okundu",
+    not_="gain = ((mean(flat1)+mean(flat2)) − (mean(zero1)+mean(zero2))) / (σ²(flatdif) − σ²(zerodif)); "
+    "readnoise = gain · σ(zerodif) / √2",
 )
 def kazanc_ve_okuma_gurultusu(
     duz1: ArrayLike, duz2: ArrayLike, bias1: ArrayLike, bias2: ArrayLike
@@ -101,7 +102,7 @@ def kazanc_ve_okuma_gurultusu(
 
     Kaynaklar
     ---------
-    [Janesick2007] foton aktarım yöntemi.
+    [IRAF2026] findgain.hlp.
 
     Geçerlilik
     ----------
@@ -120,10 +121,11 @@ def kazanc_ve_okuma_gurultusu(
 
 
 @kaynak(
-    "Howell2006",
-    yer="Bölüm 4: bias, karanlık ve düz alan düzeltmesi; gürültü yayılımı",
-    teyit="bekliyor",
-    not_="e = (ham − bias)·g − karanlık_e_s·t; veri = e / (düz·t); σ² = (sinyal_e + R²) / (düz·t)²",
+    "CraigChambers2026",
+    yer="defter 01-05 'Calibration overview': indirgeme denklemi",
+    teyit="okundu",
+    not_="yıldızlar + gürültü = (ham − bias − karanlık akım)/düz − gökyüzü; karanlık akım = (karanlık kare − bias)/süre. "
+    "Varyans σ² = (sinyal_e + R²)/(düz·t)² bu projenin modelidir (kaynakta okunmadı)",
 )
 def kare_indirge(
     ham_adu: ArrayLike,
@@ -157,7 +159,7 @@ def kare_indirge(
 
     Kaynaklar
     ---------
-    [Howell2006] Bölüm 4.
+    [CraigChambers2026] defter 01-05.
 
     Geçerlilik
     ----------

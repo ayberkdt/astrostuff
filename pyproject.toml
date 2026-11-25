@@ -35,6 +35,8 @@ target-version = "py312"
 
 [tool.ruff.lint]
 select = ["E", "F", "I", "B", "UP", "NPY"]
+# Biçimi ruff format belirler; E501 yalnızca bölünemeyen uzun dizgilerde (kaynak notları) tetiklenir.
+ignore = ["E501"]
 
 [tool.ruff.lint.per-file-ignores]
 "kaynakca/**" = ["E501"]

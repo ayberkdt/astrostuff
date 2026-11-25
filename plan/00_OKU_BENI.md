@@ -24,12 +24,14 @@ Gökbilim ve astrofizik hesap kitaplığının (`kozmos`) planı. Hazırlanma ta
    - [05_kozmoloji.md](04_fizik/05_kozmoloji.md)
    - [06_dedektor_ve_atmosfer.md](04_fizik/06_dedektor_ve_atmosfer.md)
    - [07_gorelilik_ve_yuksek_enerji.md](04_fizik/07_gorelilik_ve_yuksek_enerji.md)
+   - [08_kara_delik_yildiz_ve_yildiz_olusumu.md](04_fizik/08_kara_delik_yildiz_ve_yildiz_olusumu.md): uygulanan üç fizik modülü ve kaynak okumasında bulunanlar
 5. [05_veri_bilimi/](05_veri_bilimi/)
    - [01_veri_erisimi_ve_formatlar.md](05_veri_bilimi/01_veri_erisimi_ve_formatlar.md)
    - [02_goruntu_indirgeme_hatti.md](05_veri_bilimi/02_goruntu_indirgeme_hatti.md)
    - [03_fotometri_astrometri_tayf.md](05_veri_bilimi/03_fotometri_astrometri_tayf.md)
    - [04_zaman_serisi.md](05_veri_bilimi/04_zaman_serisi.md)
    - [05_veri_yonetimi_ve_tekrarlanabilirlik.md](05_veri_bilimi/05_veri_yonetimi_ve_tekrarlanabilirlik.md)
+   - [06_optik_ve_kizilotesi_gozlem.md](05_veri_bilimi/06_optik_ve_kizilotesi_gozlem.md): uygulanan gözlem hattı, servislerin durumu, kızılötesi yapılacaklar
 6. [06_mimari/](06_mimari/)
    - [01_paket_yapisi.md](06_mimari/01_paket_yapisi.md)
    - [02_kod_standartlari_ve_kaynak_gosterme.md](06_mimari/02_kod_standartlari_ve_kaynak_gosterme.md)

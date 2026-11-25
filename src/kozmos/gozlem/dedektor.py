@@ -41,10 +41,11 @@ class Dedektor:
 
 
 @kaynak(
-    "Howell2006",
-    yer="Bölüm 3-4: CCD sinyal modeli",
-    teyit="bekliyor",
-    not_="ham[ADU] = Poisson((sahne·düz + karanlık)·t)/kazanç + bias + N(0, okuma/kazanç)",
+    "CraigChambers2026",
+    yer="defter 01-05 'Calibration overview': ham görüntü denklemi",
+    teyit="okundu",
+    not_="ham = bias + gürültü + karanlık akım + düz × (gökyüzü + yıldızlar). Gürültünün Poisson + Gauss okuma "
+    "gürültüsü olarak kurulması ve kazanç bölmesi bu projenin modelidir; kaynakta bu ayrıntı okunmadı",
 )
 def ham_kare_uret(
     sahne_e_s: ArrayLike,
@@ -77,7 +78,7 @@ def ham_kare_uret(
 
     Kaynaklar
     ---------
-    [Howell2006] Bölüm 3-4.
+    [CraigChambers2026] defter 01-05.
 
     Geçerlilik
     ----------

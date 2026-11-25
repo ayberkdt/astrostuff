@@ -40,6 +40,10 @@ Tarama IVOA belge dizininden şu öneri sürümlerini okumuştur (tarama-sayfa):
 
 `arsiv/tap.py` ve `io/votable.py` TAP 1.1, ADQL 2.1 ve VOTable 1.5'i hedefler.
 
+## 25 Kasım 2026'da denenen uç noktalar
+
+Kod yazılırken şu servisler doğrudan sorgulanmış ve sonuçları gözlenmiştir: IRSA TAP (`gaia_dr3_source` ve 2MASS tabloları; çalışıyor, CSV), NASA SkyView (DSS2, 2MASS, WISE kesitleri; çalışıyor, FITS), Gaia AIP aynası (çalışıyor, VOTable). ESA Gaia arşivinin `tap-server/tap/sync` adresi sorguya HTML açılış sayfası döndürmüştür. CDS'in TAPVizieR ve hips2fits servislerine bağlanılamamıştır. Ayrıntı: [../05_veri_bilimi/06_optik_ve_kizilotesi_gozlem.md](../05_veri_bilimi/06_optik_ve_kizilotesi_gozlem.md).
+
 ## Öncelik sırası
 
 Yol haritasındaki projelere göre arşiv modülleri şu sırayla yazılır:

@@ -109,8 +109,12 @@ def ters_dizin() -> dict[str, list[str]]:
 
 
 def bib_anahtarlari(yol: Path) -> set[str]:
-    """Bir ``.bib`` dosyasındaki giriş anahtarlarını okur."""
-    return set(re.findall(r"^@\w+\{([^,\s]+),", yol.read_text(encoding="utf-8"), flags=re.M))
+    """Bir ``.bib`` dosyasındaki ya da bir klasördeki bütün ``.bib`` dosyalarındaki anahtarları okur."""
+    dosyalar = sorted(yol.glob("*.bib")) if yol.is_dir() else [yol]
+    anahtarlar: set[str] = set()
+    for dosya in dosyalar:
+        anahtarlar |= set(re.findall(r"^@\w+\{([^,\s]+),", dosya.read_text(encoding="utf-8"), flags=re.M))
+    return anahtarlar
 
 
 def kaynakca_raporu(*fonksiyonlar: Callable[..., object]) -> str:

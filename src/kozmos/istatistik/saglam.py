@@ -1,8 +1,8 @@
 """Aykırı değerlere dayanıklı konum ve ölçek kestiricileri.
 
-Çift ağırlıklı (biweight) kestiricilerin kaynağı [Beers1990] makalesidir;
-makalenin metni bu çalışmada açılmamıştır ve kayıtlar "bekliyor"
-durumundadır. Formüller ``astropy.stats`` ile sayısal olarak karşılaştırılır.
+Formüller ``astropy.stats`` kaynak kodundaki belge dizgilerinden okunmuştur
+[Astropy2022]. Çift ağırlıklı kestiricilerin özgün kaynağı [Beers1990]
+makalesidir; o makalenin metni açılmamıştır.
 """
 
 from __future__ import annotations
@@ -20,17 +20,17 @@ MAD_DEN_SIGMA = 1.482602218505602
 
 
 @kaynak(
-    "Beers1990",
-    yer="ortanca mutlak sapma (MAD) ve Gauss ölçeklemesi",
-    teyit="bekliyor",
-    not_="σ ≈ 1,4826 · ortanca(|x − ortanca(x)|); katsayı 1/Φ⁻¹(3/4)",
+    "Astropy2022",
+    yer="stats/funcs.py, median_absolute_deviation ve mad_std",
+    teyit="okundu",
+    not_="MAD = ortanca(|a − ortanca(a)|); σ = MAD · 1.482602218505602 (= 1/Φ⁻¹(0,75))",
 )
 def mad_olcek(x: ArrayLike, eksen: int | None = None) -> Dizi:
     """Ortanca mutlak sapmadan Gauss eşdeğeri standart sapmayı kestirir.
 
     Kaynaklar
     ---------
-    [Beers1990] MAD tanımı.
+    [Astropy2022] stats/funcs.py.
 
     Geçerlilik
     ----------
@@ -47,17 +47,17 @@ def mad_olcek(x: ArrayLike, eksen: int | None = None) -> Dizi:
 
 
 @kaynak(
-    "Beers1990",
-    yer="çift ağırlıklı konum kestiricisi",
-    teyit="bekliyor",
-    not_="ζ = M + Σ(x−M)(1−u²)² / Σ(1−u²)², u = (x−M)/(c·MAD), |u| < 1; c = 6",
+    "Astropy2022",
+    yer="stats/biweight.py, biweight_location belge dizgisi",
+    teyit="okundu",
+    not_="ζ = M + Σ(x−M)(1−u²)² / Σ(1−u²)², u = (x−M)/(c·MAD), |u| < 1; c = 6. Özgün kaynak [Beers1990] okunmadı",
 )
 def ciftagirlik_konum(x: ArrayLike, c: float = 6.0) -> float:
     """Çift ağırlıklı (biweight) konum kestiricisini hesaplar.
 
     Kaynaklar
     ---------
-    [Beers1990] çift ağırlıklı konum.
+    [Astropy2022] stats/biweight.py.
 
     Geçerlilik
     ----------
@@ -78,17 +78,17 @@ def ciftagirlik_konum(x: ArrayLike, c: float = 6.0) -> float:
 
 
 @kaynak(
-    "Beers1990",
-    yer="çift ağırlıklı ölçek kestiricisi",
-    teyit="bekliyor",
-    not_="S = √n · sqrt(Σ(x−M)²(1−u²)⁴) / |Σ(1−u²)(1−5u²)|, u = (x−M)/(c·MAD), |u| < 1; c = 9",
+    "Astropy2022",
+    yer="stats/biweight.py, biweight_scale belge dizgisi",
+    teyit="okundu",
+    not_="S = √n · sqrt(Σ(x−M)²(1−u²)⁴) / |Σ(1−u²)(1−5u²)|, |u| < 1; c = 9; n toplam eleman sayısı",
 )
 def ciftagirlik_olcek(x: ArrayLike, c: float = 9.0) -> float:
     """Çift ağırlıklı (biweight) ölçek kestiricisini hesaplar.
 
     Kaynaklar
     ---------
-    [Beers1990] çift ağırlıklı ölçek.
+    [Astropy2022] stats/biweight.py.
 
     Geçerlilik
     ----------
@@ -112,11 +112,10 @@ def ciftagirlik_olcek(x: ArrayLike, c: float = 9.0) -> float:
 
 
 @kaynak(
-    "Beers1990",
-    yer="yinelemeli kırpma",
-    teyit="bekliyor",
-    not_="her yinelemede merkez = ortanca, ölçek = standart sapma; |x − merkez| > kσ olanlar atılır. "
-    "Bu kural astropy.stats.sigma_clip varsayılanlarıyla aynıdır; yöntemin özgün künyesi belirlenmedi",
+    "Astropy2022",
+    yer="stats/sigma_clipping.py, SigmaClip belge dizgisi",
+    teyit="okundu",
+    not_="her yinelemede merkez = ortanca, ölçek = standart sapma; |x − merkez| > kσ olanlar ve sonlu olmayanlar atılır",
 )
 def sigma_kirp(x: ArrayLike, sigma: float = 3.0, yineleme: int = 5, eksen: int | None = None) -> Maske:
     """Yinelemeli sigma kırpma uygular ve atılan elemanların maskesini döndürür.
@@ -138,7 +137,7 @@ def sigma_kirp(x: ArrayLike, sigma: float = 3.0, yineleme: int = 5, eksen: int |
 
     Kaynaklar
     ---------
-    [Beers1990] yinelemeli kırpma.
+    [Astropy2022] stats/sigma_clipping.py.
 
     Geçerlilik
     ----------

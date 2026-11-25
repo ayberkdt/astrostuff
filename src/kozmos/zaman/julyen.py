@@ -274,11 +274,12 @@ def ortalama_egiklik(tt_jd1: ArrayLike, tt_jd2: ArrayLike = 0.0) -> Dizi:
     return eps * YAYSANIYE_RAD
 
 
+@kaynak("ERFA2023", yer="gmst06.c", teyit="okundu")
 @kaynak(
-    "ERFA2023",
-    yer="gmst06.c; boylam doğuya artı",
-    teyit="bekliyor",
-    not_="yerel yıldız zamanı = GMST + doğu boylamı; ortalama (görünür değil)",
+    "Astropy2022",
+    yer="time/core.py, Time._sid_time_or_earth_rot_ang",
+    teyit="okundu",
+    not_="açı = boylam + θ (doğu boylamı artı); kutup hareketi ve TIO konumu eklenmez",
 )
 def yerel_ortalama_yildiz_zamani(
     ut1_jd1: ArrayLike, ut1_jd2: ArrayLike, tt_jd1: ArrayLike, tt_jd2: ArrayLike, dogu_boylami_rad: ArrayLike
@@ -287,7 +288,7 @@ def yerel_ortalama_yildiz_zamani(
 
     Kaynaklar
     ---------
-    [ERFA2023] gmst06.c.
+    [ERFA2023] gmst06.c; [Astropy2022] time/core.py.
 
     Geçerlilik
     ----------

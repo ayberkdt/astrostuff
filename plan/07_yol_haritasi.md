@@ -46,7 +46,7 @@ Kabul: Hubble projesi Basamak 1-3. Bu aşama projenin ilk bilim sonucunu verir v
 
 ## Aşama 4: Işınım ve dedektör modeli (başlandı)
 
-Yazılanlar: `isinim/kadir.py`, `gozlem/dedektor.py` (sinyal modeli, sentetik ham kare, yıldız alanı, CCD denklemi). Kalanlar: filtreler ve sentetik fotometri, sönümleme, FITS okuyucu.
+Yazılanlar: `isinim/kadir.py`, `isinim/kizilotesi.py` (2MASS ve WISE sıfır noktaları), `gozlem/dedektor.py` (sinyal modeli, sentetik ham kare, yıldız alanı, CCD denklemi), `gozlem/planlama.py` (görünürlük, meridyen geçişi), `io/fits.py` (birincil görüntü birimi). Kalanlar: filtreler ve sentetik fotometri, sönümleme, FITS uzantıları.
 
 - `isinim/`: kara cisim, kadir sistemleri, filtreler, sentetik fotometri, sönümleme.
 - `gozlem/dedektor.py`, `gozlem/sinyal_gurultu.py`; sentetik görüntü üreteci.
@@ -56,7 +56,7 @@ Kabul: Vega ve Güneş sentetik fotometrisi; sentetik CCD karesinin üretimi.
 
 ## Aşama 5: Görüntü indirgeme ve fotometri (başlandı)
 
-Yazılanlar: `indirgeme/kalibrasyon.py` (kare birleştirme, bias/karanlık/düz alan düzeltmesi, foton aktarımı); sentetik veride sınandı. Kalanlar: kozmik ışın, arka plan, fotometri, astrometri, arşiv erişimi.
+Yazılanlar: `indirgeme/kalibrasyon.py` (kare birleştirme, bias/karanlık/düz alan düzeltmesi, foton aktarımı), `fotometri/kaynak.py` (arka plan haritası, kaynak saptama, açıklık fotometrisi), `arsiv/tap.py`, `arsiv/gaia.py`, `arsiv/skyview.py`, `gorsel/germe.py`. Gaia HR diyagramı (P4) ile optik ve kızılötesi karşılaştırması üretildi. Kalanlar: kozmik ışın, ayrıştırma, PSF fotometrisi, astrometri, kalibrasyon. Ayrıntı: [05_veri_bilimi/06_optik_ve_kizilotesi_gozlem.md](05_veri_bilimi/06_optik_ve_kizilotesi_gozlem.md).
 
 - `indirgeme/`: kalibrasyon, kozmik ışın, arka plan, birleştirme.
 - `fotometri/`: kaynak saptama, açıklık ve PSF fotometrisi, kalibrasyon.
@@ -90,7 +90,9 @@ Kabul: P7 (kırmızıya kayma ölçümü).
 
 Kabul: P8, P9, P10. ERFA ile `1e-10` rad uyum.
 
-## Aşama 9: Yıldız astrofiziği
+## Aşama 9: Yıldız astrofiziği (başlandı)
+
+Yazılanlar: `yildiz/` (politroplar, ölçekleme bağıntıları, Chandrasekhar kütlesi, başlangıç kütle fonksiyonları), `yildizolusumu/` (Jeans, Bonnor-Ebert, viryal parametre, Kennicutt-Schmidt, Toomre Q) ve `karadelik/` (Schwarzschild ve Kerr yarıçapları, yığılma, Hawking ışınımı, birleşen çiftler). Ayrıntı: [04_fizik/08_kara_delik_yildiz_ve_yildiz_olusumu.md](04_fizik/08_kara_delik_yildiz_ve_yildiz_olusumu.md).
 
 - `yildiz/`: politroplar, basit yapı modeli, izokron okuma ve uydurma, kütle fonksiyonu.
 
@@ -116,7 +118,7 @@ Her konu başlamadan önce kendi saha taraması yapılır.
 
 İlk dört adım (tanımlayıcı dili, iskelet, kaynakların okunması, sabitlerin aktarılması) tamamlanmıştır. Sıradakiler:
 
-1. `bekliyor` durumundaki kaynak kayıtlarının kapatılması ([DURUM.md](DURUM.md) listesi): Kepler bağıntıları, Planck fonksiyonu, öz ilinti süresi, sağlam kestiriciler, dedektör modeli ve indirgeme adımları.
+1. `bekliyor` durumundaki 16 kaynak kaydının kapatılması ([DURUM.md](DURUM.md) listesi): CCD sinyal-gürültü denklemi, Gauss PSF, kaynak saptama, açıklık fotometrisi, Kerr ISCO enerjisi, buharlaşma süresi, Salpeter eğimi. Kepler, Planck, sağlam kestirici ve indirgeme kayıtları açık kaynaklardan okunarak kapatılmıştır.
 2. Hubble 1929 tablosunun makaleden aktarılması (Basamak 0).
 3. Aşama 1'in kalanı: sayısal yöntemler, sağlam istatistik, belirsizlik yayılımı.
 4. Aşama 2'nin kalanı: UTC ve TDB, presesyon ve nutasyon, gözlem planlayıcı (P1).

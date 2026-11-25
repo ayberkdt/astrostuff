@@ -1,9 +1,8 @@
 """İki cisim problemi: Kepler denklemi ve temel bağıntılar.
 
-Bu modüldeki denklemler ders kitabı biçimleriyle yazılmıştır; atıf verilen
-kaynakların metni bu çalışmada açılmamıştır ve bütün kayıtlar "bekliyor"
-durumundadır. Doğruluk, denklemin kendisine dayanan özellik testleriyle
-(artık, gidiş-dönüş, korunum) sınanır.
+Denklemler Murray ve Correia'nın derleme bölümünün arXiv TeX kaynağından
+(1009.1738, ``Chapter2.tex``) okunmuştur [MurrayCorreia2010]; denklemler
+oradaki TeX etiketleriyle anılır.
 """
 
 from __future__ import annotations
@@ -18,10 +17,10 @@ Dizi = NDArray[np.float64]
 
 
 @kaynak(
-    "MurrayDermott1999",
-    yer="Bölüm 2.4, Kepler denklemi",
-    teyit="bekliyor",
-    not_="M = E − e sin E; Newton-Raphson yinelemesi; başlangıç E0 = M + e sin M",
+    "MurrayCorreia2010",
+    yer="TeX etiketi eq37 (Kepler denklemi), eq38-eq39 (Newton-Raphson)",
+    teyit="okundu",
+    not_="kaynak başlangıç için E0 = M önerir; burada E0 = M + e sin M, e > 0,8 için π·işaret(M) (bu projenin seçimi)",
 )
 def dis_merkezli_anomali(
     ortalama_anomali_rad: ArrayLike, dis_merkezlik: ArrayLike, *, tolerans: float = 1e-14, en_cok_yineleme: int = 50
@@ -44,7 +43,7 @@ def dis_merkezli_anomali(
 
     Kaynaklar
     ---------
-    [MurrayDermott1999] Bölüm 2.4.
+    [MurrayCorreia2010] eq37, eq38-eq39.
 
     Geçerlilik
     ----------
@@ -74,17 +73,17 @@ def dis_merkezli_anomali(
 
 
 @kaynak(
-    "MurrayDermott1999",
-    yer="Bölüm 2.4, gerçek anomali",
-    teyit="bekliyor",
-    not_="tan(f/2) = sqrt((1+e)/(1−e)) tan(E/2); atan2 biçimi",
+    "MurrayCorreia2010",
+    yer="TeX etiketi eq17 ve eq33",
+    teyit="okundu",
+    not_="r = a(1−e²)/(1+e cos f) = a(1−e cos E); tan(f/2) = sqrt((1+e)/(1−e)) tan(E/2) bu ikisinden türetilir (türetim bu projede)",
 )
 def gercek_anomali(dis_merkezli_anomali_rad: ArrayLike, dis_merkezlik: ArrayLike) -> Dizi:
     """Dış merkezli anomaliden gerçek anomaliyi hesaplar.
 
     Kaynaklar
     ---------
-    [MurrayDermott1999] Bölüm 2.4.
+    [MurrayCorreia2010] eq17, eq33.
 
     Doğrulama
     ---------
@@ -97,7 +96,7 @@ def gercek_anomali(dis_merkezli_anomali_rad: ArrayLike, dis_merkezlik: ArrayLike
     return f + IKI_PI * np.round((buyuk_e - f) / IKI_PI)
 
 
-@kaynak("MurrayDermott1999", yer="Bölüm 2.3, Kepler'in üçüncü yasası", teyit="bekliyor", not_="P = 2π sqrt(a³ / μ)")
+@kaynak("MurrayCorreia2010", yer="TeX etiketi eq19", teyit="okundu", not_="T² = 4π² a³ / [G(m1 + m2)]")
 def yorunge_donemi_s(yari_buyuk_eksen_m: ArrayLike, kutle_parametresi_m3_s2: ArrayLike) -> Dizi:
     """Yörünge dönemini hesaplar: P = 2π sqrt(a³/μ).
 
@@ -110,7 +109,7 @@ def yorunge_donemi_s(yari_buyuk_eksen_m: ArrayLike, kutle_parametresi_m3_s2: Arr
 
     Kaynaklar
     ---------
-    [MurrayDermott1999] Bölüm 2.3.
+    [MurrayCorreia2010] eq19.
 
     Doğrulama
     ---------
@@ -120,13 +119,13 @@ def yorunge_donemi_s(yari_buyuk_eksen_m: ArrayLike, kutle_parametresi_m3_s2: Arr
     return IKI_PI * np.sqrt(a**3 / np.asarray(kutle_parametresi_m3_s2, dtype=float))
 
 
-@kaynak("MurrayDermott1999", yer="Bölüm 2.4, vis-viva", teyit="bekliyor", not_="v² = μ (2/r − 1/a)")
+@kaynak("MurrayCorreia2010", yer="TeX etiketi eq30", teyit="okundu", not_="v² = G(m1 + m2)(2/r − 1/a)")
 def yorunge_hizi_m_s(uzaklik_m: ArrayLike, yari_buyuk_eksen_m: ArrayLike, kutle_parametresi_m3_s2: ArrayLike) -> Dizi:
     """Yörünge hızını vis-viva denkleminden hesaplar.
 
     Kaynaklar
     ---------
-    [MurrayDermott1999] Bölüm 2.4.
+    [MurrayCorreia2010] eq30.
 
     Doğrulama
     ---------

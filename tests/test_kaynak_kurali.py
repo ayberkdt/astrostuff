@@ -20,7 +20,7 @@ from kozmos._kaynak import altyapi, altyapi_kutugu, bib_anahtarlari, kaynak, kay
 from kozmos.temel.sabitler import tum_sabitler
 
 KOK = Path(__file__).resolve().parents[1]
-BIB = bib_anahtarlari(KOK / "kaynakca" / "kaynaklar.bib")
+BIB = bib_anahtarlari(KOK / "kaynakca")
 
 
 def _acik_fonksiyonlar():

@@ -118,10 +118,15 @@ def lomb_scargle(zaman: ArrayLike, deger: ArrayLike, frekans: ArrayLike, sigma: 
 
 @kaynak(
     "VanderPlas2018",
-    yer="eq:LS-prob-z ve eq:FAP-neff çevresi",
-    teyit="bekliyor",
-    not_="standart normalleştirmede tek frekans dağılımı ve bağımsız frekans sayısı yaklaşımı; "
-    "normalleştirmeye göre dağılım biçimi kaynaktan teyit edilmedi",
+    yer="TeX etiketi eq:FAP-neff ve izleyen paragraf",
+    teyit="okundu",
+    not_="FAP(z) ≈ 1 − [P_tek(z)]^N_eff; basit kestirim N_eff = f_max · T",
+)
+@kaynak(
+    "Astropy2022",
+    yer="timeseries/periodograms/lombscargle/_statistics.py, fap_single ve fap_naive",
+    teyit="okundu",
+    not_="standart normalleştirmede tek frekans yanlış alarm olasılığı (1 − z)^{(N−3)/2}; log1p/expm1 biçimi",
 )
 def yanlis_alarm_olasiligi(guc: ArrayLike, veri_sayisi: int, bagimsiz_frekans_sayisi: float) -> Dizi:
     """Standart normalleştirilmiş periyodogram tepesi için yanlış alarm olasılığını kestirir.
@@ -131,7 +136,7 @@ def yanlis_alarm_olasiligi(guc: ArrayLike, veri_sayisi: int, bagimsiz_frekans_sa
 
     Kaynaklar
     ---------
-    [VanderPlas2018] eq:LS-prob-z, eq:FAP-neff.
+    [VanderPlas2018] eq:FAP-neff; [Astropy2022] fap_single, fap_naive.
 
     Geçerlilik
     ----------
@@ -151,9 +156,9 @@ def yanlis_alarm_olasiligi(guc: ArrayLike, veri_sayisi: int, bagimsiz_frekans_sa
 
 @kaynak(
     "VanderPlas2018",
-    yer="Bölüm 7.1 (frekans ızgarası), eq:n-eval",
-    teyit="bekliyor",
-    not_="ızgara adımı 1/(n_o T); n_o = 5 önerisi kaynaktan teyit edilmedi",
+    yer="Bölüm 7.1, TeX etiketi eq:n-eval",
+    teyit="okundu",
+    not_="Δf = 1/(n_o T); kaynak n_o = 5 kullanır ve 5-10 aralığını anar",
 )
 def frekans_izgarasi(zaman: ArrayLike, en_yuksek_frekans: float, asiri_ornekleme: float = 5.0) -> Dizi:
     """Periyodogram için düzgün frekans ızgarası üretir: Δf = 1 / (n_o T).
@@ -169,7 +174,7 @@ def frekans_izgarasi(zaman: ArrayLike, en_yuksek_frekans: float, asiri_ornekleme
 
     Kaynaklar
     ---------
-    [VanderPlas2018] Bölüm 7.1.
+    [VanderPlas2018] Bölüm 7.1, eq:n-eval.
 
     Doğrulama
     ---------

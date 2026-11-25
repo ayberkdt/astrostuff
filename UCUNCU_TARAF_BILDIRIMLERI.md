@@ -1,6 +1,6 @@
 # Üçüncü taraf bildirimleri
 
-Bu depo üçüncü taraf kaynak kodu ya da verisi barındırmaz. Aşağıdaki bildirim, bazı fonksiyonların algoritma ve sayısal katsayılarının okunduğu kaynak için konmuştur.
+Bu depo üçüncü taraf kaynak kodu ya da ham verisi barındırmaz; üçüncü taraf veriden türetilmiş birkaç şekil içerir. Aşağıdaki bildirimler bazı fonksiyonların izlediği kaynak kodu ve şekillerin dayandığı veriler içindir.
 
 ## ERFA (Essential Routines for Fundamental Astronomy)
 
@@ -52,6 +52,16 @@ Bu bildirimin burada bulunması bir hukuki değerlendirme değildir; ERFA'dan t�
 ## Veri
 
 Analizlerin kullandığı veri setleri depoya konmaz; çalışma anında kaynağından indirilir. Pantheon+SH0ES veri sürümünün deposunda lisans dosyası yoktur; veri Scolnic ve ark. (2022), Brout ve ark. (2022) ve Riess ve ark. (2022) makalelerine atıfla kullanılır.
+
+## Şekillerde kullanılan tarama verileri
+
+`belgeler/` klasöründeki bazı şekiller üçüncü taraf gözlem verisinden türetilmiştir ve depodaki hak saklama bu verileri kapsamaz:
+
+- `optik_kizilotesi.png`, `alev_bulutsusu_jhk.png`: NASA SkyView üzerinden alınan Digitized Sky Survey 2 (DSS2), Two Micron All Sky Survey (2MASS) ve Wide-field Infrared Survey Explorer (WISE) görüntü kesitleri.
+- `hr_diyagrami.png`: ESA Gaia görevinin DR3 kataloğu (IRSA TAP servisi üzerinden).
+- `hubble_diyagrami.png`: Pantheon+SH0ES veri sürümü.
+
+Bu taramaların kullanım ve atıf koşulları bu çalışma sırasında okunmamıştır. Türetilmiş görüntülerin herkese açık bir depoda yayımlanmasının her taramanın koşullarına uygunluğu depo sahibi tarafından doğrulanmalı ve gereken teşekkür metinleri eklenmelidir.
 
 ## Yayınlar
 

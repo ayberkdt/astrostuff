@@ -315,7 +315,9 @@ def main() -> int:
     ayristirici = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     ayristirici.add_argument("--yalniz", choices=["kunye", "paket", "atif"], help="tek denetimi koş")
     secim = ayristirici.parse_args().yalniz
-    bib = bib_oku(DIZIN / "kaynaklar.bib")
+    bib: dict[str, dict[str, str]] = {}
+    for dosya in sorted(DIZIN.glob("*.bib")):
+        bib.update(bib_oku(dosya))
     kayit_yolu = DIZIN / "dogrulama_kaydi.json"
     # Kısmi koşu önceki koşunun diğer bölümlerini korur.
     kayit: dict = json.loads(kayit_yolu.read_text(encoding="utf-8")) if kayit_yolu.exists() and secim else {}

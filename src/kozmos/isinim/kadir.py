@@ -1,9 +1,8 @@
 """Kadir, uzaklık modülü ve kara cisim ışınımı.
 
 Bolometrik kadir sıfır noktası IAU 2015 B2 kararından [Mamajek2015], uzaklık
-modülü tanımı [Hogg1999] Denk. 25'ten okunmuştur. Planck fonksiyonu ders
-kitabı biçimiyle yazılmıştır; kaynak metni açılmamıştır ve kaydı "bekliyor"
-durumundadır. Sabitler CODATA 2022 değerleridir [CODATA2022].
+modülü tanımı [Hogg1999] Denk. 25'ten okunmuştur. Planck fonksiyonu
+astropy'nin ``BlackBody`` modelinin kaynak kodundan okunmuştur [Astropy2022]. Sabitler CODATA 2022 değerleridir [CODATA2022].
 """
 
 from __future__ import annotations
@@ -96,10 +95,10 @@ def uzaklik_modulunden_pc(uzaklik_modulu_mag: ArrayLike) -> Dizi:
 
 
 @kaynak(
-    "RybickiLightman1979",
-    yer="Bölüm 1.5, Planck tayfı",
-    teyit="bekliyor",
-    not_="B_ν = (2hν³/c²) / (exp(hν/kT) − 1); kaynak metni açılmadı",
+    "Astropy2022",
+    yer="modeling/physical_models.py, BlackBody.evaluate",
+    teyit="okundu",
+    not_="bb_nu = 2 h ν³ / (c² expm1(hν/kT)); astropy 8.0.0 kaynak kodu. Ders kitabı künyesi [RybickiLightman1979] okunmadı",
 )
 def planck_frekans(frekans_hz: ArrayLike, sicaklik_k: ArrayLike) -> Dizi:
     """Kara cismin özgül yeğinliğini frekans başına hesaplar.
@@ -113,7 +112,7 @@ def planck_frekans(frekans_hz: ArrayLike, sicaklik_k: ArrayLike) -> Dizi:
 
     Kaynaklar
     ---------
-    [RybickiLightman1979] Bölüm 1.5.
+    [Astropy2022] BlackBody.evaluate.
 
     Geçerlilik
     ----------
@@ -132,7 +131,10 @@ def planck_frekans(frekans_hz: ArrayLike, sicaklik_k: ArrayLike) -> Dizi:
 
 
 @kaynak(
-    "RybickiLightman1979", yer="Bölüm 1.5, Planck tayfı", teyit="bekliyor", not_="B_λ = (2hc²/λ⁵) / (exp(hc/λkT) − 1)"
+    "Astropy2022",
+    yer="modeling/physical_models.py, BlackBody.evaluate",
+    teyit="okundu",
+    not_="B_λ = B_ν c/λ² dönüşümüyle (türetim bu projede): B_λ = (2hc²/λ⁵) / (exp(hc/λkT) − 1)",
 )
 def planck_dalgaboyu(dalga_boyu_m: ArrayLike, sicaklik_k: ArrayLike) -> Dizi:
     """Kara cismin özgül yeğinliğini dalga boyu başına hesaplar.
@@ -144,7 +146,7 @@ def planck_dalgaboyu(dalga_boyu_m: ArrayLike, sicaklik_k: ArrayLike) -> Dizi:
 
     Kaynaklar
     ---------
-    [RybickiLightman1979] Bölüm 1.5.
+    [Astropy2022] BlackBody.evaluate.
 
     Doğrulama
     ---------

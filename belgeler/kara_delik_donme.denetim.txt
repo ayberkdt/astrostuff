@@ -1,0 +1,5 @@
+figür denetimi: 0 HATA · 0 UYARI · 2 BİLGİ · TESLİM EDİLEBİLİR
+  [BİLGİ] birim              eksen 0: x etiketi birim içermiyor: 'Dönme parametresi a*'
+          → birimsizse sorun yok; değilse '(birim)' ekle  [Wilke2019 W6]
+  [BİLGİ] birim              eksen 1: x etiketi birim içermiyor: 'Dönme parametresi a*'
+          → birimsizse sorun yok; değilse '(birim)' ekle  [Wilke2019 W6]
