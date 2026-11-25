@@ -37,6 +37,8 @@ TARAMALAR = {
     "WISE 22": 22.0,
 }
 
+DENEME_SAYISI = 3
+
 
 @kaynak(
     "SkyView2026",
@@ -82,22 +84,39 @@ def kesit_indir(
     ve taramadan taramaya değişir. Kuzey yukarı, doğu soldadır (SkyView varsayılanı;
     başlıktaki CDELT1 işaretinden denetlenir).
 
+    Servis geçerli FITS döndürmezse istek üç kez yinelenir; bozuk yanıtlar önbelleğe alınmaz.
+
     Doğrulama
     ---------
-    tests/birim/test_arsiv.py (ağ gerektirir, ``-m ag``).
+    tests/birim/test_arsiv.py: bozuk yanıtın yeniden denenmesi (ağsız) ve gerçek sorgu (``-m ag``).
     """
     ad = f"skyview_{onbellek.anahtar(tarama, f'{sag_acikllik_derece:.6f}', f'{dik_acikllik_derece:.6f}', str(alan_derece), str(piksel))}.fits"
-    yol = onbellek.indir(
-        UC_NOKTA,
-        Path(onbellek_dizini) / ad,
-        parametreler={
-            "Position": f"{sag_acikllik_derece:.6f},{dik_acikllik_derece:.6f}",
-            "Survey": tarama,
-            "Pixels": str(piksel),
-            "Size": f"{alan_derece:g}",
-            "Return": "FITS",
-        },
-        atif=f"{ATIF}; tarama: {tarama}",
-        yenile=yenile,
-    )
-    return fits.fits_oku(yol)
+    hedef = Path(onbellek_dizini) / ad
+    for deneme in range(1, DENEME_SAYISI + 1):
+        yol = onbellek.indir(
+            UC_NOKTA,
+            hedef,
+            parametreler={
+                "Position": f"{sag_acikllik_derece:.6f},{dik_acikllik_derece:.6f}",
+                "Survey": tarama,
+                "Pixels": str(piksel),
+                "Size": f"{alan_derece:g}",
+                "Return": "FITS",
+            },
+            atif=f"{ATIF}; tarama: {tarama}",
+            yenile=yenile or deneme > 1,
+        )
+        try:
+            return fits.fits_oku(yol)
+        except ValueError as hata:
+            # Servis ara sıra 200 koduyla FITS olmayan ya da yarım bir yanıt döndürür (25 Kasım 2026'da testte
+            # görüldü). Bozuk yanıt önbellekte bırakılmaz; incelenebilsin diye ``.hatali`` adıyla saklanır.
+            hatali = hedef.with_name(f"{hedef.name}.hatali{deneme}")
+            yol.replace(hatali)
+            if deneme == DENEME_SAYISI:
+                bas = hatali.read_bytes()[:80]
+                raise ValueError(
+                    f"SkyView {DENEME_SAYISI} denemede geçerli FITS döndürmedi ({hata}); son yanıtın başı: {bas!r}; "
+                    f"yanıtlar {hatali.parent} altında .hatali adıyla saklandı"
+                ) from hata
+    raise AssertionError("ulaşılamaz")

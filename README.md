@@ -6,7 +6,7 @@
 
 Kitaplık çalışırken yalnızca NumPy ve SciPy kullanır. Astropy ve ERFA hesap için değil, sonuçları karşılaştırmak için vardır.
 
-- 230 fonksiyon, 35 sabit, 1093 test
+- 230 fonksiyon, 35 sabit, 1095 test
 - 270 kaynak kaydının hepsinde denklem kaynağın metninden okundu; "bekliyor" işaretli kayıt kalmadı
 - Güncel sayılar: [plan/DURUM.md](plan/DURUM.md) (koddan üretilir)
 
@@ -29,7 +29,7 @@ Bulunan H0 belirsizliği yayımlanandan küçüktür. Üç bağımsız denetim b
 
 - Zincirden bağımsız kapalı biçimli çözüm aynı veriden 73,52 ± 1,02 verir; veri sürümündeki olabilirlik kodunun uzaklık tanımıyla (d_L = (1 + z_HEL) D_M) 73,53 ± 1,02.
 - Veri sürümündeki dört zincirin (emcee) hepsi, ilk %10'u atılınca ± 1,01 ile ± 1,04 arasında saçılım verir; baş kısım atılmazsa ± 1,03 ile ± 1,07 arasındadır. Düz ΛCDM zinciri 73,53 ± 1,01'dir.
-- Riess ve ark. (2022) temel sonucu ± 1,01'dir.
+- Riess ve ark. (2022) temel sonucu ± 1,01'dir; aynı makalenin özeti, yüksek kırmızıya kaymalı süpernovalar eklendiğinde 73,30 ± 1,04 verir.
 
 Makale dört model için de ± 1,1 yazar; yayımlanan zincirlerin hiçbiri bu değeri vermez (tek ondalıkla hepsi ± 1,0'a yuvarlanır). Makale örnekleyici olarak PolyChord'u anar, veri sürümündeki zincirler emcee'dir; PolyChord zincirleri yayımlanmadı. Yayımlanan veri ve yayımlanan olabilirlik kodu, zincirle de zincirsiz de ± 1,0 verir; ± 1,1'in kaynağı açık veriden bulunamadı.
 
@@ -87,14 +87,18 @@ Kızılötesi indirgeme ESO NTT/SOFI'nin iki ham Ks dizisinde, aynı gecenin kub
 | Öteleme ile başlık komutu farkı (piksel) | 0,7 | 3,1 |
 | Alandaki 2MASS yıldızı, saptanan | 5, 5 | 48, 33 |
 | Astrometri artığı (yay saniyesi) | 0,45 | 0,47 |
-| Sıfır noktası saçılımı (kadir) | 2 yıldız, ölçülemez | 14 yıldızda 0,094 |
+| Sıfır noktası (nokta kaynaklar) | 1 yıldız: 24,02 | 10 yıldız: 24,23, saçılım 0,065 kadir |
 | Kör çözüm, 2MASS kataloğuyla | reddedildi (ortak yıldız az) | başlıktan başlayan çözümle aynı |
 | Gaia DR3 ile astrometri | 10 yıldız, 0,17″ artık | 123 yıldız, 0,29″ artık |
 | Kör çözüm, Gaia DR3 ile | 8 yıldız, 0,16″; başlıktan başlayan çözümden en çok 0,81″ | 122 yıldız; başlıktan başlayan çözümden en çok 0,004″ |
 
-Zengin alanda sıfır noktası saçılımı (0,094 kadir) kullanılan 2MASS yıldızlarının ortanca katalog belirsizliği (0,106 kadir) düzeyindedir. Düz alan, aynı yıldızın karelerdeki akı saçılımını %3,3'ten %3,1'e indirdi (15 yıldız); yalnızca arka plan gürültüsünden beklenen %1,8'dir. Bu dizilerde durağan gökyüzü modeli dinamik modelden az gürültülü çıktı. Gökada alanı doldurduğunda büyük ölçekli artık daha yüksek kalır (4,6 ADU): kaydırma adımından büyük nesne modele sızar.
+Zengin alanda sıfır noktası saçılımı (0,065 kadir) kullanılan 2MASS yıldızlarının ortanca katalog belirsizliğinin (0,10 kadir) altındadır. Sıfır noktasına yalnızca nokta kaynaklar girer: 2MASS Nokta Kaynak Kataloğu sıkı gökadaları da içerir ve sabit açıklık bunların akısını eksik ölçer; zengin alanda 14 adaydan 4'ü bu yüzden atıldı (süzgeçsiz saçılım 0,094 kadirdi).
 
-Seyrek alanda 2MASS yetmez: tam kapsanan bölgede yalnızca 5 katalog yıldızı vardır. Astrometri Gaia DR3 ile kuruldu (konumlar öz hareketle gözlem dönemine taşındı); kör çözüm de Gaia ile başarılı oldu, 2MASS ile yanlış bir çözüm üretip doğrulama adımında reddedildi. Fotometride uygun iki 2MASS yıldızının sıfır noktaları birbirinden 0,77 kadir ayrıdır (23,24 ve 24,01); alan kendi başına kalibre edilemez. Zengin alanın sıfır noktası poz süresi farkı için düzeltilip aktarılınca 24,00 verir ve yıldızlardan biriyle uyuşur; öteki yıldızın sapmasının nedeni incelenmedi. Aktarım, piksel değerlerinin tek DIT başına olduğunu varsayar (SOFI belgelerinden doğrulanmadı) ve hava kütlesi farkını (1,45 ve 1,70) düzeltmez. Düz alan yalnızca maskesiz lamba açık ve kapalı karelerden kurulmuştur; SOFI'nin maskeli karelerle yapılan sıfır düzeyi düzeltmesi uygulanmamıştır. Gökyüzü çıkarılmış tek karede çapraz çizgili artık desenler kalıyor; nedeni incelenmedi.
+Düz alan SOFI Kullanım Kılavuzu'nun özel kubbe düz alanı tarifiyle kuruldu (Bölüm 5.2.5: maskeli karelerle gölgelenme düzeltmesi). Aynı yıldızın karelerdeki akı saçılımı düz alansız %3,1, basit düz alanla %2,7, özel düz alanla %2,9 (15 yıldız; yalnızca arka plan gürültüsünden beklenen %1,8). Bu ölçütte özel düz alan basit düz alandan iyi çıkmadı; ikisinin oranı dizinin iki yarısında yalnızca %0,3 ayrılıyor. Bu dizilerde durağan gökyüzü modeli dinamik modelden az gürültülü çıktı. Gökada alanı doldurduğunda büyük ölçekli artık daha yüksek kalır (4,5 ADU): kaydırma adımından büyük nesne modele sızar.
+
+Seyrek alanda 2MASS yetmez: tam kapsanan bölgede yalnızca 5 katalog yıldızı vardır. Astrometri Gaia DR3 ile kuruldu (konumlar öz hareketle gözlem dönemine taşındı); kör çözüm de Gaia ile başarılı oldu, 2MASS ile yanlış bir çözüm üretip doğrulama adımında reddedildi. Fotometride iki aday vardı ve sıfır noktaları 0,77 kadir ayrıydı. Sapan aday nokta kaynak değildir: dar açıklığın geniş açıklığa akı oranı 0,27'dir, alandaki Gaia yıldızlarında ortanca 0,78; yani bir gökadadır ve açıklık akısının çoğunu kaçırır. Kalan tek yıldız 24,02 verir. Zengin alanın sıfır noktası poz süresi farkı için düzeltilip aktarılınca 24,06 olur; fark 0,04 kadirdir ve yıldızın katalog belirsizliği (0,06 kadir) içindedir. Aktarımın dayandığı kural kılavuzdan okundu: ham dosyadaki sayımlar tek DIT'e karşılık gelir (NDIT alt pozun ortalaması). Hava kütlesi farkı (1,45 ve 1,70) düzeltilmedi; kılavuz kızılötesinde sönümlemenin hava kütlesiyle doğrusal olmadığını söyler ve katsayı vermez. Seyrek alanın kalibrasyonu yine de tek yıldıza ve bu aktarıma dayanır.
+
+Kılavuzun indirgeme adımlarından çapraz konuşma (cross talk) düzeltmesi ve aydınlatma düzeltmesi uygulanmadı. Gökyüzü çıkarılmış tek karede çapraz çizgili artık desenler kalıyor; nedeni incelenmedi.
 
 ### Parlak yıldızlar: gökyüzü haritası
 
@@ -123,7 +127,7 @@ Bir gaz bulutunun kendi çekimiyle çökebilmesi için gereken en küçük kütl
 
 **Gözlem ve veri**
 
-- `arsiv`: TAP istemcisi, Gaia DR3 yıldız örneklemleri ve koni sorgusu (öz hareketle dönem taşıması), 2MASS nokta kaynak koni sorgusu, Parlak Yıldız Kataloğu, SkyView görüntü kesitleri (DSS2, 2MASS, WISE), Pantheon+ verisi; her indirme SHA-256 özetiyle kayda geçer
+- `arsiv`: TAP istemcisi, Gaia DR3 yıldız örneklemleri ve koni sorgusu (öz hareketle dönem taşıması), 2MASS nokta kaynak koni sorgusu, Parlak Yıldız Kataloğu, SkyView görüntü kesitleri (DSS2, 2MASS, WISE), Pantheon+ verisi; her indirme SHA-256 özetiyle kayda geçer, geçici ağ hataları yeniden denenir
 - `io`: FITS okuyucu ve yazıcı (FITS 4.0 standardından); birincil birim, görüntü uzantıları ve ESO HIERARCH başlık kartları
 - `gozlem`: hedef görünürlüğü ve hava kütlesi (presesyon ve atmosfer kırılmasıyla), CCD sinyal modeli, sentetik ham kare, sinyal-gürültü oranı
 - `indirgeme`: sigma kırpmalı kare birleştirme, bias/karanlık/düz alan düzeltmesi, kazanç ve okuma gürültüsü ölçümü, tek karede kozmik ışın temizliği (L.A.Cosmic), kaydırmalı kızılötesi karelerden gökyüzü çıkarma
@@ -221,7 +225,7 @@ Depodaki şekiller yerel bir figür denetim aracıyla (`datawiz`) üretildi; ara
 - FITS okuyucu birincil birimi ve görüntü uzantılarını okur; tablo uzantıları listelenir ama çözülmez, sıkıştırılmış görüntüler okunmaz.
 - Kaynak ayrıştırma aralarında belirgin eyer olan çiftleri ayırır: 2 FWHM aralıkta akı oranı 2'ye kadar çiftlerin %92-98'i, oran 3'te varsayılan ayarla %14'ü ayrışır. Açıklık fotometrisi dar açıklıkta yüzde birkaç eksik ölçer.
 - WCS yalnızca TAN izdüşümünü çözer; bozulma terimleri (SIP) yoktur. Kör astrometrik çözüm ölçek, yönelim ve ayna bilmeden çalışır ama görüntünün kapladığı bölgenin kataloğunu ister (yaklaşık gök konumu ve alan genişliği); bütün gökte arayan dizinli bir çözücü değildir ve en az 8 ortak yıldız bulamazsa çözümü reddeder.
-- Gerçek ham veri sınamaları iki STIS gözlemine ve iki SOFI dizisine dayanır; hepsi tek alet ve tek süzgeçtir. SOFI kareleri `.fits.Z` olarak iner ve okuyucumuz sıkıştırmayı açmaz (`gzip -d` gerekir). Ayrı karanlık çıkarılmaz (gökyüzü modeli karanlığı da içerir); düz alan sadeleştirilmiş kubbe düz alanıdır.
+- Gerçek ham veri sınamaları iki STIS gözlemine ve iki SOFI dizisine dayanır; hepsi tek alet ve tek süzgeçtir. SOFI kareleri `.fits.Z` olarak iner ve okuyucumuz sıkıştırmayı açmaz (`gzip -d` gerekir). Ayrı karanlık çıkarılmaz (gökyüzü modeli karanlığı da içerir); düz alan kılavuzun özel kubbe düz alanıdır.
 - SkyView kesitleri yeniden örneklenmiş görüntülerdir; fotometrik kalibrasyon için özgün arşiv verisi gerekir.
 
 ## Plan

@@ -106,3 +106,76 @@ def test_gaia_koni_sorgusu_ve_donem_tasimasi(tmp_path):
     beklenen = np.hypot(ham["pmra"][var], ham["pmdec"][var]) * 3.8 / 1000.0
     assert np.allclose(kayma, beklenen, rtol=1e-4, atol=1e-6)
     assert np.array_equal(ham["ra"][~var], eski["ra"][~var])
+
+
+def test_indirme_gecici_hatada_yeniden_dener(tmp_path, monkeypatch):
+    import io
+    import urllib.error
+
+    cagrilar = []
+
+    class Yanit(io.BytesIO):
+        def __enter__(self):
+            return self
+
+        def __exit__(self, *_):
+            return False
+
+    def sahte(istek, timeout):
+        cagrilar.append(istek.full_url)
+        if len(cagrilar) < 3:
+            raise urllib.error.URLError("geçici hata") if len(cagrilar) == 1 else TimeoutError("zaman aşımı")
+        return Yanit(b"veri")
+
+    monkeypatch.setattr(onbellek.urllib.request, "urlopen", sahte)
+    yol = onbellek.indir("https://ornek.test/dosya", tmp_path / "d.bin", bekleme_s=0.0)
+    assert yol.read_bytes() == b"veri" and len(cagrilar) == 3
+    # Kalıcı hata: bütün denemeler tükenince hata deneme sayısıyla yükselir; hedef dosya oluşmaz.
+    cagrilar.clear()
+    monkeypatch.setattr(
+        onbellek.urllib.request, "urlopen", lambda istek, timeout: (_ for _ in ()).throw(TimeoutError("x"))
+    )
+    with pytest.raises(OSError, match="3 denemede"):
+        onbellek.indir("https://ornek.test/yok", tmp_path / "y.bin", bekleme_s=0.0)
+    assert not (tmp_path / "y.bin").exists()
+    # 4xx yanıtı yeniden denenmez.
+    sayac = []
+
+    def dort_yuz_dort(istek, timeout):
+        sayac.append(1)
+        raise urllib.error.HTTPError(istek.full_url, 404, "yok", None, None)
+
+    monkeypatch.setattr(onbellek.urllib.request, "urlopen", dort_yuz_dort)
+    with pytest.raises(urllib.error.HTTPError):
+        onbellek.indir("https://ornek.test/404", tmp_path / "z.bin", bekleme_s=0.0)
+    assert len(sayac) == 1
+
+
+def test_skyview_bozuk_yaniti_yeniden_dener(tmp_path, monkeypatch):
+    from astropy.io import fits as astropy_fits
+
+    gecerli = tmp_path / "gecerli.fits"
+    astropy_fits.PrimaryHDU(np.arange(16, dtype=np.float32).reshape(4, 4)).writeto(gecerli)
+    cagrilar = []
+
+    def sahte_indir(url, hedef, **secenekler):
+        cagrilar.append(secenekler["yenile"])
+        hedef.write_bytes(
+            b"<html>Service temporarily unavailable</html>" if len(cagrilar) < 3 else gecerli.read_bytes()
+        )
+        return hedef
+
+    monkeypatch.setattr(skyview.onbellek, "indir", sahte_indir)
+    onbellek_dizini = tmp_path / "o"
+    onbellek_dizini.mkdir()
+    goruntu, _ = skyview.kesit_indir(10.0, 20.0, "2MASS-K", onbellek_dizini, piksel=4)
+    assert goruntu.shape == (4, 4) and cagrilar == [False, True, True]
+    assert len(list(onbellek_dizini.glob("*.hatali*"))) == 2  # bozuk yanıtlar kanıt olarak saklanır
+    # Hep bozuk yanıt: hata, yanıtın başını taşır ve önbellekte geçerli sayılacak dosya kalmaz.
+    cagrilar.clear()
+    monkeypatch.setattr(
+        skyview.onbellek, "indir", lambda url, hedef, **s: (hedef.write_bytes(b"<html>hata</html>"), hedef)[1]
+    )
+    with pytest.raises(ValueError, match="geçerli FITS döndürmedi"):
+        skyview.kesit_indir(11.0, 20.0, "2MASS-K", onbellek_dizini, piksel=4)
+    assert not list(onbellek_dizini.glob("skyview_*.fits"))[1:]  # yalnızca ilk çağrının geçerli dosyası durur

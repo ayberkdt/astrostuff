@@ -22,7 +22,7 @@ where = ["src"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
-addopts = "-q"
+addopts = "-q -ra"
 markers = [
     "kahin: bağımsız bir kütüphaneye (astropy, erfa) karşı karşılaştırma",
     "ag: ağ erişimi gerektirir",

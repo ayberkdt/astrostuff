@@ -11,6 +11,8 @@ from __future__ import annotations
 import datetime as dt
 import hashlib
 import json
+import time
+import urllib.error
 import urllib.parse
 import urllib.request
 from pathlib import Path
@@ -37,11 +39,16 @@ def indir(
     atif: str = "",
     yenile: bool = False,
     zaman_asimi_s: float = 300.0,
+    deneme_sayisi: int = 3,
+    bekleme_s: float = 5.0,
 ) -> Path:
     """Bir adresi (isteğe bağlı sorgu parametreleriyle) dosyaya indirir ve kaydını yazar.
 
     Dosya varsa ve ``yenile`` verilmemişse ağa çıkılmaz. İndirme önce geçici
-    bir dosyaya yapılır; yarıda kesilen indirme hedefi bozmaz.
+    bir dosyaya yapılır; yarıda kesilen indirme hedefi bozmaz. Geçici ağ hataları
+    (bağlantı kopması, zaman aşımı, 5xx yanıtı) ``deneme_sayisi`` kez, aralarında
+    ``bekleme_s`` saniye beklenerek yeniden denenir; 4xx yanıtları yeniden denenmez.
+    Son deneme de başarısızsa hata, kaç deneme yapıldığıyla birlikte yükseltilir.
     """
     hedef = Path(hedef)
     if hedef.exists() and not yenile:
@@ -50,9 +57,19 @@ def indir(
     tam_url = url + ("?" + urllib.parse.urlencode(parametreler) if parametreler else "")
     istek = urllib.request.Request(tam_url, headers={"User-Agent": ISTEMCI})
     gecici = hedef.with_name(hedef.name + ".kismi")
-    with urllib.request.urlopen(istek, timeout=zaman_asimi_s) as yanit, gecici.open("wb") as f:  # noqa: S310
-        for parca in iter(lambda: yanit.read(1 << 20), b""):
-            f.write(parca)
+    for deneme in range(1, deneme_sayisi + 1):
+        try:
+            with urllib.request.urlopen(istek, timeout=zaman_asimi_s) as yanit, gecici.open("wb") as f:  # noqa: S310
+                for parca in iter(lambda: yanit.read(1 << 20), b""):
+                    f.write(parca)
+            break
+        except urllib.error.HTTPError as hata:
+            if hata.code < 500 or deneme == deneme_sayisi:
+                raise
+        except (urllib.error.URLError, TimeoutError, ConnectionError) as hata:
+            if deneme == deneme_sayisi:
+                raise OSError(f"{deneme_sayisi} denemede indirilemedi: {tam_url} ({hata})") from hata
+        time.sleep(bekleme_s)
     gecici.replace(hedef)
     kayit_yolu = hedef.parent / "KAYNAK_KAYDI.json"
     kayit = json.loads(kayit_yolu.read_text(encoding="utf-8")) if kayit_yolu.exists() else {}

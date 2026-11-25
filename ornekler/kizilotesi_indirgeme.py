@@ -15,7 +15,7 @@ alan dosyaları ``duzalan_`` önekiyle). Dosya kimlikleri
 
 Adımlar:
 
-1. Düz alan: maskesiz lamba açık karelerin ortalaması eksi maskesiz lamba kapalı karelerin ortalaması.
+1. Düz alan: SOFI Kullanım Kılavuzu'nun özel kubbe düz alanı tarifi (maskeli karelerle gölgelenme düzeltmesi).
 2. Maskesiz durağan gökyüzü modeli, bozuk piksel haritası, kare başına saptama.
 3. Kareler arası öteleme: başlıktaki kaydırma komutlarından başlar, yıldızlarla inceltilir.
 4. İlk yığından nesne maskesi; maskeli durağan ve dinamik gökyüzü modelleri; düz alana bölme.
@@ -93,31 +93,61 @@ def buyuk_olcekli_yapi(kareler: np.ndarray, maskeler: np.ndarray, kutu: int = 64
     return float(np.median(sonuc))
 
 
-def duz_alan_kur() -> tuple[np.ndarray, dict]:
-    """Kubbe düz alanı: (lamba açık − lamba kapalı), ortancaya bölünmüş.
+def duz_alan_kur() -> tuple[np.ndarray, np.ndarray, dict]:
+    """Kubbe düz alanları: (özel, basit, bilgi).
 
-    Dizi lamba kapalı, kapalı+maske, açık+maske, açık, açık, açık+maske, kapalı+maske, kapalı sırasındadır;
-    bu sıra başlıkta yazmaz, karelerin düzeylerinden okunmuştur. Maske ışığın bir bölümünü kestiği için her
-    lamba durumunda en yüksek düzeyli iki kare maskesizdir. Maskeli kareler (aydınlatmaya bağlı sıfır düzeyi
-    düzeltmesi içindir) burada kullanılmaz.
+    Kare sırası SOFI Kullanım Kılavuzu'ndan (Şekil 3.3) okunmuştur ve karelerin düzeyleriyle doğrulanır:
+    lamba kapalı, kapalı+maske, açık+maske, açık; ikinci yarı tersten (açık, açık+maske, kapalı+maske, kapalı).
+
+    Basit düz alan: maskesiz (açık − kapalı). Kılavuz bunun dedektörün aydınlatmaya bağlı gölgelenme desenini
+    (shade) tam gidermediğini ve sıfır noktasında dizinin ortası boyunca yüzde birkaçlık süreksizlik bıraktığını
+    söyler. Özel düz alan (Bölüm 5.2.5): her lamba durumu için A = maskeli karenin 50-150. sütunları, B = maskeli
+    karenin 500-600. sütunları, C = maskesiz karenin 500-600. sütunları satır boyunca ortalanır; maskesiz karedeki
+    gölgelenme A + (C − B) olur ve kareden satır satır çıkarılır; sonra açık − kapalı alınır.
     """
     yollar = sorted(DIZIN.glob("duzalan_SOFI*.fits"))
     if len(yollar) != 8:
         raise SystemExit(f"{DIZIN} altında 8 düz alan karesi bekleniyor, {len(yollar)} bulundu")
-    kareler = np.array([fits.fits_oku(yol)[0] for yol in yollar])
+    kareler = np.array([fits.fits_oku(yol)[0] for yol in yollar])  # zaman sırasıyla
     duzey = np.median(kareler, axis=(1, 2))
-    sira = np.argsort(duzey)
-    kapali, acik = sira[2:4], sira[6:8]  # her dörtlünün en yüksek ikisi
-    fark = kareler[acik].mean(axis=0) - kareler[kapali].mean(axis=0)
-    duz = fark / np.median(fark)
-    return duz, {
-        "kare_duzeyleri_adu": [round(float(d), 1) for d in duzey],
-        "lamba_acik_eksi_kapali_adu": float(np.median(fark)),
-        "duz_alan_sacilimi": float(saglam.mad_olcek(duz)),
-    }
+    kapali, kapali_m, acik_m, acik = (0, 7), (1, 6), (2, 5), (3, 4)
+    # Sıranın veriyle denetimi: lamba açık kareler kapalılardan, maskesizler aynı durumdaki maskelilerden parlaktır.
+    assert duzey[list(acik + acik_m)].min() > duzey[list(kapali + kapali_m)].max()
+    assert (
+        duzey[list(acik)].min() > duzey[list(acik_m)].max() and duzey[list(kapali)].min() > duzey[list(kapali_m)].max()
+    )
+
+    def golgesiz(maskesiz: np.ndarray, maskeli: np.ndarray) -> np.ndarray:
+        a = maskeli[:, 49:150].mean(axis=1)
+        b = maskeli[:, 499:600].mean(axis=1)
+        c = maskesiz[:, 499:600].mean(axis=1)
+        return maskesiz - (a + (c - b))[:, None]
+
+    basit_fark = kareler[list(acik)].mean(axis=0) - kareler[list(kapali)].mean(axis=0)
+    ozel_fark = np.mean(
+        [
+            golgesiz(kareler[acik[i]], kareler[acik_m[i]]) - golgesiz(kareler[kapali[i]], kareler[kapali_m[i]])
+            for i in (0, 1)
+        ],
+        axis=0,
+    )
+    basit, ozel = basit_fark / np.median(basit_fark), ozel_fark / np.median(ozel_fark)
+    oran = ozel / basit
+    return (
+        ozel,
+        basit,
+        {
+            "kare_duzeyleri_adu": [round(float(x), 1) for x in duzey],
+            "lamba_acik_eksi_kapali_adu": float(np.median(basit_fark)),
+            "duz_alan_sacilimi": float(saglam.mad_olcek(ozel)),
+            # Kılavuzun andığı süreksizlik: özel/basit oranının dizinin alt ve üst yarısındaki ortancaları.
+            "ozel_bolu_basit_alt_yari": float(np.median(oran[100:500, 100:900])),
+            "ozel_bolu_basit_ust_yari": float(np.median(oran[524:924, 100:900])),
+        },
+    )
 
 
-def indirge(ad: str, desen: str, duz: np.ndarray) -> tuple[dict, dict]:
+def indirge(ad: str, desen: str, duz: np.ndarray, basit_duz: np.ndarray) -> tuple[dict, dict]:
     yollar = sorted(DIZIN.glob(desen))
     if len(yollar) < 8:
         raise SystemExit(f"{DIZIN} altında {ad} kareleri yok; kimlikler ornekler/eso_sofi_kareleri.txt içinde")
@@ -185,6 +215,7 @@ def indirge(ad: str, desen: str, duz: np.ndarray) -> tuple[dict, dict]:
     disarida = maskeler | bozuk[None]
     guvenli_duz = np.where(bozuk, 1.0, duz)
     duragan_duz = duragan / guvenli_duz  # gökyüzü çıkarılmış kare düz alana bölünür
+    duragan_basit = duragan / np.where(bozuk, 1.0, basit_duz)
 
     def gurultu(dizi: np.ndarray) -> float:
         return float(np.median([saglam.mad_olcek(k[~m]) for k, m in zip(dizi, disarida, strict=True)]))
@@ -317,8 +348,36 @@ def indirge(ad: str, desen: str, duz: np.ndarray) -> tuple[dict, dict]:
     e = eslestirme.capraz_esle(ra, dec, katalog["ra"], katalog["dec"], 1.5)
     aki, _ = fk.aciklik_fotometrisi(yigin_g, kx, ky, ACIKLIK, halka=HALKA)
     tepe = kaynaklar.tepe[icte]
-    k_iyi = e.eslesti & (katalog["k_cmsig"][e.indis] < 0.15) & (aki > 0) & (tepe < 15000.0)
+    aday = e.eslesti & (katalog["k_cmsig"][e.indis] < 0.15) & (aki > 0) & (tepe < 15000.0)
+
+    # Sıfır noktası yıldızlarının tanısı: nokta kaynak mı (dar/geniş açıklık oranı), Gaia'da var mı, 2MASS niteliği.
+    dar, _ = fk.aciklik_fotometrisi(yigin_g, kx, ky, 3.0, halka=HALKA)
+    genis, _ = fk.aciklik_fotometrisi(yigin_g, kx, ky, 8.0, halka=HALKA)
+    g_ra, g_dec = wcs.piksel_den_gok(g_cozum.wcs, kx, ky)
+    gaia_es = eslestirme.capraz_esle(g_ra, g_dec, g_kat["ra"], g_kat["dec"], 1.0)
+    yogunlasma = np.where(genis > 0, dar / np.where(genis > 0, genis, 1.0), np.nan)
+    yogunlasma_hepsi = np.nanmedian(yogunlasma[gaia_es.eslesti & (aki > 0)])
+    # Nokta kaynak süzgeci: 2MASS Nokta Kaynak Kataloğu sıkı gökadaları da içerir; sabit açıklık bunların akısının
+    # çoğunu kaçırır ve sıfır noktasını düşürür (seyrek alanda 0,77 kadirlik sapma böyle bulundu).
+    nokta = np.abs(yogunlasma - yogunlasma_hepsi) < 0.15
+    k_iyi = aday & nokta
     sifir = katalog["k_m"][e.indis][k_iyi] + 2.5 * np.log10(aki[k_iyi])
+    tanilar = [
+        {
+            "sifir_noktasi": round(float(katalog["k_m"][e.indis[i]] + 2.5 * np.log10(aki[i])), 3),
+            "k_2mass": float(katalog["k_m"][e.indis[i]]),
+            "k_belirsizligi": float(katalog["k_cmsig"][e.indis[i]]),
+            "ph_qual": str(katalog["ph_qual"][e.indis[i]]),
+            "dar_bolu_genis_aciklik": round(float(dar[i] / genis[i]), 3),
+            "gaia_yildizlarinda_ortanca_oran": round(float(yogunlasma_hepsi), 3),
+            "nokta_kaynak": bool(nokta[i]),
+            "gaia_karsiligi": bool(gaia_es.eslesti[i]),
+            "gaia_g": float(g_kat["phot_g_mean_mag"][gaia_es.indis[i]]) if gaia_es.eslesti[i] else None,
+            "yigin_konumu_piksel": [round(float(kx[i]), 1), round(float(ky[i]), 1)],
+            "en_yakin_baska_kaynak_piksel": round(float(np.sort(np.hypot(kx - kx[i], ky - ky[i]))[1]), 1),
+        }
+        for i in np.flatnonzero(aday)
+    ]
 
     def yinelenebilirlik(dizi: np.ndarray) -> dict:
         """Parlak yıldızların karelerdeki açıklık akısının bağıl sağlam saçılımı ve beklenen gürültüye oranı."""
@@ -387,7 +446,8 @@ def indirge(ad: str, desen: str, duz: np.ndarray) -> tuple[dict, dict]:
         },
         "yinelenebilirlik": {
             "duz_alansiz": yinelenebilirlik(duragan),
-            "duz_alanli": yinelenebilirlik(duragan_duz),
+            "basit_duz_alanli": yinelenebilirlik(duragan_basit),
+            "ozel_duz_alanli": yinelenebilirlik(duragan_duz),
         },
         "yigin": {"boyut": list(yigin_g.shape), "saptanan_kaynak": int(icte.sum())},
         "astrometri": {
@@ -404,10 +464,13 @@ def indirge(ad: str, desen: str, duz: np.ndarray) -> tuple[dict, dict]:
             "gaia": gaia_sonuc,
         },
         "fotometri": {
+            "aday_sayisi": int(aday.sum()),
+            "nokta_kaynak_olmadigi_icin_atilan": int((aday & ~nokta).sum()),
             "yildiz_sayisi": int(k_iyi.sum()),
             "sifir_noktasi_kadir": float(np.median(sifir)) if sifir.size else None,
             "sacilim_kadir": float(saglam.mad_olcek(sifir)) if sifir.size > 2 else None,
             "tek_tek_sifir_noktalari": np.sort(sifir).round(3).tolist() if sifir.size <= 6 else None,
+            "yildiz_tanilari": tanilar if aday.sum() <= 6 else None,
             "ortanca_katalog_belirsizligi_kadir": float(np.median(katalog["k_cmsig"][e.indis][k_iyi]))
             if sifir.size
             else None,
@@ -423,7 +486,7 @@ def indirge(ad: str, desen: str, duz: np.ndarray) -> tuple[dict, dict]:
 
 
 def main() -> None:
-    duz, duz_bilgi = duz_alan_kur()
+    duz, basit_duz, duz_bilgi = duz_alan_kur()
     sonuc = {
         "veri": {"alet": "ESO NTT / SOFI", "program": "184.D-1152(F)", "kaynak": "ESO Bilim Arşivi"},
         "duz_alan": duz_bilgi,
@@ -431,10 +494,11 @@ def main() -> None:
     }
     goruntuler = {}
     for ad, desen in DIZILER.items():
-        sonuc["diziler"][ad], goruntuler[ad] = indirge(ad, desen, duz)
+        sonuc["diziler"][ad], goruntuler[ad] = indirge(ad, desen, duz, basit_duz)
     # Sıfır noktası aktarımı: seyrek alanda yeterli 2MASS yıldızı yoktur. Zengin alanın sıfır noktası, poz süresi
-    # farkı için düzeltilip seyrek alana taşınır ve oradaki az sayıdaki yıldızla karşılaştırılır. Varsayım: piksel
-    # değerleri tek DIT başınadır (NDIT ortalaması); SOFI belgelerinden doğrulanmadı. Hava kütlesi düzeltmesi yoktur.
+    # farkı için düzeltilip seyrek alana taşınır ve oradaki az sayıdaki yıldızla karşılaştırılır. Piksel değerleri
+    # tek DIT başınadır: SOFI Kullanım Kılavuzu (Bölüm 2), "counts in a raw data file always correspond to DIT
+    # seconds ... the average of NDIT sub-integrations". Hava kütlesi düzeltmesi yoktur.
     zengin, seyrek = sonuc["diziler"]["SN2005at"], sonuc["diziler"]["SN2011bm"]
     aktarilan = zengin["fotometri"]["sifir_noktasi_kadir"] - 2.5 * np.log10(
         zengin["veri"]["dit_s"] / seyrek["veri"]["dit_s"]
@@ -443,7 +507,8 @@ def main() -> None:
         "zengin_alan_sifir_noktasi": zengin["fotometri"]["sifir_noktasi_kadir"],
         "dit_duzeltmesi_kadir": float(-2.5 * np.log10(zengin["veri"]["dit_s"] / seyrek["veri"]["dit_s"])),
         "seyrek_alana_aktarilan": float(aktarilan),
-        "seyrek_alandaki_yildizlarin_sifir_noktalari": seyrek["fotometri"]["tek_tek_sifir_noktalari"],
+        "seyrek_alandaki_nokta_kaynaklarin_sifir_noktalari": seyrek["fotometri"]["tek_tek_sifir_noktalari"],
+        "fark_kadir": float(seyrek["fotometri"]["sifir_noktasi_kadir"] - aktarilan),
         "hava_kutleleri": [zengin["veri"]["hava_kutlesi"], seyrek["veri"]["hava_kutlesi"]],
     }
     cikti = KOK / "belgeler"

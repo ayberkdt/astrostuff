@@ -6,7 +6,7 @@ Bu dosya `python kaynakca/kutuk_raporu.py` ile kaynak kütüğünden üretilir; 
 - Bütün kayıtları kaynak metninden okunmuş fonksiyon: 230
 - Kaynak kaydı: 270 (okundu: 270, bekliyor: 0)
 - Kaynaklı sabit: 35 (teyit bekleyen: 0)
-- Test fonksiyonu: 303 (parametreli ve özellik testleri tek sayılır)
+- Test fonksiyonu: 305 (parametreli ve özellik testleri tek sayılır)
 - Kaynak kuralından muaf altyapı fonksiyonu: 4
 
 `okundu`: denklem kod yazılırken kaynağın metninden okundu. `bekliyor`: denklem hatırlanan biçimiyle
