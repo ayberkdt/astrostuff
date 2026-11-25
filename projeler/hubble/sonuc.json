@@ -1,0 +1,115 @@
+{
+ "zaman": "2026-11-25T12:34:47+00:00",
+ "sure_s": 120.7,
+ "kod": {
+  "kozmos": "0.1.0",
+  "git": "git deposu yok"
+ },
+ "ortam": {
+  "python": "3.12.1",
+  "numpy": "2.2.6",
+  "scipy": "1.14.1"
+ },
+ "parametreler": {
+  "adim": 300,
+  "tohum": 20261125,
+  "z_alt": 0.01,
+  "h0_nominal": 70.0
+ },
+ "veri": {
+  "Pantheon+SH0ES.dat": {
+   "sha256": "1cb0fc379ef066afdc2ffd1857681cc478024570d8a3eba284fb645775198cf8",
+   "bayt": 579283
+  },
+  "Pantheon+SH0ES_STAT+SYS.cov": {
+   "sha256": "abf806d966485e64afdb359c87bffc0ecc00d05eff0a31ced66f247385df0fdc",
+   "bayt": 33284960
+  },
+  "Pantheon+SH0ES_STATONLY.cov": {
+   "sha256": "9f177129a332735d3637affd20054080d5260815f3ca0809120c05b2c902297f",
+   "bayt": 31827416
+  }
+ },
+ "kovaryans_en_buyuk_asimetri": 3.0000000000038676e-08,
+ "analiz_1_yalniz_sn": {
+  "ortalama": 0.3323134773548214,
+  "standart_sapma": 0.018223207822834438,
+  "en_olasi": 0.33249999999999996,
+  "ki_kare_min": 1387.101281600815,
+  "serbestlik_derecesi": 1578
+ },
+ "analiz_2_sn_ve_sefeid": {
+  "h0": {
+   "ortalama": 73.58633386351093,
+   "standart_sapma": 0.9990062055611806,
+   "yuzdelikler_16_50_84": [
+    72.58724751968762,
+    73.55105481668221,
+    74.58495768344622
+   ]
+  },
+  "omega_m": {
+   "ortalama": 0.33039685787097484,
+   "standart_sapma": 0.017722377880853353,
+   "yuzdelikler_16_50_84": [
+    0.3123220115363973,
+    0.3304643837291611,
+    0.3479293709846174
+   ]
+  },
+  "mutlak_kadir": {
+   "ortalama": -19.24275161795236,
+   "standart_sapma": 0.02854456762353213,
+   "yuzdelikler_16_50_84": [
+    -19.27123733017211,
+    -19.243827349894183,
+    -19.214178826344703
+   ]
+  },
+  "tanilar": {
+   "adim": 300,
+   "yuruyucu": 32,
+   "atilan_isinma": 100,
+   "oz_ilinti_suresi": [
+    16.768491439397895,
+    17.953729635204,
+    16.77976456667789
+   ],
+   "etkin_ornek_sayisi": [
+    381.6682033163148,
+    356.4718935864314,
+    381.41178766652337
+   ],
+   "bolunmus_rhat": [
+    1.2303320088734366,
+    1.2970127978562753,
+    1.2224345893592112
+   ],
+   "ortalama_kabul_orani": 0.6434374999999999,
+   "zincir_yeterince_uzun": false
+  },
+  "ki_kare_min": 1452.653378169363,
+  "serbestlik_derecesi": 1654,
+  "en_olasi": {
+   "h0": 73.53963324773964,
+   "omega_m": 0.33113844180499646,
+   "mutlak_kadir": -19.24411228767025
+  }
+ },
+ "yayimlanan": {
+  "omega_m_duz_lcdm": {
+   "deger": 0.334,
+   "belirsizlik": 0.018,
+   "kaynak": "Brout2022, düz ΛCDM, yalnızca SN"
+  },
+  "h0_duz_lcdm": {
+   "deger": 73.6,
+   "belirsizlik": 1.1,
+   "kaynak": "Brout2022, düz ΛCDM, Pantheon+ ve SH0ES"
+  }
+ },
+ "karsilastirma_sigma": {
+  "omega_m": -0.06584336565031747,
+  "h0": -0.009196972791126449
+ }
+}

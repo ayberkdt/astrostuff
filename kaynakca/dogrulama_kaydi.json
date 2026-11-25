@@ -1,0 +1,3844 @@
+{
+ "zaman": "2026-11-25 12:22 UTC",
+ "kunyeler": [
+  {
+   "anahtar": "SOFA2023",
+   "bib_baslik": "SOFA Libraries Issue 2023-10-11 and SOFA Tools for Earth Attitude",
+   "bib_yil": "2023",
+   "kimlik": "https://www.iausofa.org/",
+   "durum": "ELLE",
+   "aciklama": "DOI, arXiv ya da ISBN yok; elle doğrulanacak"
+  },
+  {
+   "anahtar": "IERS2010",
+   "bib_baslik": "IERS Conventions (2010)",
+   "bib_yil": "2010",
+   "kimlik": "isbn:3898889896",
+   "durum": "BULUNAMADI",
+   "aciklama": "dış kayıt okunamadı"
+  },
+  {
+   "anahtar": "Meeus1998",
+   "bib_baslik": "Astronomical Algorithms",
+   "bib_yil": "1998",
+   "kimlik": "isbn:9780943396613",
+   "dis": {
+    "kaynak": "Open Library",
+    "baslik": "Astronomical Algorithms",
+    "yil": 1998,
+    "ilk_yazar": null,
+    "yayin": "Willmann-Bell, Inc."
+   },
+   "baslik_benzerligi": 1.0,
+   "yil_farki": 0,
+   "durum": "DOGRULANDI"
+  },
+  {
+   "anahtar": "UrbanSeidelmann2013",
+   "bib_baslik": "Explanatory Supplement to the Astronomical Almanac",
+   "bib_yil": "2013",
+   "kimlik": "isbn:9781891389856",
+   "dis": {
+    "kaynak": "Open Library",
+    "baslik": "Explanatory supplement to the Astronomical almanac",
+    "yil": 2013,
+    "ilk_yazar": null,
+    "yayin": "University Science Books"
+   },
+   "baslik_benzerligi": 1.0,
+   "yil_farki": 0,
+   "durum": "DOGRULANDI"
+  },
+  {
+   "anahtar": "Smart1977",
+   "bib_baslik": "Textbook on Spherical Astronomy",
+   "bib_yil": "1977",
+   "kimlik": "isbn:9780521291804",
+   "dis": {
+    "kaynak": "Open Library",
+    "baslik": "Textbook on Spherical Astronomy",
+    "yil": 1977,
+    "ilk_yazar": null,
+    "yayin": "Cambridge University Press"
+   },
+   "baslik_benzerligi": 1.0,
+   "yil_farki": 0,
+   "durum": "DOGRULANDI"
+  },
+  {
+   "anahtar": "Capitaine2003",
+   "bib_baslik": "Expressions for IAU 2000 precession quantities",
+   "bib_yil": "2003",
+   "kimlik": "doi:10.1051/0004-6361:20031539",
+   "dis": {
+    "kaynak": "Crossref",
+    "baslik": "Expressions for IAU 2000 precession quantities",
+    "yil": 2003,
+    "ilk_yazar": "Capitaine",
+    "yayin": "Astronomy &amp; Astrophysics",
+    "cilt": "412",
+    "sayfa": "567-586"
+   },
+   "baslik_benzerligi": 1.0,
+   "yil_farki": 0,
+   "durum": "DOGRULANDI"
+  },
+  {
+   "anahtar": "Kaplan2005",
+   "bib_baslik": "The IAU Resolutions on Astronomical Reference Systems, Time Scales, and Earth Rotation Models",
+   "bib_yil": "2005",
+   "kimlik": "arXiv:astro-ph/0602086",
+   "dis": {
+    "kaynak": "arXiv",
+    "baslik": "The IAU Resolutions on Astronomical Reference Systems, Time Scales, and Earth Rotation Models",
+    "yil": 2006,
+    "ilk_yazar": "Kaplan",
+    "yayin": "Kaplan, G. H., 2005, U.S. Naval Observatory Circular No. 179 (Washington: USNO)",
+    "doi": null
+   },
+   "baslik_benzerligi": 1.0,
+   "yil_farki": 1,
+   "durum": "DOGRULANDI"
+  },
+  {
+   "anahtar": "Vallado2022",
+   "bib_baslik": "Fundamentals of Astrodynamics and Applications",
+   "bib_yil": "2022",
+   "kimlik": "isbn:9781881883210",
+   "dis": {
+    "kaynak": "Open Library",
+    "baslik": "Fundamentals of Astrodynamics and Applications",
+    "yil": 2022,
+    "ilk_yazar": null,
+    "yayin": "Microcosm Press"
+   },
+   "baslik_benzerligi": 1.0,
+   "yil_farki": 0,
+   "durum": "DOGRULANDI"
+  },
+  {
+   "anahtar": "MurrayDermott1999",
+   "bib_baslik": "Solar System Dynamics",
+   "bib_yil": "2000",
+   "kimlik": "doi:10.1017/CBO9781139174817",
+   "dis": {
+    "kaynak": "Crossref",
+    "baslik": "Solar System Dynamics",
+    "yil": 2000,
+    "ilk_yazar": "Murray",
+    "yayin": "Cambridge University Press",
+    "cilt": null,
+    "sayfa": null
+   },
+   "baslik_benzerligi": 1.0,
+   "yil_farki": 0,
+   "durum": "DOGRULANDI"
+  },
+  {
+   "anahtar": "Park2021",
+   "bib_baslik": "The JPL Planetary and Lunar Ephemerides DE440 and DE441",
+   "bib_yil": "2021",
+   "kimlik": "doi:10.3847/1538-3881/abd414",
+   "dis": {
+    "kaynak": "Crossref",
+    "baslik": "The JPL Planetary and Lunar Ephemerides DE440 and DE441",
+    "yil": 2021,
+    "ilk_yazar": "Park",
+    "yayin": "The Astronomical Journal",
+    "cilt": "161",
+    "sayfa": "105"
+   },
+   "baslik_benzerligi": 1.0,
+   "yil_farki": 0,
+   "durum": "DOGRULANDI"
+  },
+  {
+   "anahtar": "Bennett1982",
+   "bib_baslik": "The Calculation of Astronomical Refraction in Marine Navigation",
+   "bib_yil": "1982",
+   "kimlik": "doi:10.1017/S0373463300022037",
+   "dis": {
+    "kaynak": "Crossref",
+    "baslik": "The Calculation of Astronomical Refraction in Marine Navigation",
+    "yil": 1982,
+    "ilk_yazar": "Bennett",
+    "yayin": "Journal of Navigation",
+    "cilt": "35",
+    "sayfa": "255-259"
+   },
+   "baslik_benzerligi": 1.0,
+   "yil_farki": 0,
+   "durum": "DOGRULANDI"
+  },
+  {
+   "anahtar": "Eastman2010",
+   "bib_baslik": "Achieving Better Than 1 Minute Accuracy in the Heliocentric and Barycentric Julian Dates",
+   "bib_yil": "2010",
+   "kimlik": "doi:10.1086/655938",
+   "dis": {
+    "kaynak": "Crossref",
+    "baslik": "Achieving Better Than 1 Minute Accuracy in the Heliocentric and Barycentric Julian Dates",
+    "yil": 2010,
+    "ilk_yazar": "Eastman",
+    "yayin": "Publications of the Astronomical Society of the Pacific",
+    "cilt": "122",
+    "sayfa": "935-946"
+   },
+   "baslik_benzerligi": 1.0,
+   "yil_farki": 0,
+   "durum": "DOGRULANDI"
+  },
+  {
+   "anahtar": "WrightEastman2014",
+   "bib_baslik": "Barycentric Corrections at 1 cm/s for Precise Doppler Velocities",
+   "bib_yil": "2014",
+   "kimlik": "doi:10.1086/678541",
+   "dis": {
+    "kaynak": "Crossref",
+    "baslik": "Barycentric Corrections at 1 cm s\n                    <sup>-1</sup>\n                    for Precise Doppler Velocities",
+    "yil": 2014,
+    "ilk_yazar": "Wright",
+    "yayin": "Publications of the Astronomical Society of the Pacific",
+    "cilt": "126",
+    "sayfa": "838-852"
+   },
+   "baslik_benzerligi": 0.985,
+   "yil_farki": 0,
+   "durum": "DOGRULANDI"
+  },
+  {
+   "anahtar": "Markley1995",
+   "bib_baslik": "Kepler Equation solver",
+   "bib_yil": "1995",
+   "kimlik": "doi:10.1007/BF00691917",
+   "dis": {
+    "kaynak": "Crossref",
+    "baslik": "Kepler Equation solver",
+    "yil": 1995,
+    "ilk_yazar": "Markley",
+    "yayin": "Celestial Mechanics &amp; Dynamical Astronomy",
+    "cilt": "63",
+    "sayfa": "101-111"
+   },
+   "baslik_benzerligi": 1.0,
+   "yil_farki": 0,
+   "durum": "DOGRULANDI"
+  },
+  {
+   "anahtar": "ReinLiu2012",
+   "bib_baslik": "REBOUND: an open-source multi-purpose N-body code for collisional dynamics",
+   "bib_yil": "2012",
+   "kimlik": "doi:10.1051/0004-6361/201118085",
+   "dis": {
+    "kaynak": "Crossref",
+    "baslik": "REBOUND: an open-source multi-purpose<i>N</i>-body code for collisional dynamics",
+    "yil": 2012,
+    "ilk_yazar": "Rein",
+    "yayin": "Astronomy &amp; Astrophysics",
+    "cilt": "537",
+    "sayfa": "A128"
+   },
+   "baslik_benzerligi": 1.0,
+   "yil_farki": 0,
+   "durum": "DOGRULANDI"
+  },
+  {
+   "anahtar": "ReinTamayo2015",
+   "bib_baslik": "WHFAST: a fast and unbiased implementation of a symplectic Wisdom-Holman integrator for long-term gravitational simulations",
+   "bib_yil": "2015",
+   "kimlik": "doi:10.1093/mnras/stv1257",
+   "dis": {
+    "kaynak": "Crossref",
+    "baslik": "whfast: a fast and unbiased implementation of a symplectic Wisdom–Holman integrator for long-term gravitational simulations",
+    "yil": 2015,
+    "ilk_yazar": "Rein",
+    "yayin": "Monthly Notices of the Royal Astronomical Society",
+    "cilt": "452",
+    "sayfa": "376-388"
+   },
+   "baslik_benzerligi": 0.996,
+   "yil_farki": 0,
+   "durum": "DOGRULANDI"
+  },
+  {
+   "anahtar": "ReinSpiegel2015",
+   "bib_baslik": "IAS15: a fast, adaptive, high-order integrator for gravitational dynamics, accurate to machine precision over a billion orbits",
+   "bib_yil": "2015",
+   "kimlik": "doi:10.1093/mnras/stu2164",
+   "dis": {
+    "kaynak": "Crossref",
+    "baslik": "ias15: a fast, adaptive, high-order integrator for gravitational dynamics, accurate to machine precision over a billion orbits",
+    "yil": 2015,
+    "ilk_yazar": "Rein",
+    "yayin": "Monthly Notices of the Royal Astronomical Society",
+    "cilt": "446",
+    "sayfa": "1424-1437"
+   },
+   "baslik_benzerligi": 1.0,
+   "yil_farki": 0,
+   "durum": "DOGRULANDI"
+  },
+  {
+   "anahtar": "WisdomHolman1991",
+   "bib_baslik": "Symplectic maps for the n-body problem",
+   "bib_yil": "1991",
+   "kimlik": "doi:10.1086/115978",
+   "dis": {
+    "kaynak": "Crossref",
+    "baslik": "Symplectic maps for the n-body problem",
+    "yil": 1991,
+    "ilk_yazar": "Wisdom",
+    "yayin": "The Astronomical Journal",
+    "cilt": "102",
+    "sayfa": "1528"
+   },
+   "baslik_benzerligi": 1.0,
+   "yil_farki": 0,
+   "durum": "DOGRULANDI"
+  },
+  {
+   "anahtar": "Yoshida1990",
+   "bib_baslik": "Construction of higher order symplectic integrators",
+   "bib_yil": "1990",
+   "kimlik": "doi:10.1016/0375-9601(90)90092-3",
+   "dis": {
+    "kaynak": "Crossref",
+    "baslik": "Construction of higher order symplectic integrators",
+    "yil": 1990,
+    "ilk_yazar": "Yoshida",
+    "yayin": "Physics Letters A",
+    "cilt": "150",
+    "sayfa": "262-268"
+   },
+   "baslik_benzerligi": 1.0,
+   "yil_farki": 0,
+   "durum": "DOGRULANDI"
+  },
+  {
+   "anahtar": "Prsa2016",
+   "bib_baslik": "Nominal Values for Selected Solar and Planetary Quantities: IAU 2015 Resolution B3",
+   "bib_yil": "2016",
+   "kimlik": "doi:10.3847/0004-6256/152/2/41",
+   "dis": {
+    "kaynak": "Crossref",
+    "baslik": "NOMINAL VALUES FOR SELECTED SOLAR AND PLANETARY QUANTITIES: IAU 2015 RESOLUTION B3\n                    <sup>*</sup>\n                    <sup>†</sup>",
+    "yil": 2016,
+    "ilk_yazar": "Prša",
+    "yayin": "The Astronomical Journal",
+    "cilt": "152",
+    "sayfa": "41"
+   },
+   "baslik_benzerligi": 1.0,
+   "yil_farki": 0,
+   "durum": "DOGRULANDI"
+  },
+  {
+   "anahtar": "Mamajek2015",
+   "bib_baslik": "IAU 2015 Resolution B2 on Recommended Zero Points for the Absolute and Apparent Bolometric Magnitude Scales",
+   "bib_yil": "2015",
+   "kimlik": "arXiv:1510.06262",
+   "dis": {
+    "kaynak": "arXiv",
+    "baslik": "IAU 2015 Resolution B2 on Recommended Zero Points for the Absolute and Apparent Bolometric Magnitude Scales",
+    "yil": 2015,
+    "ilk_yazar": "Mamajek",
+    "yayin": null,
+    "doi": null
+   },
+   "baslik_benzerligi": 1.0,
+   "yil_farki": 0,
+   "durum": "DOGRULANDI"
+  },
+  {
+   "anahtar": "CODATA2022",
+   "bib_baslik": "CODATA recommended values of the fundamental physical constants: 2022",
+   "bib_yil": "2025",
+   "kimlik": "doi:10.1103/RevModPhys.97.025002",
+   "dis": {
+    "kaynak": "Crossref",
+    "baslik": "CODATA recommended values of the fundamental physical constants: 2022",
+    "yil": 2025,
+    "ilk_yazar": "Mohr",
+    "yayin": "Reviews of Modern Physics",
+    "cilt": "97",
+    "sayfa": "025002"
+   },
+   "baslik_benzerligi": 1.0,
+   "yil_farki": 0,
+   "durum": "DOGRULANDI"
+  },
+  {
+   "anahtar": "Press2007",
+   "bib_baslik": "Numerical Recipes: The Art of Scientific Computing",
+   "bib_yil": "2007",
+   "kimlik": "isbn:9780521880688",
+   "dis": {
+    "kaynak": "Open Library",
+    "baslik": "Numerical Recipes 3rd Edition: The Art of Scientific Computing",
+    "yil": 2007,
+    "ilk_yazar": null,
+    "yayin": "Cambridge University Press"
+   },
+   "baslik_benzerligi": 0.891,
+   "yil_farki": 0,
+   "durum": "DOGRULANDI"
+  },
+  {
+   "anahtar": "Higham2002",
+   "bib_baslik": "Accuracy and Stability of Numerical Algorithms",
+   "bib_yil": "2002",
+   "kimlik": "doi:10.1137/1.9780898718027",
+   "dis": {
+    "kaynak": "Crossref",
+    "baslik": "Accuracy and Stability of Numerical Algorithms",
+    "yil": 2002,
+    "ilk_yazar": "Higham",
+    "yayin": "Society for Industrial and Applied Mathematics",
+    "cilt": null,
+    "sayfa": null
+   },
+   "baslik_benzerligi": 1.0,
+   "yil_farki": 0,
+   "durum": "DOGRULANDI"
+  },
+  {
+   "anahtar": "Goldberg1991",
+   "bib_baslik": "What every computer scientist should know about floating-point arithmetic",
+   "bib_yil": "1991",
+   "kimlik": "doi:10.1145/103162.103163",
+   "dis": {
+    "kaynak": "Crossref",
+    "baslik": "What every computer scientist should know about floating-point arithmetic",
+    "yil": 1991,
+    "ilk_yazar": "Goldberg",
+    "yayin": "ACM Computing Surveys",
+    "cilt": "23",
+    "sayfa": "5-48"
+   },
+   "baslik_benzerligi": 1.0,
+   "yil_farki": 0,
+   "durum": "DOGRULANDI"
+  },
+  {
+   "anahtar": "Hairer1993",
+   "bib_baslik": "Solving Ordinary Differential Equations I: Nonstiff Problems",
+   "bib_yil": "1993",
+   "kimlik": "doi:10.1007/978-3-540-78862-1",
+   "dis": {
+    "kaynak": "Crossref",
+    "baslik": "Solving Ordinary Differential Equations I",
+    "yil": 1993,
+    "ilk_yazar": null,
+    "yayin": "Springer Series in Computational Mathematics",
+    "cilt": null,
+    "sayfa": null
+   },
+   "baslik_benzerligi": 1.0,
+   "yil_farki": 0,
+   "durum": "DOGRULANDI"
+  },
+  {
+   "anahtar": "DormandPrince1980",
+   "bib_baslik": "A family of embedded Runge-Kutta formulae",
+   "bib_yil": "1980",
+   "kimlik": "doi:10.1016/0771-050X(80)90013-3",
+   "dis": {
+    "kaynak": "Crossref",
+    "baslik": "A family of embedded Runge-Kutta formulae",
+    "yil": 1980,
+    "ilk_yazar": "Dormand",
+    "yayin": "Journal of Computational and Applied Mathematics",
+    "cilt": "6",
+    "sayfa": "19-26"
+   },
+   "baslik_benzerligi": 1.0,
+   "yil_farki": 0,
+   "durum": "DOGRULANDI"
+  },
+  {
+   "anahtar": "Harris2020",
+   "bib_baslik": "Array programming with NumPy",
+   "bib_yil": "2020",
+   "kimlik": "doi:10.1038/s41586-020-2649-2",
+   "dis": {
+    "kaynak": "Crossref",
+    "baslik": "Array programming with NumPy",
+    "yil": 2020,
+    "ilk_yazar": "Harris",
+    "yayin": "Nature",
+    "cilt": "585",
+    "sayfa": "357-362"
+   },
+   "baslik_benzerligi": 1.0,
+   "yil_farki": 0,
+   "durum": "DOGRULANDI"
+  },
+  {
+   "anahtar": "Virtanen2020",
+   "bib_baslik": "SciPy 1.0: fundamental algorithms for scientific computing in Python",
+   "bib_yil": "2020",
+   "kimlik": "doi:10.1038/s41592-019-0686-2",
+   "dis": {
+    "kaynak": "Crossref",
+    "baslik": "SciPy 1.0: fundamental algorithms for scientific computing in Python",
+    "yil": 2020,
+    "ilk_yazar": "Virtanen",
+    "yayin": "Nature Methods",
+    "cilt": "17",
+    "sayfa": "261-272"
+   },
+   "baslik_benzerligi": 1.0,
+   "yil_farki": 0,
+   "durum": "DOGRULANDI"
+  },
+  {
+   "anahtar": "Astropy2013",
+   "bib_baslik": "Astropy: A community Python package for astronomy",
+   "bib_yil": "2013",
+   "kimlik": "doi:10.1051/0004-6361/201322068",
+   "dis": {
+    "kaynak": "Crossref",
+    "baslik": "Astropy: A community Python package for astronomy",
+    "yil": 2013,
+    "ilk_yazar": "The Astropy Collaboration",
+    "yayin": "Astronomy &amp; Astrophysics",
+    "cilt": "558",
+    "sayfa": "A33"
+   },
+   "baslik_benzerligi": 1.0,
+   "yil_farki": 0,
+   "durum": "DOGRULANDI"
+  },
+  {
+   "anahtar": "Astropy2018",
+   "bib_baslik": "The Astropy Project: Building an Open-science Project and Status of the v2.0 Core Package",
+   "bib_yil": "2018",
+   "kimlik": "doi:10.3847/1538-3881/aabc4f",
+   "dis": {
+    "kaynak": "Crossref",
+    "baslik": "The Astropy Project: Building an Open-science Project and Status of the v2.0 Core Package\n                    <sup>*</sup>",
+    "yil": 2018,
+    "ilk_yazar": "The Astropy Collaboration",
+    "yayin": "The Astronomical Journal",
+    "cilt": "156",
+    "sayfa": "123"
+   },
+   "baslik_benzerligi": 1.0,
+   "yil_farki": 0,
+   "durum": "DOGRULANDI"
+  },
+  {
+   "anahtar": "Astropy2022",
+   "bib_baslik": "The Astropy Project: Sustaining and Growing a Community-oriented Open-source Project and the Latest Major Release (v5.0) of the Core Package",
+   "bib_yil": "2022",
+   "kimlik": "doi:10.3847/1538-4357/ac7c74",
+   "dis": {
+    "kaynak": "Crossref",
+    "baslik": "The Astropy Project: Sustaining and Growing a Community-oriented Open-source Project and the Latest Major Release (v5.0) of the Core Package*",
+    "yil": 2022,
+    "ilk_yazar": "The Astropy Collaboration",
+    "yayin": "The Astrophysical Journal",
+    "cilt": "935",
+    "sayfa": "167"
+   },
+   "baslik_benzerligi": 1.0,
+   "yil_farki": 0,
+   "durum": "DOGRULANDI"
+  },
+  {
+   "anahtar": "Ginsburg2019",
+   "bib_baslik": "astroquery: An Astronomical Web-querying Package in Python",
+   "bib_yil": "2019",
+   "kimlik": "doi:10.3847/1538-3881/aafc33",
+   "dis": {
+    "kaynak": "Crossref",
+    "baslik": "<tt>astroquery</tt>\n                    : An Astronomical Web-querying Package in Python",
+    "yil": 2019,
+    "ilk_yazar": "Ginsburg",
+    "yayin": "The Astronomical Journal",
+    "cilt": "157",
+    "sayfa": "98"
+   },
+   "baslik_benzerligi": 1.0,
+   "yil_farki": 0,
+   "durum": "DOGRULANDI"
+  },
+  {
+   "anahtar": "Morris2018",
+   "bib_baslik": "astroplan: An Open Source Observation Planning Package in Python",
+   "bib_yil": "2018",
+   "kimlik": "doi:10.3847/1538-3881/aaa47e",
+   "dis": {
+    "kaynak": "Crossref",
+    "baslik": "astroplan: An Open Source Observation Planning Package in Python",
+    "yil": 2018,
+    "ilk_yazar": "Morris",
+    "yayin": "The Astronomical Journal",
+    "cilt": "155",
+    "sayfa": "128"
+   },
+   "baslik_benzerligi": 1.0,
+   "yil_farki": 0,
+   "durum": "DOGRULANDI"
+  },
+  {
+   "anahtar": "Barbary2016",
+   "bib_baslik": "SEP: Source Extractor as a library",
+   "bib_yil": "2016",
+   "kimlik": "doi:10.21105/joss.00058",
+   "dis": {
+    "kaynak": "Crossref",
+    "baslik": "SEP: Source Extractor as a library",
+    "yil": 2016,
+    "ilk_yazar": "Barbary",
+    "yayin": "The Journal of Open Source Software",
+    "cilt": "1",
+    "sayfa": "58"
+   },
+   "baslik_benzerligi": 1.0,
+   "yil_farki": 0,
+   "durum": "DOGRULANDI"
+  },
+  {
+   "anahtar": "Wilson2017",
+   "bib_baslik": "Good enough practices in scientific computing",
+   "bib_yil": "2017",
+   "kimlik": "doi:10.1371/journal.pcbi.1005510",
+   "dis": {
+    "kaynak": "Crossref",
+    "baslik": "Good enough practices in scientific computing",
+    "yil": 2017,
+    "ilk_yazar": "Wilson",
+    "yayin": "PLOS Computational Biology",
+    "cilt": "13",
+    "sayfa": "e1005510"
+   },
+   "baslik_benzerligi": 1.0,
+   "yil_farki": 0,
+   "durum": "DOGRULANDI"
+  },
+  {
+   "anahtar": "Wilkinson2016",
+   "bib_baslik": "The FAIR Guiding Principles for scientific data management and stewardship",
+   "bib_yil": "2016",
+   "kimlik": "doi:10.1038/sdata.2016.18",
+   "dis": {
+    "kaynak": "Crossref",
+    "baslik": "The FAIR Guiding Principles for scientific data management and stewardship",
+    "yil": 2016,
+    "ilk_yazar": "Wilkinson",
+    "yayin": "Scientific Data",
+    "cilt": "3",
+    "sayfa": "160018"
+   },
+   "baslik_benzerligi": 1.0,
+   "yil_farki": 0,
+   "durum": "DOGRULANDI"
+  },
+  {
+   "anahtar": "Pence2010",
+   "bib_baslik": "Definition of the Flexible Image Transport System (FITS), version 3.0",
+   "bib_yil": "2010",
+   "kimlik": "doi:10.1051/0004-6361/201015362",
+   "dis": {
+    "kaynak": "Crossref",
+    "baslik": "Definition of the Flexible Image Transport System (<i>FITS</i>), version 3.0",
+    "yil": 2010,
+    "ilk_yazar": "Pence",
+    "yayin": "Astronomy &amp; Astrophysics",
+    "cilt": "524",
+    "sayfa": "A42"
+   },
+   "baslik_benzerligi": 1.0,
+   "yil_farki": 0,
+   "durum": "DOGRULANDI"
+  },
+  {
+   "anahtar": "GreisenCalabretta2002",
+   "bib_baslik": "Representations of world coordinates in FITS",
+   "bib_yil": "2002",
+   "kimlik": "doi:10.1051/0004-6361:20021326",
+   "dis": {
+    "kaynak": "Crossref",
+    "baslik": "Representations of world coordinates in FITS",
+    "yil": 2002,
+    "ilk_yazar": "Greisen",
+    "yayin": "Astronomy &amp; Astrophysics",
+    "cilt": "395",
+    "sayfa": "1061-1075"
+   },
+   "baslik_benzerligi": 1.0,
+   "yil_farki": 0,
+   "durum": "DOGRULANDI"
+  },
+  {
+   "anahtar": "CalabrettaGreisen2002",
+   "bib_baslik": "Representations of celestial coordinates in FITS",
+   "bib_yil": "2002",
+   "kimlik": "doi:10.1051/0004-6361:20021327",
+   "dis": {
+    "kaynak": "Crossref",
+    "baslik": "Representations of celestial coordinates in FITS",
+    "yil": 2002,
+    "ilk_yazar": "Calabretta",
+    "yayin": "Astronomy &amp; Astrophysics",
+    "cilt": "395",
+    "sayfa": "1077-1122"
+   },
+   "baslik_benzerligi": 1.0,
+   "yil_farki": 0,
+   "durum": "DOGRULANDI"
+  },
+  {
+   "anahtar": "Greisen2006",
+   "bib_baslik": "Representations of spectral coordinates in FITS",
+   "bib_yil": "2006",
+   "kimlik": "doi:10.1051/0004-6361:20053818",
+   "dis": {
+    "kaynak": "Crossref",
+    "baslik": "Representations of spectral coordinates in FITS",
+    "yil": 2006,
+    "ilk_yazar": "Greisen",
+    "yayin": "Astronomy &amp; Astrophysics",
+    "cilt": "446",
+    "sayfa": "747-771"
+   },
+   "baslik_benzerligi": 1.0,
+   "yil_farki": 0,
+   "durum": "DOGRULANDI"
+  },
+  {
+   "anahtar": "Rots2015",
+   "bib_baslik": "Representations of time coordinates in FITS",
+   "bib_yil": "2015",
+   "kimlik": "doi:10.1051/0004-6361/201424653",
+   "dis": {
+    "kaynak": "Crossref",
+    "baslik": "Representations of time coordinates in FITS",
+    "yil": 2015,
+    "ilk_yazar": "Rots",
+    "yayin": "Astronomy &amp; Astrophysics",
+    "cilt": "574",
+    "sayfa": "A36"
+   },
+   "baslik_benzerligi": 1.0,
+   "yil_farki": 0,
+   "durum": "DOGRULANDI"
+  },
+  {
+   "anahtar": "Howell2006",
+   "bib_baslik": "Handbook of CCD Astronomy",
+   "bib_yil": "2006",
+   "kimlik": "doi:10.1017/CBO9780511807909",
+   "dis": {
+    "kaynak": "Crossref",
+    "baslik": "Handbook of CCD Astronomy",
+    "yil": 2006,
+    "ilk_yazar": "Howell",
+    "yayin": "Cambridge University Press",
+    "cilt": null,
+    "sayfa": null
+   },
+   "baslik_benzerligi": 1.0,
+   "yil_farki": 0,
+   "durum": "DOGRULANDI"
+  },
+  {
+   "anahtar": "MerlineHowell1995",
+   "bib_baslik": "A realistic model for point-sources imaged on array detectors: The model and initial results",
+   "bib_yil": "1995",
+   "kimlik": "doi:10.1007/BF00421131",
+   "dis": {
+    "kaynak": "Crossref",
+    "baslik": "A realistic model for point-sources imaged on array detectors: The model and initial results",
+    "yil": 1995,
+    "ilk_yazar": "Merline",
+    "yayin": "Experimental Astronomy",
+    "cilt": "6",
+    "sayfa": "163-210"
+   },
+   "baslik_benzerligi": 1.0,
+   "yil_farki": 0,
+   "durum": "DOGRULANDI"
+  },
+  {
+   "anahtar": "Janesick2007",
+   "bib_baslik": "Photon Transfer",
+   "bib_yil": "2007",
+   "kimlik": "doi:10.1117/3.725073",
+   "dis": {
+    "kaynak": "Crossref",
+    "baslik": "Photon Transfer",
+    "yil": 2007,
+    "ilk_yazar": "Janesick",
+    "yayin": "SPIE",
+    "cilt": null,
+    "sayfa": null
+   },
+   "baslik_benzerligi": 1.0,
+   "yil_farki": 0,
+   "durum": "DOGRULANDI"
+  },
+  {
+   "anahtar": "vanDokkum2001",
+   "bib_baslik": "Cosmic-Ray Rejection by Laplacian Edge Detection",
+   "bib_yil": "2001",
+   "kimlik": "doi:10.1086/323894",
+   "dis": {
+    "kaynak": "Crossref",
+    "baslik": "Cosmic‐Ray Rejection by Laplacian Edge Detection",
+    "yil": 2001,
+    "ilk_yazar": "van Dokkum",
+    "yayin": "Publications of the Astronomical Society of the Pacific",
+    "cilt": "113",
+    "sayfa": "1420-1427"
+   },
+   "baslik_benzerligi": 0.989,
+   "yil_farki": 0,
+   "durum": "DOGRULANDI"
+  },
+  {
+   "anahtar": "Stetson1987",
+   "bib_baslik": "DAOPHOT: A computer program for crowded-field stellar photometry",
+   "bib_yil": "1987",
+   "kimlik": "doi:10.1086/131977",
+   "dis": {
+    "kaynak": "Crossref",
+    "baslik": "DAOPHOT - A computer program for crowded-field stellar photometry",
+    "yil": 1987,
+    "ilk_yazar": "Stetson",
+    "yayin": "Publications of the Astronomical Society of the Pacific",
+    "cilt": "99",
+    "sayfa": "191"
+   },
+   "baslik_benzerligi": 1.0,
+   "yil_farki": 0,
+   "durum": "DOGRULANDI"
+  },
+  {
+   "anahtar": "BertinArnouts1996",
+   "bib_baslik": "SExtractor: Software for source extraction",
+   "bib_yil": "1996",
+   "kimlik": "doi:10.1051/aas:1996164",
+   "dis": {
+    "kaynak": "Crossref",
+    "baslik": "SExtractor: Software for source extraction",
+    "yil": 1996,
+    "ilk_yazar": "Bertin",
+    "yayin": "Astronomy and Astrophysics Supplement Series",
+    "cilt": "117",
+    "sayfa": "393-404"
+   },
+   "baslik_benzerligi": 1.0,
+   "yil_farki": 0,
+   "durum": "DOGRULANDI"
+  },
+  {
+   "anahtar": "Kron1980",
+   "bib_baslik": "Photometry of a complete sample of faint galaxies",
+   "bib_yil": "1980",
+   "kimlik": "doi:10.1086/190669",
+   "dis": {
+    "kaynak": "Crossref",
+    "baslik": "Photometry of a complete sample of faint galaxies",
+    "yil": 1980,
+    "ilk_yazar": "Kron",
+    "yayin": "The Astrophysical Journal Supplement Series",
+    "cilt": "43",
+    "sayfa": "305"
+   },
+   "baslik_benzerligi": 1.0,
+   "yil_farki": 0,
+   "durum": "DOGRULANDI"
+  },
+  {
+   "anahtar": "King1971",
+   "bib_baslik": "The Profile of a Star Image",
+   "bib_yil": "1971",
+   "kimlik": "doi:10.1086/129100",
+   "dis": {
+    "kaynak": "Crossref",
+    "baslik": "The Profile of a Star Image",
+    "yil": 1971,
+    "ilk_yazar": "King",
+    "yayin": "Publications of the Astronomical Society of the Pacific",
+    "cilt": "83",
+    "sayfa": "199"
+   },
+   "baslik_benzerligi": 1.0,
+   "yil_farki": 0,
+   "durum": "DOGRULANDI"
+  },
+  {
+   "anahtar": "Horne1986",
+   "bib_baslik": "An optimal extraction algorithm for CCD spectroscopy",
+   "bib_yil": "1986",
+   "kimlik": "doi:10.1086/131801",
+   "dis": {
+    "kaynak": "Crossref",
+    "baslik": "An optimal extraction algorithm for CCD spectroscopy",
+    "yil": 1986,
+    "ilk_yazar": "Horne",
+    "yayin": "Publications of the Astronomical Society of the Pacific",
+    "cilt": "98",
+    "sayfa": "609"
+   },
+   "baslik_benzerligi": 1.0,
+   "yil_farki": 0,
+   "durum": "DOGRULANDI"
+  },
+  {
+   "anahtar": "Naylor1998",
+   "bib_baslik": "An optimal extraction algorithm for imaging photometry",
+   "bib_yil": "1998",
+   "kimlik": "doi:10.1046/j.1365-8711.1998.01314.x",
+   "dis": {
+    "kaynak": "Crossref",
+    "baslik": "An optimal extraction algorithm for imaging photometry",
+    "yil": 1998,
+    "ilk_yazar": "Naylor",
+    "yayin": "Monthly Notices of the Royal Astronomical Society",
+    "cilt": "296",
+    "sayfa": "339-346"
+   },
+   "baslik_benzerligi": 1.0,
+   "yil_farki": 0,
+   "durum": "DOGRULANDI"
+  },
+  {
+   "anahtar": "Lang2010",
+   "bib_baslik": "Astrometry.net: Blind astrometric calibration of arbitrary astronomical images",
+   "bib_yil": "2010",
+   "kimlik": "doi:10.1088/0004-6256/139/5/1782",
+   "dis": {
+    "kaynak": "Crossref",
+    "baslik": "ASTROMETRY.NET: BLIND ASTROMETRIC CALIBRATION OF ARBITRARY ASTRONOMICAL IMAGES",
+    "yil": 2010,
+    "ilk_yazar": "Lang",
+    "yayin": "The Astronomical Journal",
+    "cilt": "139",
+    "sayfa": "1782-1800"
+   },
+   "baslik_benzerligi": 1.0,
+   "yil_farki": 0,
+   "durum": "DOGRULANDI"
+  },
+  {
+   "anahtar": "FruchterHook2002",
+   "bib_baslik": "Drizzle: A Method for the Linear Reconstruction of Undersampled Images",
+   "bib_yil": "2002",
+   "kimlik": "doi:10.1086/338393",
+   "dis": {
+    "kaynak": "Crossref",
+    "baslik": "Drizzle: A Method for the Linear Reconstruction of Undersampled Images",
+    "yil": 2002,
+    "ilk_yazar": "Fruchter",
+    "yayin": "Publications of the Astronomical Society of the Pacific",
+    "cilt": "114",
+    "sayfa": "144-152"
+   },
+   "baslik_benzerligi": 1.0,
+   "yil_farki": 0,
+   "durum": "DOGRULANDI"
+  },
+  {
+   "anahtar": "AlardLupton1998",
+   "bib_baslik": "A Method for Optimal Image Subtraction",
+   "bib_yil": "1998",
+   "kimlik": "doi:10.1086/305984",
+   "dis": {
+    "kaynak": "Crossref",
+    "baslik": "A Method for Optimal Image Subtraction",
+    "yil": 1998,
+    "ilk_yazar": "Alard",
+    "yayin": "The Astrophysical Journal",
+    "cilt": "503",
+    "sayfa": "325-331"
+   },
+   "baslik_benzerligi": 1.0,
+   "yil_farki": 0,
+   "durum": "DOGRULANDI"
+  },
+  {
+   "anahtar": "Zackay2016",
+   "bib_baslik": "Proper image subtraction: optimal transient detection, photometry, and hypothesis testing",
+   "bib_yil": "2016",
+   "kimlik": "doi:10.3847/0004-637X/830/1/27",
+   "dis": {
+    "kaynak": "Crossref",
+    "baslik": "PROPER IMAGE SUBTRACTION—OPTIMAL TRANSIENT DETECTION, PHOTOMETRY, AND HYPOTHESIS TESTING",
+    "yil": 2016,
+    "ilk_yazar": "Zackay",
+    "yayin": "The Astrophysical Journal",
+    "cilt": "830",
+    "sayfa": "27"
+   },
+   "baslik_benzerligi": 0.994,
+   "yil_farki": 0,
+   "durum": "DOGRULANDI"
+  },
+  {
+   "anahtar": "Beers1990",
+   "bib_baslik": "Measures of location and scale for velocities in clusters of galaxies: a robust approach",
+   "bib_yil": "1990",
+   "kimlik": "doi:10.1086/115487",
+   "dis": {
+    "kaynak": "Crossref",
+    "baslik": "Measures of location and scale for velocities in clusters of galaxies - A robust approach",
+    "yil": 1990,
+    "ilk_yazar": "Beers",
+    "yayin": "The Astronomical Journal",
+    "cilt": "100",
+    "sayfa": "32"
+   },
+   "baslik_benzerligi": 1.0,
+   "yil_farki": 0,
+   "durum": "DOGRULANDI"
+  },
+  {
+   "anahtar": "Landolt1992",
+   "bib_baslik": "UBVRI photometric standard stars in the magnitude range 11.5 < V < 16.0 around the celestial equator",
+   "bib_yil": "1992",
+   "kimlik": "doi:10.1086/116242",
+   "dis": {
+    "kaynak": "Crossref",
+    "baslik": "UBVRI photometric standard stars in the magnitude range 11.5-16.0 around the celestial equator",
+    "yil": 1992,
+    "ilk_yazar": "Landolt",
+    "yayin": "The Astronomical Journal",
+    "cilt": "104",
+    "sayfa": "340"
+   },
+   "baslik_benzerligi": 0.989,
+   "yil_farki": 0,
+   "durum": "DOGRULANDI"
+  },
+  {
+   "anahtar": "TonryDavis1979",
+   "bib_baslik": "A survey of galaxy redshifts. I. Data reduction techniques",
+   "bib_yil": "1979",
+   "kimlik": "doi:10.1086/112569",
+   "dis": {
+    "kaynak": "Crossref",
+    "baslik": "A survey of galaxy redshifts. I - Data reduction techniques",
+    "yil": 1979,
+    "ilk_yazar": "Tonry",
+    "yayin": "The Astronomical Journal",
+    "cilt": "84",
+    "sayfa": "1511"
+   },
+   "baslik_benzerligi": 1.0,
+   "yil_farki": 0,
+   "durum": "DOGRULANDI"
+  },
+  {
+   "anahtar": "Young1994",
+   "bib_baslik": "Air mass and refraction",
+   "bib_yil": "1994",
+   "kimlik": "doi:10.1364/AO.33.001108",
+   "dis": {
+    "kaynak": "Crossref",
+    "baslik": "Air mass and refraction",
+    "yil": 1994,
+    "ilk_yazar": "Young",
+    "yayin": "Applied Optics",
+    "cilt": "33",
+    "sayfa": "1108"
+   },
+   "baslik_benzerligi": 1.0,
+   "yil_farki": 0,
+   "durum": "DOGRULANDI"
+  },
+  {
+   "anahtar": "KastenYoung1989",
+   "bib_baslik": "Revised optical air mass tables and approximation formula",
+   "bib_yil": "1989",
+   "kimlik": "doi:10.1364/AO.28.004735",
+   "dis": {
+    "kaynak": "Crossref",
+    "baslik": "Revised optical air mass tables and approximation formula",
+    "yil": 1989,
+    "ilk_yazar": "Kasten",
+    "yayin": "Applied Optics",
+    "cilt": "28",
+    "sayfa": "4735"
+   },
+   "baslik_benzerligi": 1.0,
+   "yil_farki": 0,
+   "durum": "DOGRULANDI"
+  },
+  {
+   "anahtar": "Bessell1990",
+   "bib_baslik": "UBVRI passbands",
+   "bib_yil": "1990",
+   "kimlik": "doi:10.1086/132749",
+   "dis": {
+    "kaynak": "Crossref",
+    "baslik": "UBVRI passbands",
+    "yil": 1990,
+    "ilk_yazar": "Bessell",
+    "yayin": "Publications of the Astronomical Society of the Pacific",
+    "cilt": "102",
+    "sayfa": "1181"
+   },
+   "baslik_benzerligi": 1.0,
+   "yil_farki": 0,
+   "durum": "DOGRULANDI"
+  },
+  {
+   "anahtar": "Bessell2005",
+   "bib_baslik": "Standard Photometric Systems",
+   "bib_yil": "2005",
+   "kimlik": "doi:10.1146/annurev.astro.41.082801.100251",
+   "dis": {
+    "kaynak": "Crossref",
+    "baslik": "Standard Photometric Systems",
+    "yil": 2005,
+    "ilk_yazar": "Bessell",
+    "yayin": "Annual Review of Astronomy and Astrophysics",
+    "cilt": "43",
+    "sayfa": "293-336"
+   },
+   "baslik_benzerligi": 1.0,
+   "yil_farki": 0,
+   "durum": "DOGRULANDI"
+  },
+  {
+   "anahtar": "BessellMurphy2012",
+   "bib_baslik": "Spectrophotometric Libraries, Revised Photonic Passbands, and Zero Points for UBVRI, Hipparcos, and Tycho Photometry",
+   "bib_yil": "2012",
+   "kimlik": "doi:10.1086/664083",
+   "dis": {
+    "kaynak": "Crossref",
+    "baslik": "Spectrophotometric Libraries, Revised Photonic Passbands, and Zero Points for\n                    <i>UBVRI</i>\n                    ,\n                    <i>Hipparcos</i>\n                    , and Tycho Photometry",
+    "yil": 2012,
+    "ilk_yazar": "Bessell",
+    "yayin": "Publications of the Astronomical Society of the Pacific",
+    "cilt": "124",
+    "sayfa": "140-157"
+   },
+   "baslik_benzerligi": 1.0,
+   "yil_farki": 0,
+   "durum": "DOGRULANDI"
+  },
+  {
+   "anahtar": "Fukugita1996",
+   "bib_baslik": "The Sloan Digital Sky Survey Photometric System",
+   "bib_yil": "1996",
+   "kimlik": "doi:10.1086/117915",
+   "dis": {
+    "kaynak": "Crossref",
+    "baslik": "The Sloan Digital Sky Survey Photometric System",
+    "yil": 1996,
+    "ilk_yazar": "Fukugita",
+    "yayin": "The Astronomical Journal",
+    "cilt": "111",
+    "sayfa": "1748"
+   },
+   "baslik_benzerligi": 1.0,
+   "yil_farki": 0,
+   "durum": "DOGRULANDI"
+  },
+  {
+   "anahtar": "OkeGunn1983",
+   "bib_baslik": "Secondary standard stars for absolute spectrophotometry",
+   "bib_yil": "1983",
+   "kimlik": "doi:10.1086/160817",
+   "dis": {
+    "kaynak": "Crossref",
+    "baslik": "Secondary standard stars for absolute spectrophotometry",
+    "yil": 1983,
+    "ilk_yazar": "Oke",
+    "yayin": "The Astrophysical Journal",
+    "cilt": "266",
+    "sayfa": "713"
+   },
+   "baslik_benzerligi": 1.0,
+   "yil_farki": 0,
+   "durum": "DOGRULANDI"
+  },
+  {
+   "anahtar": "CCM1989",
+   "bib_baslik": "The relationship between infrared, optical, and ultraviolet extinction",
+   "bib_yil": "1989",
+   "kimlik": "doi:10.1086/167900",
+   "dis": {
+    "kaynak": "Crossref",
+    "baslik": "The relationship between infrared, optical, and ultraviolet extinction",
+    "yil": 1989,
+    "ilk_yazar": "Cardelli",
+    "yayin": "The Astrophysical Journal",
+    "cilt": "345",
+    "sayfa": "245"
+   },
+   "baslik_benzerligi": 1.0,
+   "yil_farki": 0,
+   "durum": "DOGRULANDI"
+  },
+  {
+   "anahtar": "Fitzpatrick1999",
+   "bib_baslik": "Correcting for the Effects of Interstellar Extinction",
+   "bib_yil": "1999",
+   "kimlik": "doi:10.1086/316293",
+   "dis": {
+    "kaynak": "Crossref",
+    "baslik": "Correcting for the Effects of Interstellar Extinction",
+    "yil": 1999,
+    "ilk_yazar": "Fitzpatrick",
+    "yayin": "Publications of the Astronomical Society of the Pacific",
+    "cilt": "111",
+    "sayfa": "63-75"
+   },
+   "baslik_benzerligi": 1.0,
+   "yil_farki": 0,
+   "durum": "DOGRULANDI"
+  },
+  {
+   "anahtar": "SFD1998",
+   "bib_baslik": "Maps of Dust Infrared Emission for Use in Estimation of Reddening and Cosmic Microwave Background Radiation Foregrounds",
+   "bib_yil": "1998",
+   "kimlik": "doi:10.1086/305772",
+   "dis": {
+    "kaynak": "Crossref",
+    "baslik": "Maps of Dust Infrared Emission for Use in Estimation of Reddening and Cosmic Microwave Background Radiation Foregrounds",
+    "yil": 1998,
+    "ilk_yazar": "Schlegel",
+    "yayin": "The Astrophysical Journal",
+    "cilt": "500",
+    "sayfa": "525-553"
+   },
+   "baslik_benzerligi": 1.0,
+   "yil_farki": 0,
+   "durum": "DOGRULANDI"
+  },
+  {
+   "anahtar": "SchlaflyFinkbeiner2011",
+   "bib_baslik": "Measuring Reddening with Sloan Digital Sky Survey Stellar Spectra and Recalibrating SFD",
+   "bib_yil": "2011",
+   "kimlik": "doi:10.1088/0004-637X/737/2/103",
+   "dis": {
+    "kaynak": "Crossref",
+    "baslik": "MEASURING REDDENING WITH SLOAN DIGITAL SKY SURVEY STELLAR SPECTRA AND RECALIBRATING SFD",
+    "yil": 2011,
+    "ilk_yazar": "Schlafly",
+    "yayin": "The Astrophysical Journal",
+    "cilt": "737",
+    "sayfa": "103"
+   },
+   "baslik_benzerligi": 1.0,
+   "yil_farki": 0,
+   "durum": "DOGRULANDI"
+  },
+  {
+   "anahtar": "Hogg2002",
+   "bib_baslik": "The K correction",
+   "bib_yil": "2002",
+   "kimlik": "arXiv:astro-ph/0210394",
+   "dis": {
+    "kaynak": "arXiv",
+    "baslik": "The K correction",
+    "yil": 2002,
+    "ilk_yazar": "Hogg",
+    "yayin": null,
+    "doi": null
+   },
+   "baslik_benzerligi": 1.0,
+   "yil_farki": 0,
+   "durum": "DOGRULANDI"
+  },
+  {
+   "anahtar": "OkeSandage1968",
+   "bib_baslik": "Energy Distributions, K Corrections, and the Stebbins-Whitford Effect for Giant Elliptical Galaxies",
+   "bib_yil": "1968",
+   "kimlik": "doi:10.1086/149737",
+   "dis": {
+    "kaynak": "Crossref",
+    "baslik": "Energy Distributions, K Corrections, and the Stebbins-Whitford Effect for Giant Elliptical Galaxies",
+    "yil": 1968,
+    "ilk_yazar": "Oke",
+    "yayin": "The Astrophysical Journal",
+    "cilt": "154",
+    "sayfa": "21"
+   },
+   "baslik_benzerligi": 1.0,
+   "yil_farki": 0,
+   "durum": "DOGRULANDI"
+  },
+  {
+   "anahtar": "Lomb1976",
+   "bib_baslik": "Least-squares frequency analysis of unequally spaced data",
+   "bib_yil": "1976",
+   "kimlik": "doi:10.1007/BF00648343",
+   "dis": {
+    "kaynak": "Crossref",
+    "baslik": "Least-squares frequency analysis of unequally spaced data",
+    "yil": 1976,
+    "ilk_yazar": "Lomb",
+    "yayin": "Astrophysics and Space Science",
+    "cilt": "39",
+    "sayfa": "447-462"
+   },
+   "baslik_benzerligi": 1.0,
+   "yil_farki": 0,
+   "durum": "DOGRULANDI"
+  },
+  {
+   "anahtar": "Scargle1982",
+   "bib_baslik": "Studies in astronomical time series analysis. II. Statistical aspects of spectral analysis of unevenly spaced data",
+   "bib_yil": "1982",
+   "kimlik": "doi:10.1086/160554",
+   "dis": {
+    "kaynak": "Crossref",
+    "baslik": "Studies in astronomical time series analysis. II - Statistical aspects of spectral analysis of unevenly spaced data",
+    "yil": 1982,
+    "ilk_yazar": "Scargle",
+    "yayin": "The Astrophysical Journal",
+    "cilt": "263",
+    "sayfa": "835"
+   },
+   "baslik_benzerligi": 1.0,
+   "yil_farki": 0,
+   "durum": "DOGRULANDI"
+  },
+  {
+   "anahtar": "VanderPlas2018",
+   "bib_baslik": "Understanding the Lomb-Scargle Periodogram",
+   "bib_yil": "2018",
+   "kimlik": "doi:10.3847/1538-4365/aab766",
+   "dis": {
+    "kaynak": "Crossref",
+    "baslik": "Understanding the Lomb–Scargle Periodogram",
+    "yil": 2018,
+    "ilk_yazar": "VanderPlas",
+    "yayin": "The Astrophysical Journal Supplement Series",
+    "cilt": "236",
+    "sayfa": "16"
+   },
+   "baslik_benzerligi": 0.988,
+   "yil_farki": 0,
+   "durum": "DOGRULANDI"
+  },
+  {
+   "anahtar": "Stellingwerf1978",
+   "bib_baslik": "Period determination using phase dispersion minimization",
+   "bib_yil": "1978",
+   "kimlik": "doi:10.1086/156444",
+   "dis": {
+    "kaynak": "Crossref",
+    "baslik": "Period determination using phase dispersion minimization",
+    "yil": 1978,
+    "ilk_yazar": "Stellingwerf",
+    "yayin": "The Astrophysical Journal",
+    "cilt": "224",
+    "sayfa": "953"
+   },
+   "baslik_benzerligi": 1.0,
+   "yil_farki": 0,
+   "durum": "DOGRULANDI"
+  },
+  {
+   "anahtar": "Kovacs2002",
+   "bib_baslik": "A box-fitting algorithm in the search for periodic transits",
+   "bib_yil": "2002",
+   "kimlik": "doi:10.1051/0004-6361:20020802",
+   "dis": {
+    "kaynak": "Crossref",
+    "baslik": "A box-fitting algorithm in the search for periodic transits",
+    "yil": 2002,
+    "ilk_yazar": "Kovács",
+    "yayin": "Astronomy &amp; Astrophysics",
+    "cilt": "391",
+    "sayfa": "369-377"
+   },
+   "baslik_benzerligi": 1.0,
+   "yil_farki": 0,
+   "durum": "DOGRULANDI"
+  },
+  {
+   "anahtar": "HippkeHeller2019",
+   "bib_baslik": "Optimized transit detection algorithm to search for periodic transits of small planets",
+   "bib_yil": "2019",
+   "kimlik": "doi:10.1051/0004-6361/201834672",
+   "dis": {
+    "kaynak": "Crossref",
+    "baslik": "Optimized transit detection algorithm to search for periodic transits of small planets",
+    "yil": 2019,
+    "ilk_yazar": "Hippke",
+    "yayin": "Astronomy &amp; Astrophysics",
+    "cilt": "623",
+    "sayfa": "A39"
+   },
+   "baslik_benzerligi": 1.0,
+   "yil_farki": 0,
+   "durum": "DOGRULANDI"
+  },
+  {
+   "anahtar": "MandelAgol2002",
+   "bib_baslik": "Analytic Light Curves for Planetary Transit Searches",
+   "bib_yil": "2002",
+   "kimlik": "doi:10.1086/345520",
+   "dis": {
+    "kaynak": "Crossref",
+    "baslik": "Analytic Light Curves for Planetary Transit Searches",
+    "yil": 2002,
+    "ilk_yazar": "Mandel",
+    "yayin": "The Astrophysical Journal",
+    "cilt": "580",
+    "sayfa": "L171-L175"
+   },
+   "baslik_benzerligi": 1.0,
+   "yil_farki": 0,
+   "durum": "DOGRULANDI"
+  },
+  {
+   "anahtar": "Kreidberg2015",
+   "bib_baslik": "batman: BAsic Transit Model cAlculatioN in Python",
+   "bib_yil": "2015",
+   "kimlik": "doi:10.1086/683602",
+   "dis": {
+    "kaynak": "Crossref",
+    "baslik": "<tt>batman</tt>\n                    : BAsic Transit Model cAlculatioN in Python",
+    "yil": 2015,
+    "ilk_yazar": "Kreidberg",
+    "yayin": "Publications of the Astronomical Society of the Pacific",
+    "cilt": "127",
+    "sayfa": "1161-1165"
+   },
+   "baslik_benzerligi": 1.0,
+   "yil_farki": 0,
+   "durum": "DOGRULANDI"
+  },
+  {
+   "anahtar": "SeagerMallenOrnelas2003",
+   "bib_baslik": "A Unique Solution of Planet and Star Parameters from an Extrasolar Planet Transit Light Curve",
+   "bib_yil": "2003",
+   "kimlik": "doi:10.1086/346105",
+   "dis": {
+    "kaynak": "Crossref",
+    "baslik": "A Unique Solution of Planet and Star Parameters from an Extrasolar Planet Transit Light Curve",
+    "yil": 2003,
+    "ilk_yazar": "Seager",
+    "yayin": "The Astrophysical Journal",
+    "cilt": "585",
+    "sayfa": "1038-1055"
+   },
+   "baslik_benzerligi": 1.0,
+   "yil_farki": 0,
+   "durum": "DOGRULANDI"
+  },
+  {
+   "anahtar": "Winn2010",
+   "bib_baslik": "Transits and Occultations",
+   "bib_yil": "2010",
+   "kimlik": "arXiv:1001.2010",
+   "dis": {
+    "kaynak": "arXiv",
+    "baslik": "Transits and Occultations",
+    "yil": 2010,
+    "ilk_yazar": "Winn",
+    "yayin": null,
+    "doi": null
+   },
+   "baslik_benzerligi": 1.0,
+   "yil_farki": 0,
+   "durum": "DOGRULANDI"
+  },
+  {
+   "anahtar": "ForemanMackey2017",
+   "bib_baslik": "Fast and Scalable Gaussian Process Modeling with Applications to Astronomical Time Series",
+   "bib_yil": "2017",
+   "kimlik": "doi:10.3847/1538-3881/aa9332",
+   "dis": {
+    "kaynak": "Crossref",
+    "baslik": "Fast and Scalable Gaussian Process Modeling with Applications to Astronomical Time Series",
+    "yil": 2017,
+    "ilk_yazar": "Foreman-Mackey",
+    "yayin": "The Astronomical Journal",
+    "cilt": "154",
+    "sayfa": "220"
+   },
+   "baslik_benzerligi": 1.0,
+   "yil_farki": 0,
+   "durum": "DOGRULANDI"
+  },
+  {
+   "anahtar": "Ivezic2020",
+   "bib_baslik": "Statistics, Data Mining, and Machine Learning in Astronomy",
+   "bib_yil": "2020",
+   "kimlik": "isbn:9780691198309",
+   "dis": {
+    "kaynak": "Open Library",
+    "baslik": "Statistics, Data Mining, and Machine Learning in Astronomy: A Practical Python Guide for the Analysis of Survey Data, Updated Edition",
+    "yil": 2019,
+    "ilk_yazar": null,
+    "yayin": "Princeton University Press"
+   },
+   "baslik_benzerligi": 1.0,
+   "yil_farki": 1,
+   "durum": "DOGRULANDI"
+  },
+  {
+   "anahtar": "HoggBovyLang2010",
+   "bib_baslik": "Data analysis recipes: Fitting a model to data",
+   "bib_yil": "2010",
+   "kimlik": "arXiv:1008.4686",
+   "dis": {
+    "kaynak": "arXiv",
+    "baslik": "Data analysis recipes: Fitting a model to data",
+    "yil": 2010,
+    "ilk_yazar": "Hogg",
+    "yayin": null,
+    "doi": null
+   },
+   "baslik_benzerligi": 1.0,
+   "yil_farki": 0,
+   "durum": "DOGRULANDI"
+  },
+  {
+   "anahtar": "HoggForemanMackey2018",
+   "bib_baslik": "Data Analysis Recipes: Using Markov Chain Monte Carlo",
+   "bib_yil": "2018",
+   "kimlik": "doi:10.3847/1538-4365/aab76e",
+   "dis": {
+    "kaynak": "Crossref",
+    "baslik": "Data Analysis Recipes: Using Markov Chain Monte Carlo*",
+    "yil": 2018,
+    "ilk_yazar": "Hogg",
+    "yayin": "The Astrophysical Journal Supplement Series",
+    "cilt": "236",
+    "sayfa": "11"
+   },
+   "baslik_benzerligi": 1.0,
+   "yil_farki": 0,
+   "durum": "DOGRULANDI"
+  },
+  {
+   "anahtar": "ForemanMackey2013",
+   "bib_baslik": "emcee: The MCMC Hammer",
+   "bib_yil": "2013",
+   "kimlik": "doi:10.1086/670067",
+   "dis": {
+    "kaynak": "Crossref",
+    "baslik": "<tt>emcee</tt>\n                    : The MCMC Hammer",
+    "yil": 2013,
+    "ilk_yazar": "Foreman-Mackey",
+    "yayin": "Publications of the Astronomical Society of the Pacific",
+    "cilt": "125",
+    "sayfa": "306-312"
+   },
+   "baslik_benzerligi": 1.0,
+   "yil_farki": 0,
+   "durum": "DOGRULANDI"
+  },
+  {
+   "anahtar": "GoodmanWeare2010",
+   "bib_baslik": "Ensemble samplers with affine invariance",
+   "bib_yil": "2010",
+   "kimlik": "doi:10.2140/camcos.2010.5.65",
+   "dis": {
+    "kaynak": "Crossref",
+    "baslik": "Ensemble samplers with affine invariance",
+    "yil": 2010,
+    "ilk_yazar": "Goodman",
+    "yayin": "Communications in Applied Mathematics and Computational Science",
+    "cilt": "5",
+    "sayfa": "65-80"
+   },
+   "baslik_benzerligi": 1.0,
+   "yil_farki": 0,
+   "durum": "DOGRULANDI"
+  },
+  {
+   "anahtar": "Metropolis1953",
+   "bib_baslik": "Equation of State Calculations by Fast Computing Machines",
+   "bib_yil": "1953",
+   "kimlik": "doi:10.1063/1.1699114",
+   "dis": {
+    "kaynak": "Crossref",
+    "baslik": "Equation of State Calculations by Fast Computing Machines",
+    "yil": 1953,
+    "ilk_yazar": "Metropolis",
+    "yayin": "The Journal of Chemical Physics",
+    "cilt": "21",
+    "sayfa": "1087-1092"
+   },
+   "baslik_benzerligi": 1.0,
+   "yil_farki": 0,
+   "durum": "DOGRULANDI"
+  },
+  {
+   "anahtar": "Hastings1970",
+   "bib_baslik": "Monte Carlo sampling methods using Markov chains and their applications",
+   "bib_yil": "1970",
+   "kimlik": "doi:10.1093/biomet/57.1.97",
+   "dis": {
+    "kaynak": "Crossref",
+    "baslik": "Monte Carlo sampling methods using Markov chains and their applications",
+    "yil": 1970,
+    "ilk_yazar": "Hastings",
+    "yayin": "Biometrika",
+    "cilt": "57",
+    "sayfa": "97-109"
+   },
+   "baslik_benzerligi": 1.0,
+   "yil_farki": 0,
+   "durum": "DOGRULANDI"
+  },
+  {
+   "anahtar": "Skilling2006",
+   "bib_baslik": "Nested sampling for general Bayesian computation",
+   "bib_yil": "2006",
+   "kimlik": "doi:10.1214/06-BA127",
+   "dis": {
+    "kaynak": "Crossref",
+    "baslik": "Nested sampling for general Bayesian computation",
+    "yil": 2006,
+    "ilk_yazar": "Skilling",
+    "yayin": "Bayesian Analysis",
+    "cilt": "1",
+    "sayfa": "833-859"
+   },
+   "baslik_benzerligi": 1.0,
+   "yil_farki": 0,
+   "durum": "DOGRULANDI"
+  },
+  {
+   "anahtar": "Speagle2020",
+   "bib_baslik": "dynesty: a dynamic nested sampling package for estimating Bayesian posteriors and evidences",
+   "bib_yil": "2020",
+   "kimlik": "doi:10.1093/mnras/staa278",
+   "dis": {
+    "kaynak": "Crossref",
+    "baslik": "dynesty: a dynamic nested sampling package for estimating Bayesian posteriors and evidences",
+    "yil": 2020,
+    "ilk_yazar": "Speagle",
+    "yayin": "Monthly Notices of the Royal Astronomical Society",
+    "cilt": "493",
+    "sayfa": "3132-3158"
+   },
+   "baslik_benzerligi": 1.0,
+   "yil_farki": 0,
+   "durum": "DOGRULANDI"
+  },
+  {
+   "anahtar": "Kelly2007",
+   "bib_baslik": "Some Aspects of Measurement Error in Linear Regression of Astronomical Data",
+   "bib_yil": "2007",
+   "kimlik": "doi:10.1086/519947",
+   "dis": {
+    "kaynak": "Crossref",
+    "baslik": "Some Aspects of Measurement Error in Linear Regression of Astronomical Data",
+    "yil": 2007,
+    "ilk_yazar": "Kelly",
+    "yayin": "The Astrophysical Journal",
+    "cilt": "665",
+    "sayfa": "1489-1506"
+   },
+   "baslik_benzerligi": 1.0,
+   "yil_farki": 0,
+   "durum": "DOGRULANDI"
+  },
+  {
+   "anahtar": "AkritasBershady1996",
+   "bib_baslik": "Linear Regression for Astronomical Data with Measurement Errors and Intrinsic Scatter",
+   "bib_yil": "1996",
+   "kimlik": "doi:10.1086/177901",
+   "dis": {
+    "kaynak": "Crossref",
+    "baslik": "Linear Regression for Astronomical Data with Measurement Errors and Intrinsic Scatter",
+    "yil": 1996,
+    "ilk_yazar": "Akritas",
+    "yayin": "The Astrophysical Journal",
+    "cilt": "470",
+    "sayfa": "706"
+   },
+   "baslik_benzerligi": 1.0,
+   "yil_farki": 0,
+   "durum": "DOGRULANDI"
+  },
+  {
+   "anahtar": "FeigelsonBabu2012",
+   "bib_baslik": "Modern Statistical Methods for Astronomy: With R Applications",
+   "bib_yil": "2012",
+   "kimlik": "doi:10.1017/CBO9781139015653",
+   "dis": {
+    "kaynak": "Crossref",
+    "baslik": "Modern Statistical Methods for Astronomy",
+    "yil": 2012,
+    "ilk_yazar": "Feigelson",
+    "yayin": "Cambridge University Press",
+    "cilt": null,
+    "sayfa": null
+   },
+   "baslik_benzerligi": 1.0,
+   "yil_farki": 0,
+   "durum": "DOGRULANDI"
+  },
+  {
+   "anahtar": "Gelman2013",
+   "bib_baslik": "Bayesian Data Analysis",
+   "bib_yil": "2013",
+   "kimlik": "isbn:9781439840955",
+   "dis": {
+    "kaynak": "Open Library",
+    "baslik": "Bayesian Data Analysis Third Edition  3rd Edition\r\n            \r\n                Chapman  HallCRC Texts in Statistical Science",
+    "yil": 2013,
+    "ilk_yazar": null,
+    "yayin": "CRC Press"
+   },
+   "baslik_benzerligi": 1.0,
+   "yil_farki": 0,
+   "durum": "DOGRULANDI"
+  },
+  {
+   "anahtar": "GelmanRubin1992",
+   "bib_baslik": "Inference from Iterative Simulation Using Multiple Sequences",
+   "bib_yil": "1992",
+   "kimlik": "doi:10.1214/ss/1177011136",
+   "dis": {
+    "kaynak": "Crossref",
+    "baslik": "Inference from Iterative Simulation Using Multiple Sequences",
+    "yil": 1992,
+    "ilk_yazar": "Gelman",
+    "yayin": "Statistical Science",
+    "cilt": "7",
+    "sayfa": "457-472"
+   },
+   "baslik_benzerligi": 1.0,
+   "yil_farki": 0,
+   "durum": "DOGRULANDI"
+  },
+  {
+   "anahtar": "Vehtari2021",
+   "bib_baslik": "Rank-Normalization, Folding, and Localization: An Improved R-hat for Assessing Convergence of MCMC",
+   "bib_yil": "2021",
+   "kimlik": "doi:10.1214/20-BA1221",
+   "dis": {
+    "kaynak": "Crossref",
+    "baslik": "Rank-Normalization, Folding, and Localization: An Improved Rˆ for Assessing Convergence of MCMC (with Discussion)",
+    "yil": 2021,
+    "ilk_yazar": "Vehtari",
+    "yayin": "Bayesian Analysis",
+    "cilt": "16",
+    "sayfa": "667-718"
+   },
+   "baslik_benzerligi": 0.901,
+   "yil_farki": 0,
+   "durum": "DOGRULANDI"
+  },
+  {
+   "anahtar": "SiviaSkilling2006",
+   "bib_baslik": "Data Analysis: A Bayesian Tutorial",
+   "bib_yil": "2006",
+   "kimlik": "isbn:9780198568322",
+   "dis": {
+    "kaynak": "Open Library",
+    "baslik": "Data Analysis: A Bayesian Tutorial",
+    "yil": 2006,
+    "ilk_yazar": null,
+    "yayin": "Oxford University Press, USA"
+   },
+   "baslik_benzerligi": 1.0,
+   "yil_farki": 0,
+   "durum": "DOGRULANDI"
+  },
+  {
+   "anahtar": "WallJenkins2012",
+   "bib_baslik": "Practical Statistics for Astronomers",
+   "bib_yil": "2012",
+   "kimlik": "doi:10.1017/CBO9781139031998",
+   "dis": {
+    "kaynak": "Crossref",
+    "baslik": "Practical Statistics for Astronomers",
+    "yil": 2012,
+    "ilk_yazar": "Wall",
+    "yayin": "Cambridge University Press",
+    "cilt": null,
+    "sayfa": null
+   },
+   "baslik_benzerligi": 1.0,
+   "yil_farki": 0,
+   "durum": "DOGRULANDI"
+  },
+  {
+   "anahtar": "Andrae2010",
+   "bib_baslik": "Dos and don'ts of reduced chi-squared",
+   "bib_yil": "2010",
+   "kimlik": "arXiv:1012.3754",
+   "dis": {
+    "kaynak": "arXiv",
+    "baslik": "Dos and don'ts of reduced chi-squared",
+    "yil": 2010,
+    "ilk_yazar": "Andrae",
+    "yayin": null,
+    "doi": null
+   },
+   "baslik_benzerligi": 1.0,
+   "yil_farki": 0,
+   "durum": "DOGRULANDI"
+  },
+  {
+   "anahtar": "RasmussenWilliams2006",
+   "bib_baslik": "Gaussian Processes for Machine Learning",
+   "bib_yil": "2006",
+   "kimlik": "doi:10.7551/mitpress/3206.001.0001",
+   "dis": {
+    "kaynak": "Crossref",
+    "baslik": "Gaussian Processes for Machine Learning",
+    "yil": 2005,
+    "ilk_yazar": "Rasmussen",
+    "yayin": "The MIT Press",
+    "cilt": null,
+    "sayfa": null
+   },
+   "baslik_benzerligi": 1.0,
+   "yil_farki": 1,
+   "durum": "DOGRULANDI"
+  },
+  {
+   "anahtar": "Efron1979",
+   "bib_baslik": "Bootstrap Methods: Another Look at the Jackknife",
+   "bib_yil": "1979",
+   "kimlik": "doi:10.1214/aos/1176344552",
+   "dis": {
+    "kaynak": "Crossref",
+    "baslik": "Bootstrap Methods: Another Look at the Jackknife",
+    "yil": 1979,
+    "ilk_yazar": "Efron",
+    "yayin": "The Annals of Statistics",
+    "cilt": "7",
+    "sayfa": "1-26"
+   },
+   "baslik_benzerligi": 1.0,
+   "yil_farki": 0,
+   "durum": "DOGRULANDI"
+  },
+  {
+   "anahtar": "Cranmer2020",
+   "bib_baslik": "The frontier of simulation-based inference",
+   "bib_yil": "2020",
+   "kimlik": "doi:10.1073/pnas.1912789117",
+   "dis": {
+    "kaynak": "Crossref",
+    "baslik": "The frontier of simulation-based inference",
+    "yil": 2020,
+    "ilk_yazar": "Cranmer",
+    "yayin": "Proceedings of the National Academy of Sciences",
+    "cilt": "117",
+    "sayfa": "30055-30062"
+   },
+   "baslik_benzerligi": 1.0,
+   "yil_farki": 0,
+   "durum": "DOGRULANDI"
+  },
+  {
+   "anahtar": "Prusti2016",
+   "bib_baslik": "The Gaia mission",
+   "bib_yil": "2016",
+   "kimlik": "doi:10.1051/0004-6361/201629272",
+   "dis": {
+    "kaynak": "Crossref",
+    "baslik": "The\n                    <i>Gaia</i>\n                    mission",
+    "yil": 2016,
+    "ilk_yazar": "Gaia Collaboration",
+    "yayin": "Astronomy &amp; Astrophysics",
+    "cilt": "595",
+    "sayfa": "A1"
+   },
+   "baslik_benzerligi": 1.0,
+   "yil_farki": 0,
+   "durum": "DOGRULANDI"
+  },
+  {
+   "anahtar": "Vallenari2023",
+   "bib_baslik": "Gaia Data Release 3: Summary of the content and survey properties",
+   "bib_yil": "2023",
+   "kimlik": "doi:10.1051/0004-6361/202243940",
+   "dis": {
+    "kaynak": "Crossref",
+    "baslik": "<i>Gaia</i>\n                    Data Release 3",
+    "yil": 2023,
+    "ilk_yazar": "Gaia Collaboration",
+    "yayin": "Astronomy &amp; Astrophysics",
+    "cilt": "674",
+    "sayfa": "A1"
+   },
+   "baslik_benzerligi": 1.0,
+   "yil_farki": 0,
+   "durum": "DOGRULANDI"
+  },
+  {
+   "anahtar": "Lindegren2021",
+   "bib_baslik": "Gaia Early Data Release 3: Parallax bias versus magnitude, colour, and position",
+   "bib_yil": "2021",
+   "kimlik": "doi:10.1051/0004-6361/202039653",
+   "dis": {
+    "kaynak": "Crossref",
+    "baslik": "<i>Gaia</i>\n                    Early Data Release 3",
+    "yil": 2021,
+    "ilk_yazar": "Lindegren",
+    "yayin": "Astronomy &amp; Astrophysics",
+    "cilt": "649",
+    "sayfa": "A4"
+   },
+   "baslik_benzerligi": 1.0,
+   "yil_farki": 0,
+   "durum": "DOGRULANDI"
+  },
+  {
+   "anahtar": "BailerJones2015",
+   "bib_baslik": "Estimating Distances from Parallaxes",
+   "bib_yil": "2015",
+   "kimlik": "doi:10.1086/683116",
+   "dis": {
+    "kaynak": "Crossref",
+    "baslik": "Estimating Distances from Parallaxes",
+    "yil": 2015,
+    "ilk_yazar": "Bailer-Jones",
+    "yayin": "Publications of the Astronomical Society of the Pacific",
+    "cilt": "127",
+    "sayfa": "994-1009"
+   },
+   "baslik_benzerligi": 1.0,
+   "yil_farki": 0,
+   "durum": "DOGRULANDI"
+  },
+  {
+   "anahtar": "BailerJones2021",
+   "bib_baslik": "Estimating Distances from Parallaxes. V. Geometric and Photogeometric Distances to 1.47 Billion Stars in Gaia Early Data Release 3",
+   "bib_yil": "2021",
+   "kimlik": "doi:10.3847/1538-3881/abd806",
+   "dis": {
+    "kaynak": "Crossref",
+    "baslik": "Estimating Distances from Parallaxes. V. Geometric and Photogeometric Distances to 1.47 Billion Stars in Gaia Early Data Release 3",
+    "yil": 2021,
+    "ilk_yazar": "Bailer-Jones",
+    "yayin": "The Astronomical Journal",
+    "cilt": "161",
+    "sayfa": "147"
+   },
+   "baslik_benzerligi": 1.0,
+   "yil_farki": 0,
+   "durum": "DOGRULANDI"
+  },
+  {
+   "anahtar": "Luri2018",
+   "bib_baslik": "Gaia Data Release 2: Using Gaia parallaxes",
+   "bib_yil": "2018",
+   "kimlik": "doi:10.1051/0004-6361/201832964",
+   "dis": {
+    "kaynak": "Crossref",
+    "baslik": "<i>Gaia</i>\n                    Data Release 2",
+    "yil": 2018,
+    "ilk_yazar": "Luri",
+    "yayin": "Astronomy &amp; Astrophysics",
+    "cilt": "616",
+    "sayfa": "A9"
+   },
+   "baslik_benzerligi": 1.0,
+   "yil_farki": 0,
+   "durum": "DOGRULANDI"
+  },
+  {
+   "anahtar": "York2000",
+   "bib_baslik": "The Sloan Digital Sky Survey: Technical Summary",
+   "bib_yil": "2000",
+   "kimlik": "doi:10.1086/301513",
+   "dis": {
+    "kaynak": "Crossref",
+    "baslik": "The Sloan Digital Sky Survey: Technical Summary",
+    "yil": 2000,
+    "ilk_yazar": "York",
+    "yayin": "The Astronomical Journal",
+    "cilt": "120",
+    "sayfa": "1579-1587"
+   },
+   "baslik_benzerligi": 1.0,
+   "yil_farki": 0,
+   "durum": "DOGRULANDI"
+  },
+  {
+   "anahtar": "Skrutskie2006",
+   "bib_baslik": "The Two Micron All Sky Survey (2MASS)",
+   "bib_yil": "2006",
+   "kimlik": "doi:10.1086/498708",
+   "dis": {
+    "kaynak": "Crossref",
+    "baslik": "The Two Micron All Sky Survey (2MASS)",
+    "yil": 2006,
+    "ilk_yazar": "Skrutskie",
+    "yayin": "The Astronomical Journal",
+    "cilt": "131",
+    "sayfa": "1163-1183"
+   },
+   "baslik_benzerligi": 1.0,
+   "yil_farki": 0,
+   "durum": "DOGRULANDI"
+  },
+  {
+   "anahtar": "Ricker2015",
+   "bib_baslik": "Transiting Exoplanet Survey Satellite",
+   "bib_yil": "2015",
+   "kimlik": "doi:10.1117/1.JATIS.1.1.014003",
+   "dis": {
+    "kaynak": "Crossref",
+    "baslik": "Transiting Exoplanet Survey Satellite",
+    "yil": 2014,
+    "ilk_yazar": "Ricker",
+    "yayin": "Journal of Astronomical Telescopes, Instruments, and Systems",
+    "cilt": "1",
+    "sayfa": "1-10"
+   },
+   "baslik_benzerligi": 1.0,
+   "yil_farki": 1,
+   "durum": "DOGRULANDI"
+  },
+  {
+   "anahtar": "Bellm2019",
+   "bib_baslik": "The Zwicky Transient Facility: System Overview, Performance, and First Results",
+   "bib_yil": "2019",
+   "kimlik": "doi:10.1088/1538-3873/aaecbe",
+   "dis": {
+    "kaynak": "Crossref",
+    "baslik": "The Zwicky Transient Facility: System Overview, Performance, and First Results",
+    "yil": 2019,
+    "ilk_yazar": "Bellm",
+    "yayin": "Publications of the Astronomical Society of the Pacific",
+    "cilt": "131",
+    "sayfa": "018002"
+   },
+   "baslik_benzerligi": 1.0,
+   "yil_farki": 0,
+   "durum": "DOGRULANDI"
+  },
+  {
+   "anahtar": "Hubble1929",
+   "bib_baslik": "A relation between distance and radial velocity among extra-galactic nebulae",
+   "bib_yil": "1929",
+   "kimlik": "doi:10.1073/pnas.15.3.168",
+   "dis": {
+    "kaynak": "Crossref",
+    "baslik": "A relation between distance and radial velocity among extra-galactic nebulae",
+    "yil": 1929,
+    "ilk_yazar": "Hubble",
+    "yayin": "Proceedings of the National Academy of Sciences",
+    "cilt": "15",
+    "sayfa": "168-173"
+   },
+   "baslik_benzerligi": 1.0,
+   "yil_farki": 0,
+   "durum": "DOGRULANDI"
+  },
+  {
+   "anahtar": "Hogg1999",
+   "bib_baslik": "Distance measures in cosmology",
+   "bib_yil": "1999",
+   "kimlik": "arXiv:astro-ph/9905116",
+   "dis": {
+    "kaynak": "arXiv",
+    "baslik": "Distance measures in cosmology",
+    "yil": 1999,
+    "ilk_yazar": "Hogg",
+    "yayin": null,
+    "doi": null
+   },
+   "baslik_benzerligi": 1.0,
+   "yil_farki": 0,
+   "durum": "DOGRULANDI"
+  },
+  {
+   "anahtar": "Wright2006",
+   "bib_baslik": "A Cosmology Calculator for the World Wide Web",
+   "bib_yil": "2006",
+   "kimlik": "doi:10.1086/510102",
+   "dis": {
+    "kaynak": "Crossref",
+    "baslik": "A Cosmology Calculator for the World Wide Web",
+    "yil": 2006,
+    "ilk_yazar": "Wright",
+    "yayin": "Publications of the Astronomical Society of the Pacific",
+    "cilt": "118",
+    "sayfa": "1711-1715"
+   },
+   "baslik_benzerligi": 1.0,
+   "yil_farki": 0,
+   "durum": "DOGRULANDI"
+  },
+  {
+   "anahtar": "CarrollPressTurner1992",
+   "bib_baslik": "The cosmological constant",
+   "bib_yil": "1992",
+   "kimlik": "doi:10.1146/annurev.aa.30.090192.002435",
+   "dis": {
+    "kaynak": "Crossref",
+    "baslik": "The Cosmological Constant",
+    "yil": 1992,
+    "ilk_yazar": "Carroll",
+    "yayin": "Annual Review of Astronomy and Astrophysics",
+    "cilt": "30",
+    "sayfa": "499-542"
+   },
+   "baslik_benzerligi": 1.0,
+   "yil_farki": 0,
+   "durum": "DOGRULANDI"
+  },
+  {
+   "anahtar": "DavisLineweaver2004",
+   "bib_baslik": "Expanding Confusion: Common Misconceptions of Cosmological Horizons and the Superluminal Expansion of the Universe",
+   "bib_yil": "2004",
+   "kimlik": "doi:10.1071/AS03040",
+   "dis": {
+    "kaynak": "Crossref",
+    "baslik": "Expanding Confusion: Common Misconceptions of Cosmological Horizons and the Superluminal Expansion of the Universe",
+    "yil": 2004,
+    "ilk_yazar": "Davis",
+    "yayin": "Publications of the Astronomical Society of Australia",
+    "cilt": "21",
+    "sayfa": "97-109"
+   },
+   "baslik_benzerligi": 1.0,
+   "yil_farki": 0,
+   "durum": "DOGRULANDI"
+  },
+  {
+   "anahtar": "ChevallierPolarski2001",
+   "bib_baslik": "Accelerating universes with scaling dark matter",
+   "bib_yil": "2001",
+   "kimlik": "doi:10.1142/S0218271801000822",
+   "dis": {
+    "kaynak": "Crossref",
+    "baslik": "ACCELERATING UNIVERSES WITH SCALING DARK MATTER",
+    "yil": 2001,
+    "ilk_yazar": "CHEVALLIER",
+    "yayin": "International Journal of Modern Physics D",
+    "cilt": "10",
+    "sayfa": "213-223"
+   },
+   "baslik_benzerligi": 1.0,
+   "yil_farki": 0,
+   "durum": "DOGRULANDI"
+  },
+  {
+   "anahtar": "Linder2003",
+   "bib_baslik": "Exploring the Expansion History of the Universe",
+   "bib_yil": "2003",
+   "kimlik": "doi:10.1103/PhysRevLett.90.091301",
+   "dis": {
+    "kaynak": "Crossref",
+    "baslik": "Exploring the Expansion History of the Universe",
+    "yil": 2003,
+    "ilk_yazar": "Linder",
+    "yayin": "Physical Review Letters",
+    "cilt": "90",
+    "sayfa": "091301"
+   },
+   "baslik_benzerligi": 1.0,
+   "yil_farki": 0,
+   "durum": "DOGRULANDI"
+  },
+  {
+   "anahtar": "Riess1998",
+   "bib_baslik": "Observational Evidence from Supernovae for an Accelerating Universe and a Cosmological Constant",
+   "bib_yil": "1998",
+   "kimlik": "doi:10.1086/300499",
+   "dis": {
+    "kaynak": "Crossref",
+    "baslik": "Observational Evidence from Supernovae for an Accelerating Universe and a Cosmological Constant",
+    "yil": 1998,
+    "ilk_yazar": "Riess",
+    "yayin": "The Astronomical Journal",
+    "cilt": "116",
+    "sayfa": "1009-1038"
+   },
+   "baslik_benzerligi": 1.0,
+   "yil_farki": 0,
+   "durum": "DOGRULANDI"
+  },
+  {
+   "anahtar": "Perlmutter1999",
+   "bib_baslik": "Measurements of Omega and Lambda from 42 High-Redshift Supernovae",
+   "bib_yil": "1999",
+   "kimlik": "doi:10.1086/307221",
+   "dis": {
+    "kaynak": "Crossref",
+    "baslik": "Measurements of Ω and Λ from 42 High‐Redshift Supernovae",
+    "yil": 1999,
+    "ilk_yazar": "Perlmutter",
+    "yayin": "The Astrophysical Journal",
+    "cilt": "517",
+    "sayfa": "565-586"
+   },
+   "baslik_benzerligi": 0.879,
+   "yil_farki": 0,
+   "durum": "DOGRULANDI"
+  },
+  {
+   "anahtar": "Freedman2001",
+   "bib_baslik": "Final Results from the Hubble Space Telescope Key Project to Measure the Hubble Constant",
+   "bib_yil": "2001",
+   "kimlik": "doi:10.1086/320638",
+   "dis": {
+    "kaynak": "Crossref",
+    "baslik": "Final Results from the\n                    <i>Hubble Space Telescope</i>\n                    Key Project to Measure the Hubble Constant",
+    "yil": 2001,
+    "ilk_yazar": "Freedman",
+    "yayin": "The Astrophysical Journal",
+    "cilt": "553",
+    "sayfa": "47-72"
+   },
+   "baslik_benzerligi": 1.0,
+   "yil_farki": 0,
+   "durum": "DOGRULANDI"
+  },
+  {
+   "anahtar": "Riess2022",
+   "bib_baslik": "A Comprehensive Measurement of the Local Value of the Hubble Constant with 1 km/s/Mpc Uncertainty from the Hubble Space Telescope and the SH0ES Team",
+   "bib_yil": "2022",
+   "kimlik": "doi:10.3847/2041-8213/ac5c5b",
+   "dis": {
+    "kaynak": "Crossref",
+    "baslik": "A Comprehensive Measurement of the Local Value of the Hubble Constant with 1 km s\n                    <sup>−1</sup>\n                    Mpc\n                    <sup>−1</sup>\n                    Uncertainty from the Hubble Space Telescope and the SH0ES Team",
+    "yil": 2022,
+    "ilk_yazar": "Riess",
+    "yayin": "The Astrophysical Journal Letters",
+    "cilt": "934",
+    "sayfa": "L7"
+   },
+   "baslik_benzerligi": 0.987,
+   "yil_farki": 0,
+   "durum": "DOGRULANDI"
+  },
+  {
+   "anahtar": "Scolnic2022",
+   "bib_baslik": "The Pantheon+ Analysis: The Full Data Set and Light-curve Release",
+   "bib_yil": "2022",
+   "kimlik": "doi:10.3847/1538-4357/ac8b7a",
+   "dis": {
+    "kaynak": "Crossref",
+    "baslik": "The Pantheon+ Analysis: The Full Data Set and Light-curve Release",
+    "yil": 2022,
+    "ilk_yazar": "Scolnic",
+    "yayin": "The Astrophysical Journal",
+    "cilt": "938",
+    "sayfa": "113"
+   },
+   "baslik_benzerligi": 1.0,
+   "yil_farki": 0,
+   "durum": "DOGRULANDI"
+  },
+  {
+   "anahtar": "Brout2022",
+   "bib_baslik": "The Pantheon+ Analysis: Cosmological Constraints",
+   "bib_yil": "2022",
+   "kimlik": "doi:10.3847/1538-4357/ac8e04",
+   "dis": {
+    "kaynak": "Crossref",
+    "baslik": "The Pantheon+ Analysis: Cosmological Constraints",
+    "yil": 2022,
+    "ilk_yazar": "Brout",
+    "yayin": "The Astrophysical Journal",
+    "cilt": "938",
+    "sayfa": "110"
+   },
+   "baslik_benzerligi": 1.0,
+   "yil_farki": 0,
+   "durum": "DOGRULANDI"
+  },
+  {
+   "anahtar": "Carr2022",
+   "bib_baslik": "The Pantheon+ analysis: Improving the redshifts and peculiar velocities of Type Ia supernovae used in cosmological analyses",
+   "bib_yil": "2022",
+   "kimlik": "doi:10.1017/pasa.2022.41",
+   "dis": {
+    "kaynak": "Crossref",
+    "baslik": "The Pantheon+ analysis: Improving the redshifts and peculiar velocities of Type Ia supernovae used in cosmological analyses",
+    "yil": 2022,
+    "ilk_yazar": "Carr",
+    "yayin": "Publications of the Astronomical Society of Australia",
+    "cilt": "39",
+    "sayfa": "e046"
+   },
+   "baslik_benzerligi": 1.0,
+   "yil_farki": 0,
+   "durum": "DOGRULANDI"
+  },
+  {
+   "anahtar": "KesslerScolnic2017",
+   "bib_baslik": "Correcting Type Ia Supernova Distances for Selection Biases and Contamination in Photometrically Identified Samples",
+   "bib_yil": "2017",
+   "kimlik": "doi:10.3847/1538-4357/836/1/56",
+   "dis": {
+    "kaynak": "Crossref",
+    "baslik": "Correcting Type Ia Supernova Distances for Selection Biases and Contamination in Photometrically Identified Samples",
+    "yil": 2017,
+    "ilk_yazar": "Kessler",
+    "yayin": "The Astrophysical Journal",
+    "cilt": "836",
+    "sayfa": "56"
+   },
+   "baslik_benzerligi": 1.0,
+   "yil_farki": 0,
+   "durum": "DOGRULANDI"
+  },
+  {
+   "anahtar": "Conley2011",
+   "bib_baslik": "Supernova Constraints and Systematic Uncertainties from the First Three Years of the Supernova Legacy Survey",
+   "bib_yil": "2011",
+   "kimlik": "doi:10.1088/0067-0049/192/1/1",
+   "dis": {
+    "kaynak": "Crossref",
+    "baslik": "SUPERNOVA CONSTRAINTS AND SYSTEMATIC UNCERTAINTIES FROM THE FIRST THREE YEARS OF THE SUPERNOVA LEGACY SURVEY",
+    "yil": 2011,
+    "ilk_yazar": "Conley",
+    "yayin": "The Astrophysical Journal Supplement Series",
+    "cilt": "192",
+    "sayfa": "1"
+   },
+   "baslik_benzerligi": 1.0,
+   "yil_farki": 0,
+   "durum": "DOGRULANDI"
+  },
+  {
+   "anahtar": "Planck2020",
+   "bib_baslik": "Planck 2018 results. VI. Cosmological parameters",
+   "bib_yil": "2020",
+   "kimlik": "doi:10.1051/0004-6361/201833910",
+   "dis": {
+    "kaynak": "Crossref",
+    "baslik": "<i>Planck</i>\n                    2018 results",
+    "yil": 2020,
+    "ilk_yazar": "Planck Collaboration",
+    "yayin": "Astronomy &amp; Astrophysics",
+    "cilt": "641",
+    "sayfa": "A6"
+   },
+   "baslik_benzerligi": 1.0,
+   "yil_farki": 0,
+   "durum": "DOGRULANDI"
+  },
+  {
+   "anahtar": "DESI2025",
+   "bib_baslik": "DESI 2024 VI: cosmological constraints from the measurements of baryon acoustic oscillations",
+   "bib_yil": "2025",
+   "kimlik": "doi:10.1088/1475-7516/2025/02/021",
+   "dis": {
+    "kaynak": "Crossref",
+    "baslik": "DESI 2024 VI:  cosmological constraints from the measurements of baryon acoustic oscillations",
+    "yil": 2025,
+    "ilk_yazar": "Adame",
+    "yayin": "Journal of Cosmology and Astroparticle Physics",
+    "cilt": "2025",
+    "sayfa": "021"
+   },
+   "baslik_benzerligi": 1.0,
+   "yil_farki": 0,
+   "durum": "DOGRULANDI"
+  },
+  {
+   "anahtar": "DESI2025DR2",
+   "bib_baslik": "DESI DR2 Results II: Measurements of Baryon Acoustic Oscillations and Cosmological Constraints",
+   "bib_yil": "2025",
+   "kimlik": "arXiv:2503.14738",
+   "dis": {
+    "kaynak": "arXiv",
+    "baslik": "DESI DR2 Results II: Measurements of Baryon Acoustic Oscillations and Cosmological Constraints",
+    "yil": 2025,
+    "ilk_yazar": "Collaboration",
+    "yayin": "Phys. Rev. D 112, 083515, 2025",
+    "doi": "10.1103/tr6y-kpc6"
+   },
+   "baslik_benzerligi": 1.0,
+   "yil_farki": 0,
+   "durum": "DOGRULANDI"
+  },
+  {
+   "anahtar": "Freedman2019",
+   "bib_baslik": "The Carnegie-Chicago Hubble Program. VIII. An Independent Determination of the Hubble Constant Based on the Tip of the Red Giant Branch",
+   "bib_yil": "2019",
+   "kimlik": "doi:10.3847/1538-4357/ab2f73",
+   "dis": {
+    "kaynak": "Crossref",
+    "baslik": "The Carnegie-Chicago Hubble Program. VIII. An Independent Determination of the Hubble Constant Based on the Tip of the Red Giant Branch*",
+    "yil": 2019,
+    "ilk_yazar": "Freedman",
+    "yayin": "The Astrophysical Journal",
+    "cilt": "882",
+    "sayfa": "34"
+   },
+   "baslik_benzerligi": 1.0,
+   "yil_farki": 0,
+   "durum": "DOGRULANDI"
+  },
+  {
+   "anahtar": "Freedman2025",
+   "bib_baslik": "Status Report on the Chicago-Carnegie Hubble Program (CCHP): Measurement of the Hubble Constant Using the Hubble and James Webb Space Telescopes",
+   "bib_yil": "2024",
+   "kimlik": "arXiv:2408.06153",
+   "dis": {
+    "kaynak": "arXiv",
+    "baslik": "Status Report on the Chicago-Carnegie Hubble Program (CCHP): Measurement of the Hubble Constant Using the Hubble and James Webb Space Telescopes",
+    "yil": 2024,
+    "ilk_yazar": "Freedman",
+    "yayin": null,
+    "doi": null
+   },
+   "baslik_benzerligi": 1.0,
+   "yil_farki": 0,
+   "durum": "DOGRULANDI"
+  },
+  {
+   "anahtar": "Madore1982",
+   "bib_baslik": "The period-luminosity relation. IV. Intrinsic relations and reddenings for the Large Magellanic Cloud Cepheids",
+   "bib_yil": "1982",
+   "kimlik": "doi:10.1086/159659",
+   "dis": {
+    "kaynak": "Crossref",
+    "baslik": "The period-luminosity relation. IV - Intrinsic relations and reddenings for the Large Magellanic Cloud Cepheids",
+    "yil": 1982,
+    "ilk_yazar": "Madore",
+    "yayin": "The Astrophysical Journal",
+    "cilt": "253",
+    "sayfa": "575"
+   },
+   "baslik_benzerligi": 1.0,
+   "yil_farki": 0,
+   "durum": "DOGRULANDI"
+  },
+  {
+   "anahtar": "Phillips1993",
+   "bib_baslik": "The absolute magnitudes of Type Ia supernovae",
+   "bib_yil": "1993",
+   "kimlik": "doi:10.1086/186970",
+   "dis": {
+    "kaynak": "Crossref",
+    "baslik": "The absolute magnitudes of Type IA supernovae",
+    "yil": 1993,
+    "ilk_yazar": "Phillips",
+    "yayin": "The Astrophysical Journal",
+    "cilt": "413",
+    "sayfa": "L105"
+   },
+   "baslik_benzerligi": 1.0,
+   "yil_farki": 0,
+   "durum": "DOGRULANDI"
+  },
+  {
+   "anahtar": "Guy2007",
+   "bib_baslik": "SALT2: using distant supernovae to improve the use of type Ia supernovae as distance indicators",
+   "bib_yil": "2007",
+   "kimlik": "doi:10.1051/0004-6361:20066930",
+   "dis": {
+    "kaynak": "Crossref",
+    "baslik": "SALT2: using distant supernovae to improve the use of type Ia supernovae as distance indicators",
+    "yil": 2007,
+    "ilk_yazar": "Guy",
+    "yayin": "Astronomy &amp; Astrophysics",
+    "cilt": "466",
+    "sayfa": "11-21"
+   },
+   "baslik_benzerligi": 1.0,
+   "yil_farki": 0,
+   "durum": "DOGRULANDI"
+  },
+  {
+   "anahtar": "Kenworthy2021",
+   "bib_baslik": "SALT3: An Improved Type Ia Supernova Model for Measuring Cosmic Distances",
+   "bib_yil": "2021",
+   "kimlik": "doi:10.3847/1538-4357/ac30d8",
+   "dis": {
+    "kaynak": "Crossref",
+    "baslik": "SALT3: An Improved Type Ia Supernova Model for Measuring Cosmic Distances",
+    "yil": 2021,
+    "ilk_yazar": "Kenworthy",
+    "yayin": "The Astrophysical Journal",
+    "cilt": "923",
+    "sayfa": "265"
+   },
+   "baslik_benzerligi": 1.0,
+   "yil_farki": 0,
+   "durum": "DOGRULANDI"
+  },
+  {
+   "anahtar": "Eisenstein2005",
+   "bib_baslik": "Detection of the Baryon Acoustic Peak in the Large-Scale Correlation Function of SDSS Luminous Red Galaxies",
+   "bib_yil": "2005",
+   "kimlik": "doi:10.1086/466512",
+   "dis": {
+    "kaynak": "Crossref",
+    "baslik": "Detection of the Baryon Acoustic Peak in the Large‐Scale Correlation Function of SDSS Luminous Red Galaxies",
+    "yil": 2005,
+    "ilk_yazar": "Eisenstein",
+    "yayin": "The Astrophysical Journal",
+    "cilt": "633",
+    "sayfa": "560-574"
+   },
+   "baslik_benzerligi": 0.995,
+   "yil_farki": 0,
+   "durum": "DOGRULANDI"
+  },
+  {
+   "anahtar": "EisensteinHu1998",
+   "bib_baslik": "Baryonic Features in the Matter Transfer Function",
+   "bib_yil": "1998",
+   "kimlik": "doi:10.1086/305424",
+   "dis": {
+    "kaynak": "Crossref",
+    "baslik": "Baryonic Features in the Matter Transfer Function",
+    "yil": 1998,
+    "ilk_yazar": "Eisenstein",
+    "yayin": "The Astrophysical Journal",
+    "cilt": "496",
+    "sayfa": "605-614"
+   },
+   "baslik_benzerligi": 1.0,
+   "yil_farki": 0,
+   "durum": "DOGRULANDI"
+  },
+  {
+   "anahtar": "DiValentino2021",
+   "bib_baslik": "In the realm of the Hubble tension — a review of solutions",
+   "bib_yil": "2021",
+   "kimlik": "doi:10.1088/1361-6382/ac086d",
+   "dis": {
+    "kaynak": "Crossref",
+    "baslik": "In the realm of the Hubble tension—a review of solutions\n                    <sup>*</sup>",
+    "yil": 2021,
+    "ilk_yazar": "Di Valentino",
+    "yayin": "Classical and Quantum Gravity",
+    "cilt": "38",
+    "sayfa": "153001"
+   },
+   "baslik_benzerligi": 0.991,
+   "yil_farki": 0,
+   "durum": "DOGRULANDI"
+  },
+  {
+   "anahtar": "Abbott2017",
+   "bib_baslik": "A gravitational-wave standard siren measurement of the Hubble constant",
+   "bib_yil": "2017",
+   "kimlik": "doi:10.1038/nature24471",
+   "dis": {
+    "kaynak": "Crossref",
+    "baslik": "A gravitational-wave standard siren measurement of the Hubble constant",
+    "yil": 2017,
+    "ilk_yazar": "The LIGO Scientific Collaboration and The Virgo Collaboration",
+    "yayin": "Nature",
+    "cilt": "551",
+    "sayfa": "85-88"
+   },
+   "baslik_benzerligi": 1.0,
+   "yil_farki": 0,
+   "durum": "DOGRULANDI"
+  },
+  {
+   "anahtar": "Moresco2022",
+   "bib_baslik": "Unveiling the Universe with emerging cosmological probes",
+   "bib_yil": "2022",
+   "kimlik": "doi:10.1007/s41114-022-00040-z",
+   "dis": {
+    "kaynak": "Crossref",
+    "baslik": "Unveiling the Universe with emerging cosmological probes",
+    "yil": 2022,
+    "ilk_yazar": "Moresco",
+    "yayin": "Living Reviews in Relativity",
+    "cilt": "25",
+    "sayfa": "6"
+   },
+   "baslik_benzerligi": 1.0,
+   "yil_farki": 0,
+   "durum": "DOGRULANDI"
+  },
+  {
+   "anahtar": "Peebles1993",
+   "bib_baslik": "Principles of Physical Cosmology",
+   "bib_yil": "1993",
+   "kimlik": "isbn:9780691019338",
+   "dis": {
+    "kaynak": "Open Library",
+    "baslik": "Principles of physical cosmology",
+    "yil": 1993,
+    "ilk_yazar": null,
+    "yayin": "Princeton University Press"
+   },
+   "baslik_benzerligi": 1.0,
+   "yil_farki": 0,
+   "durum": "DOGRULANDI"
+  },
+  {
+   "anahtar": "Dodelson2020",
+   "bib_baslik": "Modern Cosmology",
+   "bib_yil": "2020",
+   "kimlik": "isbn:9780128159484",
+   "dis": {
+    "kaynak": "Open Library",
+    "baslik": "Modern Cosmology",
+    "yil": 2020,
+    "ilk_yazar": null,
+    "yayin": "Elsevier Science & Technology"
+   },
+   "baslik_benzerligi": 1.0,
+   "yil_farki": 0,
+   "durum": "DOGRULANDI"
+  },
+  {
+   "anahtar": "MoBoschWhite2010",
+   "bib_baslik": "Galaxy Formation and Evolution",
+   "bib_yil": "2010",
+   "kimlik": "doi:10.1017/CBO9780511807244",
+   "dis": {
+    "kaynak": "Crossref",
+    "baslik": "Galaxy Formation and Evolution",
+    "yil": 2010,
+    "ilk_yazar": "Mo",
+    "yayin": "Cambridge University Press",
+    "cilt": null,
+    "sayfa": null
+   },
+   "baslik_benzerligi": 1.0,
+   "yil_farki": 0,
+   "durum": "DOGRULANDI"
+  },
+  {
+   "anahtar": "CarrollOstlie2017",
+   "bib_baslik": "An Introduction to Modern Astrophysics",
+   "bib_yil": "2017",
+   "kimlik": "doi:10.1017/9781108380980",
+   "dis": {
+    "kaynak": "Crossref",
+    "baslik": "An Introduction to Modern Astrophysics",
+    "yil": 2017,
+    "ilk_yazar": "Carroll",
+    "yayin": "Cambridge University Press",
+    "cilt": null,
+    "sayfa": null
+   },
+   "baslik_benzerligi": 1.0,
+   "yil_farki": 0,
+   "durum": "DOGRULANDI"
+  },
+  {
+   "anahtar": "RybickiLightman1979",
+   "bib_baslik": "Radiative Processes in Astrophysics",
+   "bib_yil": "1985",
+   "kimlik": "doi:10.1002/9783527618170",
+   "dis": {
+    "kaynak": "Crossref",
+    "baslik": "Radiative Processes in Astrophysics",
+    "yil": 1985,
+    "ilk_yazar": "Rybicki",
+    "yayin": "Wiley",
+    "cilt": null,
+    "sayfa": null
+   },
+   "baslik_benzerligi": 1.0,
+   "yil_farki": 0,
+   "durum": "DOGRULANDI"
+  },
+  {
+   "anahtar": "BinneyTremaine2008",
+   "bib_baslik": "Galactic Dynamics",
+   "bib_yil": "2008",
+   "kimlik": "isbn:9780691130279",
+   "dis": {
+    "kaynak": "Open Library",
+    "baslik": "Galactic Dynamics: (Second Edition) (Princeton Series in Astrophysics)",
+    "yil": 2008,
+    "ilk_yazar": null,
+    "yayin": "Princeton University Press"
+   },
+   "baslik_benzerligi": 1.0,
+   "yil_farki": 0,
+   "durum": "DOGRULANDI"
+  },
+  {
+   "anahtar": "Kippenhahn2012",
+   "bib_baslik": "Stellar Structure and Evolution",
+   "bib_yil": "2012",
+   "kimlik": "doi:10.1007/978-3-642-30304-3",
+   "dis": {
+    "kaynak": "Crossref",
+    "baslik": "Stellar Structure and Evolution",
+    "yil": 2012,
+    "ilk_yazar": "Kippenhahn",
+    "yayin": "Astronomy and Astrophysics Library",
+    "cilt": null,
+    "sayfa": null
+   },
+   "baslik_benzerligi": 1.0,
+   "yil_farki": 0,
+   "durum": "DOGRULANDI"
+  },
+  {
+   "anahtar": "Draine2011",
+   "bib_baslik": "Physics of the Interstellar and Intergalactic Medium",
+   "bib_yil": "2011",
+   "kimlik": "isbn:9780691122144",
+   "dis": {
+    "kaynak": "Open Library",
+    "baslik": "Physics of the interstellar and intergalactic medium",
+    "yil": 2011,
+    "ilk_yazar": null,
+    "yayin": "Princeton University Press"
+   },
+   "baslik_benzerligi": 1.0,
+   "yil_farki": 0,
+   "durum": "DOGRULANDI"
+  },
+  {
+   "anahtar": "Paxton2011",
+   "bib_baslik": "Modules for Experiments in Stellar Astrophysics (MESA)",
+   "bib_yil": "2011",
+   "kimlik": "doi:10.1088/0067-0049/192/1/3",
+   "dis": {
+    "kaynak": "Crossref",
+    "baslik": "MODULES FOR EXPERIMENTS IN STELLAR ASTROPHYSICS (MESA)",
+    "yil": 2011,
+    "ilk_yazar": "Paxton",
+    "yayin": "The Astrophysical Journal Supplement Series",
+    "cilt": "192",
+    "sayfa": "3"
+   },
+   "baslik_benzerligi": 1.0,
+   "yil_farki": 0,
+   "durum": "DOGRULANDI"
+  },
+  {
+   "anahtar": "Choi2016",
+   "bib_baslik": "MESA Isochrones and Stellar Tracks (MIST). I. Solar-scaled Models",
+   "bib_yil": "2016",
+   "kimlik": "doi:10.3847/0004-637X/823/2/102",
+   "dis": {
+    "kaynak": "Crossref",
+    "baslik": "MESA ISOCHRONES AND STELLAR TRACKS (MIST). I. SOLAR-SCALED MODELS",
+    "yil": 2016,
+    "ilk_yazar": "Choi",
+    "yayin": "The Astrophysical Journal",
+    "cilt": "823",
+    "sayfa": "102"
+   },
+   "baslik_benzerligi": 1.0,
+   "yil_farki": 0,
+   "durum": "DOGRULANDI"
+  },
+  {
+   "anahtar": "Bressan2012",
+   "bib_baslik": "PARSEC: stellar tracks and isochrones with the PAdova and TRieste Stellar Evolution Code",
+   "bib_yil": "2012",
+   "kimlik": "doi:10.1111/j.1365-2966.2012.21948.x",
+   "dis": {
+    "kaynak": "Crossref",
+    "baslik": "<scp>parsec</scp>\n                    : stellar tracks and isochrones with the PAdova and TRieste Stellar Evolution Code",
+    "yil": 2012,
+    "ilk_yazar": "Bressan",
+    "yayin": "Monthly Notices of the Royal Astronomical Society",
+    "cilt": "427",
+    "sayfa": "127-145"
+   },
+   "baslik_benzerligi": 1.0,
+   "yil_farki": 0,
+   "durum": "DOGRULANDI"
+  },
+  {
+   "anahtar": "Salpeter1955",
+   "bib_baslik": "The Luminosity Function and Stellar Evolution",
+   "bib_yil": "1955",
+   "kimlik": "doi:10.1086/145971",
+   "dis": {
+    "kaynak": "Crossref",
+    "baslik": "The Luminosity Function and Stellar Evolution.",
+    "yil": 1955,
+    "ilk_yazar": "Salpeter",
+    "yayin": "The Astrophysical Journal",
+    "cilt": "121",
+    "sayfa": "161"
+   },
+   "baslik_benzerligi": 1.0,
+   "yil_farki": 0,
+   "durum": "DOGRULANDI"
+  },
+  {
+   "anahtar": "Kroupa2001",
+   "bib_baslik": "On the variation of the initial mass function",
+   "bib_yil": "2001",
+   "kimlik": "doi:10.1046/j.1365-8711.2001.04022.x",
+   "dis": {
+    "kaynak": "Crossref",
+    "baslik": "On the variation of the initial mass function",
+    "yil": 2001,
+    "ilk_yazar": "Kroupa",
+    "yayin": "Monthly Notices of the Royal Astronomical Society",
+    "cilt": "322",
+    "sayfa": "231-246"
+   },
+   "baslik_benzerligi": 1.0,
+   "yil_farki": 0,
+   "durum": "DOGRULANDI"
+  },
+  {
+   "anahtar": "Chabrier2003",
+   "bib_baslik": "Galactic Stellar and Substellar Initial Mass Function",
+   "bib_yil": "2003",
+   "kimlik": "doi:10.1086/376392",
+   "dis": {
+    "kaynak": "Crossref",
+    "baslik": "Galactic Stellar and Substellar Initial Mass Function",
+    "yil": 2003,
+    "ilk_yazar": "Chabrier",
+    "yayin": "Publications of the Astronomical Society of the Pacific",
+    "cilt": "115",
+    "sayfa": "763-795"
+   },
+   "baslik_benzerligi": 1.0,
+   "yil_farki": 0,
+   "durum": "DOGRULANDI"
+  },
+  {
+   "anahtar": "NFW1997",
+   "bib_baslik": "A Universal Density Profile from Hierarchical Clustering",
+   "bib_yil": "1997",
+   "kimlik": "doi:10.1086/304888",
+   "dis": {
+    "kaynak": "Crossref",
+    "baslik": "A Universal Density Profile from Hierarchical Clustering",
+    "yil": 1997,
+    "ilk_yazar": "Navarro",
+    "yayin": "The Astrophysical Journal",
+    "cilt": "490",
+    "sayfa": "493-508"
+   },
+   "baslik_benzerligi": 1.0,
+   "yil_farki": 0,
+   "durum": "DOGRULANDI"
+  },
+  {
+   "anahtar": "Hernquist1990",
+   "bib_baslik": "An analytical model for spherical galaxies and bulges",
+   "bib_yil": "1990",
+   "kimlik": "doi:10.1086/168845",
+   "dis": {
+    "kaynak": "Crossref",
+    "baslik": "An analytical model for spherical galaxies and bulges",
+    "yil": 1990,
+    "ilk_yazar": "Hernquist",
+    "yayin": "The Astrophysical Journal",
+    "cilt": "356",
+    "sayfa": "359"
+   },
+   "baslik_benzerligi": 1.0,
+   "yil_farki": 0,
+   "durum": "DOGRULANDI"
+  },
+  {
+   "anahtar": "Plummer1911",
+   "bib_baslik": "On the Problem of Distribution in Globular Star Clusters",
+   "bib_yil": "1911",
+   "kimlik": "doi:10.1093/mnras/71.5.460",
+   "dis": {
+    "kaynak": "Crossref",
+    "baslik": "On the Problem of Distribution in Globular Star Clusters: (Plate 8.)",
+    "yil": 1911,
+    "ilk_yazar": "Plummer",
+    "yayin": "Monthly Notices of the Royal Astronomical Society",
+    "cilt": "71",
+    "sayfa": "460-470"
+   },
+   "baslik_benzerligi": 1.0,
+   "yil_farki": 0,
+   "durum": "DOGRULANDI"
+  },
+  {
+   "anahtar": "GrahamDriver2005",
+   "bib_baslik": "A Concise Reference to (Projected) Sérsic R^1/n Quantities, Including Concentration, Profile Slopes, Petrosian Indices, and Kron Magnitudes",
+   "bib_yil": "2005",
+   "kimlik": "doi:10.1071/AS05001",
+   "dis": {
+    "kaynak": "Crossref",
+    "baslik": "A Concise Reference to (Projected) Sérsic\n                    <i>R</i>\n                    <sup>\n                      1/\n                      <i>n</i>\n                    </sup>\n                    Quantities, Including Concentration, Profile Slopes, Petrosian Indices, and Kron Magnitudes",
+    "yil": 2005,
+    "ilk_yazar": "Graham",
+    "yayin": "Publications of the Astronomical Society of Australia",
+    "cilt": "22",
+    "sayfa": "118-127"
+   },
+   "baslik_benzerligi": 1.0,
+   "yil_farki": 0,
+   "durum": "DOGRULANDI"
+  },
+  {
+   "anahtar": "Springel2005",
+   "bib_baslik": "The cosmological simulation code GADGET-2",
+   "bib_yil": "2005",
+   "kimlik": "doi:10.1111/j.1365-2966.2005.09655.x",
+   "dis": {
+    "kaynak": "Crossref",
+    "baslik": "The cosmological simulation code gadget-2",
+    "yil": 2005,
+    "ilk_yazar": "Springel",
+    "yayin": "Monthly Notices of the Royal Astronomical Society",
+    "cilt": "364",
+    "sayfa": "1105-1134"
+   },
+   "baslik_benzerligi": 1.0,
+   "yil_farki": 0,
+   "durum": "DOGRULANDI"
+  },
+  {
+   "anahtar": "Abbott2016",
+   "bib_baslik": "Observation of Gravitational Waves from a Binary Black Hole Merger",
+   "bib_yil": "2016",
+   "kimlik": "doi:10.1103/PhysRevLett.116.061102",
+   "dis": {
+    "kaynak": "Crossref",
+    "baslik": "Observation of Gravitational Waves from a Binary Black Hole Merger",
+    "yil": 2016,
+    "ilk_yazar": "Abbott",
+    "yayin": "Physical Review Letters",
+    "cilt": "116",
+    "sayfa": "061102"
+   },
+   "baslik_benzerligi": 1.0,
+   "yil_farki": 0,
+   "durum": "DOGRULANDI"
+  },
+  {
+   "anahtar": "LeavittPickering1912",
+   "bib_baslik": "Periods of 25 Variable Stars in the Small Magellanic Cloud",
+   "bib_yil": "1912",
+   "kimlik": "https://ui.adsabs.harvard.edu/abs/1912HarCi.173....1L",
+   "durum": "ELLE",
+   "aciklama": "DOI, arXiv ya da ISBN yok; elle doğrulanacak"
+  },
+  {
+   "anahtar": "Tripp1998",
+   "bib_baslik": "A two-parameter luminosity correction for Type IA supernovae",
+   "bib_yil": "1998",
+   "kimlik": "https://ui.adsabs.harvard.edu/abs/1998A&A...331..815T",
+   "durum": "ELLE",
+   "aciklama": "DOI, arXiv ya da ISBN yok; elle doğrulanacak"
+  },
+  {
+   "anahtar": "TullyFisher1977",
+   "bib_baslik": "A new method of determining distances to galaxies",
+   "bib_yil": "1977",
+   "kimlik": "https://ui.adsabs.harvard.edu/abs/1977A&A....54..661T",
+   "durum": "ELLE",
+   "aciklama": "DOI, arXiv ya da ISBN yok; elle doğrulanacak"
+  }
+ ],
+ "paketler": [
+  {
+   "paket": "numpy",
+   "durum": "OKUNDU",
+   "surum": "2.5.5",
+   "surum_tarihi": "2026-11-15",
+   "son_yukleme": "2026-11-15",
+   "python": ">=3.12",
+   "ozet": "Fundamental package for array computing in Python"
+  },
+  {
+   "paket": "scipy",
+   "durum": "OKUNDU",
+   "surum": "1.18.1",
+   "surum_tarihi": "2026-08-21",
+   "son_yukleme": "2026-08-21",
+   "python": ">=3.12",
+   "ozet": "Fundamental algorithms for scientific computing in Python"
+  },
+  {
+   "paket": "astropy",
+   "durum": "OKUNDU",
+   "surum": "8.0.3",
+   "surum_tarihi": "2026-11-17",
+   "son_yukleme": "2026-11-17",
+   "python": ">=3.11",
+   "ozet": "Astronomy and astrophysics core library"
+  },
+  {
+   "paket": "pyerfa",
+   "durum": "OKUNDU",
+   "surum": "2.0.1.5",
+   "surum_tarihi": "2024-11-11",
+   "son_yukleme": "2024-11-11",
+   "python": ">=3.9",
+   "ozet": "Python bindings for ERFA"
+  },
+  {
+   "paket": "astroquery",
+   "durum": "OKUNDU",
+   "surum": "0.4.11",
+   "surum_tarihi": "2025-09-20",
+   "son_yukleme": "2026-10-09",
+   "python": ">=3.9",
+   "ozet": "Functions and classes to access online astronomical data resources"
+  },
+  {
+   "paket": "photutils",
+   "durum": "OKUNDU",
+   "surum": "3.1.1",
+   "surum_tarihi": "2026-10-16",
+   "son_yukleme": "2026-10-16",
+   "python": ">=3.12",
+   "ozet": "An Astropy package for source detection and photometry"
+  },
+  {
+   "paket": "ccdproc",
+   "durum": "OKUNDU",
+   "surum": "2.5.1",
+   "surum_tarihi": "2025-07-05",
+   "son_yukleme": "2025-07-05",
+   "python": ">=3.8",
+   "ozet": "Astropy affiliated package"
+  },
+  {
+   "paket": "specutils",
+   "durum": "OKUNDU",
+   "surum": "2.4.0",
+   "surum_tarihi": "2026-06-01",
+   "son_yukleme": "2026-06-01",
+   "python": ">=3.11",
+   "ozet": "Package for spectroscopic astronomical data"
+  },
+  {
+   "paket": "specreduce",
+   "durum": "OKUNDU",
+   "surum": "1.9.0",
+   "surum_tarihi": "2026-05-06",
+   "son_yukleme": "2026-05-06",
+   "python": ">=3.11",
+   "ozet": "Astropy coordinated package for Spectroscopic Reductions"
+  },
+  {
+   "paket": "regions",
+   "durum": "OKUNDU",
+   "surum": "0.13",
+   "surum_tarihi": "2026-10-17",
+   "son_yukleme": "2026-10-17",
+   "python": ">=3.12",
+   "ozet": "An Astropy coordinated package for region handling"
+  },
+  {
+   "paket": "reproject",
+   "durum": "OKUNDU",
+   "surum": "0.21.0",
+   "surum_tarihi": "2026-06-25",
+   "son_yukleme": "2026-06-25",
+   "python": ">=3.11",
+   "ozet": "Reproject astronomical images"
+  },
+  {
+   "paket": "astroplan",
+   "durum": "OKUNDU",
+   "surum": "0.10.1",
+   "surum_tarihi": "2024-08-13",
+   "son_yukleme": "2024-08-13",
+   "python": ">=3.7",
+   "ozet": "Observation planning package for astronomers"
+  },
+  {
+   "paket": "synphot",
+   "durum": "OKUNDU",
+   "surum": "1.9.0",
+   "surum_tarihi": "2026-11-17",
+   "son_yukleme": "2026-11-17",
+   "python": ">=3.11",
+   "ozet": "Synthetic photometry"
+  },
+  {
+   "paket": "pyvo",
+   "durum": "OKUNDU",
+   "surum": "1.10.0",
+   "surum_tarihi": "2026-11-04",
+   "son_yukleme": "2026-11-04",
+   "python": ">=3.10",
+   "ozet": "Astropy affiliated package for accessing Virtual Observatory data and services"
+  },
+  {
+   "paket": "astroscrappy",
+   "durum": "OKUNDU",
+   "surum": "1.3.0",
+   "surum_tarihi": "2025-10-31",
+   "son_yukleme": "2025-10-31",
+   "python": ">=3.10",
+   "ozet": "Speedy Cosmic Ray Annihilation Package in Python"
+  },
+  {
+   "paket": "sep",
+   "durum": "OKUNDU",
+   "surum": "1.4.1",
+   "surum_tarihi": "2025-02-18",
+   "son_yukleme": "2025-02-18",
+   "python": ">=3.9",
+   "ozet": "Astronomical source extraction and photometry library"
+  },
+  {
+   "paket": "lightkurve",
+   "durum": "OKUNDU",
+   "surum": "2.6.0",
+   "surum_tarihi": "2026-04-16",
+   "son_yukleme": "2026-04-16",
+   "python": "<4.0,>=3.9",
+   "ozet": "A friendly package for Kepler & TESS time series analysis in Python."
+  },
+  {
+   "paket": "astrocut",
+   "durum": "OKUNDU",
+   "surum": "1.5.1",
+   "surum_tarihi": "2026-11-13",
+   "son_yukleme": "2026-11-13",
+   "python": ">=3.11",
+   "ozet": "Cutout tools for astronomical images"
+  },
+  {
+   "paket": "skyfield",
+   "durum": "OKUNDU",
+   "surum": "1.55",
+   "surum_tarihi": "2026-08-07",
+   "son_yukleme": "2026-08-07",
+   "python": null,
+   "ozet": "Elegant astronomy for Python"
+  },
+  {
+   "paket": "jplephem",
+   "durum": "OKUNDU",
+   "surum": "2.24",
+   "surum_tarihi": "2026-01-23",
+   "son_yukleme": "2026-01-23",
+   "python": null,
+   "ozet": "Use a JPL ephemeris to predict planet positions."
+  },
+  {
+   "paket": "spiceypy",
+   "durum": "OKUNDU",
+   "surum": "8.4.0",
+   "surum_tarihi": "2026-11-11",
+   "son_yukleme": "2026-11-11",
+   "python": ">=3.10",
+   "ozet": "A Python Wrapper for the NAIF CSPICE Toolkit"
+  },
+  {
+   "paket": "sgp4",
+   "durum": "OKUNDU",
+   "surum": "2.27",
+   "surum_tarihi": "2026-07-03",
+   "son_yukleme": "2026-07-12",
+   "python": "!=3.0.*,!=3.1.*,!=3.2.*,!=3.3.*,!=3.4.*,!=3.5.*,!=3.6.*,!=3.7.*,!=3.8.*,!=3.9.*,>=2.7",
+   "ozet": "The C++ SGP4 routine that, given an Earth satellite TLE, computes its position."
+  },
+  {
+   "paket": "ephem",
+   "durum": "OKUNDU",
+   "surum": "4.2.1",
+   "surum_tarihi": "2026-02-28",
+   "son_yukleme": "2026-02-28",
+   "python": null,
+   "ozet": "Compute positions of the planets and stars"
+  },
+  {
+   "paket": "rebound",
+   "durum": "OKUNDU",
+   "surum": "5.2.3",
+   "surum_tarihi": "2026-11-18",
+   "son_yukleme": "2026-11-18",
+   "python": ">=3.9",
+   "ozet": "An open-source multi-purpose N-body code"
+  },
+  {
+   "paket": "reboundx",
+   "durum": "OKUNDU",
+   "surum": "5.1.0",
+   "surum_tarihi": "2026-08-20",
+   "son_yukleme": "2026-08-20",
+   "python": null,
+   "ozet": "A library for including additional forces in REBOUND"
+  },
+  {
+   "paket": "hapsira",
+   "durum": "OKUNDU",
+   "surum": "0.18.0",
+   "surum_tarihi": "2023-12-24",
+   "son_yukleme": "2023-12-24",
+   "python": ">=3.8",
+   "ozet": "Utilities and Python wrappers for Orbital Mechanics."
+  },
+  {
+   "paket": "poliastro",
+   "durum": "OKUNDU",
+   "surum": "0.17.0",
+   "surum_tarihi": "2022-07-10",
+   "son_yukleme": "2022-07-10",
+   "python": ">=3.8,<3.11",
+   "ozet": "Utilities and Python wrappers for Orbital Mechanics"
+  },
+  {
+   "paket": "galpy",
+   "durum": "OKUNDU",
+   "surum": "1.12.1",
+   "surum_tarihi": "2026-11-02",
+   "son_yukleme": "2026-11-06",
+   "python": ">=3.10",
+   "ozet": "Galactic Dynamics in python"
+  },
+  {
+   "paket": "gala",
+   "durum": "OKUNDU",
+   "surum": "1.12.0",
+   "surum_tarihi": "2026-09-27",
+   "son_yukleme": "2026-09-27",
+   "python": ">=3.12",
+   "ozet": "Galactic dynamics in Python"
+  },
+  {
+   "paket": "astroalign",
+   "durum": "OKUNDU",
+   "surum": "2.6.2",
+   "surum_tarihi": "2025-09-24",
+   "son_yukleme": "2025-09-24",
+   "python": ">=3.10",
+   "ozet": "Astrometric Alignment of Images"
+  },
+  {
+   "paket": "twirl",
+   "durum": "OKUNDU",
+   "surum": "0.6.0",
+   "surum_tarihi": "2026-10-26",
+   "son_yukleme": "2026-10-26",
+   "python": ">=3.10",
+   "ozet": "Astrometric plate solving in Python"
+  },
+  {
+   "paket": "pypeit",
+   "durum": "OKUNDU",
+   "surum": "3.0.0",
+   "surum_tarihi": "2026-11-09",
+   "son_yukleme": "2026-11-09",
+   "python": "<3.15,>=3.11",
+   "ozet": "PypeIt Spectroscopic Reduction"
+  },
+  {
+   "paket": "transitleastsquares",
+   "durum": "OKUNDU",
+   "surum": "2.3.0",
+   "surum_tarihi": "2026-11-12",
+   "son_yukleme": "2026-11-12",
+   "python": ">=3.9",
+   "ozet": "An optimized transit-fitting algorithm to search for periodic transits of small planets"
+  },
+  {
+   "paket": "wotan",
+   "durum": "OKUNDU",
+   "surum": "2.1.1",
+   "surum_tarihi": "2026-11-18",
+   "son_yukleme": "2026-11-18",
+   "python": null,
+   "ozet": "Detrending algorithms"
+  },
+  {
+   "paket": "stingray",
+   "durum": "OKUNDU",
+   "surum": "2.3.2",
+   "surum_tarihi": "2026-03-13",
+   "son_yukleme": "2026-03-13",
+   "python": ">=3.8",
+   "ozet": "Time Series Methods For Astronomical X-ray Data"
+  },
+  {
+   "paket": "fitsio",
+   "durum": "OKUNDU",
+   "surum": "1.4.2",
+   "surum_tarihi": "2026-07-16",
+   "son_yukleme": "2026-07-16",
+   "python": ">=3.10",
+   "ozet": "A full featured python library to read from and write to FITS files."
+  },
+  {
+   "paket": "stdpipe",
+   "durum": "OKUNDU",
+   "surum": "0.5.0",
+   "surum_tarihi": "2026-10-31",
+   "son_yukleme": "2026-10-31",
+   "python": ">=3.8",
+   "ozet": "Simple Transient Detection Pipeline"
+  },
+  {
+   "paket": "camb",
+   "durum": "OKUNDU",
+   "surum": "2.0.5",
+   "surum_tarihi": "2026-10-14",
+   "son_yukleme": "2026-10-14",
+   "python": ">=3.10.0",
+   "ozet": "Code for Anisotropies in the Microwave Background"
+  },
+  {
+   "paket": "classy",
+   "durum": "OKUNDU",
+   "surum": "3.4.3.0",
+   "surum_tarihi": "2026-11-17",
+   "son_yukleme": "2026-11-17",
+   "python": null,
+   "ozet": "Python interface to the Cosmological Boltzmann code CLASS"
+  },
+  {
+   "paket": "cobaya",
+   "durum": "OKUNDU",
+   "surum": "3.6.2",
+   "surum_tarihi": "2026-03-27",
+   "son_yukleme": "2026-03-27",
+   "python": ">=3.10.0",
+   "ozet": "Code for Bayesian Analysis"
+  },
+  {
+   "paket": "getdist",
+   "durum": "OKUNDU",
+   "surum": "1.7.7",
+   "surum_tarihi": "2026-05-08",
+   "son_yukleme": "2026-05-08",
+   "python": ">=3.10.0",
+   "ozet": "GetDist Monte Carlo sample analysis, plotting and GUI"
+  },
+  {
+   "paket": "sncosmo",
+   "durum": "OKUNDU",
+   "surum": "2.13.2",
+   "surum_tarihi": "2026-11-23",
+   "son_yukleme": "2026-11-23",
+   "python": ">=3.11",
+   "ozet": "Package for supernova cosmology based on astropy"
+  },
+  {
+   "paket": "pyccl",
+   "durum": "OKUNDU",
+   "surum": "3.3.6",
+   "surum_tarihi": "2026-07-28",
+   "son_yukleme": "2026-07-28",
+   "python": ">=3.10",
+   "ozet": "Library of validated cosmological functions."
+  },
+  {
+   "paket": "colossus",
+   "durum": "OKUNDU",
+   "surum": "1.4.0",
+   "surum_tarihi": "2026-06-05",
+   "son_yukleme": "2026-06-05",
+   "python": null,
+   "ozet": "Cosmology, halo, and large-scale structure tools"
+  },
+  {
+   "paket": "healpy",
+   "durum": "OKUNDU",
+   "surum": "1.20.1",
+   "surum_tarihi": "2026-10-03",
+   "son_yukleme": "2026-10-03",
+   "python": ">=3.10",
+   "ozet": "Healpix tools package for Python"
+  },
+  {
+   "paket": "emcee",
+   "durum": "OKUNDU",
+   "surum": "3.1.6",
+   "surum_tarihi": "2024-04-19",
+   "son_yukleme": "2024-04-19",
+   "python": null,
+   "ozet": "The Python ensemble sampling toolkit for MCMC"
+  },
+  {
+   "paket": "dynesty",
+   "durum": "OKUNDU",
+   "surum": "3.2.0",
+   "surum_tarihi": "2026-11-10",
+   "son_yukleme": "2026-11-10",
+   "python": ">=3.8",
+   "ozet": "A dynamic nested sampling package for computing Bayesian posteriors and evidences."
+  },
+  {
+   "paket": "nautilus-sampler",
+   "durum": "OKUNDU",
+   "surum": "1.0.6",
+   "surum_tarihi": "2025-12-29",
+   "son_yukleme": "2025-12-29",
+   "python": ">=3.9",
+   "ozet": "Neural Network-Boosted Importance Sampling for Bayesian Statistics."
+  },
+  {
+   "paket": "ultranest",
+   "durum": "OKUNDU",
+   "surum": "4.6.3",
+   "surum_tarihi": "2026-10-13",
+   "son_yukleme": "2026-10-13",
+   "python": "!=3.0.*,!=3.1.*,!=3.2.*,!=3.3.*,!=3.4.*,>=2.7",
+   "ozet": "Fit and compare complex models reliably and rapidly. Advanced Nested Sampling."
+  },
+  {
+   "paket": "pymc",
+   "durum": "OKUNDU",
+   "surum": "6.4.0",
+   "surum_tarihi": "2026-11-01",
+   "son_yukleme": "2026-11-01",
+   "python": "<3.15,>=3.12",
+   "ozet": "Probabilistic Programming in Python: Bayesian Modeling and Probabilistic Machine Learning with PyTensor"
+  },
+  {
+   "paket": "numpyro",
+   "durum": "OKUNDU",
+   "surum": "0.22.0",
+   "surum_tarihi": "2026-09-18",
+   "son_yukleme": "2026-09-18",
+   "python": ">=3.11",
+   "ozet": "Probabilistic programming with NumPy powered by JAX for autograd and JIT compilation to GPU/TPU/CPU."
+  },
+  {
+   "paket": "blackjax",
+   "durum": "OKUNDU",
+   "surum": "1.7.1",
+   "surum_tarihi": "2026-10-02",
+   "son_yukleme": "2026-10-02",
+   "python": ">=3.11",
+   "ozet": "Flexible and fast sampling in Python"
+  },
+  {
+   "paket": "cmdstanpy",
+   "durum": "OKUNDU",
+   "surum": "1.3.2",
+   "surum_tarihi": "2026-11-03",
+   "son_yukleme": "2026-11-17",
+   "python": ">=3.9",
+   "ozet": "Python interface to CmdStan"
+  },
+  {
+   "paket": "zeus-mcmc",
+   "durum": "OKUNDU",
+   "surum": "2.5.4",
+   "surum_tarihi": "2023-01-12",
+   "son_yukleme": "2023-01-12",
+   "python": ">=3.7",
+   "ozet": "zeus: Lightning Fast MCMC"
+  },
+  {
+   "paket": "corner",
+   "durum": "OKUNDU",
+   "surum": "2.3.0",
+   "surum_tarihi": "2026-07-05",
+   "son_yukleme": "2026-07-05",
+   "python": ">=3.9",
+   "ozet": "Make some beautiful corner plots"
+  },
+  {
+   "paket": "arviz",
+   "durum": "OKUNDU",
+   "surum": "1.3.0",
+   "surum_tarihi": "2026-08-11",
+   "son_yukleme": "2026-08-11",
+   "python": ">=3.12",
+   "ozet": "Expose features from _ArviZverse_ refactored packages together in the ``arviz`` namespace."
+  },
+  {
+   "paket": "astroML",
+   "durum": "OKUNDU",
+   "surum": "1.0.2.post1",
+   "surum_tarihi": "2022-03-01",
+   "son_yukleme": "2022-03-01",
+   "python": "",
+   "ozet": "Tools for machine learning and data mining in Astronomy"
+  },
+  {
+   "paket": "scikit-learn",
+   "durum": "OKUNDU",
+   "surum": "1.9.1",
+   "surum_tarihi": "2026-09-10",
+   "son_yukleme": "2026-09-10",
+   "python": ">=3.11",
+   "ozet": "A set of python modules for machine learning and data mining"
+  },
+  {
+   "paket": "iminuit",
+   "durum": "OKUNDU",
+   "surum": "2.33.0",
+   "surum_tarihi": "2026-09-17",
+   "son_yukleme": "2026-09-17",
+   "python": ">=3.9",
+   "ozet": "Jupyter-friendly Python frontend for MINUIT2 in C++"
+  },
+  {
+   "paket": "lmfit",
+   "durum": "OKUNDU",
+   "surum": "1.3.4",
+   "surum_tarihi": "2025-07-19",
+   "son_yukleme": "2025-07-19",
+   "python": ">=3.9",
+   "ozet": "Least-Squares Minimization with Bounds and Constraints"
+  },
+  {
+   "paket": "george",
+   "durum": "OKUNDU",
+   "surum": "0.4.4",
+   "surum_tarihi": "2025-04-12",
+   "son_yukleme": "2025-04-12",
+   "python": ">=3.9",
+   "ozet": "Blazingly fast Gaussian Processes for regression."
+  },
+  {
+   "paket": "celerite2",
+   "durum": "OKUNDU",
+   "surum": "0.3.3",
+   "surum_tarihi": "2026-07-12",
+   "son_yukleme": "2026-07-12",
+   "python": ">=3.11",
+   "ozet": "Fast and scalable Gaussian Processes in 1D"
+  },
+  {
+   "paket": "tinygp",
+   "durum": "OKUNDU",
+   "surum": "0.3.1",
+   "surum_tarihi": "2026-03-15",
+   "son_yukleme": "2026-03-15",
+   "python": ">=3.11",
+   "ozet": "The tiniest of Gaussian Process libraries"
+  },
+  {
+   "paket": "jax",
+   "durum": "OKUNDU",
+   "surum": "0.12.1",
+   "surum_tarihi": "2026-11-18",
+   "son_yukleme": "2026-11-18",
+   "python": ">=3.12",
+   "ozet": "Differentiate, compile, and transform Numpy code."
+  },
+  {
+   "paket": "uncertainties",
+   "durum": "OKUNDU",
+   "surum": "3.2.3",
+   "surum_tarihi": "2025-04-21",
+   "son_yukleme": "2026-01-09",
+   "python": ">=3.8",
+   "ozet": "calculations with values with uncertainties, error propagation"
+  },
+  {
+   "paket": "sbi",
+   "durum": "OKUNDU",
+   "surum": "0.27.0",
+   "surum_tarihi": "2026-08-04",
+   "son_yukleme": "2026-08-04",
+   "python": ">=3.10",
+   "ozet": "Simulation-based inference."
+  },
+  {
+   "paket": "batman-package",
+   "durum": "OKUNDU",
+   "surum": "2.5.3",
+   "surum_tarihi": "2025-05-05",
+   "son_yukleme": "2025-05-05",
+   "python": null,
+   "ozet": "Fast transit light curve modeling"
+  },
+  {
+   "paket": "exoplanet",
+   "durum": "OKUNDU",
+   "surum": "0.6.0",
+   "surum_tarihi": "2024-04-16",
+   "son_yukleme": "2024-04-16",
+   "python": ">=3.6",
+   "ozet": "Fast and scalable MCMC for all your exoplanet needs"
+  },
+  {
+   "paket": "radvel",
+   "durum": "OKUNDU",
+   "surum": "1.6.7",
+   "surum_tarihi": "2026-10-18",
+   "son_yukleme": "2026-10-18",
+   "python": ">=3.9",
+   "ozet": "General Toolkit for Modeling Radial Velocities"
+  },
+  {
+   "paket": "starry",
+   "durum": "OKUNDU",
+   "surum": "1.2.0",
+   "surum_tarihi": "2021-10-13",
+   "son_yukleme": "2021-10-13",
+   "python": "",
+   "ozet": "Analytic occultation light curves for astronomy."
+  },
+  {
+   "paket": "dustmaps",
+   "durum": "OKUNDU",
+   "surum": "1.0.14",
+   "surum_tarihi": "2025-03-04",
+   "son_yukleme": "2025-03-04",
+   "python": null,
+   "ozet": "Uniform interface for multiple dust reddening maps."
+  },
+  {
+   "paket": "dust-extinction",
+   "durum": "OKUNDU",
+   "surum": "1.7",
+   "surum_tarihi": "2026-02-06",
+   "son_yukleme": "2026-02-06",
+   "python": ">=3.10",
+   "ozet": "Interstellar Dust Extinction Models"
+  },
+  {
+   "paket": "extinction",
+   "durum": "OKUNDU",
+   "surum": "0.4.10",
+   "surum_tarihi": "2026-10-28",
+   "son_yukleme": "2026-10-28",
+   "python": ">=3.10",
+   "ozet": "Fast interstellar dust extinction laws"
+  },
+  {
+   "paket": "speclite",
+   "durum": "OKUNDU",
+   "surum": "1.0.0",
+   "surum_tarihi": "2026-03-16",
+   "son_yukleme": "2026-03-16",
+   "python": ">=3.10",
+   "ozet": "Lightweight utilities for working with spectroscopic data."
+  },
+  {
+   "paket": "fsps",
+   "durum": "OKUNDU",
+   "surum": "0.5.0",
+   "surum_tarihi": "2026-08-03",
+   "son_yukleme": "2026-08-03",
+   "python": ">=3.9",
+   "ozet": "Python bindings for Charlie Conroy's FSPS"
+  },
+  {
+   "paket": "astro-prospector",
+   "durum": "OKUNDU",
+   "surum": "1.4.1",
+   "surum_tarihi": "2026-01-29",
+   "son_yukleme": "2026-01-29",
+   "python": ">=3.9",
+   "ozet": "Stellar Population Inference from Spectra and SEDs"
+  },
+  {
+   "paket": "bagpipes",
+   "durum": "OKUNDU",
+   "surum": "1.4.1",
+   "surum_tarihi": "2026-11-19",
+   "son_yukleme": "2026-11-19",
+   "python": null,
+   "ozet": "Galaxy spectral fitting"
+  },
+  {
+   "paket": "ppxf",
+   "durum": "OKUNDU",
+   "surum": "9.5.3",
+   "surum_tarihi": "2026-11-24",
+   "son_yukleme": "2026-11-24",
+   "python": null,
+   "ozet": "pPXF: Full Spectrum and SED Fitting of Galactic and Stellar Spectra"
+  },
+  {
+   "paket": "yt",
+   "durum": "OKUNDU",
+   "surum": "4.4.4",
+   "surum_tarihi": "2026-11-04",
+   "son_yukleme": "2026-11-04",
+   "python": ">=3.10.4",
+   "ozet": "An analysis and visualization toolkit for volumetric data"
+  },
+  {
+   "paket": "pynbody",
+   "durum": "OKUNDU",
+   "surum": "2.8.0",
+   "surum_tarihi": "2026-10-08",
+   "son_yukleme": "2026-10-08",
+   "python": ">=3.11",
+   "ozet": "Astronomical N-body/SPH analysis for python"
+  },
+  {
+   "paket": "gammapy",
+   "durum": "OKUNDU",
+   "surum": "2.1",
+   "surum_tarihi": "2026-04-02",
+   "son_yukleme": "2026-11-19",
+   "python": ">=3.11",
+   "ozet": "A Python package for gamma-ray astronomy"
+  },
+  {
+   "paket": "sherpa",
+   "durum": "OKUNDU",
+   "surum": "4.19.0",
+   "surum_tarihi": "2026-10-14",
+   "son_yukleme": "2026-10-14",
+   "python": ">=3.11",
+   "ozet": "Modeling and fitting package for scientific data analysis"
+  },
+  {
+   "paket": "naima",
+   "durum": "OKUNDU",
+   "surum": "0.11.0",
+   "surum_tarihi": "2026-11-19",
+   "son_yukleme": "2026-11-19",
+   "python": ">=3.11",
+   "ozet": "Derivation of non-thermal particle distributions through MCMC spectral fitting"
+  },
+  {
+   "paket": "gwpy",
+   "durum": "OKUNDU",
+   "surum": "4.1.0",
+   "surum_tarihi": "2026-10-13",
+   "son_yukleme": "2026-10-13",
+   "python": ">=3.11",
+   "ozet": "A python package for gravitational-wave astrophysics"
+  },
+  {
+   "paket": "pycbc",
+   "durum": "OKUNDU",
+   "surum": "2.11.0",
+   "surum_tarihi": "2026-04-15",
+   "son_yukleme": "2026-11-10",
+   "python": ">=3.11",
+   "ozet": "Core library to analyze gravitational-wave data, find signals, and study their parameters."
+  },
+  {
+   "paket": "bilby",
+   "durum": "OKUNDU",
+   "surum": "2.8.2",
+   "surum_tarihi": "2026-08-10",
+   "son_yukleme": "2026-11-04",
+   "python": ">=3.10",
+   "ozet": "A user-friendly Bayesian inference library"
+  },
+  {
+   "paket": "pint-pulsar",
+   "durum": "OKUNDU",
+   "surum": "1.1.8",
+   "surum_tarihi": "2026-10-08",
+   "son_yukleme": "2026-10-08",
+   "python": ">=3.9",
+   "ozet": "A Pulsar Timing Package, written in Python from scratch"
+  },
+  {
+   "paket": "sunpy",
+   "durum": "OKUNDU",
+   "surum": "8.0.1",
+   "surum_tarihi": "2026-10-08",
+   "son_yukleme": "2026-10-08",
+   "python": ">=3.12",
+   "ozet": "SunPy core package: Python for Solar Physics"
+  },
+  {
+   "paket": "plasmapy",
+   "durum": "OKUNDU",
+   "surum": "2026.2.0",
+   "surum_tarihi": "2026-02-21",
+   "son_yukleme": "2026-02-21",
+   "python": ">=3.12",
+   "ozet": "Python package for plasma science"
+  },
+  {
+   "paket": "einsteinpy",
+   "durum": "OKUNDU",
+   "surum": "0.5.0",
+   "surum_tarihi": "2026-10-21",
+   "son_yukleme": "2026-10-21",
+   "python": ">=3.10",
+   "ozet": "Python package for General Relativity"
+  },
+  {
+   "paket": "tardis-sn",
+   "durum": "OKUNDU",
+   "surum": "1.0.1",
+   "surum_tarihi": "2015-03-03",
+   "son_yukleme": "2015-03-03",
+   "python": null,
+   "ozet": "TARDIS - Temperature And Radiative Diffusion In Supernovae"
+  },
+  {
+   "paket": "pyneb",
+   "durum": "OKUNDU",
+   "surum": "1.1.32",
+   "surum_tarihi": "2026-07-27",
+   "son_yukleme": "2026-07-27",
+   "python": ">=3.8",
+   "ozet": "A Python package for nebular analysis"
+  },
+  {
+   "paket": "radis",
+   "durum": "OKUNDU",
+   "surum": "0.17.1",
+   "surum_tarihi": "2026-08-12",
+   "son_yukleme": "2026-08-12",
+   "python": ">=3.10",
+   "ozet": "A fast line-by-line code for high-resolution infrared molecular spectra"
+  },
+  {
+   "paket": "mocpy",
+   "durum": "OKUNDU",
+   "surum": "0.21.0",
+   "surum_tarihi": "2026-10-27",
+   "son_yukleme": "2026-10-27",
+   "python": ">=3.10",
+   "ozet": "MOCPy allows to create and manipulate MOCs (Multi-Order Coverage maps)"
+  },
+  {
+   "paket": "astropy-healpix",
+   "durum": "OKUNDU",
+   "surum": "2.0.1",
+   "surum_tarihi": "2026-07-20",
+   "son_yukleme": "2026-07-20",
+   "python": ">=3.10",
+   "ozet": "BSD-licensed HEALPix for Astropy"
+  },
+  {
+   "paket": "lsdb",
+   "durum": "OKUNDU",
+   "surum": "0.11.2",
+   "surum_tarihi": "2026-11-13",
+   "son_yukleme": "2026-11-13",
+   "python": ">=3.11",
+   "ozet": "Spatial analysis for extremely large astronomical catalogs using dask"
+  },
+  {
+   "paket": "pytest",
+   "durum": "OKUNDU",
+   "surum": "9.2.0",
+   "surum_tarihi": "2026-10-27",
+   "son_yukleme": "2026-10-27",
+   "python": ">=3.10",
+   "ozet": "pytest: simple powerful testing with Python"
+  },
+  {
+   "paket": "hypothesis",
+   "durum": "OKUNDU",
+   "surum": "6.170.17",
+   "surum_tarihi": "2026-11-20",
+   "son_yukleme": "2026-11-20",
+   "python": ">=3.11",
+   "ozet": "The property-based testing library for Python"
+  },
+  {
+   "paket": "ruff",
+   "durum": "OKUNDU",
+   "surum": "0.17.6",
+   "surum_tarihi": "2026-11-19",
+   "son_yukleme": "2026-11-19",
+   "python": ">=3.7",
+   "ozet": "An extremely fast Python linter and code formatter, written in Rust."
+  },
+  {
+   "paket": "mypy",
+   "durum": "OKUNDU",
+   "surum": "2.4.1",
+   "surum_tarihi": "2026-10-28",
+   "son_yukleme": "2026-10-28",
+   "python": ">=3.10",
+   "ozet": "Optional static typing for Python"
+  }
+ ],
+ "atiflar": {
+  "tanimsiz": {},
+  "kullanilmayan": [
+   "FeigelsonBabu2012",
+   "Freedman2001",
+   "Peebles1993",
+   "Perlmutter1999",
+   "Prusti2016",
+   "Riess1998",
+   "Springel2005",
+   "WallJenkins2012"
+  ],
+  "kullanilan_sayisi": 159
+ }
+}

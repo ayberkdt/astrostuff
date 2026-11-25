@@ -1,0 +1,37 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "kozmos"
+version = "0.1.0"
+description = "Her fonksiyonu kaynağına bağlı gökbilim ve astrofizik hesap kitaplığı"
+readme = "README.md"
+requires-python = ">=3.12"
+license = { file = "LICENSE" }
+authors = [{ name = "Ayberk" }]
+dependencies = ["numpy>=2.0", "scipy>=1.13"]
+
+[project.optional-dependencies]
+dogrulama = ["astropy>=7", "pyerfa>=2.0.1"]
+gelistirme = ["pytest>=8", "hypothesis>=6", "ruff", "mypy"]
+gorsel = ["matplotlib>=3.9"]
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-q"
+markers = [
+    "kahin: bağımsız bir kütüphaneye (astropy, erfa) karşı karşılaştırma",
+    "ag: ağ erişimi gerektirir",
+    "yavas: uzun süren test",
+]
+
+[tool.ruff]
+line-length = 120
+target-version = "py312"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "B", "UP", "NPY"]
