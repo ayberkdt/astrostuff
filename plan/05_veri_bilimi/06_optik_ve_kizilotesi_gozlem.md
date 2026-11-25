@@ -48,7 +48,7 @@ Uygulananlar:
 
 Yapılacaklar:
 
-- **Gökyüzü çıkarma.** Yakın kızılötesinde gökyüzü parlak ve dakikalar içinde değişkendir. Kaydırmalı (dither) karelerden hareketli ortanca gökyüzü karesi kurulur ve her kareden çıkarılır.
+- **Gökyüzü çıkarma (yazıldı).** `indirgeme/gokyuzu.py` kaydırmalı karelerden durağan ve dinamik gökyüzü modeli kurar [Schirmer2013]. Sentetik dizide ölçülenler: kalabalık alanda nesne maskesi olmadan açıklık akısı %6,8 eksik çıkar, maskeyle %0,6; yığındaki en yüksek değeri atmak boş gökyüzünde artığı gürültünün onda biri kadar artıya kaydırır. Gerçek ham karelerle sınanmadı.
 - **Isıl arka plan.** 3 µm'nin ötesinde teleskop ve atmosferin kendi ışıması baskındır; kısa poz, hızlı okuma ve nodlama gerekir. Arka plan foton gürültüsü `gozlem.dedektor.sinyal_gurultu_orani` ile hesaplanabilir, bant başına gökyüzü parlaklıkları eklenmelidir.
 - **Dedektör.** Kızılötesi diziler doğrusallıktan sapar ve yıkımsız okuma (rampa örnekleme) kullanır; doğrusallık düzeltmesi ve rampa uydurma ayrı fonksiyonlardır.
 - **Sönümleme.** Yakın kızılötesi renk artığından (`H − K`) görsel sönümlemenin kestirimi; sönümleme yasası gerekir [CCM1989; Fitzpatrick1999].
@@ -57,11 +57,17 @@ Yapılacaklar:
 
 ## Optik tarafta yapılacaklar
 
-- Kozmik ışın temizliği [vanDokkum2001], ayrıştırma (örtüşen kaynaklar), PSF fotometrisi [Stetson1987].
-- Astrometrik çözüm: saptanan kaynakların Gaia ile eşlenmesi ve WCS uyumu; FITS başlığındaki WCS'in okunması [GreisenCalabretta2002; CalabrettaGreisen2002].
-- Fotometrik kalibrasyon: alan yıldızlarının Gaia ya da 2MASS kadirleriyle sıfır noktası.
+- PSF fotometrisi [Stetson1987].
+- Astrometrik çözüm: saptanan kaynakların katalogla eşlenmesinden WCS uydurma. Başlıktaki WCS'in okunması ve katalog eşleme yazıldı [CalabrettaGreisen2002]; uyum adımı yok.
+- Fotometrik kalibrasyon hattı. Sıfır noktası örnek betikte 2MASS kadirleriyle ölçüldü (40 yıldızda 0,021 kadir saçılım); kitaplık fonksiyonu değil.
 - Gözlem planlamasına presesyon, nutasyon, kırılma, Güneş ve Ay konumu, alacakaranlık sınırları.
-- FITS uzantıları ve tabloları.
+- FITS tabloları ve sıkıştırılmış görüntüler. Görüntü uzantıları yazıldı.
+
+## Optik tarafta yazılanlar
+
+- Kozmik ışın temizliği: `indirgeme/kozmik_isin.py`, Laplace kenar saptama [vanDokkum2001]. Sentetik karede tamlık %95'in üstünde, yanlış işaretleme binde ikinin altında (tests/birim/test_kozmik_isin.py).
+- Kaynak ayrıştırma: çok eşikli ağaç ve eyer ölçütü, havzalar öncelik kuyruklu taşkınla [Photutils2026]. `scipy.ndimage.watershed_ift` eğim görüntüsü beklediği için parlaklık görüntüsünde eyeri aşıyor (164'e 4 piksellik bölünme gözlendi) ve kullanılmadı.
+- Gerçek görüntüde ölçüm: 2MASS K kesitinde K = 7-11 aralığındaki 61 katalog yıldızının 59'u bulundu; ayrıştırma, parlak yapay yıldızların geri bulunma oranını %84'ten %96'ya çıkardı (belgeler/gercek_goruntu_dogrulamasi.json).
 
 ## Bekleyen kaynak kayıtları
 

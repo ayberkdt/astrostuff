@@ -2,11 +2,11 @@
 
 Bu dosya `python kaynakca/kutuk_raporu.py` ile kaynak kütüğünden üretilir; elle düzenlenmez.
 
-- Kaynağa bağlı açık fonksiyon: 209
-- Bütün kayıtları kaynak metninden okunmuş fonksiyon: 202
-- Kaynak kaydı: 247 (okundu: 239, bekliyor: 8)
+- Kaynağa bağlı açık fonksiyon: 218
+- Bütün kayıtları kaynak metninden okunmuş fonksiyon: 210
+- Kaynak kaydı: 257 (okundu: 248, bekliyor: 9)
 - Kaynaklı sabit: 35 (teyit bekleyen: 0)
-- Test fonksiyonu: 265 (parametreli ve özellik testleri tek sayılır)
+- Test fonksiyonu: 282 (parametreli ve özellik testleri tek sayılır)
 - Kaynak kuralından muaf altyapı fonksiyonu: 4
 
 `okundu`: denklem kod yazılırken kaynağın metninden okundu. `bekliyor`: denklem hatırlanan biçimiyle
@@ -24,6 +24,10 @@ yazıldı, testlerle sınandı, ama kaynağın metni henüz açılmadı.
 - `boru_metni_oku`: [TAP2019] Bölüm 2.7.3 (FORMAT) (okundu)
 - `parlak_yildizlar`: [HoffleitWarren1991] HEASARC bsc5p tablo sayfası: Overview, References, Provenance (okundu)
 
+### `kozmos.arsiv.ikimass`
+
+- `nokta_kaynaklari`: [TAP2019] Bölüm 2.7.3 (FORMAT) ve ADQL geometri işlevleri (CONTAINS, POINT, CIRCLE) (bekliyor); [IRSA2026] TAP_SCHEMA.columns, table_name = 'fp_psc' (okundu)
+
 ### `kozmos.arsiv.pantheon`
 
 - `indir`: [Scolnic2022] veri deposu, 4_DISTANCES_AND_COVAR (okundu)
@@ -40,6 +44,16 @@ yazıldı, testlerle sınandı, ama kaynağın metni henüz açılmadı.
 - `csv_oku`: [TAP2019] Bölüm 2.7.3 (FORMAT): text/csv çıktısı (okundu)
 - `sorgula`: [TAP2019] Bölüm 2.1 (TAP-sync), 2.7.1 (LANG), 2.7.2 (QUERY), 2.7.3 (FORMAT) (okundu)
 
+### `kozmos.astrometri.eslestirme`
+
+- `capraz_esle`: [ERFA2023] sepp.c, s2c.c (okundu)
+
+### `kozmos.astrometri.wcs`
+
+- `basliktan_wcs`: [CalabrettaGreisen2002] TeX etiketi eq:px ve LONPOLE anahtarının tanımı (okundu)
+- `gok_den_piksel`: [CalabrettaGreisen2002] TeX etiketleri eq:std2nat, eq:TANRt, eq:azx, eq:azy, eq:px (ters) (okundu)
+- `piksel_den_gok`: [CalabrettaGreisen2002] TeX etiketleri eq:px, eq:azphi, eq:azrt, eq:TANtheta, eq:nat2std (okundu)
+
 ### `kozmos.efemeris.kepler`
 
 - `dis_merkezli_anomali`: [MurrayCorreia2010] TeX etiketi eq37 (Kepler denklemi), eq38-eq39 (Newton-Raphson) (okundu)
@@ -52,7 +66,7 @@ yazıldı, testlerle sınandı, ama kaynağın metni henüz açılmadı.
 - `aciklik_fotometrisi`: [Photutils2026] Kullanım kılavuzu: Aperture Photometry, 'subpixel' yöntemi (okundu)
 - `arka_plan_haritasi`: [SExtractorBelge2026] Modeling the background: Background map (okundu)
 - `arka_plan_kestir`: [SExtractorBelge2026] Modeling the background: Background estimation, Denk. 4 (okundu)
-- `kaynak_bul`: [Photutils2026] Kullanım kılavuzu: Image Segmentation (okundu)
+- `kaynak_bul`: [Photutils2026] Kullanım kılavuzu: Image Segmentation ve Source Deblending (okundu)
 
 ### `kozmos.gorsel.germe`
 
@@ -72,17 +86,27 @@ yazıldı, testlerle sınandı, ama kaynağın metni henüz açılmadı.
 - `meridyen_gecisi_jd`: [ERFA2023] era00.c (dönme hızı), hd2ae.c (okundu)
 - `ufuk_ustu_suresi_saat`: [ERFA2023] hd2ae.c (yükseklik bileşeni) (okundu)
 
+### `kozmos.indirgeme.gokyuzu`
+
+- `dinamik_gokyuzu_cikar`: [Schirmer2013] 'Static and dynamic background models' bölümü: dinamik model (okundu)
+- `duragan_gokyuzu_cikar`: [Schirmer2013] 'Static and dynamic background models' bölümü: durağan model (okundu)
+
 ### `kozmos.indirgeme.kalibrasyon`
 
 - `birlestir`: [CraigChambers2026] defter 01-05 'Calibration overview': 'Every image has noise' (okundu)
 - `kare_indirge`: [CraigChambers2026] defter 01-05 'Calibration overview': indirgeme denklemi (okundu)
 - `kazanc_ve_okuma_gurultusu`: [IRAF2026] noao/obsutil/src/doc/findgain.hlp, ALGORITHM (okundu)
 
+### `kozmos.indirgeme.kozmik_isin`
+
+- `kozmik_isin_bul`: [vanDokkum2001] TeX etiketleri kernel.eq, noise.eq, sigmap.eq ve izleyen denklemler (S′, F, seçim ölçütü) (okundu)
+
 ### `kozmos.io.fits`
 
 - `baslik_coz`: [FITS2018] Bölüm 3.3.1 ve 4.1: başlık blokları, anahtar kaydı bileşenleri; END anahtarı (okundu)
-- `fits_oku`: [FITS2018] Tablo 8 (BITPIX), Denk. 3 (BZERO, BSCALE), Bölüm 5 (büyük uçlu bayt sırası) (okundu)
+- `fits_oku`: [FITS2018] Tablo 8 (BITPIX), Denk. 3 (BZERO, BSCALE), Bölüm 5 (büyük uçlu bayt sırası), Şekil 1 (eksen sırası) (okundu)
 - `fits_yaz`: [FITS2018] Bölüm 3.3.1, 4.4.1 (zorunlu anahtarlar), Tablo 8, Bölüm 5 (okundu)
+- `hdu_listesi`: [FITS2018] Denk. 1 ve 2 (veri boyutu), Bölüm 3.3-3.4 (HDU sırası), XTENSION anahtarı (okundu)
 
 ### `kozmos.isinim.kadir`
 
@@ -364,20 +388,21 @@ yazıldı, testlerle sınandı, ama kaynağın metni henüz açılmadı.
 - [Bludman2010]: 13
 - [Brout2022]: 8
 - [CODATA2022]: 3
+- [CalabrettaGreisen2002]: 3
 - [Carroll1997]: 1
 - [Chabrier2003]: 8
 - [Cohen2003]: 3
 - [CraigChambers2026]: 3
 - [EHT2019]: 4
-- [ERFA2023]: 27
-- [FITS2018]: 3
+- [ERFA2023]: 28
+- [FITS2018]: 4
 - [ForemanMackey2013]: 3
 - [HoffleitWarren1991]: 1
 - [Hogg1999]: 17
 - [HoggBovyLang2010]: 3
 - [Howell2006]: 1
 - [IRAF2026]: 1
-- [IRSA2026]: 1
+- [IRSA2026]: 2
 - [Inayoshi2020]: 5
 - [Kennicutt1998]: 2
 - [Kennicutt2012]: 1
@@ -399,16 +424,19 @@ yazıldı, testlerle sınandı, ama kaynağın metni henüz açılmadı.
 - [SExtractorBelge2026]: 2
 - [Salpeter1955]: 4
 - [Sathyaprakash2009]: 5
+- [Schirmer2013]: 2
 - [Scolnic2022]: 1
 - [SkyView2026]: 1
-- [TAP2019]: 3
+- [TAP2019]: 4
 - [VanderPlas2018]: 4
 - [Vehtari2021]: 2
 - [Wright2010]: 3
 - [Zinnecker2007]: 1
+- [vanDokkum2001]: 1
 
 ## Kaynağı okunmayı bekleyenler
 
+- `kozmos.arsiv.ikimass.nokta_kaynaklari`: [TAP2019] Bölüm 2.7.3 (FORMAT) ve ADQL geometri işlevleri (CONTAINS, POINT, CIRCLE)
 - `kozmos.gozlem.dedektor.sinyal_gurultu_orani`: [MerlineHowell1995] arka plan kestirimi terimi (1 + n_pix/n_B); [Howell2006] Bölüm 4.4: CCD denklemi
 - `kozmos.karadelik.temel.isco_ozgul_enerji_kerr`: [Bardeen1972] ISCO'daki özgül enerji Ẽ_ms = (1 − 2/(3 r̃_ms))^{1/2}
 - `kozmos.yildiz.imf.salpeter_dn_dm`: [Salpeter1955] özgün makale (eğim değeri)

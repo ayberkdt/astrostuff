@@ -1,0 +1,102 @@
+{
+  "goruntu": {
+    "tarama": "2MASS-K (SkyView)",
+    "merkez_derece": [
+      85.42,
+      -1.9
+    ],
+    "olcek_yaysaniye_piksel": 1.0,
+    "piksel": 540
+  },
+  "katalog": {
+    "toplam": 581,
+    "goruntude_k_saptanmis": 420
+  },
+  "saptanan_kaynak": 281,
+  "saptanan_kaynak_ayristirmasiz": 258,
+  "esleme_yaricapi_yaysaniye": 2.0,
+  "saflik": 0.8540925266903915,
+  "katalog_tamligi": {
+    "k_orta": [
+      6.5,
+      7.5,
+      8.5,
+      9.5,
+      10.5,
+      11.5,
+      12.5,
+      13.5,
+      14.5,
+      15.5
+    ],
+    "katalog_sayisi": [
+      1,
+      2,
+      9,
+      19,
+      31,
+      76,
+      76,
+      104,
+      80,
+      19
+    ],
+    "bulunan": [
+      0,
+      2,
+      9,
+      19,
+      29,
+      72,
+      58,
+      39,
+      11,
+      0
+    ]
+  },
+  "astrometri_yaysaniye": {
+    "cift_sayisi": 241,
+    "ortanca_d_ra_cos_dec": 0.1604813206190609,
+    "ortanca_d_dec": 0.03116422879676506,
+    "sacilim_d_ra": 0.1405812211855419,
+    "sacilim_d_dec": 0.12869696526182905,
+    "ortanca_ayriklik": 0.2301994048392217
+  },
+  "fotometri": {
+    "yildiz_sayisi": 40,
+    "sifir_noktasi_kadir": 19.838512409314653,
+    "sacilim_kadir": 0.021029355475492603,
+    "psf_fwhm_piksel": 3.2143293614672457
+  },
+  "yapay_yildiz": {
+    "k": [
+      10.5,
+      11.0,
+      11.5,
+      12.0,
+      12.5,
+      13.0,
+      13.5,
+      14.0,
+      14.5,
+      15.0,
+      15.5,
+      16.0
+    ],
+    "bulunma_kesri": [
+      0.9625,
+      0.975,
+      0.96875,
+      0.94375,
+      0.91875,
+      0.84375,
+      0.725,
+      0.5125,
+      0.3125,
+      0.1,
+      0.01875,
+      0.03125
+    ],
+    "tohum": 20261125
+  }
+}

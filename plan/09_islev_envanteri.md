@@ -113,7 +113,7 @@ Eklenecek:
 - `kron_yaricapi` [Kron1980]; `en_iyi_fotometri` [Naylor1998].
 - `psf_modeli_kur`, `psf_fotometrisi` [Stetson1987].
 - `sifir_noktasi_uydur(aygit_kadiri, katalog_kadiri, renk, hava_kutlesi)` [Landolt1992; Padmanabhan2008].
-- `katalog_esle(xy, gok, tolerans)`; `wcs_uydur(xy, radec, derece)` [Lang2010; Shupe2005].
+- `katalog_esle(xy, gok, tolerans)`; `wcs_uydur(xy, radec, derece)` [Lang2010; Shupe2005]. Yazılanlar: `astrometri.wcs.basliktan_wcs`, `piksel_den_gok`, `gok_den_piksel` (TAN) ve `astrometri.eslestirme.capraz_esle`; `wcs_uydur` yazılmadı.
 
 ## `tayf`
 

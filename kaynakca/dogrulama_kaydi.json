@@ -1,5 +1,5 @@
 {
- "zaman": "2026-11-25 13:46 UTC",
+ "zaman": "2026-11-25 14:38 UTC",
  "kunyeler": [
   {
    "anahtar": "SOFA2023",
@@ -3531,6 +3531,48 @@
    "durum": "DOGRULANDI"
   },
   {
+   "anahtar": "HoffleitWarren1991",
+   "bib_baslik": "The Bright Star Catalog, 5th Revised Edition (Preliminary Version); HEASARC bsc5p tablo sayfası (25 Kasım 2026'da okundu)",
+   "bib_yil": "1991",
+   "kimlik": "https://heasarc.gsfc.nasa.gov/W3Browse/star-catalog/bsc5p.html",
+   "durum": "ELLE",
+   "aciklama": "DOI, arXiv ya da ISBN yok; elle doğrulanacak"
+  },
+  {
+   "anahtar": "Photutils2026",
+   "bib_baslik": "Photutils 3.1.1 documentation: GaussianPRF, Aperture Photometry, Image Segmentation, calc_total_error (25 Kasım 2026'da okundu)",
+   "bib_yil": "2026",
+   "kimlik": "https://photutils.readthedocs.io/en/stable/",
+   "durum": "ELLE",
+   "aciklama": "DOI, arXiv ya da ISBN yok; elle doğrulanacak"
+  },
+  {
+   "anahtar": "IRSA2026",
+   "bib_baslik": "NASA/IPAC Infrared Science Archive TAP service: TAP_SCHEMA.columns for gaia_dr3_source (25 Kasım 2026'da sorgulandı)",
+   "bib_yil": "2026",
+   "kimlik": "https://irsa.ipac.caltech.edu/TAP",
+   "durum": "ELLE",
+   "aciklama": "DOI, arXiv ya da ISBN yok; elle doğrulanacak"
+  },
+  {
+   "anahtar": "Schirmer2013",
+   "bib_baslik": "THELI: Convenient Reduction of Optical, Near-infrared, and Mid-infrared Imaging Data",
+   "bib_yil": "2013",
+   "kimlik": "doi:10.1088/0067-0049/209/2/21",
+   "dis": {
+    "kaynak": "Crossref",
+    "baslik": "THELI: CONVENIENT REDUCTION OF OPTICAL, NEAR-INFRARED, AND MID-INFRARED IMAGING DATA",
+    "yil": 2013,
+    "ilk_yazar": "Schirmer",
+    "yayin": "The Astrophysical Journal Supplement Series",
+    "cilt": "209",
+    "sayfa": "21"
+   },
+   "baslik_benzerligi": 1.0,
+   "yil_farki": 0,
+   "durum": "DOGRULANDI"
+  },
+  {
    "anahtar": "Abramowicz2013",
    "bib_baslik": "Foundations of Black Hole Accretion Disk Theory",
    "bib_yil": "2013",
@@ -3681,6 +3723,40 @@
     "yayin": "Physical Review D",
     "cilt": "13",
     "sayfa": "198-206"
+   },
+   "baslik_benzerligi": 1.0,
+   "yil_farki": 0,
+   "durum": "DOGRULANDI"
+  },
+  {
+   "anahtar": "Reynolds2021",
+   "bib_baslik": "Observational Constraints on Black Hole Spin",
+   "bib_yil": "2020",
+   "kimlik": "arXiv:2011.08948",
+   "dis": {
+    "kaynak": "arXiv",
+    "baslik": "Observational Constraints on Black Hole Spin",
+    "yil": 2020,
+    "ilk_yazar": "Reynolds",
+    "yayin": null,
+    "doi": "10.1146/annurev-astro-112420-035022"
+   },
+   "baslik_benzerligi": 1.0,
+   "yil_farki": 0,
+   "durum": "DOGRULANDI"
+  },
+  {
+   "anahtar": "Carroll1997",
+   "bib_baslik": "Lecture Notes on General Relativity",
+   "bib_yil": "1997",
+   "kimlik": "arXiv:gr-qc/9712019",
+   "dis": {
+    "kaynak": "arXiv",
+    "baslik": "Lecture Notes on General Relativity",
+    "yil": 1997,
+    "ilk_yazar": "Carroll",
+    "yayin": null,
+    "doi": null
    },
    "baslik_benzerligi": 1.0,
    "yil_farki": 0,
@@ -4755,6 +4831,6 @@
    "Springel2005",
    "WallJenkins2012"
   ],
-  "kullanilan_sayisi": 216
+  "kullanilan_sayisi": 222
  }
 }

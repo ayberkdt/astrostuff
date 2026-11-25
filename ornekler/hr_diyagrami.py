@@ -12,7 +12,7 @@ from __future__ import annotations
 
 from pathlib import Path
 
-import datawiz as dw
+import _cizim as dw
 import numpy as np
 
 from kozmos.arsiv import gaia

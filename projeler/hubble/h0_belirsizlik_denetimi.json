@@ -1,0 +1,51 @@
+{
+ "aciklama": "kapalı biçimli doğrusal Gauss çözümü; örnekleyici yok",
+ "yayimlanan": {
+  "h0": 73.6,
+  "sigma": 1.1,
+  "kaynak": "Brout2022 TeX makrosu \\fLCDMHPanSH"
+ },
+ "zincir": {
+  "ortalama": 73.53193135156619,
+  "standart_sapma": 1.0020583538385743,
+  "yuzdelikler_16_50_84": [
+   72.53762820685328,
+   73.52914243045379,
+   74.53521491496936
+  ]
+ },
+ "secenekler": {
+  "stat+sys, z > 0.01 (zincirle aynı seçim)": {
+   "sn_sayisi": 1657,
+   "kalibrator": 77,
+   "h0": 73.52378413423837,
+   "sigma_h0_omega_m_sabit": 1.0071896799854627,
+   "sigma_h0": 1.016864773892327,
+   "omega_m": 0.33151003821488506
+  },
+  "stat+sys, z > 0.0233": {
+   "sn_sayisi": 1442,
+   "kalibrator": 77,
+   "h0": 73.6982459550257,
+   "sigma_h0_omega_m_sabit": 1.0154215248171357,
+   "sigma_h0": 1.0264490215017246,
+   "omega_m": 0.32800958242198736
+  },
+  "stat+sys, 0.0233 < z < 0.15": {
+   "sn_sayisi": 567,
+   "kalibrator": 77,
+   "h0": 73.51591128970522,
+   "sigma_h0_omega_m_sabit": 1.0287730136031645,
+   "sigma_h0": 1.05827466449169,
+   "omega_m": 0.3302536986063634
+  },
+  "yalnız istatistik, z > 0.01": {
+   "sn_sayisi": 1657,
+   "kalibrator": 77,
+   "h0": 73.22052713822197,
+   "sigma_h0_omega_m_sabit": 0.9920167861579464,
+   "sigma_h0": 1.0029142701971483,
+   "omega_m": 0.3469017116866236
+  }
+ }
+}

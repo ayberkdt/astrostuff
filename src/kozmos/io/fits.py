@@ -5,8 +5,9 @@ PDF belgesi) okunmuştur [FITS2018]: 2880 baytlık bloklar, 80 karakterlik
 anahtar kayıtları, ``BITPIX`` yorumu (Tablo 8), ölçekleme (Denk. 3) ve büyük
 uçlu bayt sırası (Bölüm 5).
 
-Kapsam bilerek dardır: yalnızca birincil HDU'daki görüntü dizisi. Uzantılar,
-tablolar, sıkıştırılmış görüntüler ve ``CONTINUE`` kayıtları okunmaz.
+Kapsam: birincil HDU ve ``IMAGE`` uzantılarındaki görüntü dizileri. Tablo
+uzantıları listelenir ama içerikleri çözülmez; sıkıştırılmış görüntüler ve
+``CONTINUE`` kayıtları okunmaz.
 """
 
 from __future__ import annotations
@@ -93,15 +94,73 @@ def baslik_coz(ham: bytes) -> tuple[Baslik, int]:
     return baslik, veri_baslangici
 
 
+def _veri_bayt(baslik: Baslik) -> int:
+    """Bir HDU'nun veri biriminin dolgusuz bayt sayısı ([FITS2018] Denk. 1 ve 2)."""
+    eksen = int(baslik.get("NAXIS", 0))
+    if eksen == 0:
+        return 0
+    eleman = 1
+    for i in range(1, eksen + 1):
+        eleman *= int(baslik[f"NAXIS{i}"])
+    return abs(int(baslik["BITPIX"])) // 8 * int(baslik.get("GCOUNT", 1)) * (int(baslik.get("PCOUNT", 0)) + eleman)
+
+
 @kaynak(
     "FITS2018",
-    yer="Tablo 8 (BITPIX), Denk. 3 (BZERO, BSCALE), Bölüm 5 (büyük uçlu bayt sırası)",
+    yer="Denk. 1 ve 2 (veri boyutu), Bölüm 3.3-3.4 (HDU sırası), XTENSION anahtarı",
     teyit="okundu",
-    not_="fiziksel değer = BZERO + BSCALE × dizi değeri. Eksen sırası (NAXIS1 en hızlı değişen) standartta "
-    "aranan cümleyle bulunamadı; astropy ile karşılaştırmayla sınandı",
+    not_="N_bit = |BITPIX| × GCOUNT × (PCOUNT + NAXIS1 × ... × NAXISm); her HDU 2880 baytın katında başlar",
 )
-def fits_oku(yol: Path | str) -> tuple[NDArray[np.float64], Baslik]:
-    """FITS dosyasının birincil görüntü dizisini ve başlığını okur.
+def hdu_listesi(yol: Path | str) -> list[tuple[str, Baslik, int]]:
+    """Dosyadaki bütün HDU'ları sırayla listeler.
+
+    Döndürür
+    --------
+    list[(tür, başlık, veri_başlangıcı)]
+        Tür birincil HDU için ``"PRIMARY"``, uzantılar için ``XTENSION`` değeridir
+        (``"IMAGE"``, ``"BINTABLE"``, ``"TABLE"``).
+
+    Kaynaklar
+    ---------
+    [FITS2018] Denk. 1, 2; Bölüm 3.3-3.4.
+
+    Geçerlilik
+    ----------
+    Dosyanın tamamı belleğe okunur. Rastgele gruplar (``GROUPS = T``) desteklenmez.
+
+    Doğrulama
+    ---------
+    tests/birim/test_fits.py: astropy.io.fits ile aynı HDU sayısı, türleri ve boyutları.
+    """
+    ham = Path(yol).read_bytes()
+    liste: list[tuple[str, Baslik, int]] = []
+    konum = 0
+    while konum < len(ham) and ham[konum : konum + KAYIT].strip():
+        baslik, uzunluk = baslik_coz(ham[konum:])
+        if not liste and baslik.get("SIMPLE") is not True:
+            raise ValueError("SIMPLE = T değil; standart FITS dosyası değil")
+        tur = "PRIMARY" if not liste else str(baslik.get("XTENSION", "?")).strip()
+        veri_baslangici = konum + uzunluk
+        liste.append((tur, baslik, veri_baslangici))
+        konum = veri_baslangici + -(-_veri_bayt(baslik) // BLOK) * BLOK
+    return liste
+
+
+@kaynak(
+    "FITS2018",
+    yer="Tablo 8 (BITPIX), Denk. 3 (BZERO, BSCALE), Bölüm 5 (büyük uçlu bayt sırası), Şekil 1 (eksen sırası)",
+    teyit="okundu",
+    not_="fiziksel değer = BZERO + BSCALE × dizi değeri; 1. eksenin indisi en hızlı değişir, bu yüzden dizi "
+    "(NAXISm, ..., NAXIS1) biçimindedir",
+)
+def fits_oku(yol: Path | str, hdu: int = 0) -> tuple[NDArray[np.float64], Baslik]:
+    """FITS dosyasındaki bir görüntü dizisini ve başlığını okur.
+
+    Parametreler
+    ------------
+    yol : Path
+    hdu : int
+        Okunacak HDU'nun sırası; 0 birincil HDU'dur. ``IMAGE`` uzantıları da okunur.
 
     Döndürür
     --------
@@ -110,24 +169,27 @@ def fits_oku(yol: Path | str) -> tuple[NDArray[np.float64], Baslik]:
 
     Kaynaklar
     ---------
-    [FITS2018] Tablo 8, Denk. 3, Bölüm 5.
+    [FITS2018] Tablo 8, Denk. 3, Bölüm 5, Şekil 1.
 
     Geçerlilik
     ----------
-    Yalnızca birincil HDU. ``NAXIS = 0`` ise (veri uzantıdaysa) hata verir.
-    ``BLANK`` ile işaretlenmiş tamsayı pikseller ``nan`` yapılır.
+    Yalnızca görüntü dizileri: veri taşımayan HDU (``NAXIS = 0``) ya da tablo
+    uzantısı ``ValueError`` verir. ``BLANK`` ile işaretlenmiş tamsayı pikseller ``nan`` yapılır.
 
     Doğrulama
     ---------
-    tests/birim/test_fits.py: astropy.io.fits.getdata ile tam eşitlik; yaz-oku gidiş-dönüşü.
+    tests/birim/test_fits.py: astropy.io.fits.getdata ile tam eşitlik; yaz-oku gidiş-dönüşü; çok uzantılı dosya.
     """
     ham = Path(yol).read_bytes()
-    baslik, baslangic = baslik_coz(ham)
-    if baslik.get("SIMPLE") is not True:
-        raise ValueError("SIMPLE = T değil; standart FITS dosyası değil")
+    liste = hdu_listesi(yol)
+    if not 0 <= hdu < len(liste):
+        raise ValueError(f"dosyada {len(liste)} HDU var; {hdu} yok")
+    tur, baslik, baslangic = liste[hdu]
+    if tur not in ("PRIMARY", "IMAGE"):
+        raise ValueError(f"HDU {hdu} bir görüntü değil ({tur}); tablo uzantıları çözülmez")
     eksen = int(baslik.get("NAXIS", 0))
     if eksen == 0:
-        raise ValueError("birincil HDU veri içermiyor (NAXIS = 0); uzantılar desteklenmiyor")
+        raise ValueError(f"HDU {hdu} veri içermiyor (NAXIS = 0)")
     bicim = tuple(int(baslik[f"NAXIS{i}"]) for i in range(eksen, 0, -1))
     tip = np.dtype(_BITPIX_TIPI[int(baslik["BITPIX"])])
     n = int(np.prod(bicim))

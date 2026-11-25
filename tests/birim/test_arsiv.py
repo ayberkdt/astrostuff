@@ -44,3 +44,45 @@ def test_gaia_sorgusu(tmp_path):
 def test_skyview_kesiti(tmp_path):
     goruntu, baslik = skyview.kesit_indir(85.42, -1.90, "2MASS-K", tmp_path, alan_derece=0.1, piksel=64)
     assert goruntu.shape == (64, 64) and np.isfinite(goruntu).all() and baslik["NAXIS"] == 2
+
+
+def test_heasarc_boru_metni_cozulur(tmp_path):
+    from kozmos.arsiv import heasarc
+
+    yol = tmp_path / "t.txt"
+    yol.write_text(
+        "name   |ra     |dec    |vmag\nHR 2491|101.287|-16.716|-1.46\nHR 7001|279.234| 38.784| 0.03\nHR 1   |1.0    |2.0    |\n",
+        encoding="utf-8",
+    )
+    tablo = heasarc.boru_metni_oku(yol)
+    assert list(tablo) == ["name", "ra", "dec", "vmag"]
+    assert list(tablo["name"]) == ["HR 2491", "HR 7001", "HR 1"]
+    assert tablo["vmag"][0] == -1.46 and np.isnan(tablo["vmag"][2]) and tablo["dec"][1] == 38.784
+    yol.write_text("hata", encoding="utf-8")
+    with pytest.raises(ValueError):
+        heasarc.boru_metni_oku(yol)
+
+
+@pytest.mark.ag
+def test_parlak_yildiz_katalogu_sirius(tmp_path):
+    from kozmos.arsiv import heasarc
+
+    tablo = heasarc.parlak_yildizlar(tmp_path)
+    v = tablo["vmag"]
+    # Katalogdaki en parlak yıldız Sirius'tur (HR 2491); V = -1,46 [HoffleitWarren1991].
+    i = int(np.nanargmin(v))
+    assert v[i] == pytest.approx(-1.46, abs=0.01) and int(tablo["hr"][i]) == 2491
+    assert 9000 < len(v) < 9200
+
+
+@pytest.mark.ag
+def test_2mass_koni_sorgusu(tmp_path):
+    from kozmos.arsiv import ikimass
+    from kozmos.temel.aci import acisal_ayriklik
+
+    k = ikimass.nokta_kaynaklari(85.42, -1.90, 0.05, tmp_path)
+    assert 50 < len(k["ra"]) < 400 and k["ph_qual"].dtype.kind == "U"
+    # Bütün kaynaklar koninin içindedir.
+    ayriklik = acisal_ayriklik(np.radians(85.42), np.radians(-1.90), np.radians(k["ra"]), np.radians(k["dec"]))
+    assert np.degrees(ayriklik).max() <= 0.05 + 1e-9
+    assert 4.0 < np.nanmin(k["k_m"]) < np.nanmax(k["k_m"]) < 17.5

@@ -13,15 +13,18 @@ Kullanım:
 from __future__ import annotations
 
 import json
+import sys
 from pathlib import Path
 
-import datawiz as dw
 import numpy as np
 
 from kozmos.arsiv import pantheon
 from kozmos.kozmoloji.uzaklik import Kozmoloji, uzaklik_modulu
 
 KOK = Path(__file__).resolve().parents[2]
+sys.path.insert(0, str(KOK / "ornekler"))
+import _cizim as dw  # noqa: E402  (ortak çizim katmanı; datawiz yoksa düz matplotlib)
+
 SONUC = json.loads((Path(__file__).resolve().parent / "sonuc.json").read_text(encoding="utf-8"))
 
 
@@ -77,7 +80,8 @@ def main() -> None:
     cikti = KOK / "belgeler"
     cikti.mkdir(exist_ok=True)
     rapor = dw.kaydet(fig, str(cikti / "hubble_diyagrami"), hedef="web-640", cvd=True)
-    print({k: v for k, v in rapor.items() if k in ("hata", "uyari", "denetim", "dosyalar")})
+    if rapor is not None:
+        print({k: v for k, v in rapor.items() if k in ("hata", "uyari", "denetim", "dosyalar")})
     print(
         f"artık: ortanca {np.median(artik):+.4f} mag, sağlam saçılım {1.4826 * np.median(np.abs(artik - np.median(artik))):.3f} mag"
     )

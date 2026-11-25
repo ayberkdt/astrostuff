@@ -60,3 +60,37 @@ def test_gidis_donus_ve_hatalar(tmp_path):
     astropy_fits.PrimaryHDU().writeto(bos)
     with pytest.raises(ValueError):
         fits.fits_oku(bos)
+    with pytest.raises(ValueError):
+        fits.fits_oku(bos, hdu=3)
+
+
+def test_cok_uzantili_dosya(tmp_path):
+    # Veri taşımayan birincil HDU + iki görüntü uzantısı + bir ikili tablo + bir görüntü daha (HST/JWST tarzı).
+    u = np.random.default_rng(93)
+    bilim = u.normal(size=(17, 23)).astype(np.float32)
+    hata = np.abs(u.normal(size=(17, 23))).astype(np.float64)
+    kalite = u.integers(0, 4, (17, 23)).astype(np.int16)
+    tablo = astropy_fits.BinTableHDU.from_columns(
+        [astropy_fits.Column(name="x", format="E", array=np.arange(5, dtype=np.float32))], name="TAB"
+    )
+    hdul = astropy_fits.HDUList(
+        [
+            astropy_fits.PrimaryHDU(),
+            astropy_fits.ImageHDU(bilim, name="SCI"),
+            astropy_fits.ImageHDU(hata, name="ERR"),
+            tablo,
+            astropy_fits.ImageHDU(kalite, name="DQ"),
+        ]
+    )
+    yol = tmp_path / "mef.fits"
+    hdul.writeto(yol)
+    liste = fits.hdu_listesi(yol)
+    assert [tur for tur, _, _ in liste] == ["PRIMARY", "IMAGE", "IMAGE", "BINTABLE", "IMAGE"]
+    assert [b.get("EXTNAME") for _, b, _ in liste[1:]] == ["SCI", "ERR", "TAB", "DQ"]
+    for i, beklenen in ((1, bilim), (2, hata), (4, kalite)):  # tablodan SONRAKİ uzantı da doğru yerde bulunmalı
+        veri, baslik = fits.fits_oku(yol, hdu=i)
+        assert np.array_equal(veri, beklenen.astype(float)) and baslik["XTENSION"] == "IMAGE"
+    with pytest.raises(ValueError):
+        fits.fits_oku(yol, hdu=3)  # tablo
+    with pytest.raises(ValueError):
+        fits.fits_oku(yol, hdu=0)  # veri yok

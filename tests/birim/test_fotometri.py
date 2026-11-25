@@ -102,3 +102,51 @@ def test_aciklik_fotometrisi_gurultulu_alanda_yansiz():
     # Açıklıktaki gürültü: sqrt(π r²) · 5 ≈ 53; 30 yıldızın ortalama bağıl sapması yüzde birin altında.
     assert np.mean(olculen / beklenen - 1) == pytest.approx(0.0, abs=0.01)
     assert np.std((olculen - beklenen) / 60.0) < 2.0
+
+
+def test_yakin_ciftler_ayristirilir():
+    u = np.random.default_rng(171)
+    bicim = (200, 200)
+    # 16 çift: aralık 2 FWHM (aralarında eyer var), akı oranı 1 ile 2 arasında; çiftler birbirinden uzak.
+    cx, cy = (a.ravel() for a in np.meshgrid(np.arange(25, 200, 50.0), np.arange(25, 200, 50.0)))
+    aci = u.uniform(0, 2 * np.pi, 16)
+    fwhm, aralik = 3.0, 6.0
+    x = np.concatenate([cx - aralik / 2 * np.cos(aci), cx + aralik / 2 * np.cos(aci)])
+    y = np.concatenate([cy - aralik / 2 * np.sin(aci), cy + aralik / 2 * np.sin(aci)])
+    aki = np.concatenate([np.full(16, 4000.0), 4000.0 / u.uniform(1, 2, 16)])
+    goruntu = 100.0 + dd.yildiz_alani(bicim, x, y, aki, fwhm) + u.normal(0, 2.0, bicim)
+    tek = fk.kaynak_bul(goruntu, 100.0, 2.0, esik_sigma=4.0, yumusatma_fwhm=fwhm)
+    ayri = fk.kaynak_bul(goruntu, 100.0, 2.0, esik_sigma=4.0, yumusatma_fwhm=fwhm, ayristirma_duzeyi=32)
+    assert len(tek) == 16  # ayrıştırma olmadan her çift tek kaynak
+    # 200 gerçeklemeli ölçümde (rastgele yön, alt piksel konum) bu ayar oran 1-2 çiftlerinin %92-98'ini ayırır.
+    assert 29 <= len(ayri) <= 32
+    uzaklik = np.hypot(ayri.x[None, :] - x[:, None], ayri.y[None, :] - y[:, None]).min(axis=1)
+    assert np.sum(uzaklik < 1.0) >= 29  # ayrışan her bileşen bir pikselin içinde bulunur
+    # Toplam akı korunur: ayrıştırma pikselleri paylaştırır, eklemez ya da silmez.
+    assert ayri.aki.sum() == pytest.approx(tek.aki.sum(), rel=1e-12)
+    assert ayri.piksel_sayisi.sum() == tek.piksel_sayisi.sum()
+
+
+def test_ayristirma_siniri_sig_eyer():
+    # Aynı aralıkta akı oranı büyüdükçe eyer sığlaşır. 200 gerçeklemeli ölçüm (2 FWHM aralık, rastgele yön):
+    # 32 düzey ve 0,005 karşıtlık oran 3'te çiftlerin %14'ünü, oran 4'te %1'ini ayırır;
+    # 128 düzey ve 0,001 karşıtlık oran 3'te %99'unu, oran 4'te %59'unu ayırır.
+    u = np.random.default_rng(173)
+    ortak = {"esik_sigma": 4.0, "yumusatma_fwhm": 3.0}
+    kaba = ince = 0
+    for _ in range(20):
+        goruntu = 100.0 + dd.yildiz_alani((60, 60), [27.0, 33.0], [30.0, 30.0], [4000.0, 4000.0 / 3.0], 3.0)
+        goruntu = goruntu + u.normal(0, 2.0, (60, 60))
+        kaba += len(fk.kaynak_bul(goruntu, 100.0, 2.0, ayristirma_duzeyi=32, **ortak)) == 2
+        ince += len(fk.kaynak_bul(goruntu, 100.0, 2.0, ayristirma_duzeyi=128, karsitlik=0.001, **ortak)) == 2
+    assert kaba <= 5 and ince >= 17
+
+
+def test_ayristirma_yalniz_yildizi_bolmez():
+    u = np.random.default_rng(172)
+    bicim = (200, 200)
+    x, y = (a.ravel().astype(float) for a in np.meshgrid(np.arange(20, 200, 40), np.arange(20, 200, 40)))
+    goruntu = 100.0 + dd.yildiz_alani(bicim, x, y, 10 ** u.uniform(2.6, 4.5, x.size), 3.0) + u.normal(0, 2.0, bicim)
+    tek = fk.kaynak_bul(goruntu, 100.0, 2.0, esik_sigma=4.0, yumusatma_fwhm=3.0)
+    ayri = fk.kaynak_bul(goruntu, 100.0, 2.0, esik_sigma=4.0, yumusatma_fwhm=3.0, ayristirma_duzeyi=32)
+    assert len(tek) == x.size and len(ayri) == x.size

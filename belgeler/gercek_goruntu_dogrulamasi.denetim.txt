@@ -1,0 +1,3 @@
+figür denetimi: 0 HATA · 0 UYARI · 1 BİLGİ · TESLİM EDİLEBİLİR
+  [BİLGİ] dogrudan-etiket    eksen 0: 2 çizgi serisi lejantla adlandırılmış
+          → çizgi sonlarına doğrudan etiket: datawiz.etiket.cizgi_sonu(ax)  [Franconeri2021]

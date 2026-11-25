@@ -1,10 +1,10 @@
 # Doğrulama özeti
 
-Üretim: `dogrula.py`, 2026-11-25 13:46 UTC. Ayrıntı: `dogrulama_kaydi.json`.
+Üretim: `dogrula.py`, 2026-11-25 14:38 UTC. Ayrıntı: `dogrulama_kaydi.json`.
 
 ## Künyeler
 
-BULUNAMADI: 1, DOGRULANDI: 209, ELLE: 15 (toplam 225).
+BULUNAMADI: 1, DOGRULANDI: 212, ELLE: 18 (toplam 231).
 
 ### Dış kaydı okunamayan
 
@@ -27,6 +27,9 @@ BULUNAMADI: 1, DOGRULANDI: 209, ELLE: 15 (toplam 225).
 - `TAP2019` (https://www.ivoa.net/documents/TAP/20190927/REC-TAP-1.1.html): DOI, arXiv ya da ISBN yok; elle doğrulanacak
 - `SkyView2026` (https://skyview.gsfc.nasa.gov/current/docs/batchpage.html): DOI, arXiv ya da ISBN yok; elle doğrulanacak
 - `SExtractorBelge2026` (https://sextractor.readthedocs.io/en/latest/Background.html): DOI, arXiv ya da ISBN yok; elle doğrulanacak
+- `HoffleitWarren1991` (https://heasarc.gsfc.nasa.gov/W3Browse/star-catalog/bsc5p.html): DOI, arXiv ya da ISBN yok; elle doğrulanacak
+- `Photutils2026` (https://photutils.readthedocs.io/en/stable/): DOI, arXiv ya da ISBN yok; elle doğrulanacak
+- `IRSA2026` (https://irsa.ipac.caltech.edu/TAP): DOI, arXiv ya da ISBN yok; elle doğrulanacak
 
 ### Doğrulanan
 
@@ -256,6 +259,7 @@ BULUNAMADI: 1, DOGRULANDI: 209, ELLE: 15 (toplam 225).
 - `Lupton2004`: Lupton 2004, «Preparing Red‐Green‐Blue Images from CCD Data». Publications of the Astronomical Society of the Pacific, 116, 133-137 [Crossref, doi:10.1086/382245]
 - `Cohen2003`: Cohen 2003, «Spectral Irradiance Calibration in the Infrared. XIV. The Absolute Calibration of 2MASS». The Astronomical Journal, 126, 1090-1096 [Crossref, doi:10.1086/376474]
 - `Wright2010`: Wright 2010, «THE WIDE-FIELD INFRARED SURVEY EXPLORER (WISE): MISSION DESCRIPTION AND INITIAL ON-ORBIT PERFORMANCE». The Astronomical Journal, 140, 1868-1881 [Crossref, doi:10.1088/0004-6256/140/6/1868]
+- `Schirmer2013`: Schirmer 2013, «THELI: CONVENIENT REDUCTION OF OPTICAL, NEAR-INFRARED, AND MID-INFRARED IMAGING DATA». The Astrophysical Journal Supplement Series, 209, 21 [Crossref, doi:10.1088/0067-0049/209/2/21]
 - `Abramowicz2013`: Abramowicz 2011, «Foundations of Black Hole Accretion Disk Theory». Living Reviews in Relativity, 16, 1 (2013) [arXiv, arXiv:1104.5499]
 - `Sathyaprakash2009`: Sathyaprakash 2009, «Physics, Astrophysics and Cosmology with Gravitational Waves». Living Rev. Relativity 12, (2009), 2 [arXiv, arXiv:0903.0338]
 - `Page2005`: Page 2004, «Hawking Radiation and Black Hole Thermodynamics». New J.Phys.7:203,2005 [arXiv, arXiv:hep-th/0409024]
@@ -265,6 +269,8 @@ BULUNAMADI: 1, DOGRULANDI: 209, ELLE: 15 (toplam 225).
 - `Inayoshi2020`: Inayoshi 2019, «The Assembly of the First Massive Black Holes».  [arXiv, arXiv:1911.05791]
 - `Bardeen1972`: Bardeen 1972, «Rotating Black Holes: Locally Nonrotating Frames, Energy Extraction, and Scalar Synchrotron Radiation». The Astrophysical Journal, 178, 347 [Crossref, doi:10.1086/151796]
 - `Page1976`: Page 1976, «Particle emission rates from a black hole: Massless particles from an uncharged, nonrotating hole». Physical Review D, 13, 198-206 [Crossref, doi:10.1103/PhysRevD.13.198]
+- `Reynolds2021`: Reynolds 2020, «Observational Constraints on Black Hole Spin».  [arXiv, arXiv:2011.08948]
+- `Carroll1997`: Carroll 1997, «Lecture Notes on General Relativity».  [arXiv, arXiv:gr-qc/9712019]
 - `Liu1995`: Liu 1995, «Polytropic gas spheres: An approximate analytic solution of the Lane-Emden equation». Mon.Not.Roy.Astron.Soc. 281 (1996) 1197 [arXiv, arXiv:astro-ph/9512061]
 - `Bludman2010`: Bludman 2010, «Scale invariant stellar structure».  [arXiv, arXiv:1008.4281]
 - `Araujo2011`: Araujo 2011, «Newtonian and relativistic polytropes». PoS CRASchool2010:020,2010 [arXiv, arXiv:1102.2393]
@@ -380,7 +386,7 @@ BULUNAMADI: 1, DOGRULANDI: 209, ELLE: 15 (toplam 225).
 
 ## Atıf denetimi
 
-Plan belgelerinde kullanılan tanımlı anahtar: 216.
+Plan belgelerinde kullanılan tanımlı anahtar: 222.
 
 Tanımsız anahtar yok.
 

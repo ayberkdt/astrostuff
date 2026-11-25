@@ -16,7 +16,7 @@ from __future__ import annotations
 
 from pathlib import Path
 
-import datawiz as dw
+import _cizim as dw
 import matplotlib.pyplot as plt
 import numpy as np
 
@@ -27,6 +27,7 @@ from kozmos.gorsel import germe
 KOK = Path(__file__).resolve().parents[1]
 ONBELLEK = KOK / "veri" / "ham" / "skyview"
 RA, DEC, ALAN, PIKSEL = 85.42, -1.90, 0.3, 450
+PALET = plt.get_cmap("gray").with_extremes(bad="#7c2d12")  # NaN pikseller kiremit rengi
 PANELLER = [
     ("DSS2 Red", "Optik, 0,64 µm"),
     ("2MASS-K", "Yakın kızılötesi, 2,16 µm"),
@@ -41,7 +42,9 @@ def hazirla(tarama: str) -> tuple[np.ndarray, int]:
     kaynaklar = fk.kaynak_bul(goruntu, harita, rms, esik_sigma=4.0, en_az_piksel=6)
     duzey, sacilim = fk.arka_plan_kestir(goruntu)
     gerilmis = germe.asinh_ger(goruntu, siyah=duzey - sacilim, alfa=1.0 / (8.0 * sacilim), q=6.0)
-    return germe.yuzdelik_olcekle(gerilmis, 0.5, 99.9), len(kaynaklar)
+    olcekli = germe.yuzdelik_olcekle(gerilmis, 0.5, 99.9)
+    olcekli[~np.isfinite(goruntu)] = np.nan  # veri taşımayan pikseller siyaha boyanmaz, ayrı gösterilir
+    return olcekli, len(kaynaklar)
 
 
 def main() -> None:
@@ -56,7 +59,12 @@ def main() -> None:
         goruntu, n = hazirla(tarama)
         sayilar[tarama] = n
         # datawiz: izin göreli parlaklık görüntüsü; asinh gerilmiş değerlerin renk çubuğu okura nicelik vermez
-        ax.imshow(goruntu, origin="lower", cmap="gray", vmin=0, vmax=1, interpolation="nearest")
+        ax.imshow(goruntu, origin="lower", cmap=PALET, vmin=0, vmax=1, interpolation="nearest")
+        bos = ~np.isfinite(goruntu)
+        if bos.any():
+            yy, xx = np.nonzero(bos)
+            ax.text(xx.mean(), yy.mean(), "veri yok", color="white", ha="center", va="center")
+            print(f"{tarama}: {int(bos.sum())} piksel veri taşımıyor (NaN)")
         ax.set_xticks([])
         ax.set_yticks([])
         ax.grid(False)

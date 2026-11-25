@@ -13,6 +13,7 @@ Kaynak saptama (eşik üstü bağlı piksel grupları) ve açıklık fotometrisi
 
 from __future__ import annotations
 
+import heapq
 from dataclasses import dataclass
 
 import numpy as np
@@ -141,12 +142,97 @@ class KaynakListesi:
         return int(self.x.size)
 
 
+def _isaretciler(alt: Dizi, maske: NDArray[np.bool_], duzeyler: Dizi, esik_aki: float) -> list:
+    """Bir bölütün ayrı kaynak sayılacak tepelerinin (y, x) konumları (çok eşikli ağaç, eyer ölçütü)."""
+    bekleyen = [(maske, 0)]
+    tepeler = []
+    while bekleyen:
+        m, i0 = bekleyen.pop()
+        bolundu = False
+        for i in range(i0, duzeyler.size):
+            parcalar, n = ndimage.label(m & (alt > duzeyler[i]), structure=np.ones((3, 3)))
+            if n == 0:
+                break
+            if n == 1:
+                continue
+            kimlik = np.arange(1, n + 1)
+            # Eyer düzeyinin üstünde kalan akı: dalın kendi tepesinin anlamlılığı.
+            ust_aki = ndimage.sum_labels(alt - duzeyler[i], parcalar, kimlik)
+            anlamli = kimlik[ust_aki >= esik_aki]
+            if anlamli.size >= 2:
+                bekleyen.extend((parcalar == k, i + 1) for k in anlamli)
+                bolundu = True
+                break
+            if anlamli.size == 1:
+                m = parcalar == anlamli[0]
+            else:
+                break
+        if not bolundu:
+            tepeler.append(np.unravel_index(np.argmax(np.where(m, alt, -np.inf)), alt.shape))
+    return tepeler
+
+
+def _taskin(alt: Dizi, maske: NDArray[np.bool_], tepeler: list) -> NDArray[np.int32]:
+    """İşaretçilerden başlayan öncelik kuyruklu taşkın: her piksel, ona en yüksek düzeyden ulaşan havzaya girer.
+
+    ``scipy.ndimage.watershed_ift`` komşu piksel farkını maliyet sayar (eğim görüntüsü bekler) ve parlaklık
+    görüntüsünde eyeri aşar; bu yüzden kullanılmamıştır.
+    """
+    ny, nx = alt.shape
+    havza = np.zeros(alt.shape, dtype=np.int32)
+    kuyruk = []
+    for j, (y, x) in enumerate(tepeler, start=1):
+        havza[y, x] = j
+        heapq.heappush(kuyruk, (-float(alt[y, x]), j, int(y), int(x)))
+    while kuyruk:
+        duzey, j, y, x = heapq.heappop(kuyruk)
+        for dy in (-1, 0, 1):
+            for dx in (-1, 0, 1):
+                yy, xx = y + dy, x + dx
+                if 0 <= yy < ny and 0 <= xx < nx and maske[yy, xx] and havza[yy, xx] == 0:
+                    havza[yy, xx] = j
+                    heapq.heappush(kuyruk, (max(duzey, -float(alt[yy, xx])), j, yy, xx))
+    return havza
+
+
+def _ayristir(saptama: Dizi, etiket: NDArray[np.int32], duzey_sayisi: int, karsitlik: float, en_az_piksel: int):
+    """Birden çok anlamlı tepe taşıyan bölütleri su havzalarına böler; yeni etiket haritası döner."""
+    yeni = etiket.copy()
+    sonraki = int(etiket.max()) + 1
+    for kimlik, dilim in enumerate(ndimage.find_objects(etiket), start=1):
+        if dilim is None:
+            continue
+        maske = etiket[dilim] == kimlik
+        alt = np.where(maske, saptama[dilim], 0.0)
+        en_az, en_cok = float(alt[maske].min()), float(alt[maske].max())
+        if maske.sum() < 2 * en_az_piksel or en_az <= 0 or en_cok <= en_az:
+            continue
+        duzeyler = np.geomspace(en_az, en_cok, duzey_sayisi + 2)[1:-1]
+        tepeler = _isaretciler(alt, maske, duzeyler, karsitlik * float(alt[maske].sum()))
+        tepeler.sort(key=lambda yx: -alt[yx])  # en parlak tepe eski kimliği korur
+        while len(tepeler) >= 2:
+            havza = _taskin(alt, maske, tepeler)
+            boyut = np.bincount(havza[maske], minlength=len(tepeler) + 1)[1:]
+            if boyut.min() >= en_az_piksel:
+                break
+            del tepeler[int(np.argmin(boyut))]  # en az piksel koşulunu sağlamayan havza komşusuna katılır
+        if len(tepeler) < 2:
+            continue
+        for j in range(2, len(tepeler) + 1):
+            yeni[dilim][maske & (havza == j)] = sonraki
+            sonraki += 1
+    return yeni
+
+
 @kaynak(
     "Photutils2026",
-    yer="Kullanım kılavuzu: Image Segmentation",
+    yer="Kullanım kılavuzu: Image Segmentation ve Source Deblending",
     teyit="okundu",
     not_="kaynak: her biri eşik üstünde olan en az belirli sayıda bağlı piksel; eşik arka plan gürültüsünün katı; "
-    "eşiklemeden önce süzgeçleme; varsayılan bağlantı 8 komşuluk. Ayrıştırma (deblending) uygulanmadı. "
+    "eşiklemeden önce süzgeçleme; varsayılan bağlantı 8 komşuluk. Ayrıştırma: çok eşikleme + su havzası; "
+    "'saddle' ölçütü, tepenin komşularından ayrıldığı eyer düzeyinin üstünde tuttuğu akının toplam akıya oranıdır; "
+    "düzeyler kaynağın en küçük ve en büyük değeri arasındadır; ayrışmak için kaynaklar arasında eyer noktası gerekir. "
+    "Düzeylerin geometrik aralıklanması ve havzaların öncelik kuyruklu taşkınla kurulması bu projenin seçimidir. "
     "Yöntemin makalesi [BertinArnouts1996] okunmadı",
 )
 def kaynak_bul(
@@ -157,6 +243,8 @@ def kaynak_bul(
     esik_sigma: float = 3.0,
     en_az_piksel: int = 5,
     yumusatma_fwhm: float | None = None,
+    ayristirma_duzeyi: int = 0,
+    karsitlik: float = 0.005,
 ) -> KaynakListesi:
     """Arka plan üstündeki bağlı piksel gruplarını kaynak olarak saptar.
 
@@ -172,6 +260,10 @@ def kaynak_bul(
     yumusatma_fwhm : float, isteğe bağlı
         Verilirse saptama görüntüsü bu genişlikte Gauss ile yumuşatılır (eşleşmiş süzgeç yaklaşımı);
         eşik yumuşatılmış gürültüye göre ölçeklenir.
+    ayristirma_duzeyi : int
+        Sıfırdan büyükse örtüşen kaynaklar bu sayıda eşik düzeyiyle ayrıştırılır (0: ayrıştırma yok).
+    karsitlik : float
+        Bir tepenin ayrı kaynak sayılması için eyer düzeyinin üstündeki akısının bölütün toplam akısına en küçük oranı.
 
     Döndürür
     --------
@@ -180,16 +272,21 @@ def kaynak_bul(
 
     Kaynaklar
     ---------
-    [Photutils2026] Image Segmentation.
+    [Photutils2026] Image Segmentation, Source Deblending.
 
     Geçerlilik
     ----------
-    Örtüşen kaynaklar tek kaynak sayılır. Yaygın yapının (bulutsu) parlak
-    bölgeleri de "kaynak" olarak çıkar.
+    Ayrıştırma kapalıyken örtüşen kaynaklar tek kaynak sayılır. Açıkken aralarında
+    eyer noktası olmayan (tek tepeli) çiftler yine ayrılmaz; eyer sığsa da ayrılmaz:
+    2 FWHM aralıklı sentetik çiftlerin 32 düzey ve 0,005 karşıtlıkla akı oranı 2'ye
+    kadar %92-98'i, oran 3'te %14'ü, oran 4'te %1'i ayrışır; 128 düzey ve 0,001
+    karşıtlıkla oran 3'te %99'u, oran 4'te %59'u ayrışır (200 gerçekleme, rastgele yön); gürültülü saptama
+    görüntüsünde küçük ``karsitlik`` gürültü tepelerini kaynak diye böler,
+    yumuşatma bunu azaltır. Yaygın yapının (bulutsu) parlak bölgeleri de "kaynak" olarak çıkar.
 
     Doğrulama
     ---------
-    tests/birim/test_fotometri.py: sentetik yıldız alanında tamlık, konum ve yanlış saptama sayısı.
+    tests/birim/test_fotometri.py: sentetik yıldız alanında tamlık, konum ve yanlış saptama sayısı; yakın çiftlerin ayrışması.
     """
     g = np.asarray(goruntu, dtype=float) - arka_plan
     saptama, esik = g, esik_sigma * np.asarray(rms, dtype=float)
@@ -198,18 +295,22 @@ def kaynak_bul(
         saptama = ndimage.gaussian_filter(g, s, mode="nearest")
         esik = esik / (2.0 * np.sqrt(np.pi) * s)  # beyaz gürültünün Gauss yumuşatmasından sonraki rms'i
     etiket, n = ndimage.label(saptama > esik, structure=np.ones((3, 3)))
-    if n == 0:
+    if n:
+        sayi = np.bincount(etiket.ravel(), minlength=n + 1)
+        etiket[sayi[etiket] < en_az_piksel] = 0
+        if ayristirma_duzeyi > 0:
+            etiket = _ayristir(saptama, etiket, ayristirma_duzeyi, karsitlik, en_az_piksel)
+    gecerli = np.unique(etiket[etiket > 0])
+    if gecerli.size == 0:
         bos = np.empty(0)
         return KaynakListesi(bos, bos, bos, bos, np.empty(0, dtype=np.int64))
-    kimlik = np.arange(1, n + 1)
-    sayi = ndimage.sum_labels(np.ones_like(g), etiket, kimlik).astype(np.int64)
-    gecerli = kimlik[sayi >= en_az_piksel]
+    sayi = np.asarray(ndimage.sum_labels(np.ones_like(g), etiket, gecerli)).astype(np.int64)
     pozitif = np.clip(g, 0.0, None)
     merkez = np.array(ndimage.center_of_mass(pozitif, etiket, gecerli)).reshape(-1, 2)
     aki = np.asarray(ndimage.sum_labels(g, etiket, gecerli))
     tepe = np.asarray(ndimage.maximum(g, etiket, gecerli))
     sira = np.argsort(-aki)
-    return KaynakListesi(merkez[sira, 1], merkez[sira, 0], aki[sira], tepe[sira], sayi[sayi >= en_az_piksel][sira])
+    return KaynakListesi(merkez[sira, 1], merkez[sira, 0], aki[sira], tepe[sira], sayi[sira])
 
 
 @kaynak(

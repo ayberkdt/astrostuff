@@ -55,13 +55,56 @@ Analizlerin kullandığı veri setleri depoya konmaz; çalışma anında kaynağ
 
 ## Şekillerde kullanılan tarama verileri
 
-`belgeler/` klasöründeki bazı şekiller üçüncü taraf gözlem verisinden türetilmiştir ve depodaki hak saklama bu verileri kapsamaz:
+`belgeler/` klasöründeki bazı şekiller üçüncü taraf gözlem verisinden türetilmiştir. Depodaki hak saklama bu şekilleri kapsamaz; her biri aşağıdaki koşullara tabidir. Koşullar 25 Kasım 2026'da ilgili sayfalardan okunmuştur.
 
-- `optik_kizilotesi.png`, `alev_bulutsusu_jhk.png`: NASA SkyView üzerinden alınan Digitized Sky Survey 2 (DSS2), Two Micron All Sky Survey (2MASS) ve Wide-field Infrared Survey Explorer (WISE) görüntü kesitleri.
-- `hr_diyagrami.png`: ESA Gaia görevinin DR3 kataloğu (IRSA TAP servisi üzerinden).
-- `hubble_diyagrami.png`: Pantheon+SH0ES veri sürümü.
+| Şekil | Veri | Koşul |
+|---|---|---|
+| `optik_kizilotesi.png` (sol panel) | Digitized Sky Survey 2, kırmızı bant | CC BY-NC-SA 4.0; kamu malı değildir |
+| `optik_kizilotesi.png` (orta panel), `alev_bulutsusu_jhk.png`, `gercek_goruntu_dogrulamasi.png` | 2MASS görüntüleri ve Nokta Kaynak Kataloğu | Görüntü galerisindeki görüntüler kamu malıdır; teşekkür metni istenir |
+| `optik_kizilotesi.png` (sağ panel) | WISE 12 µm | Teşekkür metni istenir; lisans ifadesi okunan sayfada yoktur |
+| `hr_diyagrami.png` | Gaia DR3 | CC BY-NC 3.0 IGO |
+| `gokyuzu_haritasi.png` | Parlak Yıldız Kataloğu, 5. baskı (HEASARC `bsc5p`) | Aşağıdaki nota bakınız |
+| `hubble_diyagrami.png` | Pantheon+SH0ES veri sürümü | Okunmadı |
 
-Bu taramaların kullanım ve atıf koşulları bu çalışma sırasında okunmamıştır. Türetilmiş görüntülerin herkese açık bir depoda yayımlanmasının her taramanın koşullarına uygunluğu depo sahibi tarafından doğrulanmalı ve gereken teşekkür metinleri eklenmelidir.
+### Digitized Sky Survey
+
+MAST'ın veri kullanım sayfası (`archive.stsci.edu/publishing/data-use`) DSS verisinin kamu malı olmadığını, bilimsel, eğitsel ve kâr amacı gütmeyen amaçlarla (web siteleri dahil) serbestçe kullanılabildiğini ve Creative Commons Atıf-GayriTicari-AynıLisanslaPaylaş 4.0 (CC BY-NC-SA 4.0) lisansına bağlı olduğunu bildirir. Bu yüzden `optik_kizilotesi.png` şekli de CC BY-NC-SA 4.0 ile paylaşılır ve ticari amaçla kullanılamaz.
+
+Hak sahibi, kullanılan plakaya göre değişir: 1993 öncesi güney taramalarında UK SERC/PPARC (bugün STFC), 1993 sonrası güney taramalarında Anglo-Australian Observatory Board, POSS-II kuzey taramalarında California Institute of Technology, kalan malzemede Association of Universities for Research in Astronomy, Inc. Şekildeki alanın (δ = −1,9°) hangi plakadan geldiği SkyView başlığından okunmamıştır; hak sahibi bu dördünden biridir.
+
+### 2MASS
+
+IRSA'nın 2MASS sık sorulan sorular sayfası, görüntü galerilerindeki görüntülerin kamu malı olduğunu bildirir ve şu teşekkür metinlerini ister:
+
+> This publication makes use of data products from the Two Micron All Sky Survey, which is a joint project of the University of Massachusetts and the Infrared Processing and Analysis Center/California Institute of Technology, funded by the National Aeronautics and Space Administration and the National Science Foundation.
+
+> Atlas Image mosaic obtained as part of the Two Micron All Sky Survey (2MASS), a joint project of the University of Massachusetts and the Infrared Processing and Analysis Center/California Institute of Technology, funded by the National Aeronautics and Space Administration and the National Science Foundation.
+
+Kamu malı ifadesi sayfada görüntü galerileri için geçer. Bu depodaki kesitler galeriden değil, SkyView'ın Atlas görüntülerinden yeniden örneklediği FITS dosyalarından üretilmiştir; ifadenin bu kesitleri de kapsadığı ayrıca doğrulanmamıştır.
+
+### WISE
+
+WISE Tüm Gökyüzü Sürümü açıklayıcı ekinin giriş bölümü şu teşekkür metnini ister:
+
+> This publication makes use of data products from the Wide-field Infrared Survey Explorer, which is a joint project of the University of California, Los Angeles, and the Jet Propulsion Laboratory/California Institute of Technology, funded by the National Aeronautics and Space Administration.
+
+### IRSA
+
+Gaia ve 2MASS katalog sorguları IRSA üzerinden yapılmıştır. IRSA'nın "Acknowledging IRSA" sayfası şu metni ister:
+
+> This research has made use of the NASA/IPAC Infrared Science Archive, which is funded by the National Aeronautics and Space Administration and operated by the California Institute of Technology.
+
+### Gaia
+
+ESA'nın Gaia lisans sayfası (`cosmos.esa.int/web/gaia-users/license`) Gaia verisinin CC BY-NC 3.0 IGO lisansıyla dağıtıldığını bildirir; ticari kullanım için ESA'nın arşiv koşullarına yönlendirir. Katalog verisi bu depoda barındırılmaz. Gaia'nın künye sayfası her veri sürümünün kendi teşekkür metnini verdiğini söyler; DR3'ün teşekkür metni okunmamıştır ve buraya eklenmemiştir.
+
+### Parlak Yıldız Kataloğu
+
+HEASARC'ın `bsc5p` sayfasındaki lisans notu, kataloğun yalnızca bilimsel araştırma amacıyla sunulduğunu, telif hakkının HEASARC'ta olmadığını ve ticari kullanım koşullarını açıklayamayacağını bildirir; basılı son sürümün (4. baskı) telif hakkı Yale University Observatory'dedir. Katalog bu depoda barındırılmaz; `gokyuzu_haritasi.png` katalogdaki konum ve kadirlerden çizilmiştir.
+
+### SkyView ve Pantheon+
+
+Görüntü kesitleri NASA SkyView servisinden indirilmiştir; SkyView'ın kendi teşekkür sayfasına ulaşılamamıştır (istek "File Not Found" döndürmüştür). Pantheon+SH0ES veri sürümünün kullanım koşulları okunmamıştır; veri bu depoda barındırılmaz, `hubble_diyagrami.png` ondan türetilmiştir.
 
 ## Yayınlar
 
