@@ -11,8 +11,8 @@ bağlı değildir. Ωm'in katkısı, Ωm ızgarasındaki en iyi x'in saçılım�
 toplam varyans yasasıyla eklenir.
 
 İkinci denetim yayımlanan zincirin kendisidir: Pantheon+ veri sürümündeki
-``Pantheon+SH0ES_FlatLambdaCDM.txt.gz`` (emcee, 160 000 örnek) indirilir ve H0
-saçılımı zincirin baş kısmı atılarak ve atılmadan ölçülür.
+dört ``Pantheon+SH0ES_*.txt.gz`` zinciri (emcee) indirilir ve H0 saçılımı
+zincirin baş kısmı atılarak ve atılmadan ölçülür.
 
 Kullanım:
     python projeler/hubble/h0_belirsizlik_denetimi.py
@@ -70,32 +70,50 @@ def cozum(s: dict, kovaryans: np.ndarray, z_alt: float, z_ust: float = np.inf) -
     }
 
 
-ZINCIR_ADRESI = (
+ZINCIR_KOKU = (
     "https://raw.githubusercontent.com/PantheonPlusSH0ES/DataRelease/main/Pantheon%2B_Data/5_COSMOLOGY/chains/"
-    "Pantheon%2BSH0ES/Pantheon%2BSH0ES_FlatLambdaCDM.txt.gz"
+    "Pantheon%2BSH0ES/Pantheon%2BSH0ES_"
 )
+# Makaledeki değerler: Brout ve ark. (2022) TeX makroları \fLCDMHPanSH, \oLCDMHPanSH, \HPanSH, \wwaHPanSH.
+YAYIMLANAN = {
+    "FlatLambdaCDM": (73.6, 1.1),
+    "LambdaCDM": (73.4, 1.1),
+    "FlatwCDM": (73.5, 1.1),
+    "Flatw0waCDM": (73.3, 1.1),
+}
 
 
-def yayimlanan_zincir() -> dict[str, object]:
-    """Veri sürümündeki zincirin H0 ortalaması ve saçılımı; baş kısım atılarak ve atılmadan."""
-    yol = onbellek.indir(
-        ZINCIR_ADRESI,
-        KOK / "veri" / "ham" / "pantheon" / "Pantheon+SH0ES_FlatLambdaCDM.txt.gz",
-        atif="Pantheon+SH0ES veri sürümü, 5_COSMOLOGY/chains",
-    )
-    with gzip.open(yol, "rt") as dosya:
-        basliklar = dosya.readline().lstrip("#").split()
-        ornekleyici = dosya.readline().strip()
-    zincir = np.loadtxt(yol, comments="#")
-    h0 = 100.0 * zincir[:, basliklar.index("cosmological_parameters--h0")]
-    n = h0.size
-    kesitler = {}
-    for ad, bas in (("tamami", 0.0), ("ilk_yuzde_10_atilmis", 0.10), ("ilk_yuzde_25_atilmis", 0.25), ("son_yari", 0.5)):
-        s = h0[int(bas * n) :]
-        kesitler[ad] = {"ornek": int(s.size), "h0": float(s.mean()), "sigma_h0": float(s.std())}
-    ilk = h0[: int(0.05 * n)]
-    kesitler["ilk_yuzde_5"] = {"ornek": int(ilk.size), "h0": float(ilk.mean()), "sigma_h0": float(ilk.std())}
-    return {"sutunlar": basliklar, "ornekleyici_satiri": ornekleyici, "ornek_sayisi": int(n), "kesitler": kesitler}
+def yayimlanan_zincirler() -> dict[str, object]:
+    """Veri sürümündeki dört zincirin H0 ortalaması ve saçılımı; baş kısım atılarak ve atılmadan."""
+    sonuc = {}
+    for model, (h0_makale, sigma_makale) in YAYIMLANAN.items():
+        yol = onbellek.indir(
+            f"{ZINCIR_KOKU}{model}.txt.gz",
+            KOK / "veri" / "ham" / "pantheon" / f"Pantheon+SH0ES_{model}.txt.gz",
+            atif="Pantheon+SH0ES veri sürümü, 5_COSMOLOGY/chains",
+        )
+        with gzip.open(yol, "rt") as dosya:
+            basliklar = dosya.readline().lstrip("#").split()
+            ornekleyici = dosya.readline().strip()
+        zincir = np.loadtxt(yol, comments="#")
+        h0 = 100.0 * zincir[:, basliklar.index("cosmological_parameters--h0")]
+        n = h0.size
+        kesitler = {}
+        for ad, bas in (
+            ("tamami", 0.0),
+            ("ilk_yuzde_10_atilmis", 0.10),
+            ("ilk_yuzde_25_atilmis", 0.25),
+            ("son_yari", 0.5),
+        ):
+            s = h0[int(bas * n) :]
+            kesitler[ad] = {"ornek": int(s.size), "h0": float(s.mean()), "sigma_h0": float(s.std())}
+        sonuc[model] = {
+            "makale": {"h0": h0_makale, "sigma_h0": sigma_makale},
+            "ornekleyici_satiri": ornekleyici,
+            "ornek_sayisi": int(n),
+            "kesitler": kesitler,
+        }
+    return sonuc
 
 
 def main() -> None:
@@ -113,7 +131,7 @@ def main() -> None:
             "yalnız istatistik, z > 0.01": cozum(s, yalniz_istatistik, 0.01),
         },
     }
-    sonuc["yayimlanan_zincir"] = yayimlanan_zincir()
+    sonuc["yayimlanan_zincirler"] = yayimlanan_zincirler()
     (BURASI / "h0_belirsizlik_denetimi.json").write_text(
         json.dumps(sonuc, ensure_ascii=False, indent=1), encoding="utf-8"
     )
@@ -123,9 +141,12 @@ def main() -> None:
             f"(Ωm sabit: {c['sigma_h0_omega_m_sabit']:.3f})  Ωm={c['omega_m']:.3f}"
         )
     print("zincir:", sonuc["zincir"]["ortalama"], sonuc["zincir"]["standart_sapma"])
-    print(sonuc["yayimlanan_zincir"]["ornekleyici_satiri"])
-    for ad, k in sonuc["yayimlanan_zincir"]["kesitler"].items():
-        print(f"yayımlanan zincir, {ad:22s} N={k['ornek']:6d} H0={k['h0']:.3f} ± {k['sigma_h0']:.3f}")
+    for model, z in sonuc["yayimlanan_zincirler"].items():
+        tam, kirpik = z["kesitler"]["tamami"], z["kesitler"]["ilk_yuzde_10_atilmis"]
+        print(
+            f"{model:14s} {z['ornekleyici_satiri']} makale {z['makale']['h0']} ± {z['makale']['sigma_h0']} | zincir tamamı "
+            f"{tam['h0']:.2f} ± {tam['sigma_h0']:.3f} | ilk %10 atılmış {kirpik['h0']:.2f} ± {kirpik['sigma_h0']:.3f}"
+        )
 
 
 if __name__ == "__main__":

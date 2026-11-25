@@ -1,11 +1,9 @@
-figür denetimi: 0 HATA · 5 UYARI · 0 BİLGİ · TESLİM EDİLEBİLİR
+figür denetimi: 0 HATA · 4 UYARI · 0 BİLGİ · TESLİM EDİLEBİLİR
   [UYARI] renk-cubugu-yok    eksen 0: renk kodlaması var, renk çubuğu yok
           → fig.colorbar(m, ax=ax, label='nicelik (birim)') ya da değerleri doğrudan yaz  [MPL-CMAP; CrameriEtAl2020]
   [UYARI] renk-cubugu-yok    eksen 1: renk kodlaması var, renk çubuğu yok
           → fig.colorbar(m, ax=ax, label='nicelik (birim)') ya da değerleri doğrudan yaz  [MPL-CMAP; CrameriEtAl2020]
   [UYARI] renk-cubugu-yok    eksen 2: renk kodlaması var, renk çubuğu yok
           → fig.colorbar(m, ax=ax, label='nicelik (birim)') ya da değerleri doğrudan yaz  [MPL-CMAP; CrameriEtAl2020]
-  [UYARI] panel-hizasi       aynı satırdaki paneller 2.1 pt kaymış
-          → constrained layout + ortak gridspec; renk çubuğunu tek panele değil satıra bağla (fig.colorbar(m, ax=axs))  [06 T15: Wilke2019Ch21 §21.2; Gleicher2018 §6.1; tolerans datawiz-secimi]
   [UYARI] panel-boslugu      sabit oranlı paneller arasında 59 mm boşluk (figür genişliğinin %35'i)
           → layout='compressed' (S.figur(..., layout='compressed')) ya da figür oranını panellere göre seç; boşluk sayfada veriye ayrılabilecek yeri harcar  [datawiz-secimi (%15 figür genişliği) — veri-mürekkep/alan ekonomisi: Wilke2019Ch21 §21.2 (paneller hizalı, düzenli); MPL compressed layout belgesi]

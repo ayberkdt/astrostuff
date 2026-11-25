@@ -93,8 +93,8 @@ def duragan_gokyuzu_cikar(
     aşağı çeker: 12 karelik sentetik dizide artık, kare gürültüsünün yaklaşık onda
     biri kadar artıya kayar (tests/birim/test_gokyuzu.py). Nesne maskesi verilmişse
     ``en_yuksegi_at=0`` bu yanlılığı kaldırır. Gerçek SOFI Ks dizisinde (16 kare, 28 dakika)
-    durağan model büyük ölçekli artığı 151 ADU'dan 0,8 ADU'ya indirmiştir
-    (``belgeler/kizilotesi_indirgeme.json``).
+    durağan model büyük ölçekli artığı 156 ADU'dan 0,8 ADU'ya indirmiştir; gökadanın alanı
+    doldurduğu ikinci dizide artık 4,6 ADU'da kalmıştır (``belgeler/kizilotesi_indirgeme.json``).
 
     Doğrulama
     ---------

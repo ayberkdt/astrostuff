@@ -1,15 +1,17 @@
 # Doğrulama özeti
 
-Üretim: `dogrula.py`, 2026-11-25 15:39 UTC. Ayrıntı: `dogrulama_kaydi.json`.
+Üretim: `dogrula.py`, 2026-11-25 16:28 UTC. Ayrıntı: `dogrulama_kaydi.json`.
 
 ## Künyeler
 
-BULUNAMADI: 2, DOGRULANDI: 212, ELLE: 20 (toplam 234).
+BULUNAMADI: 4, DOGRULANDI: 211, ELLE: 21 (toplam 236).
 
 ### Dış kaydı okunamayan
 
 - `IERS2010` (isbn:3898889896): dış kayıt okunamadı
-- `Draine2011` (isbn:9780691122144): dış kayıt okunamadı
+- `Peebles1993` (isbn:9780691019338): dış kayıt okunamadı
+- `Dodelson2020` (isbn:9780128159484): dış kayıt okunamadı
+- `BinneyTremaine2008` (isbn:9780691130279): dış kayıt okunamadı
 
 ### Elle doğrulanacak
 
@@ -33,6 +35,7 @@ BULUNAMADI: 2, DOGRULANDI: 212, ELLE: 20 (toplam 234).
 - `Photutils2026` (https://photutils.readthedocs.io/en/stable/): DOI, arXiv ya da ISBN yok; elle doğrulanacak
 - `IRSA2026` (https://irsa.ipac.caltech.edu/TAP): DOI, arXiv ya da ISBN yok; elle doğrulanacak
 - `ADQL2023` (https://www.ivoa.net/documents/ADQL/20231215/REC-ADQL-2.1.html): DOI, arXiv ya da ISBN yok; elle doğrulanacak
+- `Hierarch2009` (https://fits.gsfc.nasa.gov/registry/hierarch_keyword.html): DOI, arXiv ya da ISBN yok; elle doğrulanacak
 
 ### Doğrulanan
 
@@ -205,13 +208,11 @@ BULUNAMADI: 2, DOGRULANDI: 212, ELLE: 20 (toplam 234).
                     <sup>*</sup>». Classical and Quantum Gravity, 38, 153001 [Crossref, doi:10.1088/1361-6382/ac086d]
 - `Abbott2017`: The LIGO Scientific Collaboration and The Virgo Collaboration 2017, «A gravitational-wave standard siren measurement of the Hubble constant». Nature, 551, 85-88 [Crossref, doi:10.1038/nature24471]
 - `Moresco2022`: Moresco 2022, «Unveiling the Universe with emerging cosmological probes». Living Reviews in Relativity, 25, 6 [Crossref, doi:10.1007/s41114-022-00040-z]
-- `Peebles1993`:  1993, «Principles of physical cosmology». Princeton University Press [Open Library, isbn:9780691019338]
-- `Dodelson2020`:  2020, «Modern Cosmology». Elsevier Science & Technology [Open Library, isbn:9780128159484]
 - `MoBoschWhite2010`: Mo 2010, «Galaxy Formation and Evolution». Cambridge University Press [Crossref, doi:10.1017/CBO9780511807244]
 - `CarrollOstlie2017`: Carroll 2017, «An Introduction to Modern Astrophysics». Cambridge University Press [Crossref, doi:10.1017/9781108380980]
 - `RybickiLightman1979`: Rybicki 1985, «Radiative Processes in Astrophysics». Wiley [Crossref, doi:10.1002/9783527618170]
-- `BinneyTremaine2008`:  2008, «Galactic Dynamics: (Second Edition) (Princeton Series in Astrophysics)». Princeton University Press [Open Library, isbn:9780691130279]
 - `Kippenhahn2012`: Kippenhahn 2012, «Stellar Structure and Evolution». Astronomy and Astrophysics Library [Crossref, doi:10.1007/978-3-642-30304-3]
+- `Draine2011`:  2011, «Physics of the interstellar and intergalactic medium». Princeton University Press [Open Library, isbn:9780691122144]
 - `Paxton2011`: Paxton 2011, «MODULES FOR EXPERIMENTS IN STELLAR ASTROPHYSICS (MESA)». The Astrophysical Journal Supplement Series, 192, 3 [Crossref, doi:10.1088/0067-0049/192/1/3]
 - `Choi2016`: Choi 2016, «MESA ISOCHRONES AND STELLAR TRACKS (MIST). I. SOLAR-SCALED MODELS». The Astrophysical Journal, 823, 102 [Crossref, doi:10.3847/0004-637X/823/2/102]
 - `Bressan2012`: Bressan 2012, «<scp>parsec</scp>
@@ -263,6 +264,7 @@ BULUNAMADI: 2, DOGRULANDI: 212, ELLE: 20 (toplam 234).
 - `Cohen2003`: Cohen 2003, «Spectral Irradiance Calibration in the Infrared. XIV. The Absolute Calibration of 2MASS». The Astronomical Journal, 126, 1090-1096 [Crossref, doi:10.1086/376474]
 - `Wright2010`: Wright 2010, «THE WIDE-FIELD INFRARED SURVEY EXPLORER (WISE): MISSION DESCRIPTION AND INITIAL ON-ORBIT PERFORMANCE». The Astronomical Journal, 140, 1868-1881 [Crossref, doi:10.1088/0004-6256/140/6/1868]
 - `Schirmer2013`: Schirmer 2013, «THELI: CONVENIENT REDUCTION OF OPTICAL, NEAR-INFRARED, AND MID-INFRARED IMAGING DATA». The Astrophysical Journal Supplement Series, 209, 21 [Crossref, doi:10.1088/0067-0049/209/2/21]
+- `Groth1986`: Groth 1986, «A pattern-matching algorithm for two-dimensional coordinate lists». The Astronomical Journal, 91, 1244 [Crossref, doi:10.1086/114099]
 - `Abramowicz2013`: Abramowicz 2011, «Foundations of Black Hole Accretion Disk Theory». Living Reviews in Relativity, 16, 1 (2013) [arXiv, arXiv:1104.5499]
 - `Sathyaprakash2009`: Sathyaprakash 2009, «Physics, Astrophysics and Cosmology with Gravitational Waves». Living Rev. Relativity 12, (2009), 2 [arXiv, arXiv:0903.0338]
 - `Page2005`: Page 2004, «Hawking Radiation and Black Hole Thermodynamics». New J.Phys.7:203,2005 [arXiv, arXiv:hep-th/0409024]
@@ -389,7 +391,7 @@ BULUNAMADI: 2, DOGRULANDI: 212, ELLE: 20 (toplam 234).
 
 ## Atıf denetimi
 
-Plan belgelerinde kullanılan tanımlı anahtar: 226.
+Plan belgelerinde kullanılan tanımlı anahtar: 227.
 
 Tanımsız anahtar yok.
 

@@ -6,8 +6,8 @@
 
 Kitaplık çalışırken yalnızca NumPy ve SciPy kullanır. Astropy ve ERFA hesap için değil, sonuçları karşılaştırmak için vardır.
 
-- 226 fonksiyon, 35 sabit, 1073 test
-- 265 kaynak kaydının hepsinde denklem kaynağın metninden okundu; "bekliyor" işaretli kayıt kalmadı
+- 229 fonksiyon, 35 sabit, 1089 test
+- 268 kaynak kaydının hepsinde denklem kaynağın metninden okundu; "bekliyor" işaretli kayıt kalmadı
 - Güncel sayılar: [plan/DURUM.md](plan/DURUM.md) (koddan üretilir)
 
 ## Kitaplıkla üretilen sonuçlar
@@ -25,7 +25,13 @@ Kod açık [Pantheon+SH0ES verisini](https://github.com/PantheonPlusSH0ES/DataRe
 
 Yayımlanan değerler Brout ve ark. (2022) makalesinin arXiv kaynağından okundu. Kayıt: [projeler/hubble/sonuc.json](projeler/hubble/sonuc.json).
 
-Bulunan H0 belirsizliği yayımlanandan küçüktür; fark yayımlanan zincirin baş kısmından geliyor. Veri sürümündeki zincirin (emcee, 160 000 örnek) tamamı H0 = 73,50 ± 1,07 verir; ilk %10'u atılınca 73,53 ± 1,01 olur ve sonraki kesitlerde değişmez. İlk %5'in saçılımı 1,76'dir: zincir bu bölümde henüz yakınsamamıştır. Zincirden bağımsız kapalı biçimli çözüm aynı veriden 73,52 ± 1,02 verir ([h0_belirsizlik_denetimi.py](projeler/hubble/h0_belirsizlik_denetimi.py)); Riess ve ark. (2022) temel sonucu da ± 1,01'dir. Makale örnekleyici olarak PolyChord'u anar, veri sürümündeki zincir emcee'dir; makaledeki ± 1,1'in bu zincirden üretildiği doğrulanmadı.
+Bulunan H0 belirsizliği yayımlanandan küçüktür. Üç bağımsız denetim bizim değeri destekliyor ([h0_belirsizlik_denetimi.py](projeler/hubble/h0_belirsizlik_denetimi.py)):
+
+- Zincirden bağımsız kapalı biçimli çözüm aynı veriden 73,52 ± 1,02 verir.
+- Veri sürümündeki dört zincirin (emcee) hepsi, ilk %10'u atılınca ± 1,01 ile ± 1,04 arasında saçılım verir; baş kısım atılmazsa ± 1,03 ile ± 1,07 arasındadır. Düz ΛCDM zinciri 73,53 ± 1,01'dir.
+- Riess ve ark. (2022) temel sonucu ± 1,01'dir.
+
+Makale dört model için de ± 1,1 yazar; yayımlanan zincirlerin hiçbiri bu değeri vermez (tek ondalıkla hepsi ± 1,0'a yuvarlanır). Makale örnekleyici olarak PolyChord'u anar, veri sürümündeki zincirler emcee'dir; PolyChord zincirleri yayımlanmadığı için ± 1,1'in kaynağı açık veriden doğrulanamaz.
 
 ### Yıldız kataloğu: Gaia ile Güneş çevresi
 
@@ -54,19 +60,39 @@ Kaynak saptama, WCS dönüşümü ve katalog eşleme aynı alanın 2MASS K gör�
 - Konum farkının ortancası sağ açıklıkta 0,16, dik açıklıkta 0,03 yay saniyesi; saçılım iki eksende 0,14 ve 0,13 yay saniyesi. Artıklar iki öbekte toplanıyor; nedeni incelenmedi (SkyView'ın yeniden örneklemesi olası).
 - Açıklık kadiri ile katalog K kadiri arasındaki sıfır noktasının saçılımı 40 yalıtılmış yıldızda 0,021 kadir.
 
-Örtüşen kaynakları ayıran adım bu sınamada eklendi: ayrıştırma olmadan parlak yapay yıldızların %84'ü bulunuyordu. Aynı görüntüde başlıktaki WCS bilerek bozulup (0,4° dönme, %0,4 ölçek, 18 ve 14 piksel kaydırma) yalnızca saptanan kaynaklarla katalogdan yeniden çözüldü: en büyük konum hatası 25,8 yay saniyesinden 0,43 yay saniyesine indi (246 yıldız). Katalog aynı taramanın verisinden üretildiği için bu sınama kodu ölçer, 2MASS'in kendisini değil.
+Örtüşen kaynakları ayıran adım bu sınamada eklendi: ayrıştırma olmadan parlak yapay yıldızların %84'ü bulunuyordu. Aynı görüntüde başlıktaki WCS bilerek bozulup (0,4° dönme, %0,4 ölçek, 18 ve 14 piksel kaydırma) yalnızca saptanan kaynaklarla katalogdan yeniden çözüldü: en büyük konum hatası 25,8 yay saniyesinden 0,43 yay saniyesine indi (246 yıldız). Katalog aynı taramanın verisinden üretildiği için bu sınama kodu ölçer, 2MASS'in kendisini değil. Başlık hiç kullanılmadan, üçgen eşlemeyle yapılan kör çözüm de aynı sonuca vardı: 24 çift atandı, 246 yıldızla çözüm başlıktaki WCS'ten en çok 0,43 yay saniyesi ayrıldı; bulunan ölçek 0,9998 yay saniyesi/piksel (başlıkta 1).
 
 ### Gerçek ham veriyle indirgeme
 
 ![Hubble STIS karesinde kozmik ışın temizliği: birinci poz, temizlenmiş birinci poz ve ikinci poz](belgeler/kozmik_isin_gercek_veri.png)
 
-Kozmik ışın temizliği Hubble STIS'in M5 küresel kümesi görüntüsünde sınandı (program 8310, iki ardışık 400 saniyelik poz). Kozmik ışınlar iki pozda farklı piksellere düştüğü için pozların farkı bağımsız bir ölçüt verir. Tek kareye bakan algoritma, farkta 6σ'yı aşan 7081 pikselin %77'sini, 20σ'yı aşanların %97'sini buldu; işaretlediği piksellerin %91'i gerçek bir kozmik ışına bitişik. Temizlik sonrası bu piksellerin ikinci pozdan ortanca sapması 29σ'dan 1,0σ'ya indi. İşaretlenen piksellerin komşularına düşük eşik uygulayan adım bu sınamada eklendi; onsuz tamlık %60 idi ([kozmik_isin_gercek_veri.py](ornekler/kozmik_isin_gercek_veri.py)).
+Kozmik ışın temizliği iki Hubble STIS gözleminde sınandı; her dosya aynı yönelimde iki ardışık poz taşır. Kozmik ışınlar iki pozda farklı piksellere düştüğü için pozların farkı bağımsız bir ölçüt verir ([kozmik_isin_gercek_veri.py](ornekler/kozmik_isin_gercek_veri.py)):
+
+| Alan | Farkta 6σ üstü piksel | Bulunan | 20σ üstünde bulunan | Saflık | Temizlik öncesi ve sonrası sapma |
+|---|---|---|---|---|---|
+| M5 küresel kümesi (yıldızca kalabalık) | 7081 | %77 | %97 | %91 | 29σ, 1,0σ |
+| Abell 1795 gökada kümesi (seyrek, yaygın kaynaklı) | 14059 | %84 | %98 | %97 | 39σ, 0,8σ |
+
+Saflık, işaretlenen piksellerin gerçek bir kozmik ışına bitişik olan kesridir. İşaretlenen piksellerin komşularına düşük eşik uygulayan adım bu sınamada eklendi; onsuz tamlık %60 ve %66 idi. Kaynak makalenin eksik örneklenmiş veri için önerdiği f_lim = 5, bu iki alanda f_lim = 2'den düşük tamlık verdi (%64 ve %72).
 
 ![ESO SOFI Ks karelerinde indirgeme: ham kare, gökyüzü çıkarılmış kare ve 16 karenin yığını](belgeler/kizilotesi_indirgeme.png)
 
-Kızılötesi gökyüzü çıkarma ESO NTT/SOFI'nin 16 ham Ks karesinde sınandı (program 184.D-1152(F), SN 2011bm alanı). Gökyüzü 4732-4795 ADU düzeyindedir; çıkarma sonrası büyük ölçekli artık 151 ADU'dan 0,79 ADU'ya, piksel gürültüsü 255 ADU'dan 7,1 ADU'ya indi. Bu 28 dakikalık dizide durağan model dinamik modelden iyi sonuç verdi (7,1 ve 8,2 ADU). Yıldızlardan ölçülen kare ötelemeleri başlıktaki kaydırma komutlarıyla 0,7 piksel içinde uyuştu. Yığında, tam kapsanan bölgedeki 5 2MASS yıldızının 5'i bulundu ve WCS 0,32 yay saniyesi artıkla çözüldü; başlıktaki WCS 47 piksel kayıktı ([kizilotesi_indirgeme.py](ornekler/kizilotesi_indirgeme.py)).
+Kızılötesi indirgeme ESO NTT/SOFI'nin iki ham Ks dizisinde, aynı gecenin kubbe düz alanıyla uçtan uca koşuldu ([kizilotesi_indirgeme.py](ornekler/kizilotesi_indirgeme.py)):
 
-Alan seyrek olduğu için bu sınamanın fotometri ayağı zayıftır: sıfır noktası yalnızca 3 sönük yıldıza dayanır (0,36 kadir saçılım) ve aynı yıldızın 16 karedeki akı saçılımı beklenen gürültünün 1,4-1,6 katıdır. Karanlık ve düz alan düzeltmesi uygulanmadı; gökyüzü çıkarılmış tek karede çapraz çizgili artık desenler kalıyor ve nedeni incelenmedi.
+| | SN 2011bm alanı (seyrek) | SN 2005at alanı (zengin, gökada alanı doldurur) |
+|---|---|---|
+| Kare sayısı ve süre | 16 kare, 28 dakika | 32 kare, 53 dakika |
+| Büyük ölçekli artık (ADU) | 156 → 0,8 | 159 → 4,6 |
+| Piksel gürültüsü (ADU) | 251 → 7,2 | 260 → 9,9 |
+| Öteleme ile başlık komutu farkı (piksel) | 0,7 | 3,1 |
+| Alandaki 2MASS yıldızı, saptanan | 5, 5 | 48, 33 |
+| Astrometri artığı (yay saniyesi) | 0,45 | 0,47 |
+| Sıfır noktası saçılımı (kadir) | 2 yıldız, ölçülemez | 14 yıldızda 0,094 |
+| Kör astrometrik çözüm | reddedildi (ortak yıldız az) | başlıktan başlayan çözümle aynı |
+
+Zengin alanda sıfır noktası saçılımı (0,094 kadir) kullanılan 2MASS yıldızlarının ortanca katalog belirsizliği (0,106 kadir) düzeyindedir. Düz alan, aynı yıldızın karelerdeki akı saçılımını %3,3'ten %3,1'e indirdi (15 yıldız); yalnızca arka plan gürültüsünden beklenen %1,8'dir. Bu dizilerde durağan gökyüzü modeli dinamik modelden az gürültülü çıktı. Gökada alanı doldurduğunda büyük ölçekli artık daha yüksek kalır (4,6 ADU): kaydırma adımından büyük nesne modele sızar.
+
+Seyrek alanda kalibrasyon zayıftır: tam kapsanan bölgede yalnızca 5 katalog yıldızı vardır. Kör çözüm bu alanda yanlış bir çözüm üretmiş, doğrulama adımı onu reddetmiştir. Düz alan yalnızca maskesiz lamba açık ve kapalı karelerden kurulmuştur; SOFI'nin maskeli karelerle yapılan sıfır düzeyi düzeltmesi uygulanmamıştır. Gökyüzü çıkarılmış tek karede çapraz çizgili artık desenler kalıyor; nedeni incelenmedi.
 
 ### Parlak yıldızlar: gökyüzü haritası
 
@@ -100,7 +126,7 @@ Bir gaz bulutunun kendi çekimiyle çökebilmesi için gereken en küçük kütl
 - `gozlem`: hedef görünürlüğü ve hava kütlesi (presesyon ve atmosfer kırılmasıyla), CCD sinyal modeli, sentetik ham kare, sinyal-gürültü oranı
 - `indirgeme`: sigma kırpmalı kare birleştirme, bias/karanlık/düz alan düzeltmesi, kazanç ve okuma gürültüsü ölçümü, tek karede kozmik ışın temizliği (L.A.Cosmic), kaydırmalı kızılötesi karelerden gökyüzü çıkarma
 - `fotometri`: arka plan haritası, kaynak saptama ve örtüşen kaynakların ayrıştırılması, açıklık fotometrisi
-- `astrometri`: FITS WCS piksel-gök dönüşümü (TAN izdüşümü), katalog çapraz eşleme, yaklaşık WCS'ten katalogla astrometrik çözüm
+- `astrometri`: FITS WCS piksel-gök dönüşümü (TAN izdüşümü), katalog çapraz eşleme, yaklaşık WCS'ten ve başlangıç WCS'i olmadan (üçgen eşleme) astrometrik çözüm
 - `gorsel`: asinh germe ve renk koruyan RGB bileşimi
 - `isinim`: kadir sistemleri, Planck fonksiyonu, 2MASS ve WISE sıfır noktaları
 - `zamanserisi`: Lomb-Scargle periyodogramı
@@ -180,7 +206,7 @@ python ornekler/fizik_galerisi.py
 python ornekler/gokyuzu_haritasi.py
 python ornekler/gercek_goruntu_dogrulamasi.py
 python ornekler/kozmik_isin_gercek_veri.py
-python ornekler/kizilotesi_indirgeme.py      # SOFI kareleri önce indirilip açılmalı; kimlikler betiğin içinde
+python ornekler/kizilotesi_indirgeme.py      # SOFI kareleri önce indirilip açılmalı: ornekler/eso_sofi_kareleri.txt
 python projeler/hubble/h0_belirsizlik_denetimi.py
 ```
 
@@ -192,8 +218,8 @@ Depodaki şekiller yerel bir figür denetim aracıyla (`datawiz`) üretildi; ara
 - Gözlem planlaması çerçeve yanlılığı, presesyon ve isteğe bağlı kırılma içerir; nutasyon, aberasyon ve UT1 − UTC farkı yoktur. 30 rastgele hedefte astropy ile yön farkı en çok 0,45 yay dakikasıdır (presesyonsuz hesapta 26 yay dakikası). Kırılma modeli yaklaşık 5° yüksekliğin altında geçersizdir.
 - FITS okuyucu birincil birimi ve görüntü uzantılarını okur; tablo uzantıları listelenir ama çözülmez, sıkıştırılmış görüntüler okunmaz.
 - Kaynak ayrıştırma aralarında belirgin eyer olan çiftleri ayırır: 2 FWHM aralıkta akı oranı 2'ye kadar çiftlerin %92-98'i, oran 3'te varsayılan ayarla %14'ü ayrışır. Açıklık fotometrisi dar açıklıkta yüzde birkaç eksik ölçer.
-- WCS yalnızca TAN izdüşümünü çözer; bozulma terimleri (SIP) yoktur. Astrometrik çözüm yaklaşık bir WCS ister (ölçek ve yönelim yüzde birkaç içinde); hiçbir ön bilgi olmadan desen eşleme yoktur.
-- Gerçek ham veri sınamaları tek bir STIS gözlemine ve tek bir SOFI dizisine dayanır. SOFI kareleri `.fits.Z` olarak iner ve okuyucumuz sıkıştırmayı açmaz (`gzip -d` gerekir); karanlık ve düz alan düzeltmesi bu dizide uygulanmadı.
+- WCS yalnızca TAN izdüşümünü çözer; bozulma terimleri (SIP) yoktur. Kör astrometrik çözüm ölçek, yönelim ve ayna bilmeden çalışır ama görüntünün kapladığı bölgenin kataloğunu ister (yaklaşık gök konumu ve alan genişliği); bütün gökte arayan dizinli bir çözücü değildir ve en az 8 ortak yıldız bulamazsa çözümü reddeder.
+- Gerçek ham veri sınamaları iki STIS gözlemine ve iki SOFI dizisine dayanır; hepsi tek alet ve tek süzgeçtir. SOFI kareleri `.fits.Z` olarak iner ve okuyucumuz sıkıştırmayı açmaz (`gzip -d` gerekir). Ayrı karanlık çıkarılmaz (gökyüzü modeli karanlığı da içerir); düz alan sadeleştirilmiş kubbe düz alanıdır.
 - SkyView kesitleri yeniden örneklenmiş görüntülerdir; fotometrik kalibrasyon için özgün arşiv verisi gerekir.
 
 ## Plan
@@ -204,4 +230,4 @@ Depodaki şekiller yerel bir figür denetim aracıyla (`datawiz`) üretildi; ara
 
 Telif Hakkı © 2026 Ayberk. Tüm hakları saklıdır; ayrıntı [LICENSE](LICENSE) dosyasındadır. Bazı fonksiyonların izlediği ERFA algoritmalarına ilişkin bildirim [UCUNCU_TARAF_BILDIRIMLERI.md](UCUNCU_TARAF_BILDIRIMLERI.md) dosyasındadır. Analizlerin kullandığı veri depoya konmaz; çalışma anında kaynağından indirilir. Şekillerin bir kısmı DSS2, 2MASS, WISE, Gaia, Parlak Yıldız Kataloğu, Pantheon+, Hubble STIS ve ESO SOFI verisinden türetilmiştir; hak saklama bu şekilleri kapsamaz. DSS verisi içeren `optik_kizilotesi.png` CC BY-NC-SA 4.0 ile paylaşılır, Gaia verisi CC BY-NC 3.0 IGO lisanslıdır. Her taramanın koşulları ve istenen teşekkür metinleri aynı bildirim dosyasındadır.
 
-This publication makes use of data products from the Two Micron All Sky Survey, which is a joint project of the University of Massachusetts and the Infrared Processing and Analysis Center/California Institute of Technology, funded by the National Aeronautics and Space Administration and the National Science Foundation. This publication makes use of data products from the Wide-field Infrared Survey Explorer, which is a joint project of the University of California, Los Angeles, and the Jet Propulsion Laboratory/California Institute of Technology, funded by the National Aeronautics and Space Administration. This research has made use of the NASA/IPAC Infrared Science Archive, which is funded by the National Aeronautics and Space Administration and operated by the California Institute of Technology. This research is based on observations made with the NASA/ESA Hubble Space Telescope obtained from the Space Telescope Science Institute, which is operated by the Association of Universities for Research in Astronomy, Inc., under NASA contract NAS5-26555. These observations are associated with program 8310. Based on observations collected at the European Southern Observatory under ESO programme 184.D-1152(F).
+This publication makes use of data products from the Two Micron All Sky Survey, which is a joint project of the University of Massachusetts and the Infrared Processing and Analysis Center/California Institute of Technology, funded by the National Aeronautics and Space Administration and the National Science Foundation. This publication makes use of data products from the Wide-field Infrared Survey Explorer, which is a joint project of the University of California, Los Angeles, and the Jet Propulsion Laboratory/California Institute of Technology, funded by the National Aeronautics and Space Administration. This research has made use of the NASA/IPAC Infrared Science Archive, which is funded by the National Aeronautics and Space Administration and operated by the California Institute of Technology. This research is based on observations made with the NASA/ESA Hubble Space Telescope obtained from the Space Telescope Science Institute, which is operated by the Association of Universities for Research in Astronomy, Inc., under NASA contract NAS5-26555. These observations are associated with programs 8310 and 7245. Based on observations collected at the European Southern Observatory under ESO programme 184.D-1152(F).

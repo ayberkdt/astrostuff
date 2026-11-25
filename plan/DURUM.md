@@ -2,11 +2,11 @@
 
 Bu dosya `python kaynakca/kutuk_raporu.py` ile kaynak kütüğünden üretilir; elle düzenlenmez.
 
-- Kaynağa bağlı açık fonksiyon: 226
-- Bütün kayıtları kaynak metninden okunmuş fonksiyon: 226
-- Kaynak kaydı: 265 (okundu: 265, bekliyor: 0)
+- Kaynağa bağlı açık fonksiyon: 229
+- Bütün kayıtları kaynak metninden okunmuş fonksiyon: 229
+- Kaynak kaydı: 268 (okundu: 268, bekliyor: 0)
 - Kaynaklı sabit: 35 (teyit bekleyen: 0)
-- Test fonksiyonu: 296 (parametreli ve özellik testleri tek sayılır)
+- Test fonksiyonu: 302 (parametreli ve özellik testleri tek sayılır)
 - Kaynak kuralından muaf altyapı fonksiyonu: 4
 
 `okundu`: denklem kod yazılırken kaynağın metninden okundu. `bekliyor`: denklem hatırlanan biçimiyle
@@ -53,6 +53,12 @@ yazıldı, testlerle sınandı, ama kaynağın metni henüz açılmadı.
 ### `kozmos.astrometri.eslestirme`
 
 - `capraz_esle`: [ERFA2023] sepp.c, s2c.c (okundu)
+
+### `kozmos.astrometri.ucgen`
+
+- `kor_cozum`: [Groth1986] Bölüm II (algoritma) ve Bölüm III (katalog ile plak listesinin eşlenmesi örneği) (okundu)
+- `ucgen_esle`: [Groth1986] Bölüm II.c (üçgen eşleme, yön), II.d (yanlış eşleşmelerin ayıklanması), II.e (oylama ve atama) (okundu)
+- `ucgenleri_kur`: [Groth1986] Bölüm II.b: köşe sıralaması; Denk. 1-3 (R) ve Denk. 5 (C); oran sınırı (okundu)
 
 ### `kozmos.astrometri.wcs`
 
@@ -415,6 +421,7 @@ yazıldı, testlerle sınandı, ama kaynağın metni henüz açılmadı.
 - [ERFA2023]: 33
 - [FITS2018]: 4
 - [ForemanMackey2013]: 3
+- [Groth1986]: 3
 - [Hierarch2009]: 1
 - [HoffleitWarren1991]: 1
 - [Hogg1999]: 17

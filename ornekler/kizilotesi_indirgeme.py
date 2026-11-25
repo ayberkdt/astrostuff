@@ -1,21 +1,28 @@
 """Gerçek ham yakın kızılötesi karelerin uçtan uca indirgenmesi.
 
-Veri: ESO NTT/SOFI, Ks bandı, SN 2011bm alanı, program 184.D-1152(F), 15 Mart
-2012; dört köşeli kaydırma düzeninde 16 ham kare (her biri 15 × 6 s). Kareler
-ESO arşivinden ``.fits.Z`` olarak iner; açılmış ``.fits`` dosyaları beklenir
-(``gzip -d`` ``.Z`` dosyalarını açar). Dosya kimlikleri aşağıdaki ``KARE_KIMLIKLERI``
-listesindedir; her biri ``https://dataportal.eso.org/dataportal_new/file/<kimlik>``
-adresinden iner ve ``veri/ham/eso/`` altına, adındaki ``:`` yerine ``-`` konarak kaydedilir.
+Veri: ESO NTT/SOFI, Ks bandı, program 184.D-1152(F), Mart 2012. İki bilim
+dizisi ve aynı gecenin kubbe düz alanları:
+
+- SN 2011bm alanı: 16 kare (15 × 6 s), yüksek galaktik enlem, seyrek alan.
+- SN 2005at alanı (NGC 6744): 32 kare (10 × 7 s), yıldızca zengin; gökada alanı doldurur.
+- Ks kubbe düz alanı: 8 kare (lamba açık/kapalı, maskeli/maskesiz).
+
+Kareler ESO arşivinden ``.fits.Z`` olarak iner; açılmış ``.fits`` dosyaları
+``veri/ham/eso/`` altında beklenir (``gzip -d`` ``.Z`` dosyalarını açar; düz
+alan dosyaları ``duzalan_`` önekiyle). Dosya kimlikleri
+``ornekler/eso_sofi_kareleri.txt`` içindedir; her biri
+``https://dataportal.eso.org/dataportal_new/file/<kimlik>`` adresinden iner.
 
 Adımlar:
 
-1. Maskesiz durağan gökyüzü modeli, bozuk piksel haritası, kare başına saptama.
-2. Kareler arası öteleme: başlıktaki kaydırma komutlarından başlar, yıldızlarla inceltilir.
-3. İlk yığından nesne maskesi; maskeli durağan ve dinamik gökyüzü modelleri.
-4. Yığma, kaynak saptama, 2MASS kataloğuyla astrometrik çözüm ve sıfır noktası.
+1. Düz alan: maskesiz lamba açık karelerin ortalaması eksi maskesiz lamba kapalı karelerin ortalaması.
+2. Maskesiz durağan gökyüzü modeli, bozuk piksel haritası, kare başına saptama.
+3. Kareler arası öteleme: başlıktaki kaydırma komutlarından başlar, yıldızlarla inceltilir.
+4. İlk yığından nesne maskesi; maskeli durağan ve dinamik gökyüzü modelleri; düz alana bölme.
+5. Yığma, kaynak saptama, 2MASS kataloğuyla astrometrik çözüm (başlıktan ve başlıksız) ve sıfır noktası.
 
 Bu sınamada "gerçek" bilinmez; ölçütler iç tutarlılıktır (artık arka planın
-düzlüğü, aynı yıldızın 16 karedeki akısının yinelenebilirliği) ve bağımsız
+düzlüğü, aynı yıldızın karelerdeki akısının yinelenebilirliği) ve bağımsız
 katalogdur (2MASS konumları ve K kadirleri).
 
 Kullanım:
@@ -32,7 +39,7 @@ import numpy as np
 from scipy import ndimage
 
 from kozmos.arsiv import ikimass
-from kozmos.astrometri import cozum, eslestirme, wcs
+from kozmos.astrometri import cozum, eslestirme, ucgen, wcs
 from kozmos.fotometri import kaynak as fk
 from kozmos.gorsel import germe
 from kozmos.indirgeme import gokyuzu
@@ -42,24 +49,7 @@ from kozmos.istatistik import saglam
 KOK = Path(__file__).resolve().parents[1]
 DIZIN = KOK / "veri" / "ham" / "eso"
 ACIKLIK, HALKA = 5.0, (10.0, 15.0)
-KARE_KIMLIKLERI = (
-    "SOFI.2012-03-15T07:15:00.783",
-    "SOFI.2012-03-15T07:16:53.872",
-    "SOFI.2012-03-15T07:18:47.284",
-    "SOFI.2012-03-15T07:20:40.514",
-    "SOFI.2012-03-15T07:22:37.692",
-    "SOFI.2012-03-15T07:24:31.062",
-    "SOFI.2012-03-15T07:26:24.182",
-    "SOFI.2012-03-15T07:28:17.314",
-    "SOFI.2012-03-15T07:30:12.942",
-    "SOFI.2012-03-15T07:32:06.113",
-    "SOFI.2012-03-15T07:33:59.183",
-    "SOFI.2012-03-15T07:35:52.612",
-    "SOFI.2012-03-15T07:37:48.142",
-    "SOFI.2012-03-15T07:39:41.265",
-    "SOFI.2012-03-15T07:41:34.245",
-    "SOFI.2012-03-15T07:43:27.413",
-)
+DIZILER = {"SN2011bm": "SOFI.2012-03-15T07*.fits", "SN2005at": "SOFI.2012-03-14T09*.fits"}
 
 
 def sapta(goruntu: np.ndarray, esik: float) -> fk.KaynakListesi:
@@ -98,14 +88,39 @@ def buyuk_olcekli_yapi(kareler: np.ndarray, maskeler: np.ndarray, kutu: int = 64
         d = np.where(maske, np.nan, kare)
         n = d.shape[0] // kutu
         bloklar = d[: n * kutu, : n * kutu].reshape(n, kutu, n, kutu).swapaxes(1, 2).reshape(n, n, -1)
-        sonuc.append(np.nanstd(np.nanmedian(bloklar, axis=2)))
+        with np.errstate(all="ignore"):
+            sonuc.append(np.nanstd(np.nanmedian(bloklar, axis=2)))
     return float(np.median(sonuc))
 
 
-def main() -> None:
-    yollar = sorted(DIZIN.glob("SOFI*.fits"))
+def duz_alan_kur() -> tuple[np.ndarray, dict]:
+    """Kubbe düz alanı: (lamba açık − lamba kapalı), ortancaya bölünmüş.
+
+    Dizi lamba kapalı, kapalı+maske, açık+maske, açık, açık, açık+maske, kapalı+maske, kapalı sırasındadır;
+    bu sıra başlıkta yazmaz, karelerin düzeylerinden okunmuştur. Maske ışığın bir bölümünü kestiği için her
+    lamba durumunda en yüksek düzeyli iki kare maskesizdir. Maskeli kareler (aydınlatmaya bağlı sıfır düzeyi
+    düzeltmesi içindir) burada kullanılmaz.
+    """
+    yollar = sorted(DIZIN.glob("duzalan_SOFI*.fits"))
+    if len(yollar) != 8:
+        raise SystemExit(f"{DIZIN} altında 8 düz alan karesi bekleniyor, {len(yollar)} bulundu")
+    kareler = np.array([fits.fits_oku(yol)[0] for yol in yollar])
+    duzey = np.median(kareler, axis=(1, 2))
+    sira = np.argsort(duzey)
+    kapali, acik = sira[2:4], sira[6:8]  # her dörtlünün en yüksek ikisi
+    fark = kareler[acik].mean(axis=0) - kareler[kapali].mean(axis=0)
+    duz = fark / np.median(fark)
+    return duz, {
+        "kare_duzeyleri_adu": [round(float(d), 1) for d in duzey],
+        "lamba_acik_eksi_kapali_adu": float(np.median(fark)),
+        "duz_alan_sacilimi": float(saglam.mad_olcek(duz)),
+    }
+
+
+def indirge(ad: str, desen: str, duz: np.ndarray) -> tuple[dict, dict]:
+    yollar = sorted(DIZIN.glob(desen))
     if len(yollar) < 8:
-        raise SystemExit(f"{DIZIN} altında açılmış SOFI kareleri yok; kimlikler KARE_KIMLIKLERI listesinde")
+        raise SystemExit(f"{DIZIN} altında {ad} kareleri yok; kimlikler ornekler/eso_sofi_kareleri.txt içinde")
     kareler, zaman, basliklar = [], [], []
     for yol in yollar:
         veri, baslik = fits.fits_oku(yol)
@@ -118,18 +133,18 @@ def main() -> None:
     k_sayi, (ny, nx) = len(kareler), kareler.shape[1:]
     b0 = basliklar[0]
 
-    # 1. Maskesiz durağan model. Bozuk pikseller (sıcak, ölü): gökyüzü modelinde yerel ortancadan sapanlar.
-    # Ham karede karanlık ve düz alan düzeltmesi yoktur; bu pikseller her karede aynı yerde durur.
+    # Maskesiz durağan model. Bozuk pikseller: gökyüzü modelinde yerel ortancadan sapanlar ve düz alanı aykırı olanlar.
     ilk, ilk_model = gokyuzu.duragan_gokyuzu_cikar(kareler)
     yerel = ilk_model - ndimage.median_filter(ilk_model, size=5, mode="nearest")
-    bozuk = ndimage.binary_dilation(np.abs(yerel) > 6.0 * saglam.mad_olcek(yerel), structure=np.ones((3, 3)))
+    bozuk = np.abs(yerel) > 6.0 * saglam.mad_olcek(yerel)
+    bozuk |= (duz < 0.5) | (duz > 1.5)
+    bozuk = ndimage.binary_dilation(bozuk, structure=np.ones((3, 3)))
     ilk_temiz = ilk.copy()
     ilk_temiz[:, bozuk] = 0.0
     listeler = [sapta(kare, esik=6.0) for kare in ilk_temiz]
 
-    # 2. Öteleme. Alan seyrektir (karede bir avuç yıldız); kör oylama güvenilmez. Başlıktaki kaydırma komutları
-    # başlangıç tahminidir; komutun dedektör eksenleriyle eşleşmesi ve işareti (sekiz olasılık) en çok yıldız
-    # eşleştiren seçenek olarak veriden bulunur, sonra öteleme eşleşen yıldızlarla inceltilir.
+    # Öteleme: başlıktaki kaydırma komutları başlangıç tahminidir; komutun dedektör eksenleriyle eşleşmesi ve
+    # işareti (sekiz olasılık) en çok yıldız eşleştiren seçenek olarak veriden bulunur, sonra yıldızlarla inceltilir.
     komut = np.array([[b["ESO SEQ CUMOFFSETX"], b["ESO SEQ CUMOFFSETY"]] for b in basliklar])
     komut -= komut[0]
     adaylar = []
@@ -149,7 +164,7 @@ def main() -> None:
     oteleme = np.array(oteleme)
     tam = np.round(oteleme).astype(int)
 
-    # 3. İlk yığından nesne maskesi (yığın koordinatında), her karenin koordinatına geri taşınır.
+    # İlk yığından nesne maskesi (yığın koordinatında), her karenin koordinatına geri taşınır.
     ilk_yigin, kapsama, koken = yigin(np.where(bozuk[None], np.nan, ilk), oteleme)
     tam_kapsama = kapsama >= 0.5 * k_sayi
     dolgu = np.where(tam_kapsama, ilk_yigin, np.nanmedian(ilk_yigin[tam_kapsama]))
@@ -164,24 +179,28 @@ def main() -> None:
         ]
     )
 
-    duragan, model = gokyuzu.duragan_gokyuzu_cikar(kareler, maskeler=maskeler)
+    duragan, _ = gokyuzu.duragan_gokyuzu_cikar(kareler, maskeler=maskeler)
     dinamik = gokyuzu.dinamik_gokyuzu_cikar(kareler, zaman, komsu_sayisi=8, maskeler=maskeler)
     sabit = kareler - duzey[:, None, None]  # yalnızca düzey çıkarılmış: karşılaştırma tabanı
-    disarida = maskeler | bozuk[None]  # ölçütlerde nesneler ve bozuk pikseller dışarıda tutulur
+    disarida = maskeler | bozuk[None]
+    guvenli_duz = np.where(bozuk, 1.0, duz)
+    duragan_duz = duragan / guvenli_duz  # gökyüzü çıkarılmış kare düz alana bölünür
 
     def gurultu(dizi: np.ndarray) -> float:
         return float(np.median([saglam.mad_olcek(k[~m]) for k, m in zip(dizi, disarida, strict=True)]))
 
-    # 4. Yığın (bozuk pikseller girmez), saptama, astrometri, sıfır noktası.
-    son_yigin, kapsama, koken = yigin(np.where(bozuk[None], np.nan, dinamik), oteleme)
+    # Yığın (düz alanlı durağan model; bozuk pikseller girmez), saptama.
+    son_yigin, kapsama, koken = yigin(np.where(bozuk[None], np.nan, duragan_duz), oteleme)
     tam_kapsama = kapsama >= 0.5 * k_sayi
     yigin_g = np.where(tam_kapsama, son_yigin, np.nanmedian(son_yigin[tam_kapsama]))
     kaynaklar = sapta(yigin_g, esik=5.0)
-    yi, xi = np.round(kaynaklar.y).astype(int), np.round(kaynaklar.x).astype(int)
-    icte = ndimage.binary_erosion(tam_kapsama, iterations=15)[yi, xi]
+    ic_bolge = ndimage.binary_erosion(tam_kapsama, iterations=15)
+    icte = ic_bolge[np.round(kaynaklar.y).astype(int), np.round(kaynaklar.x).astype(int)]
     kx, ky = kaynaklar.x[icte], kaynaklar.y[icte]
+    # Kör çözümde parlaklık ölçütü tepe değeridir: bölüt akısı yaygın gökada düğümlerini yıldızların önüne geçirir.
+    k_aki = kaynaklar.tepe[icte]
 
-    # Yığın pikseli = ilk karenin pikseli + köken (ilk karenin ötelemesi sıfır).
+    # Astrometri: (a) başlıktaki WCS'ten başlayarak, (b) başlık kullanılmadan üçgen eşlemeyle.
     baslik_wcs = wcs.basliktan_wcs(b0)
     baslik_wcs = wcs.Wcs(crpix=baslik_wcs.crpix + koken, crval=baslik_wcs.crval, cd=baslik_wcs.cd)
     katalog = ikimass.nokta_kaynaklari(float(b0["CRVAL1"]), float(b0["CRVAL2"]), 0.09, KOK / "veri" / "ham" / "2mass")
@@ -191,22 +210,65 @@ def main() -> None:
     cozulen = cozum.wcs_iyilestir(
         kaymasiz, kx, ky, katalog["ra"], katalog["dec"], yaricap_yaysaniye=4.0, son_yaricap_yaysaniye=1.5
     )
-    ra, dec = wcs.piksel_den_gok(cozulen.wcs, kx, ky)
-    e = eslestirme.capraz_esle(ra, dec, katalog["ra"], katalog["dec"], 1.5)
-    aki, _ = fk.aciklik_fotometrisi(yigin_g, kx, ky, ACIKLIK, halka=HALKA)
-    k_iyi = e.eslesti & (katalog["k_cmsig"][e.indis] < 0.2) & (aki > 0)  # nan < 0.2 yanlıştır: üst sınırlar düşer
-    # Çözülen WCS ile yığının tam kapsanan bölgesine düşen katalog yıldızları ve bunların saptanan kesri.
     px, py = wcs.gok_den_piksel(cozulen.wcs, katalog["ra"], katalog["dec"])
-    ic_bolge = ndimage.binary_erosion(tam_kapsama, iterations=15)
     alanda = np.isfinite(px) & (px > 0) & (px < yigin_g.shape[1] - 1) & (py > 0) & (py < yigin_g.shape[0] - 1)
     alanda[alanda] = ic_bolge[np.round(py[alanda]).astype(int), np.round(px[alanda]).astype(int)]
+    ra, dec = wcs.piksel_den_gok(cozulen.wcs, kx, ky)
     ters = eslestirme.capraz_esle(katalog["ra"][alanda], katalog["dec"][alanda], ra, dec, 1.5)
+    try:
+        # Kör çözüm: başlıktaki WCS kullanılmaz. Yalnızca yaklaşık gök konumu ve alan genişliği bilgisi kullanılır:
+        # katalog, yığının kısa kenarının yarısı kadar yarıçaplı bir koniyle sınırlanır.
+        yaricap = 0.5 * min(yigin_g.shape) * float(b0["ESO INS PIXSCALE"]) / 3600.0
+        uzaklik = np.hypot(
+            (katalog["ra"] - float(b0["CRVAL1"])) * np.cos(np.radians(float(b0["CRVAL2"]))),
+            katalog["dec"] - float(b0["CRVAL2"]),
+        )
+        yakin = uzaklik < yaricap
+        kor, cift = ucgen.kor_cozum(
+            kx,
+            ky,
+            k_aki,
+            katalog["ra"][yakin],
+            katalog["dec"][yakin],
+            katalog["k_m"][yakin],
+            en_parlak=40,
+            tolerans=0.015,
+        )
+        izgara_x, izgara_y = np.meshgrid(
+            np.linspace(0, yigin_g.shape[1] - 1, 4), np.linspace(0, yigin_g.shape[0] - 1, 4)
+        )
+        r1, d1 = wcs.piksel_den_gok(kor.wcs, izgara_x, izgara_y)
+        r2, d2 = wcs.piksel_den_gok(cozulen.wcs, izgara_x, izgara_y)
+        kor_sonuc = {
+            "ucgen_eslemesinde_atanan_cift": cift,
+            "cozume_giren_yildiz": kor.yildiz_sayisi,
+            "basliktan_baslayan_cozumden_en_buyuk_fark_yaysaniye": float(
+                np.max(np.hypot((r1 - r2) * np.cos(np.radians(d2)), d1 - d2)) * 3600.0
+            ),
+        }
+    except ValueError as hata:
+        # Tanı: başlıktan başlayan çözümle, üçgen eşlemeye giren iki parlak listenin kaç ortak yıldızı vardı?
+        g = np.argsort(-k_aki)[:40]
+        kk = np.argsort(katalog["k_m"][yakin])[:40]
+        ortak = eslestirme.capraz_esle(ra[g], dec[g], katalog["ra"][yakin][kk], katalog["dec"][yakin][kk], 1.5)
+        kor_sonuc = {
+            "basarisiz": str(hata),
+            "konideki_katalog_yildizi": int(yakin.sum()),
+            "parlak_listelerin_ortak_yildizi": int(ortak.eslesti.sum()),
+        }
+
+    # Sıfır noktası: 2MASS K belirsizliği 0,15 kadirden küçük, doymamış, eşleşen yıldızlar.
+    e = eslestirme.capraz_esle(ra, dec, katalog["ra"], katalog["dec"], 1.5)
+    aki, _ = fk.aciklik_fotometrisi(yigin_g, kx, ky, ACIKLIK, halka=HALKA)
+    tepe = kaynaklar.tepe[icte]
+    k_iyi = e.eslesti & (katalog["k_cmsig"][e.indis] < 0.15) & (aki > 0) & (tepe < 15000.0)
     sifir = katalog["k_m"][e.indis][k_iyi] + 2.5 * np.log10(aki[k_iyi])
 
-    def yinelenebilirlik(dizi: np.ndarray, duz_alan: np.ndarray | None = None) -> tuple[float, float, int]:
-        """Parlak yıldızların 16 karedeki açıklık akısının bağıl sağlam saçılımı (yıldızlar üzerinden ortanca)."""
+    def yinelenebilirlik(dizi: np.ndarray) -> dict:
+        """Parlak yıldızların karelerdeki açıklık akısının bağıl sağlam saçılımı ve beklenen gürültüye oranı."""
         olcumler, beklenen = [], []
         piksel_sigma = gurultu(dizi)
+        n_pix, n_b = np.pi * ACIKLIK**2, np.pi * (HALKA[1] ** 2 - HALKA[0] ** 2)
         for i in np.argsort(-aki):
             x_k = kx[i] - koken[0] + oteleme[:, 0]
             y_k = ky[i] - koken[1] + oteleme[:, 1]
@@ -217,41 +279,26 @@ def main() -> None:
             f = np.array(
                 [
                     float(
-                        fk.aciklik_fotometrisi(
-                            np.nan_to_num(dizi[k] if duz_alan is None else dizi[k] / duz_alan),
-                            x_k[k],
-                            y_k[k],
-                            ACIKLIK,
-                            halka=HALKA,
-                        )[0]
+                        fk.aciklik_fotometrisi(np.where(bozuk, 0.0, dizi[k]), x_k[k], y_k[k], ACIKLIK, halka=HALKA)[0]
                     )
                     for k in range(k_sayi)
                 ]
             )
-            if np.median(f) > 0:
+            if np.median(f) > 30.0 * piksel_sigma * np.sqrt(n_pix):  # S/G > 30: gürültü değil düzeltme hatası ölçülsün
                 olcumler.append(saglam.mad_olcek(f) / np.median(f))
-                # Beklenen: açıklıktaki n_pix pikselin ve halkadan kestirilen arka planın gürültüsü (kaynak fotonu hariç).
-                n_pix, n_b = np.pi * ACIKLIK**2, np.pi * (HALKA[1] ** 2 - HALKA[0] ** 2)
                 beklenen.append(piksel_sigma * np.sqrt(n_pix * (1.0 + n_pix / n_b)) / np.median(f))
-            if len(olcumler) >= 10:
+            if len(olcumler) >= 15:
                 break
-        return float(np.median(olcumler)), float(np.median(np.array(olcumler) / np.array(beklenen))), len(olcumler)
-
-    yinele = {}
-    for ad, dizi, duz in (
-        ("duragan_maskesiz", ilk, None),
-        ("duragan_maskeli", duragan, None),
-        ("dinamik_maskeli", dinamik, None),
-        ("dinamik_maskeli_duz_alanli", dinamik, model),
-    ):
-        sacilim, oran, n_yildiz = yinelenebilirlik(dizi, duz)
-        yinele[ad] = {"bagil_sacilim": sacilim, "beklenen_gurultuye_orani": oran}
-        yinele["yildiz_sayisi"] = n_yildiz
+        if not olcumler:
+            return {"yildiz_sayisi": 0}
+        return {
+            "yildiz_sayisi": len(olcumler),
+            "bagil_sacilim": float(np.median(olcumler)),
+            "beklenen_arka_plan_gurultusu": float(np.median(beklenen)),
+        }
 
     sonuc = {
         "veri": {
-            "alet": "ESO NTT / SOFI",
-            "program": "184.D-1152(F)",
             "hedef": str(b0["OBJECT"]).strip(),
             "suzgec": str(b0["ESO INS FILT1 NAME"]).strip(),
             "kare_sayisi": k_sayi,
@@ -259,15 +306,10 @@ def main() -> None:
             "ndit": int(b0["ESO DET NDIT"]),
             "dizi_suresi_dakika": float(zaman[-1]),
         },
-        "gokyuzu": {
-            "duzey_adu_en_az": float(duzey.min()),
-            "duzey_adu_en_cok": float(duzey.max()),
-            "model_sacilimi": float(np.std(model)),
-        },
+        "gokyuzu_duzeyi_adu": [float(duzey.min()), float(duzey.max())],
         "bozuk_piksel_kesri": float(bozuk.mean()),
         "nesne_maskesi_kesri": float(maskeler.mean()),
         "oteleme": {
-            "kare_basina_saptanan_ortanca": float(np.median([len(liste) for liste in listeler])),
             "en_buyuk_piksel": float(np.abs(oteleme).max()),
             "kare_basina_eslesen_en_az": int(min(eslesen)),
             "en_iyi_ve_ikinci_secenegin_puani": [int(adaylar[0][0]), int(adaylar[1][0])],
@@ -286,7 +328,10 @@ def main() -> None:
             "duragan_maskeli": gurultu(duragan),
             "dinamik_maskeli": gurultu(dinamik),
         },
-        "yinelenebilirlik_bagil_sacilim": yinele,
+        "yinelenebilirlik": {
+            "duz_alansiz": yinelenebilirlik(duragan),
+            "duz_alanli": yinelenebilirlik(duragan_duz),
+        },
         "yigin": {"boyut": list(yigin_g.shape), "saptanan_kaynak": int(icte.sum())},
         "astrometri": {
             "katalog_yildizi": int(len(katalog["ra"])),
@@ -295,34 +340,54 @@ def main() -> None:
             "cozume_giren_yildiz": cozulen.yildiz_sayisi,
             "alandaki_katalog_yildizi": int(alanda.sum()),
             "alandaki_katalog_yildizindan_saptanan": int(ters.eslesti.sum()),
-            "saptanmayanlarin_k_kadiri": np.sort(katalog["k_m"][alanda][~ters.eslesti]).round(2).tolist(),
-            "saptananlarin_k_kadiri": np.sort(katalog["k_m"][alanda][ters.eslesti]).round(2).tolist(),
             "artik_rms_yaysaniye": cozulen.artik_rms_yaysaniye,
             "olcek_yaysaniye_piksel": float(np.sqrt(abs(np.linalg.det(cozulen.wcs.cd))) * 3600.0),
             "baslik_olcegi_yaysaniye_piksel": float(b0["ESO INS PIXSCALE"]),
+            "kor_cozum": kor_sonuc,
         },
         "fotometri": {
             "yildiz_sayisi": int(k_iyi.sum()),
             "sifir_noktasi_kadir": float(np.median(sifir)) if sifir.size else None,
             "sacilim_kadir": float(saglam.mad_olcek(sifir)) if sifir.size > 2 else None,
+            "ortanca_katalog_belirsizligi_kadir": float(np.median(katalog["k_cmsig"][e.indis][k_iyi]))
+            if sifir.size
+            else None,
         },
     }
+    ys, xs = np.nonzero(kapsama >= k_sayi - 1)
+    goruntuler = {
+        "ham": (kareler[0], gurultu(sabit), float(duzey[0])),
+        "cikarilmis": (np.where(bozuk, 0.0, duragan_duz[0]), gurultu(duragan_duz), 0.0),
+        "yigin": (yigin_g[ys.min() : ys.max() + 1, xs.min() : xs.max() + 1], None, 0.0),
+    }
+    return sonuc, goruntuler
+
+
+def main() -> None:
+    duz, duz_bilgi = duz_alan_kur()
+    sonuc = {
+        "veri": {"alet": "ESO NTT / SOFI", "program": "184.D-1152(F)", "kaynak": "ESO Bilim Arşivi"},
+        "duz_alan": duz_bilgi,
+        "diziler": {},
+    }
+    goruntuler = {}
+    for ad, desen in DIZILER.items():
+        sonuc["diziler"][ad], goruntuler[ad] = indirge(ad, desen, duz)
     cikti = KOK / "belgeler"
     (cikti / "kizilotesi_indirgeme.json").write_text(json.dumps(sonuc, ensure_ascii=False, indent=1), encoding="utf-8")
     print(json.dumps(sonuc, ensure_ascii=False, indent=1))
 
-    # Şekil: ham kare, gökyüzü çıkarılmış kare, yığının aynı bölgesi.
-    def ger(goruntu: np.ndarray, sacilim: float, taban: float) -> np.ndarray:
+    # Şekil: ham kare, gökyüzü çıkarılmış kare, yığının bütün karelerin örtüştüğü orta bölgesi (SN 2011bm dizisi).
+    def ger(goruntu: np.ndarray, sacilim: float | None, taban: float) -> np.ndarray:
+        sacilim = saglam.mad_olcek(goruntu) if sacilim is None else sacilim
         g = germe.asinh_ger(goruntu, siyah=taban - 2.0 * sacilim, alfa=1.0 / (10.0 * sacilim), q=6.0)
         return germe.yuzdelik_olcekle(g, 0.5, 99.8)
 
-    # Yığının bütün karelerin örtüştüğü orta bölgesi (dört köşeli kaydırmada kenarlar yalnızca bazı karelerde vardır).
-    ys, xs = np.nonzero(kapsama >= k_sayi - 1)
-    orta = yigin_g[ys.min() : ys.max() + 1, xs.min() : xs.max() + 1]
+    g = goruntuler["SN2011bm"]
     paneller = [
-        ("Ham kare (15 × 6 s)", ger(kareler[0], gurultu(sabit), float(duzey[0]))),
-        ("Gökyüzü çıkarılmış kare", ger(np.where(bozuk, 0.0, dinamik[0]), gurultu(dinamik), 0.0)),
-        (f"{k_sayi} karenin yığını (orta bölge)", ger(orta, saglam.mad_olcek(orta), 0.0)),
+        ("Ham kare (15 × 6 s)", ger(*g["ham"])),
+        ("Gökyüzü çıkarılmış kare", ger(*g["cikarilmis"])),
+        ("16 karenin yığını (orta bölge)", ger(*g["yigin"])),
     ]
     fig, eksenler = dw.figur(
         "web", hedef="web-640", oran=0.40, ondalik=",", mozaik=[["a", "b", "c"]], gridspec_kw={"wspace": 0.04}

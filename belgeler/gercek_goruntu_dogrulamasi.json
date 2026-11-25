@@ -82,7 +82,14 @@
     "kaydirma_sonrasi_en_buyuk_hata_yaysaniye": 3.1906639408866506,
     "cozum_en_buyuk_hata_yaysaniye": 0.42793952000197566,
     "cozume_giren_yildiz": 246,
-    "katalog_artik_rms_yaysaniye": 0.26826799804955026
+    "katalog_artik_rms_yaysaniye": 0.26826799804955026,
+    "kor_cozum": {
+      "ucgen_eslemesinde_atanan_cift": 24,
+      "cozume_giren_yildiz": 246,
+      "basliktan_en_buyuk_fark_yaysaniye": 0.42784555312563854,
+      "katalog_artik_rms_yaysaniye": 0.26827295440262333,
+      "olcek_yaysaniye_piksel": 0.9998428944871279
+    }
   },
   "yapay_yildiz": {
     "k": [

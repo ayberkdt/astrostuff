@@ -1,5 +1,5 @@
 {
- "zaman": "2026-11-25 15:39 UTC",
+ "zaman": "2026-11-25 16:28 UTC",
  "kunyeler": [
   {
    "anahtar": "SOFA2023",
@@ -2553,32 +2553,16 @@
    "bib_baslik": "Principles of Physical Cosmology",
    "bib_yil": "1993",
    "kimlik": "isbn:9780691019338",
-   "dis": {
-    "kaynak": "Open Library",
-    "baslik": "Principles of physical cosmology",
-    "yil": 1993,
-    "ilk_yazar": null,
-    "yayin": "Princeton University Press"
-   },
-   "baslik_benzerligi": 1.0,
-   "yil_farki": 0,
-   "durum": "DOGRULANDI"
+   "durum": "BULUNAMADI",
+   "aciklama": "dış kayıt okunamadı"
   },
   {
    "anahtar": "Dodelson2020",
    "bib_baslik": "Modern Cosmology",
    "bib_yil": "2020",
    "kimlik": "isbn:9780128159484",
-   "dis": {
-    "kaynak": "Open Library",
-    "baslik": "Modern Cosmology",
-    "yil": 2020,
-    "ilk_yazar": null,
-    "yayin": "Elsevier Science & Technology"
-   },
-   "baslik_benzerligi": 1.0,
-   "yil_farki": 0,
-   "durum": "DOGRULANDI"
+   "durum": "BULUNAMADI",
+   "aciklama": "dış kayıt okunamadı"
   },
   {
    "anahtar": "MoBoschWhite2010",
@@ -2639,16 +2623,8 @@
    "bib_baslik": "Galactic Dynamics",
    "bib_yil": "2008",
    "kimlik": "isbn:9780691130279",
-   "dis": {
-    "kaynak": "Open Library",
-    "baslik": "Galactic Dynamics: (Second Edition) (Princeton Series in Astrophysics)",
-    "yil": 2008,
-    "ilk_yazar": null,
-    "yayin": "Princeton University Press"
-   },
-   "baslik_benzerligi": 1.0,
-   "yil_farki": 0,
-   "durum": "DOGRULANDI"
+   "durum": "BULUNAMADI",
+   "aciklama": "dış kayıt okunamadı"
   },
   {
    "anahtar": "Kippenhahn2012",
@@ -2673,8 +2649,16 @@
    "bib_baslik": "Physics of the Interstellar and Intergalactic Medium",
    "bib_yil": "2011",
    "kimlik": "isbn:9780691122144",
-   "durum": "BULUNAMADI",
-   "aciklama": "dış kayıt okunamadı"
+   "dis": {
+    "kaynak": "Open Library",
+    "baslik": "Physics of the interstellar and intergalactic medium",
+    "yil": 2011,
+    "ilk_yazar": null,
+    "yayin": "Princeton University Press"
+   },
+   "baslik_benzerligi": 1.0,
+   "yil_farki": 0,
+   "durum": "DOGRULANDI"
   },
   {
    "anahtar": "Paxton2011",
@@ -3597,6 +3581,32 @@
    "kimlik": "https://www.ivoa.net/documents/ADQL/20231215/REC-ADQL-2.1.html",
    "durum": "ELLE",
    "aciklama": "DOI, arXiv ya da ISBN yok; elle doğrulanacak"
+  },
+  {
+   "anahtar": "Hierarch2009",
+   "bib_baslik": "The HIERARCH Keyword Convention",
+   "bib_yil": "2009",
+   "kimlik": "https://fits.gsfc.nasa.gov/registry/hierarch_keyword.html",
+   "durum": "ELLE",
+   "aciklama": "DOI, arXiv ya da ISBN yok; elle doğrulanacak"
+  },
+  {
+   "anahtar": "Groth1986",
+   "bib_baslik": "A pattern-matching algorithm for two-dimensional coordinate lists",
+   "bib_yil": "1986",
+   "kimlik": "doi:10.1086/114099",
+   "dis": {
+    "kaynak": "Crossref",
+    "baslik": "A pattern-matching algorithm for two-dimensional coordinate lists",
+    "yil": 1986,
+    "ilk_yazar": "Groth",
+    "yayin": "The Astronomical Journal",
+    "cilt": "91",
+    "sayfa": "1244"
+   },
+   "baslik_benzerligi": 1.0,
+   "yil_farki": 0,
+   "durum": "DOGRULANDI"
   },
   {
    "anahtar": "Abramowicz2013",
@@ -4857,6 +4867,6 @@
    "Springel2005",
    "WallJenkins2012"
   ],
-  "kullanilan_sayisi": 226
+  "kullanilan_sayisi": 227
  }
 }

@@ -48,41 +48,125 @@
    "omega_m": 0.3469017116866236
   }
  },
- "yayimlanan_zincir": {
-  "sutunlar": [
-   "cosmological_parameters--omega_m",
-   "cosmological_parameters--h0",
-   "supernova_params--m",
-   "prior",
-   "post"
-  ],
-  "ornekleyici_satiri": "#sampler=emcee",
-  "ornek_sayisi": 160000,
-  "kesitler": {
-   "tamami": {
-    "ornek": 160000,
-    "h0": 73.5026847604877,
-    "sigma_h0": 1.0680215307742278
+ "yayimlanan_zincirler": {
+  "FlatLambdaCDM": {
+   "makale": {
+    "h0": 73.6,
+    "sigma_h0": 1.1
    },
-   "ilk_yuzde_10_atilmis": {
-    "ornek": 144000,
-    "h0": 73.52652353199043,
-    "sigma_h0": 1.013924496438092
+   "ornekleyici_satiri": "#sampler=emcee",
+   "ornek_sayisi": 160000,
+   "kesitler": {
+    "tamami": {
+     "ornek": 160000,
+     "h0": 73.5026847604877,
+     "sigma_h0": 1.0680215307742278
+    },
+    "ilk_yuzde_10_atilmis": {
+     "ornek": 144000,
+     "h0": 73.52652353199043,
+     "sigma_h0": 1.013924496438092
+    },
+    "ilk_yuzde_25_atilmis": {
+     "ornek": 120000,
+     "h0": 73.54394540863196,
+     "sigma_h0": 1.0152750424899442
+    },
+    "son_yari": {
+     "ornek": 80000,
+     "h0": 73.53542402987247,
+     "sigma_h0": 1.014469599869741
+    }
+   }
+  },
+  "LambdaCDM": {
+   "makale": {
+    "h0": 73.4,
+    "sigma_h0": 1.1
    },
-   "ilk_yuzde_25_atilmis": {
-    "ornek": 120000,
-    "h0": 73.54394540863196,
-    "sigma_h0": 1.0152750424899442
+   "ornekleyici_satiri": "#sampler=emcee",
+   "ornek_sayisi": 150400,
+   "kesitler": {
+    "tamami": {
+     "ornek": 150400,
+     "h0": 73.46324757336758,
+     "sigma_h0": 1.0348763964878338
+    },
+    "ilk_yuzde_10_atilmis": {
+     "ornek": 135360,
+     "h0": 73.47893004163585,
+     "sigma_h0": 1.0265614029851642
+    },
+    "ilk_yuzde_25_atilmis": {
+     "ornek": 112800,
+     "h0": 73.47824556937027,
+     "sigma_h0": 1.0240777448895515
+    },
+    "son_yari": {
+     "ornek": 75200,
+     "h0": 73.44740777786626,
+     "sigma_h0": 1.0274626891013054
+    }
+   }
+  },
+  "FlatwCDM": {
+   "makale": {
+    "h0": 73.5,
+    "sigma_h0": 1.1
    },
-   "son_yari": {
-    "ornek": 80000,
-    "h0": 73.53542402987247,
-    "sigma_h0": 1.014469599869741
+   "ornekleyici_satiri": "#sampler=emcee",
+   "ornek_sayisi": 211200,
+   "kesitler": {
+    "tamami": {
+     "ornek": 211200,
+     "h0": 73.46928534574877,
+     "sigma_h0": 1.040283491907071
+    },
+    "ilk_yuzde_10_atilmis": {
+     "ornek": 190080,
+     "h0": 73.45696917737806,
+     "sigma_h0": 1.0277099899902715
+    },
+    "ilk_yuzde_25_atilmis": {
+     "ornek": 158400,
+     "h0": 73.4608819872811,
+     "sigma_h0": 1.0335749369138685
+    },
+    "son_yari": {
+     "ornek": 105600,
+     "h0": 73.45487059771881,
+     "sigma_h0": 1.0294935335457807
+    }
+   }
+  },
+  "Flatw0waCDM": {
+   "makale": {
+    "h0": 73.3,
+    "sigma_h0": 1.1
    },
-   "ilk_yuzde_5": {
-    "ornek": 8000,
-    "h0": 73.08041459409705,
-    "sigma_h0": 1.7572883862578397
+   "ornekleyici_satiri": "#sampler=emcee",
+   "ornek_sayisi": 451200,
+   "kesitler": {
+    "tamami": {
+     "ornek": 451200,
+     "h0": 73.37378223202218,
+     "sigma_h0": 1.0586112227835909
+    },
+    "ilk_yuzde_10_atilmis": {
+     "ornek": 406080,
+     "h0": 73.37717122285208,
+     "sigma_h0": 1.0367129639524721
+    },
+    "ilk_yuzde_25_atilmis": {
+     "ornek": 338400,
+     "h0": 73.3960565405703,
+     "sigma_h0": 1.032832806530961
+    },
+    "son_yari": {
+     "ornek": 225600,
+     "h0": 73.40445018551114,
+     "sigma_h0": 1.0342461018812543
+    }
    }
   }
  }

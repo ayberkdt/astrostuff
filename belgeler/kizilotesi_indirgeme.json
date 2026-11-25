@@ -2,100 +2,198 @@
  "veri": {
   "alet": "ESO NTT / SOFI",
   "program": "184.D-1152(F)",
-  "hedef": "SN2011bm",
-  "suzgec": "Ks",
-  "kare_sayisi": 16,
-  "dit_s": 6.0,
-  "ndit": 15,
-  "dizi_suresi_dakika": 28.4438304156065
+  "kaynak": "ESO Bilim Arşivi"
  },
- "gokyuzu": {
-  "duzey_adu_en_az": 4732.2666015625,
-  "duzey_adu_en_cok": 4795.466796875,
-  "model_sacilimi": 0.11177459298184558
- },
- "bozuk_piksel_kesri": 0.0028562545776367188,
- "nesne_maskesi_kesri": 0.0471501350402832,
- "oteleme": {
-  "kare_basina_saptanan_ortanca": 86.5,
-  "en_buyuk_piksel": 440.57741966809243,
-  "kare_basina_eslesen_en_az": 8,
-  "en_iyi_ve_ikinci_secenegin_puani": [
-   254,
-   84
+ "duz_alan": {
+  "kare_duzeyleri_adu": [
+   3584.4,
+   3460.0,
+   5424.4,
+   5656.3,
+   5665.6,
+   5489.0,
+   3501.3,
+   3646.6
   ],
-  "baslik_komutu_eksen_sirasi": [
-   0,
-   1
-  ],
-  "baslik_komutu_isareti": [
-   1.0,
-   1.0
-  ],
-  "baslik_komutundan_fark_rms_piksel": 0.7225792197772379
+  "lamba_acik_eksi_kapali_adu": 2043.533447265625,
+  "duz_alan_sacilimi": 0.06218836489854054
  },
- "buyuk_olcekli_artik_adu": {
-  "yalniz_duzey_cikarilmis": 150.74056440662937,
-  "duragan_maskesiz": 0.7265367534935141,
-  "duragan_maskeli": 0.7911094611142756,
-  "dinamik_maskeli": 0.9564255435960938
- },
- "piksel_gurultusu_adu": {
-  "yalniz_duzey_cikarilmis": 254.8095875855215,
-  "duragan_maskeli": 7.078840377458316,
-  "dinamik_maskeli": 8.198662897647559
- },
- "yinelenebilirlik_bagil_sacilim": {
-  "duragan_maskesiz": {
-   "bagil_sacilim": 0.1423794765645764,
-   "beklenen_gurultuye_orani": 1.572323553716187
+ "diziler": {
+  "SN2011bm": {
+   "veri": {
+    "hedef": "SN2011bm",
+    "suzgec": "Ks",
+    "kare_sayisi": 16,
+    "dit_s": 6.0,
+    "ndit": 15,
+    "dizi_suresi_dakika": 28.4438304156065
+   },
+   "gokyuzu_duzeyi_adu": [
+    4732.2666015625,
+    4795.466796875
+   ],
+   "bozuk_piksel_kesri": 0.015623092651367188,
+   "nesne_maskesi_kesri": 0.04640078544616699,
+   "oteleme": {
+    "en_buyuk_piksel": 440.60045432239207,
+    "kare_basina_eslesen_en_az": 8,
+    "en_iyi_ve_ikinci_secenegin_puani": [
+     255,
+     85
+    ],
+    "baslik_komutu_eksen_sirasi": [
+     0,
+     1
+    ],
+    "baslik_komutu_isareti": [
+     1.0,
+     1.0
+    ],
+    "baslik_komutundan_fark_rms_piksel": 0.7217401506387825
+   },
+   "buyuk_olcekli_artik_adu": {
+    "yalniz_duzey_cikarilmis": 155.90174105129552,
+    "duragan_maskesiz": 0.7498339259398858,
+    "duragan_maskeli": 0.791766620680869,
+    "dinamik_maskeli": 1.0009647380528224
+   },
+   "piksel_gurultusu_adu": {
+    "yalniz_duzey_cikarilmis": 250.5101859372282,
+    "duragan_maskeli": 7.172375347029321,
+    "dinamik_maskeli": 8.30151497975983
+   },
+   "yinelenebilirlik": {
+    "duz_alansiz": {
+     "yildiz_sayisi": 1,
+     "bagil_sacilim": 0.035073267033036565,
+     "beklenen_arka_plan_gurultusu": 0.023517916682270677
+    },
+    "duz_alanli": {
+     "yildiz_sayisi": 1,
+     "bagil_sacilim": 0.03173572197676258,
+     "beklenen_arka_plan_gurultusu": 0.023796713788371553
+    }
+   },
+   "yigin": {
+    "boyut": [
+     1465,
+     1481
+    ],
+    "saptanan_kaynak": 206
+   },
+   "astrometri": {
+    "katalog_yildizi": 30,
+    "kaydirma_oyu": 5,
+    "baslik_wcs_kaymasi_piksel": [
+     -38.77411642803236,
+     -25.858066775875614
+    ],
+    "cozume_giren_yildiz": 5,
+    "alandaki_katalog_yildizi": 5,
+    "alandaki_katalog_yildizindan_saptanan": 5,
+    "artik_rms_yaysaniye": 0.4509212778568669,
+    "olcek_yaysaniye_piksel": 0.28799106311062134,
+    "baslik_olcegi_yaysaniye_piksel": 0.288,
+    "kor_cozum": {
+     "basarisiz": "çözüm doğrulanamadı: 40 parlak kaynak yalnızca 1 ayrı katalog yıldızıyla eşleşti (en az 8 gerekir)",
+     "konideki_katalog_yildizi": 12,
+     "parlak_listelerin_ortak_yildizi": 4
+    }
+   },
+   "fotometri": {
+    "yildiz_sayisi": 2,
+    "sifir_noktasi_kadir": 23.626460099701866,
+    "sacilim_kadir": null,
+    "ortanca_katalog_belirsizligi_kadir": 0.08149999999999999
+   }
   },
-  "yildiz_sayisi": 10,
-  "duragan_maskeli": {
-   "bagil_sacilim": 0.14661409324909894,
-   "beklenen_gurultuye_orani": 1.6283867260008247
-  },
-  "dinamik_maskeli": {
-   "bagil_sacilim": 0.16678214354241327,
-   "beklenen_gurultuye_orani": 1.40612342249156
-  },
-  "dinamik_maskeli_duz_alanli": {
-   "bagil_sacilim": 0.15698099702069573,
-   "beklenen_gurultuye_orani": 1.470880717765156
+  "SN2005at": {
+   "veri": {
+    "hedef": "SN2005at",
+    "suzgec": "Ks",
+    "kare_sayisi": 32,
+    "dit_s": 7.0,
+    "ndit": 12,
+    "dizi_suresi_dakika": 53.42375519871712
+   },
+   "gokyuzu_duzeyi_adu": [
+    4831.66650390625,
+    5180.75
+   ],
+   "bozuk_piksel_kesri": 0.015710830688476562,
+   "nesne_maskesi_kesri": 0.15092939138412476,
+   "oteleme": {
+    "en_buyuk_piksel": 231.19620790602937,
+    "kare_basina_eslesen_en_az": 120,
+    "en_iyi_ve_ikinci_secenegin_puani": [
+     4522,
+     916
+    ],
+    "baslik_komutu_eksen_sirasi": [
+     0,
+     1
+    ],
+    "baslik_komutu_isareti": [
+     1.0,
+     1.0
+    ],
+    "baslik_komutundan_fark_rms_piksel": 3.0812109852860115
+   },
+   "buyuk_olcekli_artik_adu": {
+    "yalniz_duzey_cikarilmis": 158.96400163647286,
+    "duragan_maskesiz": 4.2759852657077015,
+    "duragan_maskeli": 4.551963674071181,
+    "dinamik_maskeli": 4.790345123171863
+   },
+   "piksel_gurultusu_adu": {
+    "yalniz_duzey_cikarilmis": 260.38201462504634,
+    "duragan_maskeli": 9.924342010128171,
+    "dinamik_maskeli": 10.711655809962814
+   },
+   "yinelenebilirlik": {
+    "duz_alansiz": {
+     "yildiz_sayisi": 15,
+     "bagil_sacilim": 0.03326207265667725,
+     "beklenen_arka_plan_gurultusu": 0.018054417684786887
+    },
+    "duz_alanli": {
+     "yildiz_sayisi": 15,
+     "bagil_sacilim": 0.030510674999493687,
+     "beklenen_arka_plan_gurultusu": 0.017737553230690997
+    }
+   },
+   "yigin": {
+    "boyut": [
+     1281,
+     1275
+    ],
+    "saptanan_kaynak": 880
+   },
+   "astrometri": {
+    "katalog_yildizi": 221,
+    "kaydirma_oyu": 33,
+    "baslik_wcs_kaymasi_piksel": [
+     -33.905168579306974,
+     -19.91237175390154
+    ],
+    "cozume_giren_yildiz": 33,
+    "alandaki_katalog_yildizi": 48,
+    "alandaki_katalog_yildizindan_saptanan": 33,
+    "artik_rms_yaysaniye": 0.474653090864494,
+    "olcek_yaysaniye_piksel": 0.2878141166403869,
+    "baslik_olcegi_yaysaniye_piksel": 0.288,
+    "kor_cozum": {
+     "ucgen_eslemesinde_atanan_cift": 19,
+     "cozume_giren_yildiz": 33,
+     "basliktan_baslayan_cozumden_en_buyuk_fark_yaysaniye": 2.013553012768027e-05
+    }
+   },
+   "fotometri": {
+    "yildiz_sayisi": 14,
+    "sifir_noktasi_kadir": 24.16876115025847,
+    "sacilim_kadir": 0.09379776644259077,
+    "ortanca_katalog_belirsizligi_kadir": 0.1065
+   }
   }
- },
- "yigin": {
-  "boyut": [
-   1465,
-   1481
-  ],
-  "saptanan_kaynak": 153
- },
- "astrometri": {
-  "katalog_yildizi": 30,
-  "kaydirma_oyu": 5,
-  "baslik_wcs_kaymasi_piksel": [
-   -38.76309829774607,
-   -25.96371212573922
-  ],
-  "cozume_giren_yildiz": 5,
-  "alandaki_katalog_yildizi": 5,
-  "alandaki_katalog_yildizindan_saptanan": 5,
-  "saptanmayanlarin_k_kadiri": [],
-  "saptananlarin_k_kadiri": [
-   14.24,
-   14.57,
-   15.52,
-   15.68,
-   16.18
-  ],
-  "artik_rms_yaysaniye": 0.323124747100848,
-  "olcek_yaysaniye_piksel": 0.28799738924175483,
-  "baslik_olcegi_yaysaniye_piksel": 0.288
- },
- "fotometri": {
-  "yildiz_sayisi": 3,
-  "sifir_noktasi_kadir": 23.792178391959148,
-  "sacilim_kadir": 0.3565158228229436
  }
 }

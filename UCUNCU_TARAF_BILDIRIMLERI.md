@@ -65,7 +65,7 @@ Analizlerin kullandığı veri setleri depoya konmaz; çalışma anında kaynağ
 | `hr_diyagrami.png` | Gaia DR3 | CC BY-NC 3.0 IGO |
 | `gokyuzu_haritasi.png` | Parlak Yıldız Kataloğu, 5. baskı (HEASARC `bsc5p`) | Aşağıdaki nota bakınız |
 | `hubble_diyagrami.png` | Pantheon+SH0ES veri sürümü | Okunmadı |
-| `kozmik_isin_gercek_veri.png` | Hubble STIS, program 8310 (MAST) | MAST veri kullanım sayfası: NASA politikası gereği CC0; teşekkür metni beklenir |
+| `kozmik_isin_gercek_veri.png` | Hubble STIS, program 8310 (MAST); ölçümlerde program 7245 de kullanılır | MAST veri kullanım sayfası: NASA politikası gereği CC0; teşekkür metni beklenir |
 | `kizilotesi_indirgeme.png` | ESO NTT/SOFI, program 184.D-1152(F) | CC BY 4.0; telif hakkı ESO'dadır |
 
 ### Digitized Sky Survey
@@ -110,7 +110,7 @@ HEASARC'ın `bsc5p` sayfasındaki lisans notu, kataloğun yalnızca bilimsel ara
 
 MAST'ın veri kullanım sayfası, DSS gibi sayılan istisnalar dışındaki MAST verisinin kamu malı olduğunu ve NASA politikası gereği CC0 ile lisanslandığını bildirir; yayınlarda görevin ve STScI'nin anılmasını bekler. MAST'ın görev teşekkürleri sayfasındaki Hubble metni:
 
-> This research is based on observations made with the NASA/ESA Hubble Space Telescope obtained from the Space Telescope Science Institute, which is operated by the Association of Universities for Research in Astronomy, Inc., under NASA contract NAS5-26555. These observations are associated with program 8310.
+> This research is based on observations made with the NASA/ESA Hubble Space Telescope obtained from the Space Telescope Science Institute, which is operated by the Association of Universities for Research in Astronomy, Inc., under NASA contract NAS5-26555. These observations are associated with programs 8310 and 7245.
 
 ### ESO
 

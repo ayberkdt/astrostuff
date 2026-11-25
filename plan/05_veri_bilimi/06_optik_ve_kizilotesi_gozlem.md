@@ -58,8 +58,8 @@ Yapılacaklar:
 ## Optik tarafta yapılacaklar
 
 - PSF fotometrisi [Stetson1987].
-- Kör astrometrik çözüm (ön bilgi olmadan yıldız deseninden WCS). Yaklaşık WCS'ten katalogla çözüm yazıldı: `astrometri/cozum.py` (oylamayla kaydırma, eşle-uydur yinelemesi) [CalabrettaGreisen2002].
-- Karanlık ve düz alan düzeltmesinin gerçek kızılötesi dizide uygulanması; `.fits.Z` açma.
+- Bütün gökte arayan dizinli astrometrik çözücü. Yazılanlar: yaklaşık WCS'ten katalogla çözüm (`astrometri/cozum.py`) [CalabrettaGreisen2002] ve bölgenin kataloğu verildiğinde başlangıç WCS'i olmadan üçgen eşlemeyle çözüm (`astrometri/ucgen.py`) [Groth1986]. Kör çözüm doğrulama adımı taşır: gerçek SOFI yığınında birkaç yanlış çiftten kurulan çözüm yoğun katalogda rastlantıyla 17 yıldız eşleştirmiş, seyrek alanda ölçeği çökmüş bir çözüm bütün kaynakları tek yıldıza düşürmüştü.
+- SOFI'nin maskeli düz alan kareleriyle sıfır düzeyi düzeltmesi; `.fits.Z` açma. Sadeleştirilmiş kubbe düz alanı uygulandı.
 - Fotometrik kalibrasyon hattı. Sıfır noktası örnek betikte 2MASS kadirleriyle ölçüldü (40 yıldızda 0,021 kadir saçılım); kitaplık fonksiyonu değil.
 - Gözlem planlamasına nutasyon, aberasyon, Güneş ve Ay konumu, alacakaranlık sınırları. Presesyon (`koordinat/presesyon.py`) ve kırılma (`gozlem/kirilma.py`) yazıldı [ERFA2023].
 - FITS tabloları ve sıkıştırılmış görüntüler. Görüntü uzantıları yazıldı.

@@ -1,45 +1,98 @@
 {
- "veri": {
-  "gozlem": "o5d903060",
-  "hedef": "NGC5904",
-  "program": 8310,
-  "poz_suresi_s": 400.0,
-  "kazanc_e_adu": 1.0,
-  "okuma_gurultusu_e": 3.99
- },
- "gercek": {
-  "esik_sigma": 6.0,
-  "poz1_kozmik_isin_pikseli": 7081,
-  "poz2_kozmik_isin_pikseli": 7170,
-  "poz1_kesri": 0.006752967834472656
- },
- "ayarlar": {
-  "f_lim=2, komşu eşiği yok": {
-   "isaretlenen_piksel": 4791,
-   "tamlik": 0.5965259144188674,
-   "tamlik_20_sigma_ustu": 0.9532374100719424,
-   "saflik_bitisik_dahil": 0.8912544353997078,
-   "gercek_disi_isaretlenen_kesir": 0.0004968643188476562,
-   "temizlik_oncesi_sapma_sigma": 29.132656352129572,
-   "temizlik_sonrasi_sapma_sigma": 1.6321743987510702
+ "o5d903060": {
+  "veri": {
+   "hedef": "NGC5904",
+   "program": 8310,
+   "poz_suresi_s": [
+    400.0,
+    400.0
+   ],
+   "kazanc_e_adu": 1.0,
+   "okuma_gurultusu_e": 3.99,
+   "gokyuzu_duzeyi_adu": 36.3074893951416
   },
-  "f_lim=2": {
-   "isaretlenen_piksel": 6078,
-   "tamlik": 0.7702301934754978,
-   "tamlik_20_sigma_ustu": 0.9697841726618706,
-   "saflik_bitisik_dahil": 0.9076999012833169,
-   "gercek_disi_isaretlenen_kesir": 0.0005350112915039062,
-   "temizlik_oncesi_sapma_sigma": 29.132656352129572,
-   "temizlik_sonrasi_sapma_sigma": 0.9588617315512925
+  "gercek": {
+   "esik_sigma": 6.0,
+   "poz1_kozmik_isin_pikseli": 7081,
+   "poz2_kozmik_isin_pikseli": 7170,
+   "poz1_kesri": 0.006752967834472656
   },
-  "f_lim=5": {
-   "isaretlenen_piksel": 5015,
-   "tamlik": 0.6410111566162972,
-   "tamlik_20_sigma_ustu": 0.8386091127098322,
-   "saflik_bitisik_dahil": 0.9138584247258226,
-   "gercek_disi_isaretlenen_kesir": 0.0004119873046875,
-   "temizlik_oncesi_sapma_sigma": 29.132656352129572,
-   "temizlik_sonrasi_sapma_sigma": 1.262507527198667
+  "ayarlar": {
+   "f_lim=2, komşu eşiği yok": {
+    "isaretlenen_piksel": 4791,
+    "tamlik": 0.5965259144188674,
+    "tamlik_20_sigma_ustu": 0.9532374100719424,
+    "saflik_bitisik_dahil": 0.8912544353997078,
+    "gercek_disi_isaretlenen_kesir": 0.0004968643188476562,
+    "temizlik_oncesi_sapma_sigma": 29.132656352129572,
+    "temizlik_sonrasi_sapma_sigma": 1.6321743987510702
+   },
+   "f_lim=2": {
+    "isaretlenen_piksel": 6078,
+    "tamlik": 0.7702301934754978,
+    "tamlik_20_sigma_ustu": 0.9697841726618706,
+    "saflik_bitisik_dahil": 0.9076999012833169,
+    "gercek_disi_isaretlenen_kesir": 0.0005350112915039062,
+    "temizlik_oncesi_sapma_sigma": 29.132656352129572,
+    "temizlik_sonrasi_sapma_sigma": 0.9588617315512925
+   },
+   "f_lim=5": {
+    "isaretlenen_piksel": 5015,
+    "tamlik": 0.6410111566162972,
+    "tamlik_20_sigma_ustu": 0.8386091127098322,
+    "saflik_bitisik_dahil": 0.9138584247258226,
+    "gercek_disi_isaretlenen_kesir": 0.0004119873046875,
+    "temizlik_oncesi_sapma_sigma": 29.132656352129572,
+    "temizlik_sonrasi_sapma_sigma": 1.262507527198667
+   }
+  }
+ },
+ "o4gb010h0": {
+  "veri": {
+   "hedef": "ABELL1795-2",
+   "program": 7245,
+   "poz_suresi_s": [
+    277.5,
+    277.5
+   ],
+   "kazanc_e_adu": 1.0,
+   "okuma_gurultusu_e": 3.99,
+   "gokyuzu_duzeyi_adu": 4.668704271316528
+  },
+  "gercek": {
+   "esik_sigma": 6.0,
+   "poz1_kozmik_isin_pikseli": 14059,
+   "poz2_kozmik_isin_pikseli": 13659,
+   "poz1_kesri": 0.013407707214355469
+  },
+  "ayarlar": {
+   "f_lim=2, komşu eşiği yok": {
+    "isaretlenen_piksel": 9725,
+    "tamlik": 0.6617113592716409,
+    "tamlik_20_sigma_ustu": 0.9614754992906254,
+    "saflik_bitisik_dahil": 0.9645244215938303,
+    "gercek_disi_isaretlenen_kesir": 0.00032901763916015625,
+    "temizlik_oncesi_sapma_sigma": 38.632426858339045,
+    "temizlik_sonrasi_sapma_sigma": 1.2250814589715096
+   },
+   "f_lim=2": {
+    "isaretlenen_piksel": 12250,
+    "tamlik": 0.8371861441069778,
+    "tamlik_20_sigma_ustu": 0.9753355887809669,
+    "saflik_bitisik_dahil": 0.9709387755102041,
+    "gercek_disi_isaretlenen_kesir": 0.000339508056640625,
+    "temizlik_oncesi_sapma_sigma": 38.632426858339045,
+    "temizlik_sonrasi_sapma_sigma": 0.8072187519899294
+   },
+   "f_lim=5": {
+    "isaretlenen_piksel": 10578,
+    "tamlik": 0.7198947293548617,
+    "tamlik_20_sigma_ustu": 0.8644548728582342,
+    "saflik_bitisik_dahil": 0.9664397806768765,
+    "gercek_disi_isaretlenen_kesir": 0.00033855438232421875,
+    "temizlik_oncesi_sapma_sigma": 38.632426858339045,
+    "temizlik_sonrasi_sapma_sigma": 1.0094682952200404
+   }
   }
  }
 }

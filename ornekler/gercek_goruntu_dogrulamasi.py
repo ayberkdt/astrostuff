@@ -28,7 +28,7 @@ import _cizim as dw
 import numpy as np
 
 from kozmos.arsiv import ikimass, skyview
-from kozmos.astrometri import cozum, eslestirme, wcs
+from kozmos.astrometri import cozum, eslestirme, ucgen, wcs
 from kozmos.fotometri import kaynak as fk
 from kozmos.gozlem import dedektor as dd
 from kozmos.istatistik import saglam
@@ -148,6 +148,19 @@ def main() -> None:
         "cozum_en_buyuk_hata_yaysaniye": basliktan_fark(cozulen.wcs),
         "cozume_giren_yildiz": cozulen.yildiz_sayisi,
         "katalog_artik_rms_yaysaniye": cozulen.artik_rms_yaysaniye,
+    }
+
+    # 7. Kör çözüm: başlıktaki WCS hiç kullanılmaz; yalnızca saptanan kaynakların piksel konumları ve akıları ile
+    # aynı bölgenin katalogu verilir (ölçek, yönelim, ayna ve teğet noktası bilinmez).
+    kor, cift = ucgen.kor_cozum(
+        kaynaklar.x, kaynaklar.y, kaynaklar.aki, katalog["ra"], katalog["dec"], katalog["k_m"], en_parlak=30
+    )
+    astrometrik_cozum["kor_cozum"] = {
+        "ucgen_eslemesinde_atanan_cift": cift,
+        "cozume_giren_yildiz": kor.yildiz_sayisi,
+        "basliktan_en_buyuk_fark_yaysaniye": basliktan_fark(kor.wcs),
+        "katalog_artik_rms_yaysaniye": kor.artik_rms_yaysaniye,
+        "olcek_yaysaniye_piksel": float(np.sqrt(abs(np.linalg.det(kor.wcs.cd))) * 3600.0),
     }
 
     sonuc = {
