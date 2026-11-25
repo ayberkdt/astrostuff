@@ -88,6 +88,16 @@ def detect_cosmic_rays(
     completeness and purity measured on a real HST STIS frame against the difference of two
     exposures are in ``figures/cosmic_rays_real_data.json``.
 
+    Comparison with Astro-SCRAPPY 1.3.0 on the same two frames and the same truth
+    (``examples/cosmic_rays_real_data.py``, key ``reference_comparison``), at matched
+    parameters: this function finds fewer of the true pixels (completeness 77% and 84%
+    against 95% and 97%; above 20σ both reach 97-98%, so the loss is in the 6-20σ pixels)
+    and is slower by a factor of about 5 to 15 (10-15 s against 1-3 s for a 1024 × 1024
+    frame). In the crowded, undersampled M5 field it raises far fewer false alarms: 545
+    flagged pixels with no excess between the exposures against about 22,000; in the
+    sparse Abell 1795 field 353 against 1,424. Astro-SCRAPPY is the better choice when
+    completeness or speed matters.
+
     Verification
     ------------
     tests/unit/test_cosmic_rays.py: completeness of cosmic rays added to a synthetic star field and preservation of the stars.

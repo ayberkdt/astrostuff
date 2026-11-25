@@ -82,3 +82,62 @@ def test_refinement_converges_from_distorted_start():
     assert c.n_stars >= 190 and c.residual_rms_arcsec < 0.2
     with pytest.raises(ValueError):
         solve.refine_wcs(truth, xs[:2], ys[:2], ra + 5.0, dec, radius_arcsec=1.0)
+
+
+def test_find_shift_scales_to_large_lists():
+    # 20,000 detections against 20,000 catalog stars: the all-pairs array would hold 4e8 differences (6.4 GB as
+    # two float64 arrays). Only pairs inside the search window are formed, so this runs in a normal process.
+    rng = np.random.default_rng(221)
+    n = 20000
+    scale_deg = 0.5 / 3600.0
+    truth = Wcs(
+        crpix=np.array([4096.0, 4096.0]),
+        crval=np.array([150.0, 20.0]),
+        cd=scale_deg * np.array([[-1.0, 0.0], [0.0, 1.0]]),
+    )
+    x, y = rng.uniform(0, 8192, n), rng.uniform(0, 8192, n)
+    ra, dec = pixel_to_sky(truth, x, y)
+    shifted = Wcs(crpix=truth.crpix + np.array([11.3, -7.6]), crval=truth.crval, cd=truth.cd)
+    corrected, votes = solve.find_shift(
+        shifted, x + rng.normal(0, 0.1, n), y + rng.normal(0, 0.1, n), ra, dec, max_shift_pix=30.0
+    )
+    assert np.max(np.abs(corrected.crpix - truth.crpix)) < 0.05
+    assert votes > 0.9 * n
+
+
+def test_find_shift_rejects_disjoint_lists():
+    truth = Wcs(crpix=np.array([50.0, 50.0]), crval=np.array([10.0, 10.0]), cd=np.eye(2) / 3600.0)
+    with pytest.raises(ValueError, match="no detected source"):
+        solve.find_shift(truth, [10.0, 20.0], [10.0, 20.0], [40.0, 41.0], [-30.0, -31.0])
+
+
+def test_outlier_rejection_removes_wrong_matches():
+    # 200 correct pairs with 0.05-pixel noise plus 30 wrong pairs displaced by 3-10 pixels (mismatches to a
+    # neighboring star). Plain least squares is pulled by them; the clipped fit is not.
+    rng = np.random.default_rng(222)
+    scale_deg = 1.0 / 3600.0
+    truth = Wcs(
+        crpix=np.array([512.0, 512.0]),
+        crval=np.array([80.0, -30.0]),
+        cd=scale_deg * np.array([[-1.0, 0.0], [0.0, 1.0]]),
+    )
+    x, y = rng.uniform(0, 1024, 230), rng.uniform(0, 1024, 230)
+    ra, dec = pixel_to_sky(truth, x, y)
+    xn, yn = x + rng.normal(0, 0.05, 230), y + rng.normal(0, 0.05, 230)
+    angle = rng.uniform(0, 2 * np.pi, 30)
+    radius = rng.uniform(3.0, 10.0, 30)
+    xn[:30] += radius * np.cos(angle)
+    yn[:30] += radius * np.sin(angle)
+
+    def corner_error_arcsec(w):
+        cx, cy = np.meshgrid([0.0, 1023.0], [0.0, 1023.0])
+        r1, d1 = pixel_to_sky(w, cx, cy)
+        r2, d2 = pixel_to_sky(truth, cx, cy)
+        return float(np.max(np.hypot((r1 - r2) * np.cos(np.radians(d2)), d1 - d2)) * 3600.0)
+
+    plain = solve.fit_wcs(xn, yn, ra, dec, truth.crval)
+    clipped = solve.fit_wcs(xn, yn, ra, dec, truth.crval, clip_sigma=4.0)
+    assert clipped.n_stars <= 205 and clipped.n_stars >= 190  # the 30 wrong pairs are gone, few good ones lost
+    assert clipped.residual_rms_arcsec < 0.1 < plain.residual_rms_arcsec
+    assert corner_error_arcsec(clipped.wcs) < 0.03
+    assert corner_error_arcsec(plain.wcs) > 3.0 * corner_error_arcsec(clipped.wcs)

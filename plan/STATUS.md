@@ -2,11 +2,11 @@
 
 This file is generated from the source registry by `python bibliography/registry_report.py`; do not edit it by hand.
 
-- Public functions tied to a source: 230
-- Functions whose records were all read from the source text: 230
-- Source records: 270 (read: 270, pending: 0)
+- Public functions tied to a source: 262
+- Functions whose records were all read from the source text: 262
+- Source records: 306 (read: 306, pending: 0)
 - Constants with a source: 35 (awaiting verification: 0)
-- Test functions: 306 (parametrized and property tests count as one)
+- Test functions: 512 (parametrized and property tests count as one)
 - Infrastructure functions exempt from the source rule: 4
 
 `read`: the equation was read from the text of the source while the code was written. `pending`: the equation
@@ -63,9 +63,10 @@ was written as remembered and tested, but the text of the source has not been op
 
 ### `kozmos.astrometry.wcs`
 
-- `pixel_to_sky`: [CalabrettaGreisen2002] TeX labels eq:px, eq:azphi, eq:azrt, eq:TANtheta, eq:nat2std (read)
-- `sky_to_pixel`: [CalabrettaGreisen2002] TeX labels eq:std2nat, eq:TANRt, eq:azx, eq:azy, eq:px (inverse) (read)
-- `wcs_from_header`: [CalabrettaGreisen2002] TeX label eq:px and the definition of the LONPOLE keyword (read)
+- `fit_sip`: [Shupe2005] Eq. 1 with Eqs. 2, 3 (definition of the polynomial) (read)
+- `pixel_to_sky`: [Shupe2005] Eq. 1 with Eqs. 2, 3 (read); [CalabrettaGreisen2002] TeX labels eq:px, eq:azphi, eq:azrt, eq:TANtheta, eq:nat2std (read)
+- `sky_to_pixel`: [Shupe2005] Eqs. 4, 5, 6 (reverse polynomials); Eq. 1 for the numerical inverse (read); [CalabrettaGreisen2002] TeX labels eq:std2nat, eq:TANRt, eq:azx, eq:azy, eq:px (inverse) (read)
+- `wcs_from_header`: [Shupe2005] Section 2, Eqs. 2, 3 (A_p_q, B_p_q, A_ORDER, B_ORDER), Eqs. 5, 6 (AP_p_q, BP_p_q), '-SIP' suffix of CTYPE (read); [CalabrettaGreisen2002] TeX label eq:px and the definition of the LONPOLE keyword (read)
 
 ### `kozmos.black_holes.accretion`
 
@@ -134,6 +135,11 @@ was written as remembered and tested, but the text of the source has not been op
 - `wrap_0_2pi`: [ERFA2023] anp.c (read)
 - `wrap_pm_pi`: [ERFA2023] anpm.c (read)
 
+### `kozmos.core.units`
+
+- `unit_from_suffix`: [SIBrochure9] Table 7 (SI prefixes, p. 138), Table 8 (non-SI units, pp. 140-141), Section 5.2 (unit symbols, p. 142) (read)
+- `with_units`: [SIBrochure9] Section 2.3.3 and Table 3 (dimensions of quantities, p. 132), Section 5.2 (p. 142) (read)
+
 ### `kozmos.cosmology.distances`
 
 - `angular_diameter_distance_mpc`: [Hogg1999] Eq. 18 (read)
@@ -171,6 +177,7 @@ was written as remembered and tested, but the text of the source has not been op
 - `list_hdus`: [FITS2018] Eq. 1 and 2 (data size), Section 3.3-3.4 (HDU order), XTENSION keyword (read)
 - `parse_header`: [Hierarch2009] FITS registered conventions page: 'The HIERARCH Keyword Convention', Description (read); [FITS2018] Section 3.3.1 and 4.1: header blocks, header card components; END keyword (read)
 - `read_fits`: [FITS2018] Table 8 (BITPIX), Eq. 3 (BZERO, BSCALE), Section 5 (big-endian byte order), Fig. 1 (axis order) (read)
+- `read_table`: [FITS2018] Section 7.3.1 (mandatory keywords, Eq. 8), 7.3.2 (TTYPEn, TSCALn, TZEROn, TNULLn, TDIMn, Table 19; Eq. 7 is printed in Section 7.2.2), 7.3.3 (Table 18, data types, main table), 7.3.5 (variable-length arrays, THEAP) (read)
 - `write_fits`: [FITS2018] Section 3.3.1, 4.4.1 (mandatory keywords), Table 8, Section 5 (read)
 
 ### `kozmos.observing.detector`
@@ -202,6 +209,13 @@ was written as remembered and tested, but the text of the source has not been op
 ### `kozmos.photometry.detection`
 
 - `detect_sources`: [Photutils2026] User guide: Image Segmentation and Source Deblending (read)
+
+### `kozmos.photometry.psf`
+
+- `fit_psf_width`: [PhotutilsPSF2026] User guide: PSF Photometry, 'Estimating the FWHM of Sources' (fit_fwhm) and 'Terminology' (read)
+- `gaussian_prf`: [PhotutilsPSF2026] User guide: PSF Photometry, 'Terminology' and 'Analytic PSF Models' (PRF models integrated over the pixels) (read)
+- `moffat_prf`: [Moffat1969] p. 458, Eq. 7: I*(r) = I0 / {1 + (r/R)^2}^beta (scan of the paper, read) (read)
+- `psf_photometry`: [Stetson1987] Section III.D.1 'The Basics' (grouping of stars, iterated linearized least squares, Eq. 8) and Section III.D.2 subsections a and b (sky held fixed; pixel weights, Eq. 10) (read)
 
 ### `kozmos.radiation.infrared`
 
@@ -235,6 +249,41 @@ was written as remembered and tested, but the text of the source has not been op
 
 - `subtract_dynamic_sky`: [Schirmer2013] 'Static and dynamic background models' section: dynamic model (read)
 - `subtract_static_sky`: [Schirmer2013] 'Static and dynamic background models' section: static model (read)
+
+### `kozmos.spectroscopy.extraction`
+
+- `box_extract`: [Horne1986] Eq. 2 and Eq. 3 (standard spectrum and its variance); Eq. 12 (pixel variance); Table I steps 2 and 4 (read)
+- `fit_sky_background`: [Horne1986] Table I step 3 (fit sky background, FIT_x[D; V]); Sect. II.A (weighted polynomial per wavelength, weights from Step 2 variances); Sect. II.D (iterative sigma-clipping, threshold sigma_clip^2 about 16) (read)
+- `optimal_extract`: [Horne1986] Table I steps 4-9; Eq. 8 and Eq. 9 (optimal spectrum and variance); Eq. 13 (revised variance); Eq. 14 (initial profile); Sect. II.D (profile fit); Sect. II.E (cosmic-ray rejection, threshold 25); Sect. II.F (iteration) (read)
+
+### `kozmos.spectroscopy.lines`
+
+- `equivalent_width`: [VollmannEversberg2006] Eq. 1 (definition; TeX label eq1) and the derivatives following Eq. 3, Eq. for sigma^2(W) (TeX label eq10) (read)
+- `equivalent_width_sigma_vollmann_eversberg`: [VollmannEversberg2006] TeX label eq4 (Sect. 'The error of the equivalent width', low- and high-flux lines) (read)
+- `fit_gaussian_line`: [SciPyDocs2026] scipy.optimize.curve_fit docstring: parameters sigma and absolute_sigma, covariance pcov (read)
+- `voigt_profile`: [Zaghloul2011] Eq. (1): w(z) = exp(-z^2) erfc(-iz) and Re w(x + iy) = V(x, y), the real Voigt function (y > 0) (read); [SciPyDocs2026] scipy.special.voigt_profile Notes: V(x; sigma, gamma) = Re[w(z)] / (sigma sqrt(2 pi)), z = (x + i gamma) / (sqrt(2) sigma) (read)
+
+### `kozmos.spectroscopy.velocity`
+
+- `correlation_r_statistic`: [TonryDavis1979] Eq. 20 (antisymmetric rms sigma_a) and Eq. 23 (r = h / (sqrt(2) sigma_a)) (read)
+- `cross_correlate`: [TonryDavis1979] Eqs. 3, 4 and 5 (rms sigma_g, sigma_t; normalised correlation c(n); Fourier form C(k)) (read)
+- `fit_correlation_peak`: [TonryDavis1979] Sect. III.b (quadratic least-squares fit to the correlation peak); Sect. III.c.ii (polynomial fit to 11 points around the peak); Sect. IV (parabola fitted to the largest peak in -1000 < cZ < 20000 km/s); the parabola h0 (1 - 2 (n - n0)^2 / w0^2) in the text after Eq. 20 gives the FWHM w (read)
+- `half_amplitude_wavenumber`: [TonryDavis1979] p. 1519, text before Eq. 34 (correlation functions have a half-amplitude point in Fourier space of about wavenumber 50); definition of the highest frequency B in Sect. III.c.i, text after Eq. 21 (read)
+- `prepare_for_correlation`: [TonryDavis1979] Sect. IV (spectrum preparation: fourth-order least-squares polynomial subtracted, 5 percent cosine-bell end masking, bandpass filter rising from wavenumber 10, 1 at 20, falling from 100, 0 at 200 for N = 2048); Sect. III.a (spectra continuum subtracted, endmasked and filtered) (read)
+- `radial_velocity_cross_correlation`: [TonryDavis1979] Eq. 34 (ln(1 + Z) = delta / A) and Eq. 35 (error of ln(1 + Z) = epsilon / A), p. 1519 (read)
+- `rebin_log_wavelength`: [TonryDavis1979] Eq. 1 (n = A ln(lambda) + B) and Sect. IV (a section mapped to 2048 bins linear in ln lambda) (read)
+- `shift_error_bins`: [TonryDavis1979] Eq. 24 (mean shift error eps = (1/4) (N / 2B) (1 / (1 + r))) and Eq. 35 (the same with numbers) (read)
+
+### `kozmos.spectroscopy.wavelengths`
+
+- `air_refractive_index`: [Morton1991] Eq. 3 (Sect. 2, IAU standard after Oosterhoff 1957 and Edlen 1953) (read)
+- `air_to_vacuum`: [Morton1991] Eq. 3 (Sect. 2) (read)
+- `doppler_shifted_wavelength`: [Hogg1999] Eq. 9 and the redshift definition z = lambda_o/lambda_e - 1 printed just before it (read)
+- `radial_velocity_from_wavelengths`: [Hogg1999] Eq. 9 and the redshift definition z = lambda_o/lambda_e - 1 printed just before it (read)
+- `resolving_power`: [TonryDavis1979] Sect. IV: rms resolution about 2 A, given as 120 km per second at 5000 A (read)
+- `resolving_power_from_velocity`: [TonryDavis1979] Sect. IV: rms resolution about 2 A, given as 120 km per second at 5000 A (read)
+- `vacuum_to_air`: [Morton1991] Eq. 3 (Sect. 2) (read)
+- `velocity_resolution_km_s`: [TonryDavis1979] Sect. IV: rms resolution about 2 A, given as 120 km per second at 5000 A (read)
 
 ### `kozmos.star_formation.clouds`
 
@@ -330,6 +379,7 @@ was written as remembered and tested, but the text of the source has not been op
 - `autocorrelation_time`: [ForemanMackey2013] Section 3, 'Autocorrelation time': τ_f and C_f(T) equations (read)
 - `ensemble_sample`: [ForemanMackey2013] Eq. proposal, acceptance; Algorithm 3 (parallel stretch move) (read)
 - `rank_normalized_rhat`: [Vehtari2021] Section 4.1-4.2: rank normalization and folding equations (read)
+- `sample_until_converged`: [Vehtari2021] Section 'Recommendations for practice': use the sample only if the rank-normalized, folded R-hat < 1.01 (read)
 - `split_rhat`: [Vehtari2021] Section 3.1: B, W, var⁺ and R̂ equations (read)
 - `stretch_factor`: [ForemanMackey2013] Eq. goodmanprop (g(z) ∝ 1/√z, z ∈ [1/a, a]) (read)
 
@@ -426,13 +476,14 @@ was written as remembered and tested, but the text of the source has not been op
 - [CraigChambers2026]: 3
 - [EHT2019]: 4
 - [ERFA2023]: 33
-- [FITS2018]: 4
+- [FITS2018]: 5
 - [ForemanMackey2013]: 3
 - [Groth1986]: 3
 - [Hierarch2009]: 1
 - [HoffleitWarren1991]: 1
-- [Hogg1999]: 17
+- [Hogg1999]: 19
 - [HoggBovyLang2010]: 3
+- [Horne1986]: 3
 - [Howell1989]: 1
 - [IRAF2026]: 1
 - [IRSA2026]: 3
@@ -446,23 +497,33 @@ was written as remembered and tested, but the text of the source has not been op
 - [Lupton2004]: 3
 - [Mamajek2015]: 2
 - [McKee2007]: 21
+- [Moffat1969]: 1
+- [Morton1991]: 3
 - [MurrayCorreia2010]: 4
 - [Page2005]: 7
 - [Paxton2013]: 2
 - [Photutils2026]: 3
+- [PhotutilsPSF2026]: 2
 - [Pols2011]: 1
 - [Prsa2016]: 4
 - [Reynolds2021]: 2
 - [SExtractorDocs2026]: 2
+- [SIBrochure9]: 2
 - [Salpeter1955]: 4
 - [Sathyaprakash2009]: 5
 - [Schirmer2013]: 2
+- [SciPyDocs2026]: 2
 - [Scolnic2022]: 1
+- [Shupe2005]: 4
 - [SkyView2026]: 1
+- [Stetson1987]: 1
 - [TAP2019]: 3
+- [TonryDavis1979]: 11
 - [VanderPlas2018]: 4
-- [Vehtari2021]: 2
+- [Vehtari2021]: 3
+- [VollmannEversberg2006]: 2
 - [Wright2010]: 3
+- [Zaghloul2011]: 1
 - [Zinnecker2007]: 1
 - [vanDokkum2001]: 1
 

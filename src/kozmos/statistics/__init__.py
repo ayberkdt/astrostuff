@@ -12,6 +12,7 @@ from kozmos.statistics.mcmc import (
     autocorrelation_time,
     ensemble_sample,
     rank_normalized_rhat,
+    sample_until_converged,
     split_rhat,
     stretch_factor,
 )
@@ -39,6 +40,7 @@ __all__ = [
     "mcmc",
     "rank_normalized_rhat",
     "robust",
+    "sample_until_converged",
     "sigma_clip",
     "split_rhat",
     "stretch_factor",

@@ -6,8 +6,8 @@
 
 At run time the library uses only NumPy and SciPy. Astropy and ERFA exist to compare results, not to compute them.
 
-- 230 functions, 35 constants, 1325 tests
-- In all 270 source records the equation was read from the text of the source; no record marked "pending" is left
+- 262 functions, 35 constants, 2213 tests; the tests run on every push ([CI](.github/workflows/ci.yml): Linux and Windows, Python 3.12 and 3.13)
+- In all 306 source records the equation was read from the text of the source; no record marked "pending" is left
 - Current numbers: [plan/STATUS.md](plan/STATUS.md) (generated from the code)
 
 ## Results produced with the library
@@ -21,9 +21,9 @@ All the figures below were produced with the code in this repository, from open 
 The code downloads the open [Pantheon+SH0ES data](https://github.com/PantheonPlusSH0ES/DataRelease), builds the likelihood with the 1701 × 1701 covariance matrix, and estimates the parameters with an MCMC sampler we wrote ourselves. The values it finds reproduce the published ones:
 
 - Matter density: **Ωm = 0.332 ± 0.018** (published 0.334 ± 0.018)
-- Hubble constant: **H0 = 73.53 ± 1.00 km s⁻¹ Mpc⁻¹** (published 73.6 ± 1.1)
+- Hubble constant: **H0 = 73.54 ± 1.02 km s⁻¹ Mpc⁻¹** (published 73.6 ± 1.1)
 
-The published values were read from the arXiv source of Brout et al. (2022). Record: [projects/hubble/result.json](projects/hubble/result.json).
+The published values were read from the arXiv source of Brout et al. (2022). Record: [projects/hubble/result.json](projects/hubble/result.json). The chain is extended until the rank-normalized R̂ of every parameter is below 1.01 (the threshold of Vehtari et al. 2021) and the chain is longer than 50 autocorrelation times; it stopped at 5000 steps of 32 walkers with R̂ ≤ 1.007. An earlier 2000-step chain had R̂ up to 1.027 and gave ± 1.00.
 
 The H0 uncertainty we find is smaller than the published one. Three independent checks support our value ([h0_uncertainty_check.py](projects/hubble/h0_uncertainty_check.py)):
 
@@ -137,11 +137,12 @@ The smallest mass a gas cloud needs to collapse under its own gravity. At a temp
 **Observing and data**
 
 - `archives`: TAP client, Gaia DR3 star samples and cone search (epoch transfer with proper motion), 2MASS point source cone search, Bright Star Catalogue, SkyView image cutouts (DSS2, 2MASS, WISE), Pantheon+ data; every download is recorded with a SHA-256 digest, and transient network errors are retried
-- `io`: FITS reader and writer (from the FITS 4.0 standard); primary unit, image extensions and ESO HIERARCH header cards
+- `io`: FITS reader and writer (from the FITS 4.0 standard); primary unit, image extensions, binary table extensions (all column types, variable-length arrays, scaling and nulls) and ESO HIERARCH header cards
 - `observing`: target visibility and airmass (with precession and atmospheric refraction), CCD signal model, synthetic raw frame, signal-to-noise ratio
 - `reduction`: frame combining with sigma clipping, bias/dark/flat-field correction, gain and read-noise measurement, single-frame cosmic-ray cleaning (L.A.Cosmic), sky subtraction from dithered infrared frames
-- `photometry`: background map, source detection and deblending of overlapping sources, aperture photometry
-- `astrometry`: FITS WCS pixel-to-sky transform (TAN projection), catalog cross-matching, astrometric solution from an approximate WCS and without an initial WCS (triangle matching)
+- `photometry`: background map, source detection and deblending of overlapping sources, aperture photometry, PSF-fitting photometry (Gaussian and Moffat profiles, simultaneous fits of blended groups)
+- `astrometry`: FITS WCS pixel-to-sky transform (TAN projection with SIP distortion polynomials, reading and fitting), catalog cross-matching, astrometric solution from an approximate WCS (with outlier rejection) and without an initial WCS (triangle matching)
+- `spectroscopy`: air and vacuum wavelengths, equivalent widths and line fits (Gaussian, Voigt), box and optimal (Horne) extraction, radial velocities by cross-correlation (Tonry & Davis)
 - `visualization`: asinh stretch and color-preserving RGB composite
 - `radiation`: magnitude systems, Planck function, 2MASS and WISE zero points
 - `timeseries`: Lomb-Scargle periodogram
@@ -156,9 +157,9 @@ The smallest mass a gas cloud needs to collapse under its own gravity. At a temp
 
 **Infrastructure**
 
-- `core`: CODATA 2022 constants, IAU nominal values, angle arithmetic
+- `core`: CODATA 2022 constants, IAU nominal values, angle arithmetic, quantities with dimension checking (`core.units`: `with_units` reads the unit from the suffix of each argument name, converts quantities given in other units and rejects a wrong dimension)
 - `time`, `coordinates`: Julian date, leap seconds, sidereal time, galactic and horizontal transforms, IAU 2006 precession
-- `statistics`: linear fitting, MCMC, convergence diagnostics, robust estimators
+- `statistics`: linear fitting, MCMC with a convergence-driven stopping rule, convergence diagnostics, robust estimators
 
 ## How the source rule works
 
@@ -213,7 +214,7 @@ print(bibliography_report(isco_radiative_efficiency))  # which publication it re
 To reproduce the figures (the scripts download the data themselves):
 
 ```
-python projects/hubble/hubble_analysis.py     # about 12 minutes
+python projects/hubble/hubble_analysis.py     # about 30 minutes; runs until the chain has converged
 python projects/hubble/hubble_figure.py
 python examples/hr_diagram.py
 python examples/optical_infrared.py
@@ -231,10 +232,14 @@ The figures in the repository were produced with a local figure-audit tool (`dat
 
 - The newly written physics modules were tested with their own tests, closed-form solutions and the numbers in the sources. A comparison with an independent library exists in the time, coordinates, cosmology, statistics, FITS and periodogram modules.
 - Observation planning includes frame bias, precession and optional refraction; it has no nutation, aberration or UT1 − UTC difference. On 30 random targets the largest direction difference from astropy is 0.45 arcmin (26 arcmin in the calculation without precession). The refraction model is invalid below an altitude of about 5°.
-- The FITS reader reads the primary unit and image extensions; table extensions are listed but not decoded, and compressed images are not read.
+- The FITS reader reads the primary unit, image extensions and binary tables. ASCII tables are not read and tile-compressed images are not decompressed. The binary-table reader was tested against astropy on written files and against hand-made files; no archive file with a binary table was at hand, so it has not been run on one.
 - Source deblending separates pairs with a clear saddle between them: at a separation of 2 FWHM, 92-98% of the pairs with a flux ratio up to 2 are separated, and 14% at a ratio of 3 with the default setting. Aperture photometry underestimates by a few percent in narrow apertures.
-- The WCS solves only the TAN projection; there are no distortion terms (SIP). The blind astrometric solution works without knowing the scale, orientation or mirror image, but it asks for the catalog of the region the image covers (approximate sky position and field width); it is not an indexed solver that searches the whole sky, and it rejects the solution if it cannot find at least 8 common stars.
+- The WCS covers only the TAN projection, with optional SIP polynomials (agreement with astropy 5e-14 degrees; `fit_sip` holds the linear terms fixed and was tested on synthetic stars only). `fit_wcs` and `refine_wcs` return a linear solution and drop any SIP terms of the input. The blind astrometric solution works without knowing the scale, orientation or mirror image, but it asks for the catalog of the region the image covers (approximate sky position and field width); it is not an indexed solver that searches the whole sky, and it rejects the solution if it cannot find at least 8 common stars.
 - The tests on real raw data rest on two STIS observations and two SOFI sequences; all are a single instrument and a single filter. The SOFI frames download as `.fits.Z` and our reader does not decompress them (`gzip -d` is needed). A separate dark is not subtracted (the sky model also contains the dark); the flat field is the special dome flat of the manual.
+- Cosmic-ray cleaning against Astro-SCRAPPY 1.3.0 on the two STIS frames, same parameters and same truth ([figures/cosmic_rays_real_data.json](figures/cosmic_rays_real_data.json)): ours finds 77% and 84% of the true pixels, Astro-SCRAPPY 95% and 97% (both 97-98% above 20σ); ours takes 10-15 s per 1024 × 1024 frame, Astro-SCRAPPY 1-3 s. In the crowded M5 field ours flags 545 pixels that show no excess between the two exposures, Astro-SCRAPPY about 22,000; in the sparse field 353 against 1,424.
+- PSF photometry uses analytic profiles only: on a real 2MASS image the Gaussian recovers the 1-FWHM aperture flux to 0.6% but the reduced χ² is 9, because the real PSF has wider wings. There is no empirical PSF and no comparison with another PSF-fitting code.
+- The spectroscopy functions were tested on synthetic spectra and on the numbers printed in their sources, not on observed spectra. The cross-correlation error estimate of Tonry & Davis holds at a signal-to-noise ratio of about 20-50 and is 2-3 times too small above 100.
+- Unit checking is opt-in (`with_units`); the library functions themselves still take plain numbers in the unit named by the suffix. Three existing names contradict the suffix convention and are recorded in [tests/unit/test_unit_conventions.py](tests/unit/test_unit_conventions.py): `time_above_horizon_hr` returns sidereal hours, `comoving_volume_element_mpc3` is per steradian, and `luminosity_w` of `sfr_calibration_msun_yr` is W/Hz for the radio band.
 - SkyView cutouts are resampled images; photometric calibration needs the original archive data.
 
 ## Plan

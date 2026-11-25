@@ -79,3 +79,44 @@ def test_rank_normalized_rhat():
     # Also defined for infinite-variance (Cauchy) samples, and close to 1.
     cauchy = u.standard_cauchy(size=(2000, 8, 1))
     assert abs(mcmc.rank_normalized_rhat(cauchy)[0] - 1) < 0.02
+
+
+def _correlated_gaussian():
+    covariance = np.array([[1.0, 0.8], [0.8, 2.0]])
+    precision = np.linalg.inv(covariance)
+    return covariance, lambda v: float(-0.5 * v @ precision @ v)
+
+
+def test_sample_until_converged_meets_both_criteria():
+    covariance, log_probability = _correlated_gaussian()
+    rng = np.random.default_rng(77)
+    initial = rng.normal(0.0, 0.5, (16, 2))
+    chain, discard, converged = mcmc.sample_until_converged(
+        log_probability, initial, rng, block_steps=500, max_steps=20000
+    )
+    assert converged
+    steps = chain.samples.shape[0]
+    assert steps % 500 == 0 and steps < 20000
+    kept = chain.samples[discard:]
+    assert np.all(mcmc.rank_normalized_rhat(kept) < 1.01)
+    assert steps > 50.0 * mcmc.autocorrelation_time(chain.samples).max()
+    assert chain.log_probability.shape == (steps, 16) and np.all(
+        (chain.acceptance_fraction > 0.2) & (chain.acceptance_fraction < 1.0)
+    )
+    # Monte Carlo error of the mean ~ sigma / sqrt(ESS); with ESS of a few thousand, 0.1 is several sigma.
+    flat = kept.reshape(-1, 2)
+    assert np.all(np.abs(flat.mean(axis=0)) < 0.1)
+    assert np.allclose(np.cov(flat.T), covariance, atol=0.2)
+
+
+def test_sample_until_converged_reports_failure():
+    _, log_probability = _correlated_gaussian()
+    rng = np.random.default_rng(78)
+    initial = rng.normal(0.0, 0.5, (16, 2))
+    chain, discard, converged = mcmc.sample_until_converged(
+        log_probability, initial, rng, block_steps=40, max_steps=100
+    )
+    assert not converged
+    assert chain.samples.shape == (100, 16, 2) and 0 < discard <= 50
+    with pytest.raises(ValueError):
+        mcmc.sample_until_converged(log_probability, initial, rng, block_steps=200, max_steps=100)

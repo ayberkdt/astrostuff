@@ -1,6 +1,6 @@
-"""Core building blocks: physical and astronomical constants, angle arithmetic."""
+"""Core building blocks: physical and astronomical constants, angle arithmetic, quantities with unit checking."""
 
-from kozmos.core import angles, constants
+from kozmos.core import angles, constants, units
 from kozmos.core.angles import (
     ARCSEC_RAD,
     DEG_RAD,
@@ -55,6 +55,23 @@ from kozmos.core.constants import (
     Constant,
     all_constants,
 )
+from kozmos.core.units import (
+    BASE_DIMENSIONS,
+    IMPLICIT_INVERSE_STEMS,
+    ONE,
+    SI_PREFIXES,
+    SUFFIX_UNITS,
+    UNIT_SOURCES,
+    UNSUPPORTED_SUFFIXES,
+    Dimension,
+    Quantity,
+    Unit,
+    UnitError,
+    UnitSuffixError,
+    UnsupportedSuffixError,
+    unit_from_suffix,
+    with_units,
+)
 
 __all__ = [
     "all_constants",
@@ -65,6 +82,7 @@ __all__ = [
     "ASTRONOMICAL_UNIT",
     "ATOMIC_MASS_UNIT",
     "AVOGADRO",
+    "BASE_DIMENSIONS",
     "BOLOMETRIC_ZERO_POINT_LUMINOSITY",
     "BOLTZMANN",
     "Constant",
@@ -72,6 +90,7 @@ __all__ = [
     "DAY_SECONDS",
     "DEG_RAD",
     "deg_to_rad",
+    "Dimension",
     "EARTH_EQUATORIAL_RADIUS",
     "EARTH_POLAR_RADIUS",
     "ELECTRON_MASS",
@@ -81,6 +100,7 @@ __all__ = [
     "GM_SUN",
     "GRAVITATIONAL_CONSTANT",
     "HOUR_RAD",
+    "IMPLICIT_INVERSE_STEMS",
     "J2000_JD",
     "JULIAN_CENTURY_DAYS",
     "JULIAN_YEAR_DAYS",
@@ -89,11 +109,14 @@ __all__ = [
     "JUPITER_POLAR_RADIUS",
     "MEGAPARSEC",
     "MJD_ZERO_JD",
+    "ONE",
     "PARSEC",
     "PLANCK",
     "PROTON_MASS",
+    "Quantity",
     "rad_to_deg",
     "SECOND_RADIATION_CONSTANT",
+    "SI_PREFIXES",
     "SOLAR_CONSTANT",
     "SOLAR_EFFECTIVE_TEMPERATURE",
     "SOLAR_LUMINOSITY",
@@ -102,11 +125,21 @@ __all__ = [
     "SPEED_OF_LIGHT_KM_S",
     "spherical_to_unit_vector",
     "STEFAN_BOLTZMANN",
+    "SUFFIX_UNITS",
     "THOMSON_CROSS_SECTION",
     "TT_MINUS_TAI",
     "TWO_PI",
+    "Unit",
+    "unit_from_suffix",
+    "UNIT_SOURCES",
     "unit_vector_to_spherical",
+    "UnitError",
+    "units",
+    "UnitSuffixError",
+    "UNSUPPORTED_SUFFIXES",
+    "UnsupportedSuffixError",
     "WIEN_WAVELENGTH",
+    "with_units",
     "wrap_0_2pi",
     "wrap_pm_pi",
 ]

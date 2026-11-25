@@ -102,7 +102,7 @@ def orbital_period_s(semi_major_axis_m: ArrayLike, gm_m3_s2: ArrayLike) -> Array
 
     Parameters
     ----------
-    yari_ecc_anomalyksen_m : float ya da ndarray
+    semi_major_axis_m : float or ndarray
         Semi-major axis [m].
     gm_m3_s2 : float or ndarray
         μ = G(m1 + m2) [m³ s⁻²].

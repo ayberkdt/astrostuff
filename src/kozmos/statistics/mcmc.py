@@ -283,3 +283,97 @@ def rank_normalized_rhat(chain: ArrayLike) -> Array:
 
     folded = np.abs(x - np.median(x.reshape(-1, n), axis=0))
     return np.maximum(split_rhat(score(x)), split_rhat(score(folded)))
+
+
+@source(
+    "Vehtari2021",
+    where="Section 'Recommendations for practice': use the sample only if the rank-normalized, folded R-hat < 1.01",
+    status="read",
+    note="the stopping rule built on that threshold is this project's choice: blocks of block_steps are appended until "
+    "R-hat of the kept part is below rhat_limit and the chain is longer than min_tau_multiple autocorrelation "
+    "times; the burn-in rule (5 tau, at least 100 steps, at most half the chain) and the factor 50 are this "
+    "project's choices and come from no source read here",
+)
+def sample_until_converged(
+    log_probability: Callable[[Array], float],
+    initial: ArrayLike,
+    rng: np.random.Generator,
+    *,
+    block_steps: int = 500,
+    max_steps: int = 20000,
+    rhat_limit: float = 1.01,
+    min_tau_multiple: float = 50.0,
+    a: float = 2.0,
+) -> tuple[Chain, int, bool]:
+    """Extend an ensemble chain block by block until the convergence criteria hold.
+
+    After every block: tau = autocorrelation_time(chain), burn-in = min(steps/2, max(100, 5 tau_max));
+    the run stops when rank_normalized_rhat(chain[burn-in:]) < rhat_limit for every parameter
+    and steps > min_tau_multiple * tau_max, or when max_steps is reached.
+
+    Parameters
+    ----------
+    log_probability : callable
+        Log of the target density (up to a constant) at one position.
+    initial : ndarray, shape (walker, dimension)
+        Starting positions of the walkers.
+    rng : numpy.random.Generator
+    block_steps : int
+        Steps added between two checks.
+    max_steps : int
+        Upper limit on the chain length; the last block is shortened to respect it.
+    rhat_limit : float
+        Threshold on the rank-normalized, folded split R-hat.
+    min_tau_multiple : float
+        Required chain length in units of the longest integrated autocorrelation time.
+    a : float
+        Stretch-move scale passed to ``ensemble_sample``.
+
+    Returns
+    -------
+    (Chain, int, bool)
+        The whole chain (burn-in included), the number of burn-in steps to discard, and whether the
+        criteria were met. ``False`` means max_steps was reached first; the chain is still returned.
+
+    References
+    ----------
+    [Vehtari2021] Section "Recommendations for practice" (threshold 1.01).
+
+    Validity
+    --------
+    The walkers of an ensemble sampler are not independent chains, so R-hat computed over walkers
+    can be optimistic; the length criterion in autocorrelation times is the independent second
+    check. A chain continued from its last state is the same Markov chain, so appending blocks
+    does not bias the sample; checking after every block is a sequential stopping rule and can
+    stop on a favorable fluctuation, which the length criterion limits.
+
+    Verification
+    ------------
+    tests/unit/test_mcmc.py: a correlated Gaussian target converges with both criteria met and the right mean
+    and covariance; a too-small max_steps returns the chain flagged as not converged.
+    """
+    if block_steps < 1 or max_steps < block_steps:
+        raise ValueError("block_steps must be positive and not larger than max_steps")
+    position = np.array(initial, dtype=float)
+    samples: list[Array] = []
+    log_probabilities: list[Array] = []
+    accepted = np.zeros(position.shape[0])
+    steps = 0
+    while True:
+        n_block = min(block_steps, max_steps - steps)
+        block = ensemble_sample(log_probability, position, n_block, rng, a=a)
+        samples.append(block.samples)
+        log_probabilities.append(block.log_probability)
+        accepted += block.acceptance_fraction * n_block
+        steps += n_block
+        position = block.samples[-1]
+        chain = np.concatenate(samples)
+        tau_max = float(np.max(autocorrelation_time(chain)))
+        discard = int(min(steps // 2, max(100, 5 * tau_max)))
+        converged = bool(
+            np.isfinite(tau_max)
+            and steps > min_tau_multiple * tau_max
+            and np.all(rank_normalized_rhat(chain[discard:]) < rhat_limit)
+        )
+        if converged or steps >= max_steps:
+            return Chain(chain, np.concatenate(log_probabilities), accepted / steps), discard, converged

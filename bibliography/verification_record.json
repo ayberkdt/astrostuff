@@ -1,5 +1,5 @@
 {
- "time": "2026-11-25 18:28 UTC",
+ "time": "2026-11-25 19:34 UTC",
  "entries": [
   {
    "key": "SOFA2023",
@@ -871,21 +871,11 @@
   },
   {
    "key": "Horne1986",
-   "bib_title": "An optimal extraction algorithm for CCD spectroscopy",
+   "bib_title": "An Optimal Extraction Algorithm for CCD Spectroscopy",
    "bib_year": "1986",
-   "identifier": "doi:10.1086/131801",
-   "external": {
-    "source": "Crossref",
-    "title": "An optimal extraction algorithm for CCD spectroscopy",
-    "year": 1986,
-    "first_author": "Horne",
-    "publication": "Publications of the Astronomical Society of the Pacific",
-    "volume": "98",
-    "page": "609"
-   },
-   "title_similarity": 1.0,
-   "year_difference": 0,
-   "status": "VERIFIED"
+   "identifier": "https://ui.adsabs.harvard.edu/abs/1986PASP...98..609H",
+   "status": "MANUAL",
+   "description": "no DOI, arXiv identifier or ISBN; to be verified by hand"
   },
   {
    "key": "Naylor1998",
@@ -1015,21 +1005,11 @@
   },
   {
    "key": "TonryDavis1979",
-   "bib_title": "A survey of galaxy redshifts. I. Data reduction techniques",
+   "bib_title": "A Survey of Galaxy Redshifts. I. Data Reduction Techniques",
    "bib_year": "1979",
-   "identifier": "doi:10.1086/112569",
-   "external": {
-    "source": "Crossref",
-    "title": "A survey of galaxy redshifts. I - Data reduction techniques",
-    "year": 1979,
-    "first_author": "Tonry",
-    "publication": "The Astronomical Journal",
-    "volume": "84",
-    "page": "1511"
-   },
-   "title_similarity": 1.0,
-   "year_difference": 0,
-   "status": "VERIFIED"
+   "identifier": "https://ui.adsabs.harvard.edu/abs/1979AJ.....84.1511T",
+   "status": "MANUAL",
+   "description": "no DOI, arXiv identifier or ISBN; to be verified by hand"
   },
   {
    "key": "Young1994",
@@ -3823,6 +3803,64 @@
    "status": "VERIFIED"
   },
   {
+   "key": "PhotutilsPSF2026",
+   "bib_title": "PSF Photometry (photutils.psf), Photutils 3.1.1 documentation (read on 25 November 2026)",
+   "bib_year": "2026",
+   "identifier": "https://photutils.readthedocs.io/en/stable/user_guide/psf.html",
+   "status": "MANUAL",
+   "description": "no DOI, arXiv identifier or ISBN; to be verified by hand"
+  },
+  {
+   "key": "Morton1991",
+   "bib_title": "Atomic Data for Resonance Absorption Lines. I. Wavelengths Longward of the Lyman Limit",
+   "bib_year": "1991",
+   "identifier": "https://ui.adsabs.harvard.edu/abs/1991ApJS...77..119M",
+   "status": "MANUAL",
+   "description": "no DOI, arXiv identifier or ISBN; to be verified by hand"
+  },
+  {
+   "key": "VollmannEversberg2006",
+   "bib_title": "Remarks on statistical errors in equivalent widths",
+   "bib_year": "2006",
+   "identifier": "arXiv:astro-ph/0606341",
+   "external": {
+    "source": "arXiv",
+    "title": "Remarks on statistical errors in equivalent widths",
+    "year": 2006,
+    "first_author": "Vollmann",
+    "publication": "Astron.Nachr.327:862-865,2006",
+    "doi": "10.1002/asna.200610645"
+   },
+   "title_similarity": 1.0,
+   "year_difference": 0,
+   "status": "VERIFIED"
+  },
+  {
+   "key": "Zaghloul2011",
+   "bib_title": "Algorithm 916: computing the Faddeyeva and Voigt functions",
+   "bib_year": "2011",
+   "identifier": "arXiv:1106.0151",
+   "external": {
+    "source": "arXiv",
+    "title": "Algorithm 916: computing the Faddeyeva and Voigt functions",
+    "year": 2011,
+    "first_author": "Zaghloul",
+    "publication": "ACM Transactions on Mathematical Software, Vol 38, No. 2, Article 15(2011),22 pages",
+    "doi": null
+   },
+   "title_similarity": 1.0,
+   "year_difference": 0,
+   "status": "VERIFIED"
+  },
+  {
+   "key": "SciPyDocs2026",
+   "bib_title": "SciPy 1.14.1 installed docstrings: scipy.special.voigt_profile, scipy.special.wofz, scipy.optimize.curve_fit (read on 25 November 2026)",
+   "bib_year": "2026",
+   "identifier": "https://docs.scipy.org/doc/scipy/reference/",
+   "status": "MANUAL",
+   "description": "no DOI, arXiv identifier or ISBN; to be verified by hand"
+  },
+  {
    "key": "McKee2007",
    "bib_title": "Theory of Star Formation",
    "bib_year": "2007",
@@ -3974,6 +4012,30 @@
    "title_similarity": 1.0,
    "year_difference": 0,
    "status": "VERIFIED"
+  },
+  {
+   "key": "SIBrochure9",
+   "bib_title": "The International System of Units (SI), 9th edition",
+   "bib_year": "2019",
+   "identifier": "isbn:978-92-822-2272-0",
+   "status": "NOT_FOUND",
+   "description": "external record could not be read"
+  },
+  {
+   "key": "IAU2012B2",
+   "bib_title": "Resolution B2 on the re-definition of the astronomical unit of length",
+   "bib_year": "2012",
+   "identifier": "https://unidata.github.io/MetPy/dev/_static/Res_IAU2012_B2.pdf",
+   "status": "MANUAL",
+   "description": "no DOI, arXiv identifier or ISBN; to be verified by hand"
+  },
+  {
+   "key": "Rots2021",
+   "bib_title": "Units in Astronomy & Astrophysics",
+   "bib_year": "2021",
+   "identifier": "https://zenodo.org/records/5083151/files/UnitsInAstronomyAndAstrophysics.pdf",
+   "status": "MANUAL",
+   "description": "no DOI, arXiv identifier or ISBN; to be verified by hand"
   }
  ],
  "packages": [
@@ -4883,14 +4945,17 @@
   "unused": [
    "FeigelsonBabu2012",
    "Freedman2001",
+   "IAU2012B2",
    "Peebles1993",
    "Perlmutter1999",
    "Prusti2016",
    "PyERFA2020",
    "Riess1998",
+   "Rots2021",
+   "SIBrochure9",
    "Springel2005",
    "WallJenkins2012"
   ],
-  "used_count": 227
+  "used_count": 232
  }
 }

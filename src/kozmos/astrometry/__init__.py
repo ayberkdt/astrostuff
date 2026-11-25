@@ -1,4 +1,4 @@
-"""Astrometry: FITS WCS transforms, catalog cross-matching, triangle matching and WCS solutions."""
+"""Astrometry: FITS WCS transforms with SIP distortion, catalog cross-matching, triangle matching and WCS solutions."""
 
 from kozmos.astrometry import matching, solve, triangles, wcs
 from kozmos.astrometry.matching import (
@@ -19,6 +19,7 @@ from kozmos.astrometry.triangles import (
 )
 from kozmos.astrometry.wcs import (
     Wcs,
+    fit_sip,
     pixel_to_sky,
     sky_to_pixel,
     wcs_from_header,
@@ -29,6 +30,7 @@ __all__ = [
     "build_triangles",
     "cross_match",
     "find_shift",
+    "fit_sip",
     "fit_wcs",
     "Match",
     "match_triangles",

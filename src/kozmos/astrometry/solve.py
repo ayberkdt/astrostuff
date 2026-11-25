@@ -8,19 +8,21 @@ least squares from the pixel and sky positions of matched stars.
 The method itself (finding the shift by voting, the match-and-fit iteration) is this
 project's choice; it is not taken from a paper. The scope is limited: an approximate WCS
 (scale and orientation within a few percent, shift of tens of pixels) is required. There is no
-pattern matching ("blind" solution) without any prior information.
+pattern matching here; the blind solution by triangle matching is in ``kozmos.astrometry.triangles``.
 """
 
 from __future__ import annotations
 
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 
 import numpy as np
 from numpy.typing import ArrayLike, NDArray
+from scipy.spatial import cKDTree
 
 from kozmos._sources import source
 from kozmos.astrometry.matching import cross_match
 from kozmos.astrometry.wcs import Wcs, pixel_to_sky, sky_to_pixel
+from kozmos.statistics.robust import mad_scale
 
 Array = NDArray[np.float64]
 
@@ -54,8 +56,9 @@ def _tangent_plane(ra_deg: Array, dec_deg: Array, crval: Array) -> tuple[Array, 
     where="TeX label eq:px (linear pixel → intermediate coordinate relation)",
     status="read",
     note="the relation (ξ, η) = CD (p − CRPIX) is linear in the form ξ = a0 + a1 x + a2 y, η = b0 + b1 x + b2 y; "
-    "the six coefficients are found by least squares, CRPIX = −CD⁻¹ (a0, b0). The fitting method is this "
-    "project's choice",
+    "the six coefficients are found by least squares, CRPIX = −CD⁻¹ (a0, b0). The fitting method and the "
+    "optional outlier rejection (iterative clipping at clip_sigma times the MAD scale of the residuals on each "
+    "tangent-plane axis) are this project's choice",
 )
 def fit_wcs(
     x: ArrayLike,
@@ -63,6 +66,9 @@ def fit_wcs(
     ra_deg: ArrayLike,
     dec_deg: ArrayLike,
     crval: ArrayLike | None = None,
+    *,
+    clip_sigma: float | None = None,
+    max_clip_iterations: int = 10,
 ) -> WcsSolution:
     """Fit a WCS with TAN projection from the pixel and sky positions of matched stars.
 
@@ -111,15 +117,25 @@ def fit_wcs(
     crval = np.asarray(crval, dtype=float)
     xi, eta = _tangent_plane(ra, dec, crval)
     design = np.column_stack([np.ones(x.size), x + 1.0, y + 1.0])  # FITS pixel = zero-based + 1
-    a, *_ = np.linalg.lstsq(design, xi, rcond=None)
-    b, *_ = np.linalg.lstsq(design, eta, rcond=None)
+    keep = np.ones(x.size, dtype=bool)
+    for _ in range(max_clip_iterations if clip_sigma is not None else 1):
+        a, *_ = np.linalg.lstsq(design[keep], xi[keep], rcond=None)
+        b, *_ = np.linalg.lstsq(design[keep], eta[keep], rcond=None)
+        if clip_sigma is None:
+            break
+        res_xi, res_eta = xi - design @ a, eta - design @ b
+        scale_xi, scale_eta = mad_scale(res_xi[keep]), mad_scale(res_eta[keep])
+        new_keep = (np.abs(res_xi) <= clip_sigma * scale_xi) & (np.abs(res_eta) <= clip_sigma * scale_eta)
+        if new_keep.sum() < 3 or np.array_equal(new_keep, keep):
+            break
+        keep = new_keep
     cd = np.array([[a[1], a[2]], [b[1], b[2]]])
     crpix = -np.linalg.solve(cd, np.array([a[0], b[0]]))
     wcs = Wcs(crpix=crpix, crval=crval, cd=cd)
-    ra_m, dec_m = pixel_to_sky(wcs, x, y)
-    d_ra = (ra_m - ra + 180.0) % 360.0 - 180.0
-    residual = np.hypot(d_ra * np.cos(np.radians(dec)), dec_m - dec) * 3600.0
-    return WcsSolution(wcs, int(x.size), float(np.sqrt(np.mean(residual**2))))
+    ra_m, dec_m = pixel_to_sky(wcs, x[keep], y[keep])
+    d_ra = (ra_m - ra[keep] + 180.0) % 360.0 - 180.0
+    residual = np.hypot(d_ra * np.cos(np.radians(dec[keep])), dec_m - dec[keep]) * 3600.0
+    return WcsSolution(wcs, int(keep.sum()), float(np.sqrt(np.mean(residual**2))))
 
 
 @source(
@@ -168,6 +184,8 @@ def find_shift(
     If a rotation or scale error causes a shift larger than the bin width at the edge of the
     field, the votes are spread out. If the peak vote is not clearly above the chance level
     (number of sources × number of catalog stars × bin area / search area), the solution cannot be trusted.
+    Memory and time scale with the number of source-catalog pairs inside the search window, not with
+    the product of the list lengths (measured in tests/unit/test_astrometry_solve.py with 20,000 × 20,000 points).
 
     Verification
     ------------
@@ -176,18 +194,28 @@ def find_shift(
     x, y = np.asarray(x, dtype=float), np.asarray(y, dtype=float)
     kx, ky = sky_to_pixel(wcs, ra_deg, dec_deg)
     finite = np.isfinite(kx) & np.isfinite(ky)
-    dx = (x[:, None] - kx[finite][None, :]).ravel()
-    dy = (y[:, None] - ky[finite][None, :]).ravel()
-    nearby = (np.abs(dx) <= max_shift_pix) & (np.abs(dy) <= max_shift_pix)
+    # Only pairs closer than max_shift_pix on both axes can vote. They are taken from a k-d tree (Chebyshev
+    # metric), so memory grows with the number of such pairs, not with N x M.
+    catalog_xy = np.column_stack([kx[finite], ky[finite]])
+    detected_xy = np.column_stack([x, y])
+    neighbors = cKDTree(catalog_xy).query_ball_point(detected_xy, r=max_shift_pix, p=np.inf)
+    counts = np.fromiter((len(n) for n in neighbors), dtype=np.int64, count=len(neighbors))
+    if counts.sum() == 0:
+        raise ValueError(f"no detected source lies within {max_shift_pix:g} pixels of a catalog position")
+    detected_index = np.repeat(np.arange(x.size), counts)
+    catalog_index = np.fromiter((j for n in neighbors for j in n), dtype=np.int64, count=int(counts.sum()))
+    dx = x[detected_index] - catalog_xy[catalog_index, 0]
+    dy = y[detected_index] - catalog_xy[catalog_index, 1]
+    nearby = np.ones(dx.size, dtype=bool)
     edges = np.arange(-max_shift_pix, max_shift_pix + bin_pix, bin_pix)
-    votes, _, _ = np.histogram2d(dx[nearby], dy[nearby], bins=(edges, edges))
+    votes, _, _ = np.histogram2d(dx, dy, bins=(edges, edges))
     # The peak may fall on the boundary of two bins: search in the map summed with neighboring bins.
     pooled = sum(np.roll(np.roll(votes, i, 0), j, 1) for i in (-1, 0, 1) for j in (-1, 0, 1))
     i, j = np.unravel_index(np.argmax(pooled), pooled.shape)
     selected = nearby & (np.abs(dx - (edges[i] + bin_pix / 2)) <= 1.5 * bin_pix)
     selected &= np.abs(dy - (edges[j] + bin_pix / 2)) <= 1.5 * bin_pix
     shift = np.array([np.median(dx[selected]), np.median(dy[selected])])
-    return Wcs(crpix=wcs.crpix + shift, crval=wcs.crval, cd=wcs.cd, lonpole=wcs.lonpole), int(pooled[i, j])
+    return replace(wcs, crpix=wcs.crpix + shift), int(pooled[i, j])
 
 
 @source(
@@ -207,6 +235,7 @@ def refine_wcs(
     radius_arcsec: float = 5.0,
     final_radius_arcsec: float = 1.5,
     iterations: int = 6,
+    clip_sigma: float | None = 4.0,
 ) -> WcsSolution:
     """Improve an approximate WCS against a catalog by match-and-fit iteration.
 
@@ -217,6 +246,8 @@ def refine_wcs(
         (first ``find_shift`` if necessary).
     radius_arcsec, final_radius_arcsec : float
         First and last matching radius; narrowed geometrically in between.
+    clip_sigma : float or None
+        Outlier rejection passed to ``fit_wcs`` in every iteration; ``None`` disables it.
 
     Returns
     -------
@@ -252,6 +283,7 @@ def refine_wcs(
             ra_k[match.index[match.matched]],
             dec_k[match.index[match.matched]],
             wcs.crval,
+            clip_sigma=clip_sigma,
         )
         wcs = solution.wcs
     return solution

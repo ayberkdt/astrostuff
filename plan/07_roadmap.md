@@ -36,7 +36,7 @@ Acceptance: P1 (observing night planner). Agreement with ERFA within the Level 1
 
 ## Phase 3: Cosmology and inference (done)
 
-Written: `cosmology/distances.py`, `cosmology/hubble_diagram.py`, `statistics/mcmc.py`, `archives/pantheon.py`, `projects/hubble/hubble_analysis.py`. The analysis gave Ωm = 0.332 ± 0.018 and H0 = 73.53 ± 1.00 km s⁻¹ Mpc⁻¹; the published values are 0.334 ± 0.018 and 73.6 ± 1.1 [Brout2022]. Record: `projects/hubble/result.json`.
+Written: `cosmology/distances.py`, `cosmology/hubble_diagram.py`, `statistics/mcmc.py`, `archives/pantheon.py`, `projects/hubble/hubble_analysis.py`. The analysis gave Ωm = 0.332 ± 0.018 and H0 = 73.54 ± 1.02 km s⁻¹ Mpc⁻¹; the published values are 0.334 ± 0.018 and 73.6 ± 1.1 [Brout2022]. Record: `projects/hubble/result.json`.
 
 - `cosmology/friedmann.py`, `cosmology/distances.py`.
 - `statistics/mcmc.py`: Metropolis-Hastings, ensemble sampler, diagnostics.

@@ -22,6 +22,7 @@ Usage:
 from __future__ import annotations
 
 import json
+import time
 from pathlib import Path
 
 import _plotting
@@ -45,6 +46,91 @@ SETTINGS = {
     "f_lim=2": {"f_lim": 2.0},
     "f_lim=5": {"f_lim": 5.0},
 }
+
+
+def score(mask, cleaned, exposure1, exposure2, truth, surround, bright, sigma_difference) -> dict:
+    """Completeness, purity and cleaning quality of one cosmic-ray mask against the two-exposure truth."""
+    # Flagged pixels outside the truth and its neighbors: do they carry an excess in exposure 1 at all?
+    # Excess of 3 sigma or more: a cosmic ray below the truth threshold. Less: nothing changed between the
+    # exposures there, so the flag is a false alarm (a star core, typically).
+    outside = mask & ~surround
+    excess = (exposure1 - exposure2) / sigma_difference
+    return {
+        "flagged_pixels": int(mask.sum()),
+        "outside_truth_with_excess_above_3_sigma": int((outside & (excess >= 3.0)).sum()),
+        "outside_truth_without_excess": int((outside & (excess < 3.0)).sum()),
+        "completeness": float((mask & truth).sum() / truth.sum()),
+        "completeness_above_20_sigma": float((mask & bright).sum() / bright.sum()),
+        "purity_including_adjacent": float((mask & surround).sum() / mask.sum()),
+        "non_truth_flagged_fraction": float((mask & ~surround).sum() / mask.size),
+        "deviation_after_cleaning_sigma": float(
+            np.median(np.abs(cleaned - exposure2)[truth] / sigma_difference[truth])
+        ),
+    }
+
+
+def timed(function, repeats: int = 3):
+    """Return the result of the last call and the median wall-clock time over ``repeats`` calls [s]."""
+    durations = []
+    for _ in range(repeats):
+        start = time.perf_counter()
+        output = function()
+        durations.append(time.perf_counter() - start)
+    return output, float(np.median(durations))
+
+
+def compare_with_reference(exposure1, exposure2, truth, surround, bright, sigma_difference, gain, read_noise) -> dict:
+    """Compare with Astro-SCRAPPY, the reference L.A.Cosmic implementation, on the same frame.
+
+    Astro-SCRAPPY is an optional test oracle and is not a dependency of the library. Two runs are made: one
+    with the parameters that correspond to this library's defaults (sigclip = sigma_lim = 5, objlim = f_lim = 2,
+    sigfrac = neighbor_threshold_ratio = 0.5, four iterations), one that adds the settings its documentation
+    names as closest to the original L.A.Cosmic, and one with Astro-SCRAPPY's own defaults.
+    """
+    ours, ours_time = timed(lambda: cosmic_rays.detect_cosmic_rays(exposure1, gain_e_adu=gain, read_noise_e=read_noise))
+    record = {
+        "kozmos_defaults": {
+            **score(ours[1], ours[0], exposure1, exposure2, truth, surround, bright, sigma_difference),
+            "time_s": ours_time,
+        }
+    }
+    try:
+        import astroscrappy
+    except ImportError:
+        record["astroscrappy"] = "not installed"
+        return record
+    record["astroscrappy_version"] = astroscrappy.__version__
+    runs = {
+        "astroscrappy_matched_parameters": {"sigclip": 5.0, "objlim": 2.0, "sigfrac": 0.5, "niter": 4},
+        # the settings its documentation names as closest to the original L.A.Cosmic
+        "astroscrappy_original_settings": {
+            "sigclip": 5.0,
+            "objlim": 2.0,
+            "sigfrac": 0.5,
+            "niter": 4,
+            "sepmed": False,
+            "cleantype": "medmask",
+        },
+        "astroscrappy_defaults": {},
+    }
+    for name, options in runs.items():
+        (mask, cleaned), duration = timed(
+            lambda options=options: astroscrappy.detect_cosmics(
+                exposure1.astype(np.float32), gain=gain, readnoise=read_noise, satlevel=np.inf, **options
+            )
+        )
+        cleaned = np.asarray(cleaned, dtype=float)  # same unit as the input (measured for version 1.3.0)
+        entry = score(
+            np.asarray(mask, dtype=bool), cleaned, exposure1, exposure2, truth, surround, bright, sigma_difference
+        )
+        entry["time_s"] = duration
+        entry["agreement_with_kozmos"] = {
+            "flagged_by_both": int((mask & ours[1]).sum()),
+            "only_kozmos": int((ours[1] & ~mask).sum()),
+            "only_astroscrappy": int((mask & ~ours[1]).sum()),
+        }
+        record[name] = entry
+    return record
 
 
 def measure(observation: str) -> tuple[dict, dict]:
@@ -94,6 +180,9 @@ def measure(observation: str) -> tuple[dict, dict]:
         },
         "settings": {},
     }
+    result["reference_comparison"] = compare_with_reference(
+        exposure1, exposure2, truth1, surround, bright, sigma_difference, gain, read_noise
+    )
     cleaned_images = {}
     for name, option in SETTINGS.items():
         cleaned, mask = cosmic_rays.detect_cosmic_rays(exposure1, gain_e_adu=gain, read_noise_e=read_noise, **option)

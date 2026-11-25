@@ -45,6 +45,68 @@
     "deviation_before_cleaning_sigma": 29.132656352129572,
     "deviation_after_cleaning_sigma": 1.262507527198667
    }
+  },
+  "reference_comparison": {
+   "kozmos_defaults": {
+    "flagged_pixels": 6078,
+    "outside_truth_with_excess_above_3_sigma": 16,
+    "outside_truth_without_excess": 545,
+    "completeness": 0.7702301934754978,
+    "completeness_above_20_sigma": 0.9697841726618706,
+    "purity_including_adjacent": 0.9076999012833169,
+    "non_truth_flagged_fraction": 0.0005350112915039062,
+    "deviation_after_cleaning_sigma": 0.9588617315512925,
+    "time_s": 14.50351569999475
+   },
+   "astroscrappy_version": "1.3.0",
+   "astroscrappy_matched_parameters": {
+    "flagged_pixels": 31530,
+    "outside_truth_with_excess_above_3_sigma": 543,
+    "outside_truth_without_excess": 22007,
+    "completeness": 0.9460528173986725,
+    "completeness_above_20_sigma": 0.9815347721822542,
+    "purity_including_adjacent": 0.2848081192515065,
+    "non_truth_flagged_fraction": 0.021505355834960938,
+    "deviation_after_cleaning_sigma": 0.8399687908840359,
+    "time_s": 0.9628826999978628,
+    "agreement_with_kozmos": {
+     "flagged_by_both": 6004,
+     "only_kozmos": 74,
+     "only_astroscrappy": 25526
+    }
+   },
+   "astroscrappy_original_settings": {
+    "flagged_pixels": 27116,
+    "outside_truth_with_excess_above_3_sigma": 479,
+    "outside_truth_without_excess": 18003,
+    "completeness": 0.941816127665584,
+    "completeness_above_20_sigma": 0.9863309352517986,
+    "purity_including_adjacent": 0.3184097949550081,
+    "non_truth_flagged_fraction": 0.017625808715820312,
+    "deviation_after_cleaning_sigma": 0.736585292766232,
+    "time_s": 2.0659522999994806,
+    "agreement_with_kozmos": {
+     "flagged_by_both": 6032,
+     "only_kozmos": 46,
+     "only_astroscrappy": 21084
+    }
+   },
+   "astroscrappy_defaults": {
+    "flagged_pixels": 27196,
+    "outside_truth_with_excess_above_3_sigma": 498,
+    "outside_truth_without_excess": 17142,
+    "completeness": 0.9372969919502895,
+    "completeness_above_20_sigma": 0.9800959232613908,
+    "purity_including_adjacent": 0.3513752022356229,
+    "non_truth_flagged_fraction": 0.01682281494140625,
+    "deviation_after_cleaning_sigma": 0.8030061892330214,
+    "time_s": 1.0519960000019637,
+    "agreement_with_kozmos": {
+     "flagged_by_both": 5992,
+     "only_kozmos": 86,
+     "only_astroscrappy": 21204
+    }
+   }
   }
  },
  "o4gb010h0": {
@@ -92,6 +154,68 @@
     "non_truth_flagged_fraction": 0.00033855438232421875,
     "deviation_before_cleaning_sigma": 38.632426858339045,
     "deviation_after_cleaning_sigma": 1.0094682952200404
+   }
+  },
+  "reference_comparison": {
+   "kozmos_defaults": {
+    "flagged_pixels": 12250,
+    "outside_truth_with_excess_above_3_sigma": 3,
+    "outside_truth_without_excess": 353,
+    "completeness": 0.8371861441069778,
+    "completeness_above_20_sigma": 0.9753355887809669,
+    "purity_including_adjacent": 0.9709387755102041,
+    "non_truth_flagged_fraction": 0.000339508056640625,
+    "deviation_after_cleaning_sigma": 0.8072187519899294,
+    "time_s": 11.916823999999906
+   },
+   "astroscrappy_version": "1.3.0",
+   "astroscrappy_matched_parameters": {
+    "flagged_pixels": 16800,
+    "outside_truth_with_excess_above_3_sigma": 39,
+    "outside_truth_without_excess": 1424,
+    "completeness": 0.9669251013585604,
+    "completeness_above_20_sigma": 0.9824293353705118,
+    "purity_including_adjacent": 0.9129166666666667,
+    "non_truth_flagged_fraction": 0.0013952255249023438,
+    "deviation_after_cleaning_sigma": 0.7196702408248677,
+    "time_s": 1.5715025000026799,
+    "agreement_with_kozmos": {
+     "flagged_by_both": 12100,
+     "only_kozmos": 150,
+     "only_astroscrappy": 4700
+    }
+   },
+   "astroscrappy_original_settings": {
+    "flagged_pixels": 16576,
+    "outside_truth_with_excess_above_3_sigma": 43,
+    "outside_truth_without_excess": 893,
+    "completeness": 0.9729710505725869,
+    "completeness_above_20_sigma": 0.9866855833242388,
+    "purity_including_adjacent": 0.9435328185328186,
+    "non_truth_flagged_fraction": 0.00089263916015625,
+    "deviation_after_cleaning_sigma": 0.6211051172063156,
+    "time_s": 2.7090540999997756,
+    "agreement_with_kozmos": {
+     "flagged_by_both": 12152,
+     "only_kozmos": 98,
+     "only_astroscrappy": 4424
+    }
+   },
+   "astroscrappy_defaults": {
+    "flagged_pixels": 19713,
+    "outside_truth_with_excess_above_3_sigma": 83,
+    "outside_truth_without_excess": 2114,
+    "completeness": 0.9736112099011309,
+    "completeness_above_20_sigma": 0.9823202008075957,
+    "purity_including_adjacent": 0.8885507025820525,
+    "non_truth_flagged_fraction": 0.0020952224731445312,
+    "deviation_after_cleaning_sigma": 0.6688096719495235,
+    "time_s": 1.295498100000259,
+    "agreement_with_kozmos": {
+     "flagged_by_both": 12100,
+     "only_kozmos": 150,
+     "only_astroscrappy": 7613
+    }
    }
   }
  }

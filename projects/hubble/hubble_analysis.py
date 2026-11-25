@@ -9,7 +9,7 @@ Two analyses are done and the result is compared with the published values [Brou
    sampler.
 
 Usage:
-    python projects/hubble/hubble_analysis.py [--steps 1500] [--seed 20261125]
+    python projects/hubble/hubble_analysis.py [--steps 20000] [--seed 20261125]
 
 Output: ``projects/hubble/result.json`` (run record and results) and
 ``projects/hubble/chain.npy``.
@@ -32,7 +32,7 @@ import kozmos
 from kozmos.archives import pantheon
 from kozmos.cosmology.distances import Cosmology
 from kozmos.cosmology.hubble_diagram import HubbleData, best_absolute_magnitude, log_likelihood, prepare_data
-from kozmos.statistics.mcmc import autocorrelation_time, ensemble_sample, rank_normalized_rhat, split_rhat
+from kozmos.statistics.mcmc import autocorrelation_time, rank_normalized_rhat, sample_until_converged, split_rhat
 
 ROOT = Path(__file__).resolve().parents[2]
 CACHE = ROOT / "data" / "raw" / "pantheon"
@@ -65,8 +65,8 @@ def omega_m_grid(data: HubbleData, grid: np.ndarray) -> dict[str, float | list[f
     }
 
 
-def h0_mcmc(data: HubbleData, steps: int, rng: np.random.Generator) -> tuple[dict[str, object], np.ndarray]:
-    """Analysis 2: ensemble sampler for (H0, Ωm, M)."""
+def h0_mcmc(data: HubbleData, max_steps: int, rng: np.random.Generator) -> tuple[dict[str, object], np.ndarray]:
+    """Analysis 2: ensemble sampler for (H0, Ωm, M), extended until R-hat < 1.01 and length > 50 τ."""
 
     def log_posterior(p: np.ndarray) -> float:
         h0, om, m = p
@@ -76,9 +76,11 @@ def h0_mcmc(data: HubbleData, steps: int, rng: np.random.Generator) -> tuple[dic
 
     walkers = 32
     initial = np.array([73.0, 0.33, -19.25]) + rng.normal(0, [0.5, 0.01, 0.01], (walkers, 3))
-    chain = ensemble_sample(log_posterior, initial, steps, rng)
+    chain, discard, converged = sample_until_converged(
+        log_posterior, initial, rng, block_steps=1000, max_steps=max_steps
+    )
+    steps = chain.samples.shape[0]
     tau = autocorrelation_time(chain.samples)
-    discard = int(min(steps // 2, max(100, 5 * tau.max())))
     kept = chain.samples[discard:]
     flat = kept.reshape(-1, 3)
     names = ["h0", "omega_m", "absolute_magnitude"]
@@ -92,6 +94,9 @@ def h0_mcmc(data: HubbleData, steps: int, rng: np.random.Generator) -> tuple[dic
     }
     result["diagnostics"] = {
         "steps": steps,
+        "max_steps": max_steps,
+        "converged": converged,
+        "criteria": "rank-normalized folded split R-hat < 1.01 for every parameter and steps > 50 tau",
         "walkers": walkers,
         "burn_in_discarded": discard,
         "autocorrelation_time": tau.tolist(),
@@ -127,7 +132,7 @@ def sigma_difference(value: float, deviation: float, published: dict[str, object
 
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
-    parser.add_argument("--steps", type=int, default=1500)
+    parser.add_argument("--steps", type=int, default=20000, help="upper limit; the run stops when converged")
     parser.add_argument("--seed", type=int, default=20261125)
     options = parser.parse_args()
     start = time.time()
