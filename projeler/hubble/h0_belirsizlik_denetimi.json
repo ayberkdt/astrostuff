@@ -31,6 +31,14 @@
    "sigma_h0": 1.0169503468386625,
    "omega_m": 0.3324823463569688
   },
+  "stat+sys, kesim yok (bütün süpernovalar)": {
+   "sn_sayisi": 1701,
+   "kalibrator": 77,
+   "h0": 73.41278476091517,
+   "sigma_h0_omega_m_sabit": 1.0008850004220218,
+   "sigma_h0": 1.01023470183672,
+   "omega_m": 0.33343873905414984
+  },
   "stat+sys, z > 0.0233": {
    "sn_sayisi": 1442,
    "kalibrator": 77,

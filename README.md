@@ -27,7 +27,7 @@ Yayımlanan değerler Brout ve ark. (2022) makalesinin arXiv kaynağından okund
 
 Bulunan H0 belirsizliği yayımlanandan küçüktür. Üç bağımsız denetim bizim değeri destekliyor ([h0_belirsizlik_denetimi.py](projeler/hubble/h0_belirsizlik_denetimi.py)):
 
-- Zincirden bağımsız kapalı biçimli çözüm aynı veriden 73,52 ± 1,02 verir; veri sürümündeki olabilirlik kodunun uzaklık tanımıyla (d_L = (1 + z_HEL) D_M) 73,53 ± 1,02.
+- Zincirden bağımsız kapalı biçimli çözüm aynı veriden 73,52 ± 1,02 verir; kırmızıya kayma kesimi hiç uygulanmazsa 73,41 ± 1,01, kesim 0,023'e çıkarılırsa 73,70 ± 1,03; veri sürümündeki olabilirlik kodunun uzaklık tanımıyla (d_L = (1 + z_HEL) D_M) 73,53 ± 1,02.
 - Veri sürümündeki dört zincirin (emcee) hepsi, ilk %10'u atılınca ± 1,01 ile ± 1,04 arasında saçılım verir; baş kısım atılmazsa ± 1,03 ile ± 1,07 arasındadır. Düz ΛCDM zinciri 73,53 ± 1,01'dir.
 - Riess ve ark. (2022) temel sonucu ± 1,01'dir; aynı makalenin özeti, yüksek kırmızıya kaymalı süpernovalar eklendiğinde 73,30 ± 1,04 verir.
 
@@ -105,7 +105,7 @@ Seyrek alanda 2MASS yetmez: tam kapsanan bölgede yalnızca 5 katalog yıldızı
 | FS24 standart alanı | 14/15 Mart | 1,44 | 2 | 22,10 |
 | SN 2011bm (seyrek alan) | 14/15 Mart | 1,70 | 1 | 22,13 |
 
-Dört değer 0,08 kadirlik bir aralığa sığar. Seyrek alanın tek yıldızı, aynı gecenin standart alanından 0,04 kadir, öteki gecenin 17 yıldızlı standart alanından 0,03 kadir ayrıdır; yıldızın katalog belirsizliği 0,06 kadirdir. Saniye başına indirgemenin dayandığı kural kılavuzdan okundu: ham dosyadaki sayımlar tek DIT'e karşılık gelir (NDIT alt pozun ortalaması). Hava kütlesiyle sönümleme bu veriden ölçülemiyor: aynı gecedeki alan çiftlerinin farkları (-0,02 ve -0,04 kadir, hava kütlesi farkı 0,26) ölçüm belirsizliğinin içindedir ve işaretleri sönümlemenin beklenen yönünün tersidir. Seyrek alan için önerilen sıfır noktası bu yüzden kendi tek yıldızı değil, dört değerin ortak düzeyidir; FS24 alanında yalnızca 2 kalibratör yıldız vardır.
+Dört değer 0,08 kadirlik bir aralığa sığar. Seyrek alanın tek yıldızı, aynı gecenin standart alanından 0,04 kadir, öteki gecenin 17 yıldızlı standart alanından 0,03 kadir ayrıdır; yıldızın katalog belirsizliği 0,06 kadirdir. Saniye başına indirgemenin dayandığı kural kılavuzdan okundu: ham dosyadaki sayımlar tek DIT'e karşılık gelir (NDIT alt pozun ortalaması). Sönümleme dizi içinden ölçüldü: SN 2005at dizisinde 15 parlak yıldızın göreli kadiri hava kütlesiyle (1,33-1,45) 0,10 ± 0,04 kadir/hava kütlesi eğimle değişiyor (32 kare, kare başına artık 0,008 kadir). Bu eğim sönümlemeyi saydamlık kaymasından ayıramaz ve aralık dardır. Dört sıfır noktası bu eğimle hava kütlesi 1'e indirgendiğinde aralık 0,08 kadirden 0,09 kadire değişir; yani düzeltme, değerlerin uyumunu iyileştirmez. Seyrek dizide eğim ölçülemedi (yeterli parlaklıkta tek yıldız). Seyrek alan için önerilen sıfır noktası bu yüzden kendi tek yıldızı değil, dört değerin ortak düzeyidir; FS24 alanında yalnızca 2 kalibratör yıldız vardır.
 
 Kılavuzun indirgeme adımlarından çapraz konuşma (cross talk) düzeltmesi ve aydınlatma düzeltmesi uygulanmadı. Gökyüzü çıkarılmış tek karede çapraz çizgili artık desenler kalıyor; nedeni incelenmedi.
 

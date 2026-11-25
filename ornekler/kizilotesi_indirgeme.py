@@ -424,6 +424,48 @@ def indirge(ad: str, desen: str, duz: np.ndarray, basit_duz: np.ndarray) -> tupl
             "beklenen_arka_plan_gurultusu": float(np.median(beklenen)),
         }
 
+    def sonumleme_egimi(dizi: np.ndarray) -> dict:
+        """Dizi içinde parlak yıldızların göreli kadirinin hava kütlesine göre eğimi [kadir / hava kütlesi].
+
+        Her yıldızın kare akıları kendi ortancasına bölünür; her karede yıldızlar üzerinden ortanca alınır ve
+        göreli kadir hava kütlesine doğrusal uydurulur. Eğim sönümleme ile saydamlık kaymasını ayırt edemez.
+        """
+        hava = np.array([float(b["ESO TEL AIRM START"]) for b in basliklar])
+        goreli = []
+        for i in np.argsort(-aki):
+            x_k = kx[i] - koken[0] + oteleme[:, 0]
+            y_k = ky[i] - koken[1] + oteleme[:, 1]
+            if np.any((x_k < 20) | (x_k > nx - 21) | (y_k < 20) | (y_k > ny - 21)):
+                continue
+            if max(kareler[k][int(round(y_k[k])), int(round(x_k[k]))] for k in range(k_sayi)) > 20000.0:
+                continue
+            f = np.array(
+                [
+                    float(
+                        fk.aciklik_fotometrisi(np.where(bozuk, 0.0, dizi[k]), x_k[k], y_k[k], ACIKLIK, halka=HALKA)[0]
+                    )
+                    for k in range(k_sayi)
+                ]
+            )
+            if np.median(f) > 30.0 * gurultu(dizi) * np.sqrt(np.pi * ACIKLIK**2):
+                goreli.append(f / np.median(f))
+            if len(goreli) >= 15:
+                break
+        if len(goreli) < 5:
+            return {"yildiz_sayisi": len(goreli), "hava_kutlesi_araligi": [float(hava.min()), float(hava.max())]}
+        kadir = -2.5 * np.log10(np.median(np.array(goreli), axis=0))
+        tasarim = np.column_stack([np.ones(k_sayi), hava - hava.mean()])
+        katsayi, *_ = np.linalg.lstsq(tasarim, kadir, rcond=None)
+        artik = kadir - tasarim @ katsayi
+        kov = np.linalg.inv(tasarim.T @ tasarim) * artik.var(ddof=2)
+        return {
+            "yildiz_sayisi": len(goreli),
+            "hava_kutlesi_araligi": [float(hava.min()), float(hava.max())],
+            "egim_kadir_hava_kutlesi": float(katsayi[1]),
+            "egim_belirsizligi": float(np.sqrt(kov[1, 1])),
+            "kare_basina_artik_rms_kadir": float(artik.std(ddof=2)),
+        }
+
     sonuc = {
         "veri": {
             "hedef": str(b0["OBJECT"]).strip(),
@@ -461,6 +503,7 @@ def indirge(ad: str, desen: str, duz: np.ndarray, basit_duz: np.ndarray) -> tupl
             "basit_duz_alanli": yinelenebilirlik(duragan_basit),
             "ozel_duz_alanli": yinelenebilirlik(duragan_duz),
         },
+        "dizi_ici_sonumleme": sonumleme_egimi(duragan_duz),
         "yigin": {"boyut": list(yigin_g.shape), "saptanan_kaynak": int(icte.sum())},
         "astrometri": {
             "katalog_yildizi": int(len(katalog["ra"])),

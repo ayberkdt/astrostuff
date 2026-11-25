@@ -82,6 +82,13 @@
      "beklenen_arka_plan_gurultusu": 0.02348894817451267
     }
    },
+   "dizi_ici_sonumleme": {
+    "yildiz_sayisi": 1,
+    "hava_kutlesi_araligi": [
+     1.701,
+     1.81
+    ]
+   },
    "yigin": {
     "boyut": [
      1465,
@@ -228,6 +235,16 @@
      "bagil_sacilim": 0.029381461966042872,
      "beklenen_arka_plan_gurultusu": 0.017708401978912033
     }
+   },
+   "dizi_ici_sonumleme": {
+    "yildiz_sayisi": 15,
+    "hava_kutlesi_araligi": [
+     1.334,
+     1.453
+    ],
+    "egim_kadir_hava_kutlesi": 0.10083143497381222,
+    "egim_belirsizligi": 0.0409620791246523,
+    "kare_basina_artik_rms_kadir": 0.008190876402165708
    },
    "yigin": {
     "boyut": [

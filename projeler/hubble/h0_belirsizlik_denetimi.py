@@ -138,6 +138,7 @@ def main() -> None:
             "stat+sys, z > 0.01, yayımlanan olabilirliğin uzaklık tanımı (zHEL)": cozum(
                 s, ham.kovaryans, 0.01, zhel_ile=True
             ),
+            "stat+sys, kesim yok (bütün süpernovalar)": cozum(s, ham.kovaryans, -1.0),
             "stat+sys, z > 0.0233": cozum(s, ham.kovaryans, 0.0233),
             "stat+sys, 0.0233 < z < 0.15": cozum(s, ham.kovaryans, 0.0233, 0.15),
             "yalnız istatistik, z > 0.01": cozum(s, yalniz_istatistik, 0.01),
