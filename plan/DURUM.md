@@ -2,11 +2,11 @@
 
 Bu dosya `python kaynakca/kutuk_raporu.py` ile kaynak kütüğünden üretilir; elle düzenlenmez.
 
-- Kaynağa bağlı açık fonksiyon: 62
-- Bütün kayıtları kaynak metninden okunmuş fonksiyon: 50
-- Kaynak kaydı: 64 (okundu: 52, bekliyor: 12)
+- Kaynağa bağlı açık fonksiyon: 70
+- Bütün kayıtları kaynak metninden okunmuş fonksiyon: 59
+- Kaynak kaydı: 72 (okundu: 61, bekliyor: 11)
 - Kaynaklı sabit: 35 (teyit bekleyen: 2)
-- Test fonksiyonu: 80 (parametreli ve özellik testleri tek sayılır)
+- Test fonksiyonu: 86 (parametreli ve özellik testleri tek sayılır)
 - Kaynak kuralından muaf altyapı fonksiyonu: 1
 
 `okundu`: denklem kod yazılırken kaynağın metninden okundu. `bekliyor`: denklem hatırlanan biçimiyle
@@ -40,9 +40,10 @@ yazıldı, testlerle sınandı, ama kaynağın metni henüz açılmadı.
 
 ### `kozmos.istatistik.mcmc`
 
-- `bolunmus_rhat`: [GelmanRubin1992] potansiyel ölçek indirgeme çarpanı (bekliyor)
+- `bolunmus_rhat`: [Vehtari2021] Bölüm 3.1: B, W, var⁺ ve R̂ denklemleri (okundu)
 - `gerdirme_carpani`: [ForemanMackey2013] Denk. goodmanprop (g(z) ∝ 1/√z, z ∈ [1/a, a]) (okundu)
 - `oz_ilinti_suresi`: [ForemanMackey2013] Bölüm 3 (öz ilinti süresi) (bekliyor)
+- `rhat_sira_normallestirilmis`: [Vehtari2021] Bölüm 4.1-4.2: sıra normalleştirme ve katlama denklemleri (okundu)
 - `topluluk_ornekle`: [GoodmanWeare2010] gerdirme hamlesi (bekliyor); [ForemanMackey2013] Denk. proposal, acceptance; Algoritma 3 (paralel gerdirme hamlesi) (okundu)
 
 ### `kozmos.istatistik.uyum`
@@ -69,14 +70,19 @@ yazıldı, testlerle sınandı, ama kaynağın metni henüz açılmadı.
 ### `kozmos.kozmoloji.uzaklik`
 
 - `acisal_cap_uzakligi_mpc`: [Hogg1999] Denk. 18 (okundu)
+- `acisal_cap_uzakligi_z1_z2_mpc`: [Hogg1999] Denk. 19 (okundu)
+- `doppler_hizi_km_s`: [Hogg1999] Denk. 9 (okundu)
+- `doppler_kirmiziya_kayma`: [Hogg1999] Denk. 9 (okundu)
 - `e_fonksiyonu`: [Brout2022] H(z) denklemi (TeX etiketi eq:hz) (okundu); [Hogg1999] Denk. 14 (okundu)
 - `enine_esyuruyen_uzaklik_mpc`: [Hogg1999] Denk. 16 (okundu)
 - `esyuruyen_hacim_elemani_mpc3`: [Hogg1999] Denk. 28 (okundu)
+- `esyuruyen_hacim_mpc3`: [Hogg1999] Denk. 29 (okundu)
 - `esyuruyen_uzaklik_mpc`: [Hogg1999] Denk. 15 (okundu)
 - `geriye_bakis_zamani_gyr`: [Hogg1999] Denk. 30 (okundu)
 - `hubble_uzakligi_mpc`: [Hogg1999] Denk. 4 (okundu)
 - `hubble_zamani_gyr`: [Hogg1999] Denk. 3 (okundu)
 - `isinim_gucu_uzakligi_mpc`: [Hogg1999] Denk. 21 (okundu)
+- `ozel_hiz_km_s`: [Hogg1999] Denk. 10 (okundu)
 - `uzaklik_modulu`: [Hogg1999] Denk. 25 (okundu)
 
 ### `kozmos.temel.aci`
@@ -101,6 +107,11 @@ yazıldı, testlerle sınandı, ama kaynağın metni henüz açılmadı.
 - `takvim_den_mjd`: [ERFA2024] cal2jd.c (okundu)
 - `tt_den_tai`: [ERFA2024] erfam.h ERFA_TTMTAI, ERFA_DAYSEC (okundu)
 - `yerel_ortalama_yildiz_zamani`: [ERFA2024] gmst06.c; boylam doğuya artı (bekliyor)
+
+### `kozmos.zaman.olcekler`
+
+- `tai_eksi_utc_s`: [ERFA2024] dat.c (okundu)
+- `tt_eksi_utc_s`: [ERFA2024] dat.c; erfam.h ERFA_TTMTAI (okundu)
 
 ### `kozmos.zamanserisi.periyodogram`
 
@@ -151,17 +162,17 @@ yazıldı, testlerle sınandı, ama kaynağın metni henüz açılmadı.
 
 - [Brout2022]: 8
 - [CODATA2022]: 1
-- [ERFA2024]: 22
+- [ERFA2024]: 24
 - [ForemanMackey2013]: 3
-- [GelmanRubin1992]: 1
 - [GoodmanWeare2010]: 1
-- [Hogg1999]: 12
+- [Hogg1999]: 17
 - [HoggBovyLang2010]: 3
 - [Mamajek2015]: 2
 - [MurrayDermott1999]: 4
 - [RybickiLightman1979]: 2
 - [Scolnic2022]: 1
 - [VanderPlas2018]: 4
+- [Vehtari2021]: 2
 
 ## Kaynağı okunmayı bekleyenler
 
@@ -171,7 +182,6 @@ yazıldı, testlerle sınandı, ama kaynağın metni henüz açılmadı.
 - `kozmos.efemeris.kepler.yorunge_hizi_m_s`: [MurrayDermott1999] Bölüm 2.4, vis-viva
 - `kozmos.isinim.kadir.planck_dalgaboyu`: [RybickiLightman1979] Bölüm 1.5, Planck tayfı
 - `kozmos.isinim.kadir.planck_frekans`: [RybickiLightman1979] Bölüm 1.5, Planck tayfı
-- `kozmos.istatistik.mcmc.bolunmus_rhat`: [GelmanRubin1992] potansiyel ölçek indirgeme çarpanı
 - `kozmos.istatistik.mcmc.oz_ilinti_suresi`: [ForemanMackey2013] Bölüm 3 (öz ilinti süresi)
 - `kozmos.istatistik.mcmc.topluluk_ornekle`: [GoodmanWeare2010] gerdirme hamlesi
 - `kozmos.zaman.julyen.yerel_ortalama_yildiz_zamani`: [ERFA2024] gmst06.c; boylam doğuya artı

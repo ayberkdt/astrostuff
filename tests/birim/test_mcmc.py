@@ -60,3 +60,22 @@ def test_rhat_ayrik_zincirleri_yakalar():
     kotu = iyi.copy()
     kotu[:, :4, 0] += 3.0  # yürüyücülerin yarısı başka bir tepede
     assert mcmc.bolunmus_rhat(kotu)[0] > 1.1
+
+
+def test_sira_normallestirilmis_rhat():
+    u = np.random.default_rng(26)
+    iyi = u.normal(size=(1000, 8, 2))
+    r = mcmc.rhat_sira_normallestirilmis(iyi)
+    assert np.all(np.abs(r - 1) < 0.02)
+    # Yürüyücülerin yarısı başka bir konumda: sıra normalleştirilmiş bileşen yakalar.
+    kaymis = iyi.copy()
+    kaymis[:, :4, 0] += 3.0
+    assert mcmc.rhat_sira_normallestirilmis(kaymis)[0] > 1.1
+    # Ortalamaları aynı, ölçekleri farklı zincirler: klasik bölünmüş R̂ görmez, katlama yakalar.
+    olcekli = iyi.copy()
+    olcekli[:, :4, 1] *= 4.0
+    assert mcmc.bolunmus_rhat(olcekli)[1] < 1.02
+    assert mcmc.rhat_sira_normallestirilmis(olcekli)[1] > 1.1
+    # Sonsuz varyanslı (Cauchy) örneklerde de tanımlı ve 1'e yakın.
+    cauchy = u.standard_cauchy(size=(2000, 8, 1))
+    assert abs(mcmc.rhat_sira_normallestirilmis(cauchy)[0] - 1) < 0.02

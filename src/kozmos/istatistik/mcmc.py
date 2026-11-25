@@ -12,6 +12,8 @@ from dataclasses import dataclass
 
 import numpy as np
 from numpy.typing import ArrayLike, NDArray
+from scipy.special import ndtri
+from scipy.stats import rankdata
 
 from kozmos._kaynak import kaynak
 
@@ -192,10 +194,10 @@ def oz_ilinti_suresi(zincir: ArrayLike, c: float = 5.0) -> Dizi:
 
 
 @kaynak(
-    "GelmanRubin1992",
-    yer="potansiyel ölçek indirgeme çarpanı",
-    teyit="bekliyor",
-    not_="bölünmüş R̂: her yürüyücü zinciri ikiye bölünür; sıra normalleştirmesi yok",
+    "Vehtari2021",
+    yer="Bölüm 3.1: B, W, var⁺ ve R̂ denklemleri",
+    teyit="okundu",
+    not_="B = N/(M−1) Σ(θ̄_m − θ̄)², W = ortalama s_m², var⁺ = (N−1)/N·W + B/N, R̂ = sqrt(var⁺/W); ikiye bölünür",
 )
 def bolunmus_rhat(zincir: ArrayLike) -> Dizi:
     """Bölünmüş R̂ yakınsama tanısını parametre başına hesaplar.
@@ -212,7 +214,7 @@ def bolunmus_rhat(zincir: ArrayLike) -> Dizi:
 
     Kaynaklar
     ---------
-    [GelmanRubin1992].
+    [Vehtari2021] Bölüm 3.1.
 
     Geçerlilik
     ----------
@@ -231,3 +233,51 @@ def bolunmus_rhat(zincir: ArrayLike) -> Dizi:
     b = yari * ortalama.var(axis=0, ddof=1)
     var_arti = (yari - 1) / yari * w + b / yari
     return np.sqrt(var_arti / w)
+
+
+@kaynak(
+    "Vehtari2021",
+    yer="Bölüm 4.1-4.2: sıra normalleştirme ve katlama denklemleri",
+    teyit="okundu",
+    not_="z = Φ⁻¹((r − 3/8)/(S + 1/4)); katlama ζ = |θ − ortanca(θ)|; ikisinin büyüğü raporlanır",
+)
+def rhat_sira_normallestirilmis(zincir: ArrayLike) -> Dizi:
+    """Sıra normalleştirilmiş bölünmüş R̂ ile katlanmış bölünmüş R̂'nin büyüğünü hesaplar.
+
+    Her parametre için örnekler havuzdaki sıralarıyla değiştirilir (eşitlikte
+    ortalama sıra) ve z = Φ⁻¹((r − 3/8)/(S + 1/4)) ile normal puanlara
+    çevrilir; bölünmüş R̂ bu puanlardan hesaplanır. Aynı işlem ortancadan
+    mutlak sapmalara (katlanmış örnekler) uygulanır; kuyruklardaki
+    yakınsamayı bu ölçer. Sonuç ikisinin büyüğüdür.
+
+    Parametreler
+    ------------
+    zincir : ndarray, biçim (adım, yürüyücü, boyut)
+
+    Döndürür
+    --------
+    ndarray, biçim (boyut,)
+
+    Kaynaklar
+    ---------
+    [Vehtari2021] Bölüm 4.1-4.2.
+
+    Geçerlilik
+    ----------
+    Tekdüze dönüşümlere değişmezdir ve sonsuz varyanslı dağılımlarda da
+    tanımlıdır. Topluluk örnekleyicide yürüyücüler bağımsız zincir değildir;
+    değer iyimser olabilir.
+
+    Doğrulama
+    ---------
+    tests/birim/test_mcmc.py: konumu kaymış ve ölçeği farklı zincirlerin yakalanması; Cauchy örneklerde tanımlılık.
+    """
+    x = np.asarray(zincir, dtype=float)
+    adim, k, n = x.shape
+
+    def puan(d: Dizi) -> Dizi:
+        sira = rankdata(d.reshape(-1, n), axis=0)  # eşitlikte ortalama sıra
+        return ndtri((sira - 0.375) / (adim * k + 0.25)).reshape(adim, k, n)
+
+    katlanmis = np.abs(x - np.median(x.reshape(-1, n), axis=0))
+    return np.maximum(bolunmus_rhat(puan(x)), bolunmus_rhat(puan(katlanmis)))

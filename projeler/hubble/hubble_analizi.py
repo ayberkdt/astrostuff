@@ -30,7 +30,12 @@ import scipy
 
 import kozmos
 from kozmos.arsiv import pantheon
-from kozmos.istatistik.mcmc import bolunmus_rhat, oz_ilinti_suresi, topluluk_ornekle
+from kozmos.istatistik.mcmc import (
+    bolunmus_rhat,
+    oz_ilinti_suresi,
+    rhat_sira_normallestirilmis,
+    topluluk_ornekle,
+)
 from kozmos.kozmoloji.hubble_diyagrami import (
     HubbleVerisi,
     en_iyi_mutlak_kadir,
@@ -102,6 +107,7 @@ def h0_mcmc(veri: HubbleVerisi, adim: int, uretec: np.random.Generator) -> tuple
         "oz_ilinti_suresi": tau.tolist(),
         "etkin_ornek_sayisi": (kalan.shape[0] * yuruyucu / tau).tolist(),
         "bolunmus_rhat": bolunmus_rhat(kalan).tolist(),
+        "rhat_sira_normallestirilmis": rhat_sira_normallestirilmis(kalan).tolist(),
         "ortalama_kabul_orani": float(zincir.kabul_orani.mean()),
         "zincir_yeterince_uzun": bool(adim > 50 * tau.max()),
     }

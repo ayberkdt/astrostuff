@@ -313,3 +313,129 @@ def esyuruyen_hacim_elemani_mpc3(z: ArrayLike, kozmoloji: Kozmoloji) -> Dizi:
     zz = np.asarray(z, dtype=float)
     da = acisal_cap_uzakligi_mpc(zz, kozmoloji)
     return hubble_uzakligi_mpc(kozmoloji) * (1.0 + zz) ** 2 * da**2 / e_fonksiyonu(zz, kozmoloji)
+
+
+@kaynak("Hogg1999", yer="Denk. 19", teyit="okundu", not_="kaynak, formülün Ωk < 0 için geçerli olmadığını belirtir")
+def acisal_cap_uzakligi_z1_z2_mpc(z1: ArrayLike, z2: ArrayLike, kozmoloji: Kozmoloji) -> Dizi:
+    """z1'deki gözlemcinin z2'deki cisme ölçtüğü açısal çap uzaklığını hesaplar.
+
+    D_A12 = [D_M2 sqrt(1 + Ωk D_M1²/D_H²) − D_M1 sqrt(1 + Ωk D_M2²/D_H²)] / (1 + z2)
+
+    Kaynaklar
+    ---------
+    [Hogg1999] Denk. 19.
+
+    Geçerlilik
+    ----------
+    Ωk >= 0 ve z1 <= z2. Çekimsel merceklenmede mercek-kaynak uzaklığı için kullanılır.
+
+    Doğrulama
+    ---------
+    tests/kahin/test_kozmoloji_kahin.py: astropy angular_diameter_distance_z1z2.
+    """
+    if kozmoloji.omega_k < -1e-12:
+        raise ValueError("Denk. 19 kapalı evrende (Ωk < 0) geçerli değil")
+    ok = max(kozmoloji.omega_k, 0.0)
+    dh = hubble_uzakligi_mpc(kozmoloji)
+    dm1 = enine_esyuruyen_uzaklik_mpc(z1, kozmoloji)
+    dm2 = enine_esyuruyen_uzaklik_mpc(z2, kozmoloji)
+    ic = dm2 * np.sqrt(1.0 + ok * dm1**2 / dh**2) - dm1 * np.sqrt(1.0 + ok * dm2**2 / dh**2)
+    return ic / (1.0 + np.asarray(z2, dtype=float))
+
+
+@kaynak("Hogg1999", yer="Denk. 29", teyit="okundu", not_="tüm gökyüzü hacmi; üç eğrilik dalı")
+def esyuruyen_hacim_mpc3(z: ArrayLike, kozmoloji: Kozmoloji) -> Dizi:
+    """z'ye kadar tüm gökyüzünün eşyürüyen hacmini hesaplar.
+
+    Düz evrende V_C = (4π/3) D_M³; eğrilikli evrende kaynaktaki kapalı biçim.
+
+    Döndürür
+    --------
+    float ya da ndarray
+        Eşyürüyen hacim [Mpc³].
+
+    Kaynaklar
+    ---------
+    [Hogg1999] Denk. 29.
+
+    Geçerlilik
+    ----------
+    |Ωk| < 1e-8 düz evren sayılır: eğrilikli dalda iki büyük terimin farkı
+    küçük |Ωk| için duyarlılık kaybeder.
+
+    Doğrulama
+    ---------
+    tests/kahin/test_kozmoloji_kahin.py: astropy comoving_volume.
+    """
+    dm = enine_esyuruyen_uzaklik_mpc(z, kozmoloji)
+    ok = kozmoloji.omega_k
+    if abs(ok) < 1e-8:
+        return 4.0 * np.pi / 3.0 * dm**3
+    dh = hubble_uzakligi_mpc(kozmoloji)
+    x = dm / dh
+    kok = np.sqrt(abs(ok))
+    ters = np.arcsinh(kok * x) if ok > 0 else np.arcsin(kok * x)
+    return 4.0 * np.pi * dh**3 / (2.0 * ok) * (x * np.sqrt(1.0 + ok * x**2) - ters / kok)
+
+
+@kaynak("Hogg1999", yer="Denk. 9", teyit="okundu")
+def doppler_kirmiziya_kayma(hiz_km_s: ArrayLike) -> Dizi:
+    """Bakış doğrultusundaki hızdan görelilikli Doppler kırmızıya kaymasını hesaplar.
+
+    1 + z = sqrt((1 + v/c) / (1 − v/c))
+
+    Kaynaklar
+    ---------
+    [Hogg1999] Denk. 9.
+
+    Geçerlilik
+    ----------
+    |v| < c. Kozmolojik kırmızıya kayma bu formülle hıza çevrilmez; kaynak
+    bunun yalnızca özel hızlar için anlamlı olduğunu vurgular.
+
+    Doğrulama
+    ---------
+    tests/birim/test_kozmoloji.py: küçük hız limiti z ≈ v/c ve ters fonksiyonla gidiş-dönüş.
+    """
+    beta = np.asarray(hiz_km_s, dtype=float) / ISIK_HIZI_KM_S
+    return np.sqrt((1.0 + beta) / (1.0 - beta)) - 1.0
+
+
+@kaynak("Hogg1999", yer="Denk. 9", teyit="okundu", not_="Denk. 9'un v için çözümü: β = ((1+z)² − 1)/((1+z)² + 1)")
+def doppler_hizi_km_s(z: ArrayLike) -> Dizi:
+    """Doppler kırmızıya kaymasından bakış doğrultusundaki hızı hesaplar.
+
+    Kaynaklar
+    ---------
+    [Hogg1999] Denk. 9.
+
+    Doğrulama
+    ---------
+    tests/birim/test_kozmoloji.py: ``doppler_kirmiziya_kayma`` ile gidiş-dönüş.
+    """
+    kare = (1.0 + np.asarray(z, dtype=float)) ** 2
+    return ISIK_HIZI_KM_S * (kare - 1.0) / (kare + 1.0)
+
+
+@kaynak("Hogg1999", yer="Denk. 10", teyit="okundu", not_="v_pec = c (z_obs − z_cos)/(1 + z); küçük hız yaklaşımı")
+def ozel_hiz_km_s(z_gozlenen: ArrayLike, z_kozmolojik: ArrayLike) -> Dizi:
+    """Gözlenen ve kozmolojik kırmızıya kaymadan özel hızı hesaplar.
+
+    v_pec = c (z_göz − z_koz) / (1 + z)
+
+    Kaynaklar
+    ---------
+    [Hogg1999] Denk. 10.
+
+    Geçerlilik
+    ----------
+    v_pec << c. Paydadaki z için kozmolojik kırmızıya kayma kullanılır;
+    kaynak hangisinin kullanılacağını belirtmez, fark ikinci mertebedendir.
+
+    Doğrulama
+    ---------
+    tests/birim/test_kozmoloji.py: (1 + z_göz) = (1 + z_koz)(1 + v/c) kuralıyla tutarlılık.
+    """
+    zg = np.asarray(z_gozlenen, dtype=float)
+    zk = np.asarray(z_kozmolojik, dtype=float)
+    return ISIK_HIZI_KM_S * (zg - zk) / (1.0 + zk)

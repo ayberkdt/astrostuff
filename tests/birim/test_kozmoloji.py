@@ -50,3 +50,16 @@ def test_skaler_ve_dizi():
     k = uz.Kozmoloji.duz(70.0, 0.3)
     assert np.ndim(uz.isinim_gucu_uzakligi_mpc(0.5, k)) == 0
     assert uz.isinim_gucu_uzakligi_mpc(np.zeros((2, 3)) + 0.5, k).shape == (2, 3)
+
+
+def test_doppler_ve_ozel_hiz():
+    from kozmos.temel.sabitler import ISIK_HIZI_KM_S
+
+    v = np.array([-3000.0, -300.0, 0.0, 300.0, 30000.0, 150000.0])
+    z = uz.doppler_kirmiziya_kayma(v)
+    assert np.allclose(uz.doppler_hizi_km_s(z), v, rtol=1e-12, atol=1e-9)
+    assert float(uz.doppler_kirmiziya_kayma(30.0)) == pytest.approx(30.0 / ISIK_HIZI_KM_S, rel=1e-4)  # z ≈ v/c
+    # (1 + z_göz) = (1 + z_koz)(1 + v/c) kuralından üretilen z_göz, küçük hızda aynı v'yi geri verir.
+    z_koz, hiz = 0.05, 300.0
+    z_goz = (1 + z_koz) * (1 + hiz / ISIK_HIZI_KM_S) - 1
+    assert float(uz.ozel_hiz_km_s(z_goz, z_koz)) == pytest.approx(hiz, rel=1e-12)

@@ -48,17 +48,17 @@ def esyuruyen_uzaklik_mpc(z, kozmoloji):
 
 `tests/test_kaynak_kurali.py` her açık fonksiyon için dört şeyi denetler: kayıt var mı, anahtar [kaynakçada](kaynakca/kaynaklar.bib) tanımlı mı, belge dizgisi aynı anahtarı anıyor mu, `Doğrulama` bölümündeki test dosyası gerçekten var mı. Kaynakçadaki künyeler de ayrıca sınanır: [kaynakca/dogrula.py](kaynakca/dogrula.py) her DOI'yi Crossref'e, her arXiv kimliğini arXiv'e, her ISBN'i Open Library'ye sorar ve başlık ile yılı karşılaştırır.
 
-Güncel sayılar [plan/DURUM.md](plan/DURUM.md) dosyasındadır; bu dosya elle yazılmaz, kütükten üretilir. İlk sürümde 62 fonksiyon ve 35 sabit vardır; 64 kaynak kaydının 52'si kaynağından okunmuş, 12'si beklemektedir.
+Güncel sayılar [plan/DURUM.md](plan/DURUM.md) dosyasındadır; bu dosya elle yazılmaz, kütükten üretilir. İlk sürümde 70 fonksiyon ve 35 sabit vardır; 72 kaynak kaydının 61'i kaynağından okunmuş, 11'i beklemektedir.
 
 ## Neler var
 
 - **`temel`**: CODATA 2022 sabitleri, IAU 2015 nominal Güneş ve gezegen değerleri, açı aritmetiği, küre üzerinde ayrıklık.
-- **`zaman`**: Gregoryen takvim ↔ Jülyen tarihi, TAI ↔ TT, Dünya dönme açısı, Greenwich ve yerel ortalama yıldız zamanı, ekliptiğin ortalama eğikliği (IAU 2006).
+- **`zaman`**: Gregoryen takvim ↔ Jülyen tarihi, TAI ↔ TT, artık saniye tablosuyla TAI − UTC, Dünya dönme açısı, Greenwich ve yerel ortalama yıldız zamanı, ekliptiğin ortalama eğikliği (IAU 2006).
 - **`koordinat`**: ICRS ↔ galaktik, saat açısı ↔ azimut ve yükseklik.
 - **`efemeris`**: Kepler denklemi, gerçek anomali, yörünge dönemi, vis-viva.
 - **`isinim`**: bolometrik kadir (IAU 2015 B2), uzaklık modülü, Planck fonksiyonu.
-- **`kozmoloji`**: `E(z)`, eşyürüyen, açısal çap ve ışınım gücü uzaklıkları, geriye bakış zamanı, hacim elemanı; süpernova Hubble diyagramı olabilirliği.
-- **`istatistik`**: kovaryanslı doğrusal en küçük kareler, afin değişmez topluluk örnekleyici (gerdirme hamlesi), öz ilinti süresi, bölünmüş R̂.
+- **`kozmoloji`**: `E(z)`, eşyürüyen, açısal çap ve ışınım gücü uzaklıkları, geriye bakış zamanı, eşyürüyen hacim, Doppler kayması ve özel hız; süpernova Hubble diyagramı olabilirliği.
+- **`istatistik`**: kovaryanslı doğrusal en küçük kareler, afin değişmez topluluk örnekleyici (gerdirme hamlesi), öz ilinti süresi, bölünmüş ve sıra normalleştirilmiş R̂.
 - **`zamanserisi`**: klasik ve yüzen ortalamalı, ağırlıklı Lomb-Scargle periyodogramı.
 - **`arsiv`**: Pantheon+SH0ES verisinin indirilmesi, SHA-256 özet kaydı, tablo ve kovaryans okuma.
 

@@ -46,3 +46,18 @@ def test_zaman_ve_hacim(bizim, astropy_modeli):
     assert _bagil(uz.esyuruyen_hacim_elemani_mpc3(Z, bizim), hacim) < 1e-8
     assert abs(uz.hubble_uzakligi_mpc(bizim) / astropy_modeli.hubble_distance.value - 1) < 1e-12
     assert abs(uz.hubble_zamani_gyr(bizim) / astropy_modeli.hubble_time.to_value(u.Gyr) - 1) < 1e-9
+
+
+@pytest.mark.parametrize("bizim,astropy_modeli", MODELLER)
+def test_hacim_ve_iki_kirmiziya_kayma(bizim, astropy_modeli):
+    hacim = astropy_modeli.comoving_volume(Z).to_value(u.Mpc**3)
+    # Küçük z'de eğrilikli dal iki yakın terimin farkıdır; z > 0,05 için 1e-6, geri kalanı 1e-3.
+    bagil = np.abs(uz.esyuruyen_hacim_mpc3(Z, bizim) / hacim - 1.0)
+    assert np.max(bagil[Z > 0.05]) < 1e-6 and np.max(bagil) < 1e-3
+    if bizim.omega_k >= -1e-12:
+        z1, z2 = np.array([0.1, 0.5, 1.0]), np.array([0.3, 2.0, 3.0])
+        kahin = astropy_modeli.angular_diameter_distance_z1z2(z1, z2).value
+        assert _bagil(uz.acisal_cap_uzakligi_z1_z2_mpc(z1, z2, bizim), kahin) < 1e-9
+    else:
+        with pytest.raises(ValueError):
+            uz.acisal_cap_uzakligi_z1_z2_mpc(0.1, 0.5, bizim)
