@@ -1,5 +1,5 @@
 {
- "time": "2026-11-25 19:34 UTC",
+ "time": "2026-11-25 23:08 UTC",
  "entries": [
   {
    "key": "SOFA2023",
@@ -3631,6 +3631,162 @@
    "status": "VERIFIED"
   },
   {
+   "key": "Frieman2008",
+   "bib_title": "Dark Energy and the Accelerating Universe",
+   "bib_year": "2008",
+   "identifier": "doi:10.1146/annurev.astro.46.060407.145243",
+   "external": {
+    "source": "Crossref",
+    "title": "Dark Energy and the Accelerating Universe",
+    "year": 2008,
+    "first_author": "Frieman",
+    "publication": "Annual Review of Astronomy and Astrophysics",
+    "volume": "46",
+    "page": "385-432"
+   },
+   "title_similarity": 1.0,
+   "year_difference": 0,
+   "status": "VERIFIED"
+  },
+  {
+   "key": "Linder2005",
+   "bib_title": "Cosmic Growth History and Expansion History",
+   "bib_year": "2005",
+   "identifier": "doi:10.1103/PhysRevD.72.043529",
+   "external": {
+    "source": "Crossref",
+    "title": "Cosmic growth history and expansion history",
+    "year": 2005,
+    "first_author": "Linder",
+    "publication": "Physical Review D",
+    "volume": "72",
+    "page": "043529"
+   },
+   "title_similarity": 1.0,
+   "year_difference": 0,
+   "status": "VERIFIED"
+  },
+  {
+   "key": "Copeland2006",
+   "bib_title": "Dynamics of dark energy",
+   "bib_year": "2006",
+   "identifier": "doi:10.1142/S021827180600942X",
+   "external": {
+    "source": "Crossref",
+    "title": "DYNAMICS OF DARK ENERGY",
+    "year": 2006,
+    "first_author": "COPELAND",
+    "publication": "International Journal of Modern Physics D",
+    "volume": "15",
+    "page": "1753-1935"
+   },
+   "title_similarity": 1.0,
+   "year_difference": 0,
+   "status": "VERIFIED"
+  },
+  {
+   "key": "DehnenRead2011",
+   "bib_title": "N-body simulations of gravitational dynamics",
+   "bib_year": "2011",
+   "identifier": "arXiv:1105.1082",
+   "external": {
+    "source": "arXiv",
+    "title": "N-body simulations of gravitational dynamics",
+    "year": 2011,
+    "first_author": "Dehnen",
+    "publication": "2011, Eur. Phys. J. Plus 126, 55",
+    "doi": "10.1140/epjp/i2011-11055-3"
+   },
+   "title_similarity": 1.0,
+   "year_difference": 0,
+   "status": "VERIFIED"
+  },
+  {
+   "key": "Chin2003",
+   "bib_title": "Forward Symplectic Integrators for Solving Gravitational Few-Body Problems",
+   "bib_year": "2003",
+   "identifier": "arXiv:astro-ph/0304223",
+   "external": {
+    "source": "arXiv",
+    "title": "Forward Symplectic Integrators for Solving Gravitational Few-Body Problems",
+    "year": 2003,
+    "first_author": "Chin",
+    "publication": null,
+    "doi": null
+   },
+   "title_similarity": 1.0,
+   "year_difference": 0,
+   "status": "VERIFIED"
+  },
+  {
+   "key": "Chiang2020",
+   "bib_title": "The thermal and gravitational energy densities in the large-scale structure of the Universe",
+   "bib_year": "2020",
+   "identifier": "arXiv:2007.01679",
+   "external": {
+    "source": "arXiv",
+    "title": "The thermal and gravitational energy densities in the large-scale structure of the Universe",
+    "year": 2020,
+    "first_author": "Chiang",
+    "publication": null,
+    "doi": "10.3847/1538-4357/abe387"
+   },
+   "title_similarity": 1.0,
+   "year_difference": 0,
+   "status": "VERIFIED"
+  },
+  {
+   "key": "Visser2007",
+   "bib_title": "The Kerr spacetime: A brief introduction",
+   "bib_year": "2007",
+   "identifier": "arXiv:0706.0622",
+   "external": {
+    "source": "arXiv",
+    "title": "The Kerr spacetime: A brief introduction",
+    "year": 2007,
+    "first_author": "Visser",
+    "publication": null,
+    "doi": null
+   },
+   "title_similarity": 1.0,
+   "year_difference": 0,
+   "status": "VERIFIED"
+  },
+  {
+   "key": "Pugliese2011",
+   "bib_title": "Equatorial circular motion in Kerr spacetime",
+   "bib_year": "2011",
+   "identifier": "arXiv:1105.2959",
+   "external": {
+    "source": "arXiv",
+    "title": "Equatorial circular motion in Kerr spacetime",
+    "year": 2011,
+    "first_author": "Pugliese",
+    "publication": "Phys.Rev.D84:044030,2011",
+    "doi": "10.1103/PhysRevD.84.044030"
+   },
+   "title_similarity": 1.0,
+   "year_difference": 0,
+   "status": "VERIFIED"
+  },
+  {
+   "key": "BanadosReyes2016",
+   "bib_title": "A short review on Noether's theorems, gauge symmetries and boundary terms",
+   "bib_year": "2016",
+   "identifier": "arXiv:1601.03616",
+   "external": {
+    "source": "arXiv",
+    "title": "A short review on Noether's theorems, gauge symmetries and boundary terms",
+    "year": 2016,
+    "first_author": "Bañados",
+    "publication": null,
+    "doi": "10.1142/S0218271816300214"
+   },
+   "title_similarity": 1.0,
+   "year_difference": 0,
+   "status": "VERIFIED"
+  },
+  {
    "key": "TAP2019",
    "bib_title": "Table Access Protocol Version 1.1",
    "bib_year": "2019",
@@ -3807,6 +3963,31 @@
    "bib_title": "PSF Photometry (photutils.psf), Photutils 3.1.1 documentation (read on 25 November 2026)",
    "bib_year": "2026",
    "identifier": "https://photutils.readthedocs.io/en/stable/user_guide/psf.html",
+   "status": "MANUAL",
+   "description": "no DOI, arXiv identifier or ISBN; to be verified by hand"
+  },
+  {
+   "key": "Will2014",
+   "bib_title": "The Confrontation between General Relativity and Experiment",
+   "bib_year": "2014",
+   "identifier": "arXiv:1403.7377",
+   "external": {
+    "source": "arXiv",
+    "title": "The Confrontation between General Relativity and Experiment",
+    "year": 2014,
+    "first_author": "Will",
+    "publication": "Living Rev. Relativity 17 (2014), 4",
+    "doi": "10.12942/lrr-2014-4"
+   },
+   "title_similarity": 1.0,
+   "year_difference": 0,
+   "status": "VERIFIED"
+  },
+  {
+   "key": "JPLApproxPlanets",
+   "bib_title": "Approximate Positions of the Planets",
+   "bib_year": null,
+   "identifier": null,
    "status": "MANUAL",
    "description": "no DOI, arXiv identifier or ISBN; to be verified by hand"
   },
@@ -4946,6 +5127,7 @@
    "FeigelsonBabu2012",
    "Freedman2001",
    "IAU2012B2",
+   "JPLApproxPlanets",
    "Peebles1993",
    "Perlmutter1999",
    "Prusti2016",
@@ -4956,6 +5138,6 @@
    "Springel2005",
    "WallJenkins2012"
   ],
-  "used_count": 232
+  "used_count": 242
  }
 }

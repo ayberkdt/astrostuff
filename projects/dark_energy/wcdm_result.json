@@ -1,0 +1,80 @@
+{
+  "time": "2026-11-25T21:58:38+00:00",
+  "duration_s": 166.4,
+  "code": {
+    "kozmos": "0.2.0"
+  },
+  "environment": {
+    "python": "3.12.1",
+    "numpy": "2.2.6",
+    "scipy": "1.14.1"
+  },
+  "data": {
+    "supernovae": 1580,
+    "z_min": 0.01,
+    "calibrators": false
+  },
+  "priors": {
+    "omega_m": [
+      0.02,
+      0.6
+    ],
+    "w": [
+      -2.5,
+      -0.3
+    ],
+    "absolute_magnitude": "flat, marginalized analytically"
+  },
+  "grid": {
+    "omega_m_points": 59,
+    "w_points": 111
+  },
+  "w": {
+    "mean": -0.9238130266434978,
+    "std": 0.1538414961503234,
+    "median": -0.914440483138159,
+    "plus": 0.144669449306284,
+    "minus": 0.16281516578238375,
+    "density_at_lower_edge_over_peak": 3.9752924046529116e-11,
+    "density_at_upper_edge_over_peak": 3.5594425072357027e-34
+  },
+  "omega_m": {
+    "mean": 0.29174080792817153,
+    "std": 0.07058661802966057,
+    "median": 0.29797399813966075,
+    "plus": 0.06347077652530086,
+    "minus": 0.07628453713139355,
+    "density_at_lower_edge_over_peak": 0.007029393485593163,
+    "density_at_upper_edge_over_peak": 5.365737382639843e-12
+  },
+  "best_fit": {
+    "omega_m": 0.29,
+    "w": -0.8999999999999999,
+    "chi2": 1386.7663453301318,
+    "degrees_of_freedom": 1577,
+    "deceleration_parameter_today": -0.4584999999999999,
+    "acceleration_onset_redshift": 0.695796773096682
+  },
+  "flat_lcdm": {
+    "chi2": 1387.1070192016664,
+    "omega_m": 0.32999999999999996,
+    "delta_chi2_for_one_extra_parameter": 0.34067387153459094
+  },
+  "published": {
+    "w": {
+      "value": -0.9,
+      "plus": 0.14,
+      "minus": 0.14
+    },
+    "omega_m": {
+      "value": 0.309,
+      "plus": 0.063,
+      "minus": 0.069
+    },
+    "source": "Brout2022, Flat wCDM, SN only"
+  },
+  "comparison": {
+    "w_difference_in_published_sigma": -0.10314630812970665,
+    "w_lambda_distance_in_our_sigma": -0.5255009043580042
+  }
+}

@@ -1,0 +1,35 @@
+{
+  "time": "2026-11-25T22:11:12+00:00",
+  "what": "distance integral before (commit aa45a10: 64-point Gauss-Legendre in z) and after (panels in ln(1+z)) the dark energy change, on the Pantheon+SH0ES sample of analysis 2; the likelihood is evaluated with each version of distance_modulus",
+  "supernovae": 1657,
+  "z_range": [
+    0.00122,
+    2.26137
+  ],
+  "cases": [
+    {
+      "h0": 73.54,
+      "omega_m": 0.331,
+      "max_abs_distance_modulus_difference_mag": 7.105427357601002e-15,
+      "log_likelihood_new": -727.7034025329082,
+      "log_likelihood_old": -727.703402532909,
+      "log_likelihood_difference": 7.958078640513122e-13
+    },
+    {
+      "h0": 70.0,
+      "omega_m": 0.25,
+      "max_abs_distance_modulus_difference_mag": 7.105427357601002e-15,
+      "log_likelihood_new": -1315.4441223182519,
+      "log_likelihood_old": -1315.4441223182523,
+      "log_likelihood_difference": 4.547473508864641e-13
+    },
+    {
+      "h0": 76.0,
+      "omega_m": 0.45,
+      "max_abs_distance_modulus_difference_mag": 7.105427357601002e-15,
+      "log_likelihood_new": -1206.0033508119895,
+      "log_likelihood_old": -1206.0033508119893,
+      "log_likelihood_difference": -2.2737367544323206e-13
+    }
+  ]
+}

@@ -1,20 +1,91 @@
+<p align="center">
+  <img src="figures/banner.png" width="100%" alt="kozmos: light rays bending around a black hole, computed as null geodesics of the Schwarzschild metric with this library">
+</p>
+
 # astrostuff
 
-`kozmos`: a Python library for astronomy and astrophysics calculations, written from scratch. It has a single rule:
+`kozmos` is a Python library for astronomy and astrophysics, written from scratch: from reducing a raw telescope frame to integrating the orbit of light around a black hole. It follows one rule:
 
 > **Every function cites the published source of the equation it implements and is tested against an independent calculation. A function without a source cannot pass the tests.**
 
-At run time the library uses only NumPy and SciPy. Astropy and ERFA exist to compare results, not to compute them.
+The banner above is an example. The rays are null geodesics of the Schwarzschild metric, integrated by the library; the rule ties the metric and the geodesic equation to the pages they were read from, and the tests check the integration against the conservation laws it has to obey.
 
-- 263 functions, 35 constants, 2215 tests; the tests run on every push ([CI](.github/workflows/ci.yml): Linux and Windows, Python 3.12 and 3.13)
-- In all 307 source records the equation was read from the text of the source; no record marked "pending" is left
-- Current numbers: [plan/STATUS.md](plan/STATUS.md) (generated from the code)
+At run time the library uses only NumPy and SciPy. Astropy and ERFA are used to check results, not to compute them.
 
-## Results produced with the library
+| | |
+|---|---|
+| **414** functions, **35** constants | every one with a source record; in all 476 records the equation was read from the text of the source |
+| **3495** tests | run on every push ([CI](.github/workflows/ci.yml): Linux and Windows, Python 3.12 and 3.13) |
+| **21** packages | from FITS files and photometry to Lagrangians, geodesics and dark energy |
 
-All the figures below were produced with the code in this repository, from open data or directly from function output. The scripts that produce them are in [examples/](examples/) and [projects/](projects/).
+Current numbers, generated from the code: [plan/STATUS.md](plan/STATUS.md).
 
-### Hubble constant: Pantheon+ supernovae
+## A first look
+
+```python
+import numpy as np
+from kozmos.cosmology.distances import Cosmology, luminosity_distance_mpc
+from kozmos.cosmology.dark_energy import acceleration_onset_redshift, age_gyr
+from kozmos.relativity.weak_field import light_deflection_angle_rad
+from kozmos.black_holes.basics import isco_radiative_efficiency
+from kozmos import bibliography_report
+
+universe = Cosmology.flat(h0=70.0, omega_m=0.3)
+luminosity_distance_mpc(np.array([0.1, 1.0]), universe)  # [460.30, 6607.66] Mpc
+age_gyr(0.0, universe)  # 13.47 Gyr
+acceleration_onset_redshift(universe)  # 0.671: the expansion has been speeding up since then
+
+np.degrees(light_deflection_angle_rad(1.98841e30, 6.957e8)) * 3600  # 1.751 arcsec at the limb of the Sun
+isco_radiative_efficiency(0.0)  # 0.0572 for a non-rotating black hole
+
+print(bibliography_report(isco_radiative_efficiency))  # which publication it rests on, whether it was read
+```
+
+The foundations are written the same way. A Lagrangian is an ordinary Python function; the library differentiates it, and Noether's theorem becomes something you can compute:
+
+```python
+from kozmos.mechanics import lagrangian, noether
+
+
+def kepler(q, v, t):  # polar coordinates (r, phi), GM = 1
+    return 0.5 * (v[0] ** 2 + q[0] ** 2 * v[1] ** 2) + 1.0 / q[0]
+
+
+q, v = np.array([1.0, 0.0]), np.array([0.0, 1.2])
+turn = lambda q, v, t: np.array([0.0, 1.0])  # shift phi
+push = lambda q, v, t: np.array([1.0, 0.0])  # shift r
+
+lagrangian.jacobi_function(kepler, q, v)  # -0.28: the energy
+noether.symmetry_defect(kepler, q, v, 0.0, turn)  # 0.0: a symmetry, so its charge is conserved
+noether.noether_charge(kepler, q, v, 0.0, turn)  # -1.2: minus the angular momentum (sign of the source)
+noether.symmetry_defect(kepler, q, v, 0.0, push)  # 0.44: not a symmetry
+```
+
+## What the library computes
+
+All the figures below were produced with the code in this repository, from open data or directly from function output. The scripts are in [examples/](examples/) and [projects/](projects/).
+
+### Foundations: conservation laws that hold
+
+![Largest relative energy error per orbit over 1000 orbits of a Kepler ellipse: constant for the leapfrog and the fourth-order symplectic integrator, growing for a Runge-Kutta solver](figures/energy_conservation.png)
+
+A planet on an ellipse of eccentricity 0.5, followed for 1000 orbits with 200 steps per orbit. The energy error of the two symplectic integrators does not grow: it stays at 2.7 × 10⁻³ for the leapfrog and at 9.2 × 10⁻⁶ for the fourth-order scheme, the same in the first orbit and in the last. A general-purpose Runge-Kutta solver (SciPy RK45 at a relative tolerance of 10⁻⁶, 280 force evaluations per orbit) starts lower, at 5 × 10⁻⁶, and ends at 3.4 × 10⁻³, because its error accumulates. Record: [energy_conservation.json](figures/energy_conservation.json).
+
+The `mechanics` package holds the layer under everything else: Euler-Lagrange equations, the Legendre transform, Poisson brackets, Noether charges and the symplectic integrators. The advanced modules are checked against it. For the Kerr metric, the geodesic equation computed from Christoffel symbols equals the Euler-Lagrange equation of ½ g u u to 1.9 × 10⁻¹¹; the constants of motion that follow from the Killing vectors equal the Noether charges of the same Lagrangian; the Klein-Gordon equation of the scalar-field module follows from the Lagrangian a³(φ̇²/2 − V) ([test_foundations_cross_check.py](tests/unit/test_foundations_cross_check.py)).
+
+### Gravity: orbits and light near a black hole
+
+![Left: a bound orbit around a non-rotating black hole that does not close, its periapsis advancing by 169 degrees per orbit. Right: deflection of light against impact parameter, integrated geodesics compared with the weak-field formula](figures/relativity_orbits.png)
+
+Left: an orbit between 7 and 30 gravitational radii of a non-rotating black hole. In Newtonian gravity it would be a closed ellipse; here the periapsis advances by 169° on every turn. The energy of the orbit is conserved to 1.2 × 10⁻¹¹ over the integration. Right: the bending of light. Far from the hole the integrated geodesics follow the weak-field formula 4GM/(c²b) (0.577° against 0.573° at an impact parameter of 400 gravitational radii); close to it the formula fails, and at 5.4 radii the ray is turned by 167° where the formula gives 42°. The same formula gives 1.751 arcseconds at the limb of the Sun, and the perihelion formula gives 42.98 arcseconds per century for Mercury. Record: [relativity_orbits.json](figures/relativity_orbits.json).
+
+The metric is a Python function, so the same code integrates geodesics of Schwarzschild, Kerr, Reissner-Nordström and FLRW metrics, or of one you write yourself, and computes its Riemann, Ricci and Einstein tensors.
+
+![Radius of the innermost stable orbit and accretion efficiency in a rotating black hole, against the spin parameter](figures/black_hole_spin.png)
+
+As the black hole spins, the innermost stable orbit falls from 6 to 1.24 gravitational radii, and the fraction of the accreting matter converted to radiation rises from 5.7% to 32% (a* = 0.998).
+
+### The expanding universe: supernovae and dark energy
 
 ![Pantheon+ Hubble diagram: distance modulus of 1580 Type Ia supernovae, best-fit curve and residuals](figures/hubble_diagram.png)
 
@@ -25,6 +96,9 @@ The code downloads the open [Pantheon+SH0ES data](https://github.com/PantheonPlu
 
 The published values were read from the arXiv source of Brout et al. (2022). Record: [projects/hubble/result.json](projects/hubble/result.json). The chain is extended until the rank-normalized R̂ of every parameter is below 1.01 (the threshold of Vehtari et al. 2021) and the chain is longer than 50 autocorrelation times; it stopped at 5000 steps of 32 walkers with R̂ ≤ 1.007. An earlier 2000-step chain had R̂ up to 1.027 and gave ± 1.00.
 
+<details>
+<summary>Why our uncertainty is ± 1.0 while the paper quotes ± 1.1</summary>
+
 The H0 uncertainty we find is smaller than the published one. Three independent checks support our value ([h0_uncertainty_check.py](projects/hubble/h0_uncertainty_check.py)):
 
 - A closed-form solution that does not use a chain gives 73.52 ± 1.02 from the same data; with no redshift cut at all it gives 73.41 ± 1.01, with the cut raised to 0.023 it gives 73.70 ± 1.03; with the distance definition of the likelihood code in the data release (d_L = (1 + z_HEL) D_M) it gives 73.53 ± 1.02.
@@ -32,6 +106,38 @@ The H0 uncertainty we find is smaller than the published one. Three independent 
 - The baseline result of Riess et al. (2022) is ± 1.01; the abstract of the same paper gives 73.30 ± 1.04 when high-redshift supernovae are added.
 
 The paper quotes ± 1.1 for all four models; none of the published chains gives this value (to one decimal place they all round to ± 1.0). The paper names PolyChord as the sampler, while the chains in the data release are emcee. The configuration shown in the header of the published chain says this: the chain is an emcee run with 16 walkers, and all walkers start from the same point (this is where the wide scatter of the initial part comes from); a separate PolyChord output with 250 live points is defined for the same configuration (`122221_poly_P+SH0ES`), and the paper also says 250 live points. This output is not in the data release. The published data and the published likelihood code give ± 1.0, with or without a chain; the run that produces ± 1.1 has not been published, so the value cannot be reproduced from open data. The repository of the data release has an open record that asks the same question ([PantheonPlusSH0ES/DataRelease#16](https://github.com/PantheonPlusSH0ES/DataRelease/issues/16), 27 October 2026; unanswered on 25 November 2026).
+
+</details>
+
+![68% and 95% regions of the matter density and the dark energy equation of state from Pantheon+ supernovae, with the published value and the cosmological constant line](figures/dark_energy_w.png)
+
+Is dark energy a cosmological constant? With its equation of state left free (flat wCDM, supernovae only, absolute magnitude marginalized), a grid over (Ωm, w) gives:
+
+- **w = −0.91 (+0.14, −0.16)** (published −0.90 ± 0.14)
+- **Ωm = 0.298 (+0.063, −0.076)** (published 0.309 +0.063 −0.069)
+
+The numbers are the median and the 16th and 84th percentiles of the marginal posteriors, with flat priors 0.02 < Ωm < 0.60 and −2.5 < w < −0.3; the published values were read from the arXiv source of Brout et al. (2022). A cosmological constant lies 0.5σ from the median, and the extra parameter lowers χ² by 0.34. Record: [projects/dark_energy/wcdm_result.json](projects/dark_energy/wcdm_result.json). The w0-wa model was not fitted.
+
+![Phase plane of a scalar field with an exponential potential: twelve trajectories from different starting points spiral into the same fixed point](figures/quintessence.png)
+
+Dark energy need not be a constant. For a scalar field with an exponential potential (slope λ = 2) in a universe that also holds matter, twelve different starting states all flow to the same point: the field ends up holding 75% of the density whatever it started with (the trajectories end within 2 × 10⁻¹² of the fixed point). The fixed points and their stability are computed from the table of Copeland, Sami & Tsujikawa (2006). Record: [quintessence.json](figures/quintessence.json).
+
+### Stars and gas
+
+<p>
+<img src="figures/lane_emden.png" width="49%" alt="Solutions of the Lane-Emden equation for polytropic indices n = 0, 1, 1.5 and 3">
+<img src="figures/mass_functions.png" width="49%" alt="Salpeter, Kroupa and Chabrier initial mass functions">
+</p>
+
+On the left, polytropic stellar models: the larger the index, the more the star is concentrated at the center (for n = 3 the central density is 54 times the mean). On the right, three initial mass functions, normalized to the same total number over the range 0.1-50 solar masses: above 1 solar mass their slopes are the same; below it Salpeter predicts many more small stars.
+
+<img src="figures/jeans_mass.png" width="62%" alt="Dependence of the Jeans mass on gas density, for 10, 20 and 50 kelvin">
+
+The smallest mass a gas cloud needs to collapse under its own gravity. At a temperature of 10 K and a particle density of 10⁴ per cubic centimeter it is about 3 solar masses.
+
+## From real observations
+
+The same rule covers the observing side: archive access, FITS files, image reduction, photometry and astrometry, each tested on real data.
 
 ### Star catalog: the Sun's neighborhood with Gaia
 
@@ -79,6 +185,9 @@ Purity is the fraction of flagged pixels that are adjacent to a real cosmic ray.
 
 The infrared reduction was run end to end on two raw Ks sequences from ESO NTT/SOFI, with the dome flat of the same night ([infrared_reduction.py](examples/infrared_reduction.py)):
 
+<details>
+<summary>Numbers of the infrared reduction: two fields, astrometry, zero points</summary>
+
 | | SN 2011bm field (sparse) | SN 2005at field (rich, the galaxy fills the field) |
 |---|---|---|
 | Number of frames and duration | 16 frames, 28 minutes | 32 frames, 53 minutes |
@@ -109,28 +218,13 @@ The four values fit in a range of 0.08 mag. The single star of the sparse field 
 
 Of the reduction steps in the manual, the cross talk correction and the illumination correction were not applied. Cross-hatched residual patterns remain in a single sky-subtracted frame; the cause was not investigated.
 
+</details>
+
 ### Bright stars: sky map
 
 ![Sky map in galactic coordinates of the 9096 stars in the Bright Star Catalogue; concentration along the Milky Way plane](figures/sky_map.png)
 
 The 9096 stars of the Bright Star Catalogue (5th edition) that carry a position and a magnitude, in galactic coordinates. 47% of the stars lie in the band of ±20° of galactic latitude; for a uniform distribution this fraction would be 34%. The naked-eye stars on which Gaia saturates come from this catalog.
-
-### Black holes, stars, star formation
-
-![Radius of the innermost stable orbit and accretion efficiency in a rotating black hole, against the spin parameter](figures/black_hole_spin.png)
-
-As the black hole spins, the innermost stable orbit falls from 6 to 1.24 gravitational radii, and the fraction of the accreting matter converted to radiation rises from 5.7% to 32% (a* = 0.998).
-
-<p>
-<img src="figures/lane_emden.png" width="49%" alt="Solutions of the Lane-Emden equation for polytropic indices n = 0, 1, 1.5 and 3">
-<img src="figures/mass_functions.png" width="49%" alt="Salpeter, Kroupa and Chabrier initial mass functions">
-</p>
-
-On the left, polytropic stellar models: the larger the index, the more the star is concentrated at the center (for n = 3 the central density is 54 times the mean). On the right, three initial mass functions, normalized to the same total number over the range 0.1-50 solar masses: above 1 solar mass their slopes are the same; below it Salpeter predicts many more small stars.
-
-<img src="figures/jeans_mass.png" width="62%" alt="Dependence of the Jeans mass on gas density, for 10, 20 and 50 kelvin">
-
-The smallest mass a gas cloud needs to collapse under its own gravity. At a temperature of 10 K and a particle density of 10⁴ per cubic centimeter it is about 3 solar masses.
 
 ## What is included
 
@@ -149,11 +243,16 @@ The smallest mass a gas cloud needs to collapse under its own gravity. At a temp
 
 **Astrophysics**
 
-- `black_holes`: Schwarzschild and Kerr radii, shadow size, accretion (Eddington, Bondi, thin disk), Hawking radiation, gravitational-wave frequency of merging binaries
+- `black_holes`: Schwarzschild and Kerr radii, shadow size, accretion (Eddington, Bondi, thin disk), Hawking radiation, gravitational-wave frequency of merging binaries; Kerr circular orbits at any radius (energy, angular momentum, angular velocity), epicyclic and precession frequencies, frame dragging, horizon area, irreducible mass, surface gravity, temperature and entropy of a rotating hole, the area theorem for mergers
+- `relativity`: special relativity (boosts, velocity addition, Doppler shift and aberration, four-momentum); metrics (Minkowski, Schwarzschild, Reissner-Nordström, Kerr, FLRW, two horizon-penetrating forms); Christoffel symbols and geodesic integration for any metric given as a function, Killing constants and a Killing-equation check; Riemann, Ricci and Einstein tensors and the Kretschmann scalar; perihelion advance, light deflection, Shapiro delay, geodetic precession
 - `stars`: Lane-Emden polytropes, stellar scaling relations, Chandrasekhar mass, initial mass functions
 - `star_formation`: Jeans and Bonnor-Ebert masses, free-fall time, virial parameter, Kennicutt-Schmidt law, Toomre Q
-- `cosmology`: distance measures, Hubble diagram likelihood
+- `cosmology`: distance measures for w0-wa dark energy with curvature and radiation, Hubble diagram likelihood; equation of state, density parameters, deceleration parameter, onset of acceleration, age, big-rip time; linear growth factor, growth rate and growth index; quintessence (the autonomous system of the exponential potential with its fixed points, and a scalar field with any potential)
 - `ephemeris`: Kepler's equation and orbit relations
+
+**Foundations**
+
+- `mechanics`: for a Lagrangian given as a Python function: momenta, the Euler-Lagrange equations and their integration, the energy function, the action of a path; the Legendre transform to a Hamiltonian, Hamilton's equations and Poisson brackets; Noether charges, with a number that says by how much a transformation fails to be a symmetry (translations, rotations, boosts, time translation and scale transformations are built in); leapfrog and fourth-order symplectic integrators; kinetic, potential and total energy, momentum, angular momentum and virial ratio of a particle system
 
 **Infrastructure**
 
@@ -183,11 +282,12 @@ def comoving_distance_mpc(z, cosmology):
 
 For every public function, a test checks that the record exists, that the key is defined in the [bibliography](bibliography/), that the docstring cites the same source, and that the test file it points to exists. The entries in the bibliography are also tested: [bibliography/verify.py](bibliography/verify.py) queries every DOI at Crossref and every arXiv identifier at arXiv.
 
-Opening the text of a source changed results. Three of the things found while reading:
+Opening the text of a source changed results. Four of the things found while reading:
 
 - The Kerr photon orbit formula in a review article, as printed, gives the retrograde orbit, not the prograde one.
 - The two common definitions of the Jeans mass differ by a factor of 4π/3; the function offers both by name.
 - The mass coefficient column of the polytrope table in one source agrees with the standard definition only for n = 3.
+- A set of lecture notes prints the curvature invariant of the Schwarzschild metric as 12 G²M²/r⁶; the value is 48 G²M²/r⁶, which the curvature module computes from the metric and a second source confirms.
 
 The details are in [plan/04_physics/08_black_holes_stars_and_star_formation.md](plan/04_physics/08_black_holes_stars_and_star_formation.md).
 
@@ -200,17 +300,6 @@ pip install -e ".[verification,dev,plotting]"
 pytest -m "not network"
 ```
 
-```python
-import numpy as np
-from kozmos.cosmology.distances import Cosmology, luminosity_distance_mpc
-from kozmos.black_holes.basics import isco_radiative_efficiency
-from kozmos import bibliography_report
-
-luminosity_distance_mpc(np.array([0.1, 1.0]), Cosmology.flat(h0=70.0, omega_m=0.3))  # [460.30, 6607.66] Mpc
-isco_radiative_efficiency(0.0)  # 0.0572: accretion efficiency of a non-rotating black hole
-print(bibliography_report(isco_radiative_efficiency))  # which publication it rests on, whether it was read
-```
-
 To reproduce the figures (the scripts download the data themselves):
 
 ```
@@ -219,6 +308,8 @@ python projects/hubble/hubble_figure.py
 python examples/hr_diagram.py
 python examples/optical_infrared.py
 python examples/physics_gallery.py
+python examples/relativity_gallery.py      # banner, orbits, energy conservation, quintessence, dark energy; about 3 minutes
+python projects/dark_energy/wcdm_analysis.py   # about 3 minutes
 python examples/sky_map.py
 python examples/real_image_validation.py
 python examples/cosmic_rays_real_data.py
@@ -240,6 +331,10 @@ The figures in the repository were produced with a local figure-audit tool (`dat
 - PSF photometry uses analytic profiles only: on a real 2MASS image the Gaussian recovers the 1-FWHM aperture flux to 0.6% but the reduced χ² is 9, because the real PSF has wider wings. There is no empirical PSF and no comparison with another PSF-fitting code.
 - The spectroscopy functions were tested on synthetic spectra and on the numbers printed in their sources, not on observed spectra. The cross-correlation error estimate of Tonry & Davis holds at a signal-to-noise ratio of about 20-50 and is 2-3 times too small above 100.
 - Unit checking is opt-in (`with_units`); the library functions themselves still take plain numbers in the unit named by the suffix.
+- The mechanics and relativity packages differentiate the user's function numerically. The default complex-step derivative is exact to rounding but needs a function that accepts complex numbers; a function that does not (`abs`, `hypot`, `norm`, comparisons) is detected and refused whatever the size of its values, and `method="finite"` then gives about 1e-9. The finite-difference step adapts to the scale on which the function varies; a non-analytic part whose derivative is below 4e-9 of the function's value per unit of its argument is not detected. Lagrangians with a singular mass matrix (constraints) are not handled. The cost grows with the square of the number of coordinates, so the Lagrangian integrator is for a few degrees of freedom; N-body runs use the symplectic integrators.
+- The advanced modules are tied to the foundations in [tests/unit/test_foundations_cross_check.py](tests/unit/test_foundations_cross_check.py): the geodesic equation equals the Euler-Lagrange equation of ½ g u u for the Kerr metric (1.9e-11), Killing constants equal Noether charges, the Kerr circular-orbit formulas satisfy the geodesic equation (residual 3e-17), the Klein-Gordon equation follows from the scalar-field Lagrangian, and a null geodesic of the FLRW metric reproduces the cosmological redshift (2e-12).
+- Relativity: the geodesic integrator has no stopping condition at a horizon, and curvature loses accuracy far from the source (Ricci residual 1e-7 of the curvature scale at 30 gravitational radii). There is no Lense-Thirring precession formula, no ray tracing of images, and nothing beyond test particles (no perturbation theory, no numerical relativity). The angular momentum of Kerr circular orbits follows a printed closed form (Pugliese, Quevedo & Ruffini 2011); the energy is derived in this project from it and from the metric, and agrees with the energy printed in the same paper to 1.4e-14 on a grid of radii and spins. The epicyclic frequencies agree with the oscillations of an integrated, slightly perturbed geodesic to 4e-9 (radial) and 7e-6 (vertical); the precession frequencies are differences of the printed frequencies.
+- Dark energy: growth assumes smooth dark energy and matter-dominated initial conditions (error 1e-6 when radiation is included). The growth-index approximation reproduces the growth factor to the accuracy Linder states (0.05% for ΛCDM) but the growth rate only to 0.6-1.1%. The big-rip formula of the source holds for a universe of dark energy alone and is 14% short for Ωm = 0.3, w = −1.5. Against astropy, distances agree to 8e-12 up to z = 10 and to 3e-12 at z = 1100 with radiation.
 - SkyView cutouts are resampled images; photometric calibration needs the original archive data.
 
 ## Plan

@@ -1,0 +1,91 @@
+{
+  "orbit": {
+    "periapsis_rg": 7.000085460955057,
+    "apoapsis_rg": 30.0,
+    "periapsis_advance_deg_per_orbit": 169.3774621915585,
+    "periapses_measured": 4,
+    "energy_relative_drift": 1.1862733018119798e-11
+  },
+  "deflection": [
+    {
+      "impact_rg": 5.4,
+      "integrated_deg": 167.27100848380448,
+      "weak_field_deg": 42.44131815783876
+    },
+    {
+      "impact_rg": 7.1951222162679045,
+      "integrated_deg": 60.805893650826555,
+      "weak_field_deg": 31.852567776285266
+    },
+    {
+      "impact_rg": 9.586996982783699,
+      "integrated_deg": 36.124806498230015,
+      "weak_field_deg": 23.905621172500172
+    },
+    {
+      "impact_rg": 12.774002773725995,
+      "integrated_deg": 23.80159734032909,
+      "weak_field_deg": 17.941370619060844
+    },
+    {
+      "impact_rg": 17.020465027389577,
+      "integrated_deg": 16.445896020067607,
+      "weak_field_deg": 13.465150199099996
+    },
+    {
+      "impact_rg": 22.67857889810772,
+      "integrated_deg": 11.673056885013379,
+      "weak_field_deg": 10.105708963600541
+    },
+    {
+      "impact_rg": 30.21761978947396,
+      "integrated_deg": 8.425855803631888,
+      "weak_field_deg": 7.584419939394537
+    },
+    {
+      "impact_rg": 40.26286434629272,
+      "integrated_deg": 6.1501579169323595,
+      "weak_field_deg": 5.692171229577007
+    },
+    {
+      "impact_rg": 53.647449953442916,
+      "integrated_deg": 4.523668217739164,
+      "weak_field_deg": 4.27202258916728
+    },
+    {
+      "impact_rg": 71.48147389002551,
+      "integrated_deg": 3.345384109584772,
+      "weak_field_deg": 3.2061890386441707
+    },
+    {
+      "impact_rg": 95.24406311809196,
+      "integrated_deg": 2.483634885516983,
+      "weak_field_deg": 2.406271955955595
+    },
+    {
+      "impact_rg": 126.90605083492713,
+      "integrated_deg": 1.8490739536222047,
+      "weak_field_deg": 1.805927428554521
+    },
+    {
+      "impact_rg": 169.09343439652,
+      "integrated_deg": 1.3794873095394367,
+      "weak_field_deg": 1.3553637896720487
+    },
+    {
+      "impact_rg": 225.3051715650815,
+      "integrated_deg": 1.030722394580144,
+      "weak_field_deg": 1.017211972811408
+    },
+    {
+      "impact_rg": 300.2033787718465,
+      "integrated_deg": 0.7709977048381085,
+      "weak_field_deg": 0.7634261779128998
+    },
+    {
+      "impact_rg": 400.0,
+      "integrated_deg": 0.577192834732289,
+      "weak_field_deg": 0.5729577951308232
+    }
+  ]
+}

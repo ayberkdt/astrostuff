@@ -2,6 +2,7 @@
 
 import numpy as np
 import pytest
+from scipy.integrate import quad
 
 from kozmos.cosmology import distances
 
@@ -63,3 +64,55 @@ def test_doppler_and_peculiar_velocity():
     z_cos, velocity = 0.05, 300.0
     z_obs = (1 + z_cos) * (1 + velocity / SPEED_OF_LIGHT_KM_S) - 1
     assert float(distances.peculiar_velocity_km_s(z_obs, z_cos)) == pytest.approx(velocity, rel=1e-12)
+
+
+def test_non_finite_redshifts_give_nan_without_aborting_the_call():
+    # before the fix: OverflowError "cannot convert float infinity to integer" or ValueError "cannot convert float NaN
+    # to integer" for z = inf or NaN; the old code returned NaN
+    k = distances.Cosmology.flat(70.0, 0.3, omega_r=8.5e-5)
+    z = np.array([0.5, np.nan, 2.0, np.inf, 1000.0])
+    finite = np.isfinite(z)
+    for function in (
+        distances.comoving_distance_mpc,
+        distances.lookback_time_gyr,
+        distances.luminosity_distance_mpc,
+        distances.angular_diameter_distance_mpc,
+    ):
+        out = function(z, k)
+        assert out.shape == z.shape, function.__name__
+        assert np.all(np.isnan(out[~finite])), function.__name__
+        # the finite entries are those of the call without the non-finite ones (same panels: z <= 1000 sets them)
+        assert np.array_equal(out[finite], function(z[finite], k)), function.__name__
+        assert np.isnan(function(np.inf, k)) and np.isnan(function(np.nan, k)), function.__name__
+    # a huge finite z next to inf: the panel count comes from the finite entries only
+    big = distances.comoving_distance_mpc(np.array([1e30, np.inf]), k)
+    assert big[0] == distances.comoving_distance_mpc(1e30, k) and np.isnan(big[1])
+    # the scalar and 2-D shapes are kept
+    assert np.ndim(distances.comoving_distance_mpc(np.inf, k)) == 0
+    two_d = distances.comoving_distance_mpc(np.array([[0.5, np.nan], [np.inf, 1.0]]), k)
+    assert two_d.shape == (2, 2) and np.isnan(two_d[0, 1]) and np.isnan(two_d[1, 0]) and np.isfinite(two_d[1, 1])
+
+
+def test_panels_are_needed_at_extreme_redshift():
+    # D_C(z)/D_H = int_0^{ln(1+z)} e^u / E(z(u)) du with radiation, to z = 1e30 (u = 69); scipy quad with a break
+    # point at every e-fold is the reference. One 64-point Gauss-Legendre rule over the whole interval (what a panel
+    # width of 1000 gives) is exact to 2e-15 up to z = 1e12 but 1.7e-9 at z = 1e30, where the integrand decays over
+    # 69 e-folds; the panels of 2.5 in ln(1+z) give 1.1e-16.
+    k = distances.Cosmology.flat(70.0, 0.3, omega_r=8.5e-5)
+    z = 1e30
+    top = np.log1p(z)
+    reference = quad(
+        lambda u: np.exp(u) / distances.e_function(np.expm1(u), k),
+        0.0,
+        top,
+        epsabs=0.0,
+        epsrel=1e-13,
+        limit=2000,
+        points=np.arange(1.0, int(top) + 1.0),
+    )[0]
+    ours = distances.comoving_distance_mpc(z, k) / distances.hubble_distance_mpc(k)
+    nodes, weights = distances._NODES, distances._WEIGHTS
+    zp = np.expm1(0.5 * top * (nodes + 1.0))
+    single = 0.5 * top * np.sum(weights * (1.0 + zp) / distances.e_function(zp, k))
+    assert abs(ours / reference - 1.0) < 1e-12  # measured 1.1e-16
+    assert abs(single / reference - 1.0) > 1e-10  # measured 1.7e-9: the single-panel rule fails the same tolerance

@@ -1,0 +1,39 @@
+{
+  "lam": 2.0,
+  "w_background": 0.0,
+  "fixed_points": [
+    {
+      "name": "a",
+      "x": 0.0,
+      "y": 0.0,
+      "stability": "saddle point"
+    },
+    {
+      "name": "b1",
+      "x": 1.0,
+      "y": 0.0,
+      "stability": "unstable node"
+    },
+    {
+      "name": "b2",
+      "x": -1.0,
+      "y": 0.0,
+      "stability": "unstable node"
+    },
+    {
+      "name": "c",
+      "x": 0.8164965809277261,
+      "y": 0.5773502691896258,
+      "stability": "saddle point"
+    },
+    {
+      "name": "d",
+      "x": 0.6123724356957945,
+      "y": 0.6123724356957945,
+      "stability": "stable spiral"
+    }
+  ],
+  "attractor_omega_phi": 0.7499999999999999,
+  "largest_distance_of_a_trajectory_end_from_the_attractor": 1.9552711481557134e-12,
+  "trajectories": 12
+}

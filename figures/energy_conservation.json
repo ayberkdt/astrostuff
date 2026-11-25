@@ -1,0 +1,23 @@
+{
+  "eccentricity": 0.5,
+  "periods": 1000,
+  "steps_per_period": 200,
+  "rk45_function_evaluations_per_period": 280.088,
+  "energy_error": {
+    "kdk": {
+      "first_orbit": 0.002689378429673982,
+      "last_orbit": 0.0026893774173952765,
+      "max": 0.00268938348082126
+    },
+    "forest_ruth": {
+      "first_orbit": 9.23703224864347e-06,
+      "last_orbit": 9.237031470488152e-06,
+      "max": 9.23703228772332e-06
+    },
+    "rk45": {
+      "first_orbit": 5.2436527223642645e-06,
+      "last_orbit": 0.003373213848374411,
+      "max": 0.003373213848374411
+    }
+  }
+}

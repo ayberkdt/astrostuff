@@ -1,6 +1,6 @@
-"""Black hole physics: Schwarzschild and Kerr radii, the shadow, Hawking radiation, gravitational waves, accretion."""
+"""Black hole physics: Schwarzschild and Kerr radii, Kerr orbits and thermodynamics, the shadow, Hawking radiation, gravitational waves, accretion."""
 
-from kozmos.black_holes import accretion, basics
+from kozmos.black_holes import accretion, basics, kerr
 from kozmos.black_holes.accretion import (
     accretion_luminosity_w,
     bondi_accretion_rate_kg_s,
@@ -41,6 +41,27 @@ from kozmos.black_holes.basics import (
     shadow_angular_diameter_uas,
     time_to_merger_s,
 )
+from kozmos.black_holes.kerr import (
+    frame_dragging_angular_velocity_rad_s,
+    kerr_area_theorem_margin_m2,
+    kerr_bekenstein_hawking_entropy,
+    kerr_circular_orbit_angular_velocity_rad_s,
+    kerr_circular_orbit_frequency_hz,
+    kerr_circular_orbit_specific_angular_momentum_rg,
+    kerr_circular_orbit_specific_energy,
+    kerr_hawking_temperature_k,
+    kerr_horizon_area_m2,
+    kerr_irreducible_mass_kg,
+    kerr_marginally_bound_radius_rg,
+    kerr_newman_horizon_radius_rg,
+    kerr_nodal_precession_frequency_hz,
+    kerr_penrose_extractable_fraction,
+    kerr_periastron_precession_frequency_hz,
+    kerr_radial_epicyclic_frequency_hz,
+    kerr_surface_gravity_m_s2,
+    kerr_vertical_epicyclic_frequency_hz,
+    merger_radiated_fraction_bound,
+)
 
 __all__ = [
     "accretion",
@@ -53,6 +74,7 @@ __all__ = [
     "critical_impact_parameter_m",
     "eddington_accretion_rate_kg_s",
     "eddington_luminosity_w",
+    "frame_dragging_angular_velocity_rad_s",
     "gravitational_radius_m",
     "gravitational_redshift",
     "gw_frequency_at_isco_hz",
@@ -66,11 +88,30 @@ __all__ = [
     "horizon_angular_velocity_rad_s",
     "isco_orbital_frequency_hz",
     "isco_radiative_efficiency",
+    "kerr",
+    "kerr_area_theorem_margin_m2",
+    "kerr_bekenstein_hawking_entropy",
+    "kerr_circular_orbit_angular_velocity_rad_s",
+    "kerr_circular_orbit_frequency_hz",
+    "kerr_circular_orbit_specific_angular_momentum_rg",
+    "kerr_circular_orbit_specific_energy",
     "kerr_ergosphere_radius_rg",
+    "kerr_hawking_temperature_k",
+    "kerr_horizon_area_m2",
     "kerr_horizon_radius_rg",
+    "kerr_irreducible_mass_kg",
     "kerr_isco_radius_rg",
     "kerr_isco_specific_energy",
+    "kerr_marginally_bound_radius_rg",
+    "kerr_newman_horizon_radius_rg",
+    "kerr_nodal_precession_frequency_hz",
+    "kerr_penrose_extractable_fraction",
+    "kerr_periastron_precession_frequency_hz",
     "kerr_photon_orbit_radius_rg",
+    "kerr_radial_epicyclic_frequency_hz",
+    "kerr_surface_gravity_m_s2",
+    "kerr_vertical_epicyclic_frequency_hz",
+    "merger_radiated_fraction_bound",
     "photon_sphere_radius_m",
     "salpeter_time_s",
     "schwarzschild_isco_radius_m",
