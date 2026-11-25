@@ -6,8 +6,8 @@
 
 Kitaplık çalışırken yalnızca NumPy ve SciPy kullanır. Astropy ve ERFA hesap için değil, sonuçları karşılaştırmak için vardır.
 
-- 229 fonksiyon, 35 sabit, 1089 test
-- 268 kaynak kaydının hepsinde denklem kaynağın metninden okundu; "bekliyor" işaretli kayıt kalmadı
+- 230 fonksiyon, 35 sabit, 1093 test
+- 270 kaynak kaydının hepsinde denklem kaynağın metninden okundu; "bekliyor" işaretli kayıt kalmadı
 - Güncel sayılar: [plan/DURUM.md](plan/DURUM.md) (koddan üretilir)
 
 ## Kitaplıkla üretilen sonuçlar
@@ -27,11 +27,11 @@ Yayımlanan değerler Brout ve ark. (2022) makalesinin arXiv kaynağından okund
 
 Bulunan H0 belirsizliği yayımlanandan küçüktür. Üç bağımsız denetim bizim değeri destekliyor ([h0_belirsizlik_denetimi.py](projeler/hubble/h0_belirsizlik_denetimi.py)):
 
-- Zincirden bağımsız kapalı biçimli çözüm aynı veriden 73,52 ± 1,02 verir.
+- Zincirden bağımsız kapalı biçimli çözüm aynı veriden 73,52 ± 1,02 verir; veri sürümündeki olabilirlik kodunun uzaklık tanımıyla (d_L = (1 + z_HEL) D_M) 73,53 ± 1,02.
 - Veri sürümündeki dört zincirin (emcee) hepsi, ilk %10'u atılınca ± 1,01 ile ± 1,04 arasında saçılım verir; baş kısım atılmazsa ± 1,03 ile ± 1,07 arasındadır. Düz ΛCDM zinciri 73,53 ± 1,01'dir.
 - Riess ve ark. (2022) temel sonucu ± 1,01'dir.
 
-Makale dört model için de ± 1,1 yazar; yayımlanan zincirlerin hiçbiri bu değeri vermez (tek ondalıkla hepsi ± 1,0'a yuvarlanır). Makale örnekleyici olarak PolyChord'u anar, veri sürümündeki zincirler emcee'dir; PolyChord zincirleri yayımlanmadığı için ± 1,1'in kaynağı açık veriden doğrulanamaz.
+Makale dört model için de ± 1,1 yazar; yayımlanan zincirlerin hiçbiri bu değeri vermez (tek ondalıkla hepsi ± 1,0'a yuvarlanır). Makale örnekleyici olarak PolyChord'u anar, veri sürümündeki zincirler emcee'dir; PolyChord zincirleri yayımlanmadı. Yayımlanan veri ve yayımlanan olabilirlik kodu, zincirle de zincirsiz de ± 1,0 verir; ± 1,1'in kaynağı açık veriden bulunamadı.
 
 ### Yıldız kataloğu: Gaia ile Güneş çevresi
 
@@ -88,11 +88,13 @@ Kızılötesi indirgeme ESO NTT/SOFI'nin iki ham Ks dizisinde, aynı gecenin kub
 | Alandaki 2MASS yıldızı, saptanan | 5, 5 | 48, 33 |
 | Astrometri artığı (yay saniyesi) | 0,45 | 0,47 |
 | Sıfır noktası saçılımı (kadir) | 2 yıldız, ölçülemez | 14 yıldızda 0,094 |
-| Kör astrometrik çözüm | reddedildi (ortak yıldız az) | başlıktan başlayan çözümle aynı |
+| Kör çözüm, 2MASS kataloğuyla | reddedildi (ortak yıldız az) | başlıktan başlayan çözümle aynı |
+| Gaia DR3 ile astrometri | 10 yıldız, 0,17″ artık | 123 yıldız, 0,29″ artık |
+| Kör çözüm, Gaia DR3 ile | 8 yıldız, 0,16″; başlıktan başlayan çözümden en çok 0,81″ | 122 yıldız; başlıktan başlayan çözümden en çok 0,004″ |
 
 Zengin alanda sıfır noktası saçılımı (0,094 kadir) kullanılan 2MASS yıldızlarının ortanca katalog belirsizliği (0,106 kadir) düzeyindedir. Düz alan, aynı yıldızın karelerdeki akı saçılımını %3,3'ten %3,1'e indirdi (15 yıldız); yalnızca arka plan gürültüsünden beklenen %1,8'dir. Bu dizilerde durağan gökyüzü modeli dinamik modelden az gürültülü çıktı. Gökada alanı doldurduğunda büyük ölçekli artık daha yüksek kalır (4,6 ADU): kaydırma adımından büyük nesne modele sızar.
 
-Seyrek alanda kalibrasyon zayıftır: tam kapsanan bölgede yalnızca 5 katalog yıldızı vardır. Kör çözüm bu alanda yanlış bir çözüm üretmiş, doğrulama adımı onu reddetmiştir. Düz alan yalnızca maskesiz lamba açık ve kapalı karelerden kurulmuştur; SOFI'nin maskeli karelerle yapılan sıfır düzeyi düzeltmesi uygulanmamıştır. Gökyüzü çıkarılmış tek karede çapraz çizgili artık desenler kalıyor; nedeni incelenmedi.
+Seyrek alanda 2MASS yetmez: tam kapsanan bölgede yalnızca 5 katalog yıldızı vardır. Astrometri Gaia DR3 ile kuruldu (konumlar öz hareketle gözlem dönemine taşındı); kör çözüm de Gaia ile başarılı oldu, 2MASS ile yanlış bir çözüm üretip doğrulama adımında reddedildi. Fotometride uygun iki 2MASS yıldızının sıfır noktaları birbirinden 0,77 kadir ayrıdır (23,24 ve 24,01); alan kendi başına kalibre edilemez. Zengin alanın sıfır noktası poz süresi farkı için düzeltilip aktarılınca 24,00 verir ve yıldızlardan biriyle uyuşur; öteki yıldızın sapmasının nedeni incelenmedi. Aktarım, piksel değerlerinin tek DIT başına olduğunu varsayar (SOFI belgelerinden doğrulanmadı) ve hava kütlesi farkını (1,45 ve 1,70) düzeltmez. Düz alan yalnızca maskesiz lamba açık ve kapalı karelerden kurulmuştur; SOFI'nin maskeli karelerle yapılan sıfır düzeyi düzeltmesi uygulanmamıştır. Gökyüzü çıkarılmış tek karede çapraz çizgili artık desenler kalıyor; nedeni incelenmedi.
 
 ### Parlak yıldızlar: gökyüzü haritası
 
@@ -121,7 +123,7 @@ Bir gaz bulutunun kendi çekimiyle çökebilmesi için gereken en küçük kütl
 
 **Gözlem ve veri**
 
-- `arsiv`: TAP istemcisi, Gaia DR3 yıldız örneklemleri, 2MASS nokta kaynak koni sorgusu, Parlak Yıldız Kataloğu, SkyView görüntü kesitleri (DSS2, 2MASS, WISE), Pantheon+ verisi; her indirme SHA-256 özetiyle kayda geçer
+- `arsiv`: TAP istemcisi, Gaia DR3 yıldız örneklemleri ve koni sorgusu (öz hareketle dönem taşıması), 2MASS nokta kaynak koni sorgusu, Parlak Yıldız Kataloğu, SkyView görüntü kesitleri (DSS2, 2MASS, WISE), Pantheon+ verisi; her indirme SHA-256 özetiyle kayda geçer
 - `io`: FITS okuyucu ve yazıcı (FITS 4.0 standardından); birincil birim, görüntü uzantıları ve ESO HIERARCH başlık kartları
 - `gozlem`: hedef görünürlüğü ve hava kütlesi (presesyon ve atmosfer kırılmasıyla), CCD sinyal modeli, sentetik ham kare, sinyal-gürültü oranı
 - `indirgeme`: sigma kırpmalı kare birleştirme, bias/karanlık/düz alan düzeltmesi, kazanç ve okuma gürültüsü ölçümü, tek karede kozmik ışın temizliği (L.A.Cosmic), kaydırmalı kızılötesi karelerden gökyüzü çıkarma

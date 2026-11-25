@@ -28,14 +28,18 @@ import numpy as np
 from scipy import linalg
 
 from kozmos.arsiv import onbellek, pantheon
-from kozmos.kozmoloji.uzaklik import Kozmoloji, uzaklik_modulu
+from kozmos.kozmoloji.uzaklik import Kozmoloji, enine_esyuruyen_uzaklik_mpc, uzaklik_modulu
 
 KOK = Path(__file__).resolve().parents[2]
 BURASI = Path(__file__).resolve().parent
 H0_NOMINAL = 70.0
 
 
-def cozum(s: dict, kovaryans: np.ndarray, z_alt: float, z_ust: float = np.inf) -> dict[str, float]:
+def cozum(
+    s: dict, kovaryans: np.ndarray, z_alt: float, z_ust: float = np.inf, zhel_ile: bool = False
+) -> dict[str, float]:
+    """Kapalı biçimli çözüm. ``zhel_ile``: veri sürümündeki CosmoSIS olabilirliğinin uzaklık tanımı,
+    d_L = (1 + z_HEL) D_M(z_HD); yanlışsa d_L = (1 + z_HD) D_M(z_HD)."""
     z = s["zHD"]
     kal = s["IS_CALIBRATOR"] == 1
     secim = kal | ((z > z_alt) & (z < z_ust))
@@ -46,7 +50,12 @@ def cozum(s: dict, kovaryans: np.ndarray, z_alt: float, z_ust: float = np.inf) -
     ters_kov = np.linalg.inv(tasarim.T @ linalg.cho_solve(carpan, tasarim))
 
     def uyum(omega_m: float) -> tuple[float, float]:
-        mu = np.where(kal, s["CEPH_DIST"][secim], uzaklik_modulu(z, Kozmoloji.duz(H0_NOMINAL, omega_m)))
+        kozmoloji = Kozmoloji.duz(H0_NOMINAL, omega_m)
+        if zhel_ile:
+            model = 5.0 * np.log10((1.0 + s["zHEL"][secim]) * enine_esyuruyen_uzaklik_mpc(z, kozmoloji)) + 25.0
+        else:
+            model = uzaklik_modulu(z, kozmoloji)
+        mu = np.where(kal, s["CEPH_DIST"][secim], model)
         p = ters_kov @ (tasarim.T @ linalg.cho_solve(carpan, m - mu))
         artik = m - mu - tasarim @ p
         return float(p[1]), float(artik @ linalg.cho_solve(carpan, artik))
@@ -126,6 +135,9 @@ def main() -> None:
         "zincir": json.loads((BURASI / "sonuc.json").read_text(encoding="utf-8"))["analiz_2_sn_ve_sefeid"]["h0"],
         "secenekler": {
             "stat+sys, z > 0.01 (zincirle aynı seçim)": cozum(s, ham.kovaryans, 0.01),
+            "stat+sys, z > 0.01, yayımlanan olabilirliğin uzaklık tanımı (zHEL)": cozum(
+                s, ham.kovaryans, 0.01, zhel_ile=True
+            ),
             "stat+sys, z > 0.0233": cozum(s, ham.kovaryans, 0.0233),
             "stat+sys, 0.0233 < z < 0.15": cozum(s, ham.kovaryans, 0.0233, 0.15),
             "yalnız istatistik, z > 0.01": cozum(s, yalniz_istatistik, 0.01),
@@ -137,7 +149,7 @@ def main() -> None:
     )
     for ad, c in sonuc["secenekler"].items():
         print(
-            f"{ad:42s} N={c['sn_sayisi']:5d} H0={c['h0']:.2f} ± {c['sigma_h0']:.3f} "
+            f"{ad:68s} N={c['sn_sayisi']:5d} H0={c['h0']:.2f} ± {c['sigma_h0']:.3f} "
             f"(Ωm sabit: {c['sigma_h0_omega_m_sabit']:.3f})  Ωm={c['omega_m']:.3f}"
         )
     print("zincir:", sonuc["zincir"]["ortalama"], sonuc["zincir"]["standart_sapma"])

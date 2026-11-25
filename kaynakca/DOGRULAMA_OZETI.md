@@ -1,6 +1,6 @@
 # Doğrulama özeti
 
-Üretim: `dogrula.py`, 2026-11-25 16:28 UTC. Ayrıntı: `dogrulama_kaydi.json`.
+Üretim: `dogrula.py`, 2026-11-25 16:46 UTC. Ayrıntı: `dogrulama_kaydi.json`.
 
 ## Künyeler
 

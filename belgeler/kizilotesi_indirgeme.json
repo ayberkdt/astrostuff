@@ -26,7 +26,8 @@
     "kare_sayisi": 16,
     "dit_s": 6.0,
     "ndit": 15,
-    "dizi_suresi_dakika": 28.4438304156065
+    "dizi_suresi_dakika": 28.4438304156065,
+    "hava_kutlesi": 1.701
    },
    "gokyuzu_duzeyi_adu": [
     4732.2666015625,
@@ -98,12 +99,30 @@
      "basarisiz": "çözüm doğrulanamadı: 40 parlak kaynak yalnızca 1 ayrı katalog yıldızıyla eşleşti (en az 8 gerekir)",
      "konideki_katalog_yildizi": 12,
      "parlak_listelerin_ortak_yildizi": 4
+    },
+    "gaia": {
+     "donem_yil": 2012.2020591167693,
+     "konideki_gaia_kaynagi": 70,
+     "kaydirma_oyu": 10,
+     "cozume_giren_yildiz": 10,
+     "artik_rms_yaysaniye": 0.17294844008272806,
+     "2mass_cozumunden_en_buyuk_fark_yaysaniye": 1.2643163439150127,
+     "kor_cozum": {
+      "ucgen_eslemesinde_atanan_cift": 9,
+      "cozume_giren_yildiz": 8,
+      "artik_rms_yaysaniye": 0.15740640978849066,
+      "basliktan_baslayan_gaia_cozumunden_en_buyuk_fark_yaysaniye": 0.81168080340337
+     }
     }
    },
    "fotometri": {
     "yildiz_sayisi": 2,
     "sifir_noktasi_kadir": 23.626460099701866,
     "sacilim_kadir": null,
+    "tek_tek_sifir_noktalari": [
+     23.241,
+     24.012
+    ],
     "ortanca_katalog_belirsizligi_kadir": 0.08149999999999999
    }
   },
@@ -114,7 +133,8 @@
     "kare_sayisi": 32,
     "dit_s": 7.0,
     "ndit": 12,
-    "dizi_suresi_dakika": 53.42375519871712
+    "dizi_suresi_dakika": 53.42375519871712,
+    "hava_kutlesi": 1.453
    },
    "gokyuzu_duzeyi_adu": [
     4831.66650390625,
@@ -186,14 +206,42 @@
      "ucgen_eslemesinde_atanan_cift": 19,
      "cozume_giren_yildiz": 33,
      "basliktan_baslayan_cozumden_en_buyuk_fark_yaysaniye": 2.013553012768027e-05
+    },
+    "gaia": {
+     "donem_yil": 2012.1995308890075,
+     "konideki_gaia_kaynagi": 777,
+     "kaydirma_oyu": 143,
+     "cozume_giren_yildiz": 123,
+     "artik_rms_yaysaniye": 0.2945038675906642,
+     "2mass_cozumunden_en_buyuk_fark_yaysaniye": 0.32170349973954704,
+     "kor_cozum": {
+      "ucgen_eslemesinde_atanan_cift": 21,
+      "cozume_giren_yildiz": 122,
+      "artik_rms_yaysaniye": 0.29565227301459773,
+      "basliktan_baslayan_gaia_cozumunden_en_buyuk_fark_yaysaniye": 0.004215200938870764
+     }
     }
    },
    "fotometri": {
     "yildiz_sayisi": 14,
     "sifir_noktasi_kadir": 24.16876115025847,
     "sacilim_kadir": 0.09379776644259077,
+    "tek_tek_sifir_noktalari": null,
     "ortanca_katalog_belirsizligi_kadir": 0.1065
    }
   }
+ },
+ "sifir_noktasi_aktarimi": {
+  "zengin_alan_sifir_noktasi": 24.16876115025847,
+  "dit_duzeltmesi_kadir": -0.16736697407653306,
+  "seyrek_alana_aktarilan": 24.001394176181936,
+  "seyrek_alandaki_yildizlarin_sifir_noktalari": [
+   23.241,
+   24.012
+  ],
+  "hava_kutleleri": [
+   1.453,
+   1.701
+  ]
  }
 }

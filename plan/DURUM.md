@@ -2,11 +2,11 @@
 
 Bu dosya `python kaynakca/kutuk_raporu.py` ile kaynak kütüğünden üretilir; elle düzenlenmez.
 
-- Kaynağa bağlı açık fonksiyon: 229
-- Bütün kayıtları kaynak metninden okunmuş fonksiyon: 229
-- Kaynak kaydı: 268 (okundu: 268, bekliyor: 0)
+- Kaynağa bağlı açık fonksiyon: 230
+- Bütün kayıtları kaynak metninden okunmuş fonksiyon: 230
+- Kaynak kaydı: 270 (okundu: 270, bekliyor: 0)
 - Kaynaklı sabit: 35 (teyit bekleyen: 0)
-- Test fonksiyonu: 302 (parametreli ve özellik testleri tek sayılır)
+- Test fonksiyonu: 303 (parametreli ve özellik testleri tek sayılır)
 - Kaynak kuralından muaf altyapı fonksiyonu: 4
 
 `okundu`: denklem kod yazılırken kaynağın metninden okundu. `bekliyor`: denklem hatırlanan biçimiyle
@@ -16,6 +16,7 @@ yazıldı, testlerle sınandı, ama kaynağın metni henüz açılmadı.
 
 ### `kozmos.arsiv.gaia`
 
+- `koni_sorgusu`: [ADQL2023] Bölüm 4.2.11 (CIRCLE), 4.2.12 (CONTAINS), 4.2.18 (POINT) (okundu); [IRSA2026] TAP_SCHEMA.columns, table_name = 'gaia_dr3_source' (okundu)
 - `mutlak_kadir`: [Babusiaux2018] Bölüm 2: M_G = G + 5 + 5 log10(ϖ/1000), ϖ miliyay saniyesi (okundu)
 - `yakin_yildizlar`: [IRSA2026] TAP_SCHEMA.columns, table_name = 'gaia_dr3_source' (okundu); [Babusiaux2018] Ek B: arşiv sorgusu ve süzgeçler; Bölüm 2 (okundu)
 
@@ -403,7 +404,7 @@ yazıldı, testlerle sınandı, ama kaynağın metni henüz açılmadı.
 
 ## Kaynak başına fonksiyon sayısı
 
-- [ADQL2023]: 1
+- [ADQL2023]: 2
 - [Abramowicz2013]: 11
 - [Armitage2011]: 3
 - [Astropy2022]: 8
@@ -428,7 +429,7 @@ yazıldı, testlerle sınandı, ama kaynağın metni henüz açılmadı.
 - [HoggBovyLang2010]: 3
 - [Howell1989]: 1
 - [IRAF2026]: 1
-- [IRSA2026]: 2
+- [IRSA2026]: 3
 - [Inayoshi2020]: 5
 - [Kennicutt1998]: 2
 - [Kennicutt2012]: 1

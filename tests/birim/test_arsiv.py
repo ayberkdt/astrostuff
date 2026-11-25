@@ -86,3 +86,23 @@ def test_2mass_koni_sorgusu(tmp_path):
     ayriklik = acisal_ayriklik(np.radians(85.42), np.radians(-1.90), np.radians(k["ra"]), np.radians(k["dec"]))
     assert np.degrees(ayriklik).max() <= 0.05 + 1e-9
     assert 4.0 < np.nanmin(k["k_m"]) < np.nanmax(k["k_m"]) < 17.5
+
+
+@pytest.mark.ag
+def test_gaia_koni_sorgusu_ve_donem_tasimasi(tmp_path):
+    from kozmos.temel.aci import acisal_ayriklik
+
+    ham = gaia.koni_sorgusu(194.2425, 22.3912, 0.05, tmp_path)
+    eski = gaia.koni_sorgusu(194.2425, 22.3912, 0.05, tmp_path, donem_yil=2012.2)
+    assert len(ham["ra"]) > 20 and np.all(ham["ref_epoch"] == 2016.0)
+    ayriklik = acisal_ayriklik(np.radians(194.2425), np.radians(22.3912), np.radians(ham["ra"]), np.radians(ham["dec"]))
+    assert np.degrees(ayriklik).max() <= 0.05 + 1e-9
+    # 3,8 yıllık taşıma: kayma = toplam öz hareket × 3,8 yıl (mas → yay saniyesi).
+    var = np.isfinite(ham["pmra"])
+    kayma = (
+        np.degrees(acisal_ayriklik(*np.radians([ham["ra"][var], ham["dec"][var], eski["ra"][var], eski["dec"][var]])))
+        * 3600.0
+    )
+    beklenen = np.hypot(ham["pmra"][var], ham["pmdec"][var]) * 3.8 / 1000.0
+    assert np.allclose(kayma, beklenen, rtol=1e-4, atol=1e-6)
+    assert np.array_equal(ham["ra"][~var], eski["ra"][~var])

@@ -38,7 +38,7 @@ import _cizim as dw
 import numpy as np
 from scipy import ndimage
 
-from kozmos.arsiv import ikimass
+from kozmos.arsiv import gaia, ikimass
 from kozmos.astrometri import cozum, eslestirme, ucgen, wcs
 from kozmos.fotometri import kaynak as fk
 from kozmos.gorsel import germe
@@ -257,6 +257,62 @@ def indirge(ad: str, desen: str, duz: np.ndarray) -> tuple[dict, dict]:
             "parlak_listelerin_ortak_yildizi": int(ortak.eslesti.sum()),
         }
 
+    # Gaia DR3 ile astrometri: 2MASS'ten çok daha derin olduğu için seyrek alanda da yeterli yıldız verir.
+    # Konumlar öz hareketle gözlem dönemine taşınır. Kör çözümde parlaklık sırası G kadirinden alınır.
+    donem = 2000.0 + (float(b0["MJD-OBS"]) - 51544.5) / 365.25
+    g_kat = gaia.koni_sorgusu(
+        float(b0["CRVAL1"]), float(b0["CRVAL2"]), 0.09, KOK / "veri" / "ham" / "gaia", donem_yil=donem
+    )
+    g_kaymasiz, g_oy = cozum.kaydirma_bul(
+        baslik_wcs, kx, ky, g_kat["ra"], g_kat["dec"], en_cok_piksel=320.0, kutu_piksel=4.0
+    )
+    g_cozum = cozum.wcs_iyilestir(
+        g_kaymasiz, kx, ky, g_kat["ra"], g_kat["dec"], yaricap_yaysaniye=4.0, son_yaricap_yaysaniye=1.0
+    )
+    kose_x, kose_y = np.meshgrid(np.linspace(0, yigin_g.shape[1] - 1, 4), np.linspace(0, yigin_g.shape[0] - 1, 4))
+
+    def cozum_farki(w1: wcs.Wcs, w2: wcs.Wcs) -> float:
+        a1, d1 = wcs.piksel_den_gok(w1, kose_x, kose_y)
+        a2, d2 = wcs.piksel_den_gok(w2, kose_x, kose_y)
+        return float(np.max(np.hypot((a1 - a2) * np.cos(np.radians(d2)), d1 - d2)) * 3600.0)
+
+    gaia_sonuc = {
+        "donem_yil": donem,
+        "konideki_gaia_kaynagi": int(len(g_kat["ra"])),
+        "kaydirma_oyu": g_oy,
+        "cozume_giren_yildiz": g_cozum.yildiz_sayisi,
+        "artik_rms_yaysaniye": g_cozum.artik_rms_yaysaniye,
+        "2mass_cozumunden_en_buyuk_fark_yaysaniye": cozum_farki(g_cozum.wcs, cozulen.wcs),
+    }
+    try:
+        g_yakin = (
+            np.hypot(
+                (g_kat["ra"] - float(b0["CRVAL1"])) * np.cos(np.radians(float(b0["CRVAL2"]))),
+                g_kat["dec"] - float(b0["CRVAL2"]),
+            )
+            < 0.5 * min(yigin_g.shape) * float(b0["ESO INS PIXSCALE"]) / 3600.0
+        )
+        g_kor, g_cift = ucgen.kor_cozum(
+            kx,
+            ky,
+            k_aki,
+            g_kat["ra"][g_yakin],
+            g_kat["dec"][g_yakin],
+            g_kat["phot_g_mean_mag"][g_yakin],
+            en_parlak=40,
+            tolerans=0.015,
+            son_yaricap_yaysaniye=1.0,
+            en_az_dogrulama_kesri=0.2,  # seyrek alanda parlak listelerin ortak yıldızı azdır; mutlak alt sınır (8) korunur
+        )
+        gaia_sonuc["kor_cozum"] = {
+            "ucgen_eslemesinde_atanan_cift": g_cift,
+            "cozume_giren_yildiz": g_kor.yildiz_sayisi,
+            "artik_rms_yaysaniye": g_kor.artik_rms_yaysaniye,
+            "basliktan_baslayan_gaia_cozumunden_en_buyuk_fark_yaysaniye": cozum_farki(g_kor.wcs, g_cozum.wcs),
+        }
+    except ValueError as hata:
+        gaia_sonuc["kor_cozum"] = {"basarisiz": str(hata)}
+
     # Sıfır noktası: 2MASS K belirsizliği 0,15 kadirden küçük, doymamış, eşleşen yıldızlar.
     e = eslestirme.capraz_esle(ra, dec, katalog["ra"], katalog["dec"], 1.5)
     aki, _ = fk.aciklik_fotometrisi(yigin_g, kx, ky, ACIKLIK, halka=HALKA)
@@ -305,6 +361,7 @@ def indirge(ad: str, desen: str, duz: np.ndarray) -> tuple[dict, dict]:
             "dit_s": float(b0["ESO DET DIT"]),
             "ndit": int(b0["ESO DET NDIT"]),
             "dizi_suresi_dakika": float(zaman[-1]),
+            "hava_kutlesi": float(b0["ESO TEL AIRM START"]),
         },
         "gokyuzu_duzeyi_adu": [float(duzey.min()), float(duzey.max())],
         "bozuk_piksel_kesri": float(bozuk.mean()),
@@ -344,11 +401,13 @@ def indirge(ad: str, desen: str, duz: np.ndarray) -> tuple[dict, dict]:
             "olcek_yaysaniye_piksel": float(np.sqrt(abs(np.linalg.det(cozulen.wcs.cd))) * 3600.0),
             "baslik_olcegi_yaysaniye_piksel": float(b0["ESO INS PIXSCALE"]),
             "kor_cozum": kor_sonuc,
+            "gaia": gaia_sonuc,
         },
         "fotometri": {
             "yildiz_sayisi": int(k_iyi.sum()),
             "sifir_noktasi_kadir": float(np.median(sifir)) if sifir.size else None,
             "sacilim_kadir": float(saglam.mad_olcek(sifir)) if sifir.size > 2 else None,
+            "tek_tek_sifir_noktalari": np.sort(sifir).round(3).tolist() if sifir.size <= 6 else None,
             "ortanca_katalog_belirsizligi_kadir": float(np.median(katalog["k_cmsig"][e.indis][k_iyi]))
             if sifir.size
             else None,
@@ -373,6 +432,20 @@ def main() -> None:
     goruntuler = {}
     for ad, desen in DIZILER.items():
         sonuc["diziler"][ad], goruntuler[ad] = indirge(ad, desen, duz)
+    # Sıfır noktası aktarımı: seyrek alanda yeterli 2MASS yıldızı yoktur. Zengin alanın sıfır noktası, poz süresi
+    # farkı için düzeltilip seyrek alana taşınır ve oradaki az sayıdaki yıldızla karşılaştırılır. Varsayım: piksel
+    # değerleri tek DIT başınadır (NDIT ortalaması); SOFI belgelerinden doğrulanmadı. Hava kütlesi düzeltmesi yoktur.
+    zengin, seyrek = sonuc["diziler"]["SN2005at"], sonuc["diziler"]["SN2011bm"]
+    aktarilan = zengin["fotometri"]["sifir_noktasi_kadir"] - 2.5 * np.log10(
+        zengin["veri"]["dit_s"] / seyrek["veri"]["dit_s"]
+    )
+    sonuc["sifir_noktasi_aktarimi"] = {
+        "zengin_alan_sifir_noktasi": zengin["fotometri"]["sifir_noktasi_kadir"],
+        "dit_duzeltmesi_kadir": float(-2.5 * np.log10(zengin["veri"]["dit_s"] / seyrek["veri"]["dit_s"])),
+        "seyrek_alana_aktarilan": float(aktarilan),
+        "seyrek_alandaki_yildizlarin_sifir_noktalari": seyrek["fotometri"]["tek_tek_sifir_noktalari"],
+        "hava_kutleleri": [zengin["veri"]["hava_kutlesi"], seyrek["veri"]["hava_kutlesi"]],
+    }
     cikti = KOK / "belgeler"
     (cikti / "kizilotesi_indirgeme.json").write_text(json.dumps(sonuc, ensure_ascii=False, indent=1), encoding="utf-8")
     print(json.dumps(sonuc, ensure_ascii=False, indent=1))

@@ -23,6 +23,14 @@
    "sigma_h0": 1.016864773892327,
    "omega_m": 0.33151003821488506
   },
+  "stat+sys, z > 0.01, yayımlanan olabilirliğin uzaklık tanımı (zHEL)": {
+   "sn_sayisi": 1657,
+   "kalibrator": 77,
+   "h0": 73.5284841630597,
+   "sigma_h0_omega_m_sabit": 1.007254064872343,
+   "sigma_h0": 1.0169503468386625,
+   "omega_m": 0.3324823463569688
+  },
   "stat+sys, z > 0.0233": {
    "sn_sayisi": 1442,
    "kalibrator": 77,
