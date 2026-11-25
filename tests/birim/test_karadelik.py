@@ -229,9 +229,9 @@ def test_buharlasma_suresi_bagimsiz_tumlev():
         lambda u: np.exp(u) * C**2 / isinim_gucu(np.exp(u)), np.log(1e-3 * m0), np.log(m0), epsabs=0, epsrel=1e-12
     )
     # Alt sınır 1e-3 m0: kalan katkı (1e-3)³ oranında, 1e-9 bağıl hata.
-    assert kd.hawking_buharlasma_suresi_s(m0) == pytest.approx(t, rel=2e-9)
+    assert kd.hawking_buharlasma_suresi_kara_cisim_s(m0) == pytest.approx(t, rel=2e-9)
     # Güneş kütlesi için ≈ 2e67 yıl.
-    assert 1e67 < kd.hawking_buharlasma_suresi_s(MSUN) / YIL < 3e67
+    assert 1e67 < kd.hawking_buharlasma_suresi_kara_cisim_s(MSUN) / YIL < 3e67
 
 
 # ----------------------------------------------------------------------------- ikili
@@ -329,7 +329,8 @@ def test_salpeter_zamani_katsayilar_ve_ustel_buyume():
 
 def test_bondi_tablo_3():
     # [Inayoshi2020] Tablo 3, T = 10³ K, n_H = 1e4 cm^-3, M = 10³ M☉. Kaynak c_s ve ρ tanımını vermez;
-    # c_s² = k T / (μ m_p), ρ = μ m_p n_H, μ = 1,22 seçimi tabloyla uyuşur (aşağıdaki toleranslar).
+    # c_s² = k T / (μ m_p), ρ = μ m_p n_H, μ = 1,22 bir VARSAYIMDIR ve tabloya göre seçilmiştir: R_B ∝ μ,
+    # Ṁ_B ∝ μ^{5/2} olduğundan bu test önçarpanı sınar (yanlış önçarpan %5'te yakalanır) ama μ'yü sınamaz.
     mu = 1.22
     cs = np.sqrt(BOLTZMANN.deger * 1e3 / (mu * PROTON_KUTLESI.deger))
     rho = mu * PROTON_KUTLESI.deger * 1e10  # m^-3
@@ -443,3 +444,28 @@ def test_skaler_ve_dizi():
     assert kd.isco_yaricapi_kerr_rg(np.zeros((2, 3)) + 0.5).shape == (2, 3)
     assert kd.hawking_sicakligi_k(np.array([MSUN, 2 * MSUN])).shape == (2,)
     assert np.ndim(yg.eddington_isinim_gucu_w(MSUN)) == 0
+
+
+def test_hawking_greybody_page_eq15():
+    from scipy.integrate import quad
+
+    # [Page2005] eq:15: yalnız foton için katsayı 3,3638e-5; kara cisim kestirimi 1/(15360π) = 2,0723e-5.
+    m0 = 1e12
+    kara_cisim_hizi = m0 / (3.0 * kd.hawking_buharlasma_suresi_kara_cisim_s(m0))  # t = M/(3 |dM/dt|)
+    yalniz_foton = kd.hawking_kutle_kaybi_hizi_kg_s(m0, spin_bir_tur=1.0, spin_iki_tur=0.0)
+    assert float(yalniz_foton) / float(kara_cisim_hizi) == pytest.approx(3.3638e-5 * 15360 * np.pi, rel=1e-12)
+    assert float(yalniz_foton) / float(kara_cisim_hizi) == pytest.approx(1.623, abs=2e-3)
+    # M⁻² ölçeklemesi ve tür katsayılarının toplanırlığı.
+    assert float(kd.hawking_kutle_kaybi_hizi_kg_s(2 * m0)) == pytest.approx(
+        float(kd.hawking_kutle_kaybi_hizi_kg_s(m0)) / 4
+    )
+    toplam = kd.hawking_kutle_kaybi_hizi_kg_s(m0, spin_yarim_tur=3.0)
+    assert float(toplam) / float(kd.hawking_kutle_kaybi_hizi_kg_s(m0)) == pytest.approx(
+        (3 * 8.1830 + 3.3638 + 0.3836) / (3.3638 + 0.3836), rel=1e-12
+    )
+    # Süre, hızın sayısal tümlevidir: t = ∫ dM / |dM/dt|.
+    t_sayisal, _ = quad(lambda m: 1.0 / float(kd.hawking_kutle_kaybi_hizi_kg_s(m)), 0.0, m0)
+    assert float(kd.hawking_buharlasma_suresi_s(m0)) == pytest.approx(t_sayisal, rel=1e-8)
+    # Güneş kütlesi, foton + graviton: yaklaşık 1,16e67 yıl; kara cisim kestiriminden kısa.
+    assert float(kd.hawking_buharlasma_suresi_s(MSUN)) / YIL == pytest.approx(1.16e67, rel=0.02)
+    assert kd.hawking_buharlasma_suresi_s(MSUN) < kd.hawking_buharlasma_suresi_kara_cisim_s(MSUN)

@@ -363,8 +363,8 @@ def test_ff_ve_yasam_dongusu_yasalari_tutarli():
     a = ys.serbest_dusme_sfr_yuzey_yogunlugu(sigma, tff, eps_ff, bulut_gazi_orani=t_gmc / t_lc)
     b = ys.yasam_dongusu_sfr_yuzey_yogunlugu(sigma, eps_ff * t_gmc / tff, t_lc)
     assert a == pytest.approx(b, rel=1e-13)
-    # [McKee2007]: ε_GMC ≈ 0,05 ve t_GMC/t_ff ≈ 5 ⇒ ε_ff ≈ 0,01
-    assert 0.05 / 5 == pytest.approx(0.01, rel=1e-12)
+    # [McKee2007]: ε_GMC ≈ 0,05 ve t_GMC/t_ff ≈ 5 ⇒ ε_ff ≈ 0,01 (fonksiyonla: t_ff / t_tüketme = 1/100)
+    assert float(bl.serbest_dusme_verimliligi(1.0, 100.0)) == pytest.approx(0.01, rel=1e-12)
 
 
 def test_sfr_kalibrasyonu_tablo():
@@ -405,3 +405,17 @@ def test_gecersiz_girdiler_yasalar():
         ys.serbest_dusme_sfr_yuzey_yogunlugu(10.0, 1e7, bulut_gazi_orani=1.5)
     with pytest.raises(ValueError):
         ys.yasam_dongusu_sfr_yuzey_yogunlugu(10.0, 1.5, 1e8)
+
+
+def test_jeans_kutlesi_kup_tanimi_ve_molekul_agirliklari():
+    # [Krumholz2015] Bölüm 6: M_J = ρ λ_J³ / 8; küre tanımıyla oranı 4π/3 ([McKee2007]).
+    cs = bl.ses_hizi_m_s(10.0)
+    rho = bl.kutle_yogunlugu_kg_m3(1e10, bl.H2_BASINA_MOLEKUL_AGIRLIGI)  # n_H2 = 1e4 cm^-3
+    kup = float(bl.jeans_kutlesi_kg(cs, rho, tanim="kup"))
+    assert kup == pytest.approx(rho * float(bl.jeans_boyu_m(cs, rho)) ** 3 / 8.0, rel=1e-12)
+    assert float(bl.jeans_kutlesi_kg(cs, rho, tanim="kure")) / kup == pytest.approx(4 * np.pi / 3, rel=1e-12)
+    # Aynı helyum bolluğu: 2,33 · 1,2 = 2,8 (yuvarlama içinde) ve 2,8 / 2 = 1,4.
+    assert bl.H2_BASINA_MOLEKUL_AGIRLIGI == pytest.approx(bl.ORTALAMA_MOLEKUL_AGIRLIGI * 1.2, rel=2e-3)
+    assert bl.H_BASINA_MOLEKUL_AGIRLIGI == pytest.approx(bl.H2_BASINA_MOLEKUL_AGIRLIGI / 2)
+    # n_H2 varsayılan (parçacık başına) μ ile verilirse yoğunluk %17 düşük çıkar.
+    assert float(bl.kutle_yogunlugu_kg_m3(1e10)) / rho == pytest.approx(2.33 / 2.8, rel=1e-12)

@@ -97,10 +97,10 @@ def ham_kare_uret(
 
 
 @kaynak(
-    "Howell2006",
-    yer="Bölüm 5: nokta dağılım fonksiyonu (dairesel Gauss yaklaşımı)",
-    teyit="bekliyor",
-    not_="piksel alanı üzerinde tam integral: hata fonksiyonu farkları; FWHM = 2 sqrt(2 ln 2) σ",
+    "Photutils2026",
+    yer="API: photutils.psf.GaussianPRF, piksel üzerinde integral denklemi",
+    teyit="okundu",
+    not_="f(x, y) = F/4 [erf((x−x0+0,5)/(√2 σx)) − erf((x−x0−0,5)/(√2 σx))] × (y için aynısı); dairesel durumda σx = σy",
 )
 def yildiz_alani(bicim: tuple[int, int], x: ArrayLike, y: ArrayLike, aki_e_s: ArrayLike, fwhm_piksel: float) -> Dizi:
     """Dairesel Gauss PSF'li nokta kaynaklardan oluşan sahne üretir.
@@ -123,7 +123,7 @@ def yildiz_alani(bicim: tuple[int, int], x: ArrayLike, y: ArrayLike, aki_e_s: Ar
 
     Kaynaklar
     ---------
-    [Howell2006] Bölüm 5.
+    [Photutils2026] GaussianPRF.
 
     Geçerlilik
     ----------

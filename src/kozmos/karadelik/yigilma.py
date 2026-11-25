@@ -7,7 +7,7 @@ Inayoshi, Visbal ve Haiman [Inayoshi2020] (arXiv:1911.05791), Armitage [Armitage
 
 [Inayoshi2020] elektron saçılma opaklığı κ_es'in değerini vermez. Burada tam iyonize
 saf hidrojen için κ_es = σ_T / m_p alınmıştır (0,40 cm² g⁻¹); bu seçim kaynağa değil
-bu modüle aittir ve kaynağın sayısal değerleriyle (0,45 Gyr, 2,3e-5 M☉/yıl) uyuşur.
+bu modüle aittir ve kaynağın sayısal değerleriyle karşılaştırılmıştır: 0,4505 Gyr (kaynak 0,45) ve 2,22e-5 M☉/yıl (kaynak 2,3e-5; %3,5 düşük).
 """
 
 from __future__ import annotations
@@ -133,7 +133,7 @@ def eddington_kutle_akisi_kg_s(kutle_kg: ArrayLike, verimlilik: ArrayLike = 0.1)
     Döndürür
     --------
     float ya da ndarray
-        Ṁ_Edd [kg s^-1]. 10³ M☉ için ≈ 2,3e-5 M☉/yıl (η = 0,1).
+        Ṁ_Edd [kg s^-1]. 10³ M☉ için 2,22e-5 M☉/yıl (η = 0,1); [Inayoshi2020] Tablo 3 değeri 2,3e-5.
 
     Kaynaklar
     ---------
@@ -141,7 +141,7 @@ def eddington_kutle_akisi_kg_s(kutle_kg: ArrayLike, verimlilik: ArrayLike = 0.1)
 
     Doğrulama
     ---------
-    tests/birim/test_karadelik.py: Tablo 3'teki 2,3e-5 M☉/yıl değeri; 1/η ölçeklemesi.
+    tests/birim/test_karadelik.py: Tablo 3'teki 2,3e-5 M☉/yıl değeriyle %5 içinde uyum; 1/η ölçeklemesi.
     """
     return eddington_isinim_gucu_w(kutle_kg) / (_verimlilik(verimlilik) * _C**2)
 

@@ -7,9 +7,8 @@ ayrışırsa ortanca; harita için hücre ızgarası, ortanca süzgeci ve biküb
 spline. Yöntemin makalesi [BertinArnouts1996] bu çalışmada okunmamıştır.
 
 Kaynak saptama (eşik üstü bağlı piksel grupları) ve açıklık fotometrisi
-(alt piksel örneklemeli daire) yaygın uygulamayı izler; bu iki fonksiyonun
-kaynak metni açılmamıştır ve kayıtları "bekliyor" durumundadır. İkisi de
-gerçeği bilinen sentetik görüntülerle sınanır.
+(alt piksel örneklemeli daire) photutils belgelerindeki tanımları izler
+[Photutils2026]. İkisi de gerçeği bilinen sentetik görüntülerle sınanır.
 """
 
 from __future__ import annotations
@@ -143,11 +142,12 @@ class KaynakListesi:
 
 
 @kaynak(
-    "BertinArnouts1996",
-    yer="saptama: eşik üstü bağlı pikseller",
-    teyit="bekliyor",
-    not_="arka plan çıkarılmış görüntüde k·rms üstündeki 8-komşulukla bağlı piksel grupları; en az piksel "
-    "koşulu. Makale ve belgenin saptama bölümü okunmadı; ayrıştırma (deblending) ve süzgeçleme yok",
+    "Photutils2026",
+    yer="Kullanım kılavuzu: Image Segmentation",
+    teyit="okundu",
+    not_="kaynak: her biri eşik üstünde olan en az belirli sayıda bağlı piksel; eşik arka plan gürültüsünün katı; "
+    "eşiklemeden önce süzgeçleme; varsayılan bağlantı 8 komşuluk. Ayrıştırma (deblending) uygulanmadı. "
+    "Yöntemin makalesi [BertinArnouts1996] okunmadı",
 )
 def kaynak_bul(
     goruntu: ArrayLike,
@@ -180,7 +180,7 @@ def kaynak_bul(
 
     Kaynaklar
     ---------
-    [BertinArnouts1996] saptama.
+    [Photutils2026] Image Segmentation.
 
     Geçerlilik
     ----------
@@ -213,11 +213,11 @@ def kaynak_bul(
 
 
 @kaynak(
-    "Howell2006",
-    yer="Bölüm 5: açıklık fotometrisi",
-    teyit="bekliyor",
-    not_="dairesel açıklık toplamı eksi halkadan kestirilen yerel gökyüzü; kenar pikselleri alt piksel "
-    "örneklemesiyle ağırlıklandırılır. Kaynak metni açılmadı",
+    "Photutils2026",
+    yer="Kullanım kılavuzu: Aperture Photometry, 'subpixel' yöntemi",
+    teyit="okundu",
+    not_="piksel N×N alt piksele bölünür; ağırlık, merkezi açıklığın içinde kalan alt piksellerin kesridir. "
+    "Halkadan ortanca ile yerel gökyüzü çıkarma bu projenin seçimidir",
 )
 def aciklik_fotometrisi(
     goruntu: ArrayLike,
@@ -248,7 +248,7 @@ def aciklik_fotometrisi(
 
     Kaynaklar
     ---------
-    [Howell2006] Bölüm 5.
+    [Photutils2026] Aperture Photometry.
 
     Geçerlilik
     ----------

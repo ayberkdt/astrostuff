@@ -33,8 +33,14 @@ Dizi = NDArray[np.float64]
 # μ değerlerinin belirsizliğinin çok altındadır.
 _M_H = PROTON_KUTLESI.deger
 
-# Ortalama molekül ağırlığı: H2 ve He (10 H başına 1 He) karışımı [Krumholz2015].
+# Ortalama molekül ağırlığı: H2 ve He (10 H başına 1 He) karışımı, PARÇACIK başına [Krumholz2015].
+# Yoğunluk fonksiyonlarının varsayılanı budur: n, bütün parçacıkların (H2 + He) sayı yoğunluğudur.
 ORTALAMA_MOLEKUL_AGIRLIGI = 2.33
+# n yalnızca H2 moleküllerinin sayı yoğunluğuysa (gözlemlerde yaygın olan n_H2) molekül başına kütle 2,8 m_H,
+# n hidrojen çekirdeklerinin yoğunluğuysa (n_H) çekirdek başına kütle 1,4 m_H olur. Aynı helyum bolluğundan
+# türetilir (2,33 · 1,2 = 2,8; 2,8 / 2 = 1,4); n_H için 1,4 değeri [McKee2007] eq:tff sayısal örneğinde geçer.
+H2_BASINA_MOLEKUL_AGIRLIGI = 2.8
+H_BASINA_MOLEKUL_AGIRLIGI = 1.4
 
 
 def _pozitif(**degerler: ArrayLike) -> list[Dizi]:
@@ -298,6 +304,10 @@ def jeans_boyu_m(ses_hizi_m_s: ArrayLike, yogunluk_kg_m3: ArrayLike) -> Dizi:
 
     Geçerlilik
     ----------
+    Varsayılan μ = 2,33 parçacık başınadır: ``sayi_yogunlugu_m3`` bütün parçacıkların (H2 + He)
+    yoğunluğu olmalıdır. Yalnızca H2 yoğunluğu (n_H2) veriliyorsa ``H2_BASINA_MOLEKUL_AGIRLIGI`` (2,8),
+    hidrojen çekirdeği yoğunluğu (n_H) veriliyorsa ``H_BASINA_MOLEKUL_AGIRLIGI`` (1,4) kullanılmalıdır;
+    n_H2 varsayılanla verilirse yoğunluk yaklaşık %17 düşük, serbest düşme süresi %9 uzun çıkar.
     Düzgün, sonsuz, eşısıl ortam ("Jeans hilesi"); yalnızca basınç desteği.
 
     Doğrulama
@@ -370,7 +380,7 @@ def jeans_kutlesi_kg(ses_hizi_m_s: ArrayLike, yogunluk_kg_m3: ArrayLike, tanim: 
     teyit="okundu",
     not_="Katsayı 1,182 (Krumholz2015 alıştırma çözümü 1,18 verir)",
 )
-@kaynak("Krumholz2015", yer="problems/probsol2.tex, Bonnor-Ebert küresi alıştırmasının (d) şıkkı", teyit="okundu")
+@kaynak("Krumholz2015", yer="problems/probsol2.tex, Bonnor-Ebert küresi alıştırmasının (h) şıkkı", teyit="okundu")
 def bonnor_ebert_kritik_kutle_kg(ses_hizi_m_s: ArrayLike, yuzey_basinci_pa: ArrayLike) -> Dizi:
     """Bonnor-Ebert kütlesini hesaplar: M_BE = 1,182 c_s⁴ / sqrt(G³ P_0).
 
@@ -411,14 +421,14 @@ def bonnor_ebert_kritik_kutle_kg(ses_hizi_m_s: ArrayLike, yuzey_basinci_pa: Arra
     yer="TeX etiketi MBE_def, sonraki paragraf: R_BE = 0,486 c_s / sqrt(G ρ_0)",
     teyit="okundu",
 )
-def bonnor_ebert_yaricapi_m(ses_hizi_m_s: ArrayLike, yuzey_yogunlugu_kg_m3: ArrayLike) -> Dizi:
+def bonnor_ebert_yaricapi_m(ses_hizi_m_s: ArrayLike, yuzeydeki_yogunluk_kg_m3: ArrayLike) -> Dizi:
     """Kritik Bonnor-Ebert küresinin yarıçapını hesaplar: R_BE = 0,486 c_s / sqrt(G ρ_0).
 
     Parametreler
     ------------
     ses_hizi_m_s : float ya da ndarray
         Eşısıl ses hızı [m/s], pozitif.
-    yuzey_yogunlugu_kg_m3 : float ya da ndarray
+    yuzeydeki_yogunluk_kg_m3 : float ya da ndarray
         Kürenin yüzeyindeki yoğunluk ρ_0 [kg/m³], pozitif.
 
     Döndürür
@@ -439,7 +449,7 @@ def bonnor_ebert_yaricapi_m(ses_hizi_m_s: ArrayLike, yuzey_yogunlugu_kg_m3: Arra
     tests/birim/test_yildizolusumu.py: ODE'den türetilen ξ ve yoğunluk
     karşıtlığıyla uyum; R_BE ≈ Jeans uzunluğunun 0,486/√π katı.
     """
-    cs, rho = _pozitif(ses_hizi=ses_hizi_m_s, yuzey_yogunlugu=yuzey_yogunlugu_kg_m3)
+    cs, rho = _pozitif(ses_hizi=ses_hizi_m_s, yuzeydeki_yogunluk=yuzeydeki_yogunluk_kg_m3)
     return 0.486 * cs / np.sqrt(CEKIM.deger * rho)
 
 
@@ -473,9 +483,9 @@ def _be_katsayilari() -> tuple[float, float, float]:
 
 @kaynak(
     "Krumholz2015",
-    yer="problems/probsol2.tex, Bonnor-Ebert küresi: ODE ve (d) şıkkı (m_max = 1,18, ρ_c/ρ_s = 14,0)",
+    yer="problems/probset2.tex (e) şıkkı (kütle ifadesi); probsol2.tex (c)-(d) şıkları (ODE), (f) şıkkı (m_max = 1,18, ρ_c/ρ_s = 14,0)",
     teyit="okundu",
-    not_="ODE kaynaktan; m(ξ) = (4π)^{-1/2} ξ² ψ' e^{-ψ/2} ifadesi ve ξ_s kaynakta yoktur, kaynaktaki kütle integralinden türetildi",
+    not_="ODE ve m(ξ) = (4π)^{-1/2} ξ² ψ' e^{-ψ/2} ifadesi kaynaktan; yalnızca ξ_s ≈ 6,45 değeri kaynakta yoktur, sayısal çözümden gelir",
 )
 def bonnor_ebert_kritik_katsayilar() -> tuple[float, float, float]:
     """Eşısıl küre denkleminden Bonnor-Ebert kritik katsayılarını hesaplar.
@@ -667,7 +677,7 @@ def gecis_zamani_s(yaricap_m: ArrayLike, hiz_dagilimi_m_s: ArrayLike) -> Dizi:
     "Krumholz2015",
     yer="Bölüm 6, Magnetic Support and the Magnetic Critical Mass",
     teyit="okundu",
-    not_="Kaynak düzgün küre için sqrt(5/2)/(3π) = 0,17 türetir ve Tomisaka (1998) için 0,12 verir; McKee2007 aynı yazara 0,17 atfeder",
+    not_="Kaynak düzgün küre için sqrt(5/2)/(3π) = 0,17 türetir ve Tomisaka (1998) için 0,12 verir; McKee2007 ise 0,17 için başka bir makaleyi (Tomisaka, Ikeuchi ve Nakamura 1988) anar; iki özgün makale de okunmadı",
 )
 def manyetik_kritik_kutle_kg(manyetik_aki_wb: ArrayLike, c_phi: float = 0.17) -> Dizi:
     """Manyetik kritik kütleyi hesaplar: M_Φ = c_Φ Φ / G^{1/2} (Gauss birimlerinde).

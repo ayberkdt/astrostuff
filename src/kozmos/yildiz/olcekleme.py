@@ -341,7 +341,7 @@ def eddington_isinim_gucu_w(kutle_kg: ArrayLike, opaklik_m2_kg: ArrayLike) -> Di
     return 4.0 * np.pi * ISIK_HIZI.deger * CEKIM.deger * m / kappa
 
 
-@kaynak("Paxton2013", yer="denklem öncesi metin (mdotomega etiketi): Ω_crit² = (1 - L/L_Edd) G M / R³", teyit="okundu")
+@kaynak("Paxton2013", yer="mdotomega etiketli denklemi izleyen cümle: Ω_crit² = (1 - L/L_Edd) G M / R³", teyit="okundu")
 def kritik_acisal_hiz_rad_s(
     kutle_kg: ArrayLike, yaricap_m: ArrayLike, isinim_gucu_w: ArrayLike, opaklik_m2_kg: ArrayLike
 ) -> Dizi:

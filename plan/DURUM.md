@@ -2,11 +2,11 @@
 
 Bu dosya `python kaynakca/kutuk_raporu.py` ile kaynak kütüğünden üretilir; elle düzenlenmez.
 
-- Kaynağa bağlı açık fonksiyon: 205
-- Bütün kayıtları kaynak metninden okunmuş fonksiyon: 190
-- Kaynak kaydı: 244 (okundu: 228, bekliyor: 16)
+- Kaynağa bağlı açık fonksiyon: 209
+- Bütün kayıtları kaynak metninden okunmuş fonksiyon: 202
+- Kaynak kaydı: 247 (okundu: 239, bekliyor: 8)
 - Kaynaklı sabit: 35 (teyit bekleyen: 0)
-- Test fonksiyonu: 263 (parametreli ve özellik testleri tek sayılır)
+- Test fonksiyonu: 265 (parametreli ve özellik testleri tek sayılır)
 - Kaynak kuralından muaf altyapı fonksiyonu: 4
 
 `okundu`: denklem kod yazılırken kaynağın metninden okundu. `bekliyor`: denklem hatırlanan biçimiyle
@@ -17,7 +17,12 @@ yazıldı, testlerle sınandı, ama kaynağın metni henüz açılmadı.
 ### `kozmos.arsiv.gaia`
 
 - `mutlak_kadir`: [Babusiaux2018] Bölüm 2: M_G = G + 5 + 5 log10(ϖ/1000), ϖ miliyay saniyesi (okundu)
-- `yakin_yildizlar`: [Vallenari2023] Gaia DR3 gaia_source tablosu (bekliyor); [Babusiaux2018] Ek B: arşiv sorgusu ve süzgeçler; Bölüm 2 (okundu)
+- `yakin_yildizlar`: [IRSA2026] TAP_SCHEMA.columns, table_name = 'gaia_dr3_source' (okundu); [Babusiaux2018] Ek B: arşiv sorgusu ve süzgeçler; Bölüm 2 (okundu)
+
+### `kozmos.arsiv.heasarc`
+
+- `boru_metni_oku`: [TAP2019] Bölüm 2.7.3 (FORMAT) (okundu)
+- `parlak_yildizlar`: [HoffleitWarren1991] HEASARC bsc5p tablo sayfası: Overview, References, Provenance (okundu)
 
 ### `kozmos.arsiv.pantheon`
 
@@ -44,10 +49,10 @@ yazıldı, testlerle sınandı, ama kaynağın metni henüz açılmadı.
 
 ### `kozmos.fotometri.kaynak`
 
-- `aciklik_fotometrisi`: [Howell2006] Bölüm 5: açıklık fotometrisi (bekliyor)
+- `aciklik_fotometrisi`: [Photutils2026] Kullanım kılavuzu: Aperture Photometry, 'subpixel' yöntemi (okundu)
 - `arka_plan_haritasi`: [SExtractorBelge2026] Modeling the background: Background map (okundu)
 - `arka_plan_kestir`: [SExtractorBelge2026] Modeling the background: Background estimation, Denk. 4 (okundu)
-- `kaynak_bul`: [BertinArnouts1996] saptama: eşik üstü bağlı pikseller (bekliyor)
+- `kaynak_bul`: [Photutils2026] Kullanım kılavuzu: Image Segmentation (okundu)
 
 ### `kozmos.gorsel.germe`
 
@@ -59,7 +64,7 @@ yazıldı, testlerle sınandı, ama kaynağın metni henüz açılmadı.
 
 - `ham_kare_uret`: [CraigChambers2026] defter 01-05 'Calibration overview': ham görüntü denklemi (okundu)
 - `sinyal_gurultu_orani`: [MerlineHowell1995] arka plan kestirimi terimi (1 + n_pix/n_B) (bekliyor); [Howell2006] Bölüm 4.4: CCD denklemi (bekliyor)
-- `yildiz_alani`: [Howell2006] Bölüm 5: nokta dağılım fonksiyonu (dairesel Gauss yaklaşımı) (bekliyor)
+- `yildiz_alani`: [Photutils2026] API: photutils.psf.GaussianPRF, piksel üzerinde integral denklemi (okundu)
 
 ### `kozmos.gozlem.planlama`
 
@@ -120,20 +125,22 @@ yazıldı, testlerle sınandı, ama kaynağın metni henüz açılmadı.
 
 ### `kozmos.karadelik.temel`
 
-- `bekenstein_hawking_entropisi`: [Page2005] TeX etiketi eq:2, S_bh = S_BH ≡ A/4 (Planck birimleri); A = 16π M² (Schwarzschild, eq:3 öncesi metin) (okundu)
+- `bekenstein_hawking_entropisi`: [Page2005] TeX etiketi eq:2, S_bh = S_BH ≡ A/4 (Planck birimleri); A = 16π M² (Schwarzschild, eq:3 sonrası paragraf) (okundu)
 - `birlesmeye_kalan_sure_s`: [Sathyaprakash2009] §'Coalescing binaries' paragrafı, Newton mertebesi cıvıltı süresi τ0 (etiketsiz denklem) (okundu)
 - `cirp_kutlesi_kg`: [Sathyaprakash2009] TeX etiketi eqn:chirpmassdef, 𝓜 = μ^{3/5} M^{2/5} = ν^{3/5} M (okundu)
 - `ergosfer_yaricapi_kerr_rg`: [Abramowicz2013] 'Summary: characteristic radii and frequencies', r_0 (ergosfer; aynı eqnarray, etiketsiz satır) (okundu)
 - `foton_kuresi_yaricapi_m`: [Abramowicz2013] 'Summary: characteristic radii and frequencies' (TeX etiketi schwarzschild-frequencies), x_ph = 3 (okundu)
 - `foton_yorungesi_yaricapi_kerr_rg`: [Abramowicz2013] 'Summary: characteristic radii and frequencies', TeX etiketi photon-radius-kerr (okundu)
-- `golge_acisal_capi_uas`: [EHT2019] §1 R_c = √27 r_g; §7 'Model Comparison and Parameter Estimation' θ_g ≡ GM/(c² D), d = α θ_g (okundu)
+- `golge_acisal_capi_uas`: [EHT2019] §1 R_c = √27 r_g; §7 'Model Comparison and Parameter Estimation' θ_g ≡ GM/(c² D) (okundu)
 - `gw_frekans_turevi_hz_s`: [Sathyaprakash2009] TeX etiketi eqn:circularPM (Ṗ_b, Peters-Mathews 1963'e atfen), f_gw = 2/P_b (okundu)
 - `gw_frekansi_isco_hz`: [Sathyaprakash2009] paragraf 'Waveform polarizations.' sonrası metin: ışınım en düşük mertebede yörünge frekansının iki katında yayılır (okundu); [Abramowicz2013] 'Summary: characteristic radii and frequencies' (TeX etiketi schwarzschild-frequencies), Ω_K² = GM/r³, x_ms = 6 (okundu)
-- `hawking_buharlasma_suresi_s`: [Page2005] TeX etiketi eq:3 (A, κ) ve §1 (T = κ/2π); yalnızca T_H ve A girdisi (okundu); [Page1976] Hawking ışınımıyla kütle kaybı ve ömür (greybody düzeltmeli kesin sonuç orada) (bekliyor)
+- `hawking_buharlasma_suresi_kara_cisim_s`: [Page2005] TeX etiketi eq:3 (A, κ) ve §1 (T = κ/2π) (okundu)
+- `hawking_buharlasma_suresi_s`: [Page2005] TeX etiketi eq:15 (okundu)
+- `hawking_kutle_kaybi_hizi_kg_s`: [Page2005] TeX etiketi eq:15 (okundu)
 - `hawking_sicakligi_k`: [Page2005] §1; T = κ/(2π) ve TeX etiketi eq:3 (Schwarzschild: κ = 1/(4M), Planck birimlerinde) (okundu); [Abramowicz2013] §1 (Giriş), Hawking sıcaklığı dipnotu: T_H = ħc³/(8π G M k_B) (okundu)
-- `isco_isinim_verimliligi`: [Bardeen1972] ISCO'daki özgül enerji Ẽ_ms (bekliyor); [Abramowicz2013] §1 (Giriş), verim tanımı η ≡ L/(Ṁ c²) (okundu)
+- `isco_isinim_verimliligi`: [Reynolds2021] Bölüm 5: Novikov-Thorne diski için η = 1 − e_isco/c² (okundu); [Abramowicz2013] §1 (Giriş), verim tanımı η ≡ L/(Ṁ c²) (okundu)
 - `isco_ozgul_enerji_kerr`: [Bardeen1972] ISCO'daki özgül enerji Ẽ_ms = (1 − 2/(3 r̃_ms))^{1/2} (bekliyor)
-- `isco_yaricapi_kerr_rg`: [Bardeen1972] ISCO formülü r_ms = M{3 + Z2 ∓ [(3 − Z1)(3 + Z1 + 2Z2)]^{1/2}} (retrograde için + işareti) (bekliyor); [Abramowicz2013] 'Summary: characteristic radii and frequencies', TeX etiketi stable-radius-kerr (Bardeen vd. formülü) (okundu)
+- `isco_yaricapi_kerr_rg`: [Reynolds2021] Bölüm 2: r_isco denklemi ve Z1, Z2 tanımları (okundu); [Abramowicz2013] 'Summary: characteristic radii and frequencies', TeX etiketi stable-radius-kerr (Bardeen vd. formülü) (okundu)
 - `isco_yaricapi_schwarzschild_m`: [Abramowicz2013] 'Summary: characteristic radii and frequencies' (TeX etiketi schwarzschild-frequencies), x_ms = 6 (okundu)
 - `isco_yorunge_frekansi_hz`: [Abramowicz2013] 'Summary: characteristic radii and frequencies', Ω_K² = GM/r³ (TeX etiketi schwarzschild-frequencies), x_ms = 6 (okundu)
 - `kalan_sureden_gw_frekansi_hz`: [Sathyaprakash2009] §'Coalescing binaries' paragrafı, τ0 (etiketsiz denklem); tersi tarafımdan alındı (okundu)
@@ -142,7 +149,7 @@ yazıldı, testlerle sınandı, ama kaynağın metni henüz açılmadı.
 - `schwarzschild_yaricapi_m`: [EHT2019] §1 (Giriş), R_S = 2 r_g, sayfa L1 (okundu)
 - `ufuk_acisal_hizi_rad_s`: [Page2005] TeX etiketi eq:3, Ω = 4π a / A (Q = 0) (okundu)
 - `ufuk_yaricapi_kerr_rg`: [Page2005] TeX etiketi eq:3, r_+ (Q = 0) (okundu); [Abramowicz2013] 'Summary: characteristic radii and frequencies', r_H (aynı eqnarray, etiketsiz satır) (okundu)
-- `yercekimsel_kirmiziya_kayma`: [Carroll2019] Schwarzschild metriği, g_tt = −(1 − 2GM/rc²); statik gözlemci (bekliyor)
+- `yercekimsel_kirmiziya_kayma`: [Carroll1997] Bölüm 7, Denk. 7.58-7.61 (okundu)
 
 ### `kozmos.karadelik.yigilma`
 
@@ -227,7 +234,7 @@ yazıldı, testlerle sınandı, ama kaynağın metni henüz açılmadı.
 - `etkin_sicaklik_k`: [Prsa2016] metin: T_eff, Stefan-Boltzmann yasasından; Tablo 'formu', M_Bol satırı (okundu)
 - `isinim_gucu_w`: [Prsa2016] Tablo 'formu', M_Bol satırı (4πσR² terimi); metin: T_eff Stefan-Boltzmann yasasından (okundu)
 - `kelvin_helmholtz_zaman_olcegi_s`: [Zinnecker2007] Sec. 'The Accretion Phase / Formation of the Hydrostatic Core' metni ve GLOSSARY: t_KH = G M²/(R L) (okundu)
-- `kritik_acisal_hiz_rad_s`: [Paxton2013] denklem öncesi metin (mdotomega etiketi): Ω_crit² = (1 - L/L_Edd) G M / R³ (okundu)
+- `kritik_acisal_hiz_rad_s`: [Paxton2013] mdotomega etiketli denklemi izleyen cümle: Ω_crit² = (1 - L/L_Edd) G M / R³ (okundu)
 - `log_yuzey_cekimi_cgs`: [Prsa2016] Tablo 'formu', 'log of surface gravity' satırı: 4,438068... + log M - 2 log R (okundu)
 - `nukleer_zaman_olcegi_yil`: [Kippenhahn2012] nükleer zaman ölçeği tanımı (bölüm ve denklem numarasına bakılmadı) (bekliyor)
 - `ortalama_yogunluk_kg_m3`: [Bludman2010] Sec. I, Tablo I öncesi metin: ρ̄_n = 3M/4πR³ (okundu)
@@ -248,12 +255,12 @@ yazıldı, testlerle sınandı, ama kaynağın metni henüz açılmadı.
 - `politrop_merkez_yogunlugu_kg_m3`: [Liu1995] Denk. 38 (r = R'de), ρ̄ tanımı için [Bludman2010] Tablo I (okundu)
 - `politrop_yaricap_m`: [Bludman2010] Tablo I, son sütun (M ~ R^{(n-3)/(n-1)}) (okundu); [Liu1995] Denk. 3 ve Denk. 38 (okundu)
 - `politrop_yercekimi_enerjisi_j`: [Liu1995] Denk. 44 ve 45 (E_g; yüzeyde Φ = 0 ve P = 0) (okundu)
-- `viriyal_ortalama_sicaklik_k`: [Liu1995] Denk. 44 (E_g = -3/(5-n) G M²/R) (okundu); [McKee2007] TeX etiketleri eq:iddot, eq:calt (viriyal teoremi) (okundu)
+- `viriyal_ortalama_sicaklik_k`: [Liu1995] Denk. 44 ve 45 (okundu); [McKee2007] TeX etiketleri eq:iddot, eq:calt (viriyal teoremi) (okundu)
 
 ### `kozmos.yildizolusumu.bulut`
 
-- `bonnor_ebert_kritik_katsayilar`: [Krumholz2015] problems/probsol2.tex, Bonnor-Ebert küresi: ODE ve (d) şıkkı (m_max = 1,18, ρ_c/ρ_s = 14,0) (okundu)
-- `bonnor_ebert_kritik_kutle_kg`: [Krumholz2015] problems/probsol2.tex, Bonnor-Ebert küresi alıştırmasının (d) şıkkı (okundu); [McKee2007] TeX etiketi MBE_def (okundu)
+- `bonnor_ebert_kritik_katsayilar`: [Krumholz2015] problems/probset2.tex (e) şıkkı (kütle ifadesi); probsol2.tex (c)-(d) şıkları (ODE), (f) şıkkı (m_max = 1,18, ρ_c/ρ_s = 14,0) (okundu)
+- `bonnor_ebert_kritik_kutle_kg`: [Krumholz2015] problems/probsol2.tex, Bonnor-Ebert küresi alıştırmasının (h) şıkkı (okundu); [McKee2007] TeX etiketi MBE_def (okundu)
 - `bonnor_ebert_yaricapi_m`: [McKee2007] TeX etiketi MBE_def, sonraki paragraf: R_BE = 0,486 c_s / sqrt(G ρ_0) (okundu)
 - `bulut_yildiz_olusum_hizi_kg_s`: [McKee2007] TeX etiketi eq:epsff (okundu)
 - `dogrusal_hiz_boyut_km_s`: [Krumholz2015] Bölüm 8 (Giant Molecular Clouds), Scaling Relations: Larson'un ikinci yasası (okundu); [McKee2007] TeX etiketi GMC_lws (Heyer ve Brunt 2004 PCA uyumu) (okundu)
@@ -353,12 +360,11 @@ yazıldı, testlerle sınandı, ama kaynağın metni henüz açılmadı.
 - [Armitage2011]: 3
 - [Astropy2022]: 8
 - [Babusiaux2018]: 2
-- [Bardeen1972]: 3
-- [BertinArnouts1996]: 1
+- [Bardeen1972]: 1
 - [Bludman2010]: 13
 - [Brout2022]: 8
 - [CODATA2022]: 3
-- [Carroll2019]: 1
+- [Carroll1997]: 1
 - [Chabrier2003]: 8
 - [Cohen2003]: 3
 - [CraigChambers2026]: 3
@@ -366,10 +372,12 @@ yazıldı, testlerle sınandı, ama kaynağın metni henüz açılmadı.
 - [ERFA2023]: 27
 - [FITS2018]: 3
 - [ForemanMackey2013]: 3
+- [HoffleitWarren1991]: 1
 - [Hogg1999]: 17
 - [HoggBovyLang2010]: 3
-- [Howell2006]: 3
+- [Howell2006]: 1
 - [IRAF2026]: 1
+- [IRSA2026]: 1
 - [Inayoshi2020]: 5
 - [Kennicutt1998]: 2
 - [Kennicutt2012]: 1
@@ -383,17 +391,17 @@ yazıldı, testlerle sınandı, ama kaynağın metni henüz açılmadı.
 - [McKee2007]: 21
 - [MerlineHowell1995]: 1
 - [MurrayCorreia2010]: 4
-- [Page1976]: 1
-- [Page2005]: 5
+- [Page2005]: 7
 - [Paxton2013]: 2
+- [Photutils2026]: 3
 - [Prsa2016]: 4
+- [Reynolds2021]: 2
 - [SExtractorBelge2026]: 2
 - [Salpeter1955]: 4
 - [Sathyaprakash2009]: 5
 - [Scolnic2022]: 1
 - [SkyView2026]: 1
-- [TAP2019]: 2
-- [Vallenari2023]: 1
+- [TAP2019]: 3
 - [VanderPlas2018]: 4
 - [Vehtari2021]: 2
 - [Wright2010]: 3
@@ -401,16 +409,8 @@ yazıldı, testlerle sınandı, ama kaynağın metni henüz açılmadı.
 
 ## Kaynağı okunmayı bekleyenler
 
-- `kozmos.arsiv.gaia.yakin_yildizlar`: [Vallenari2023] Gaia DR3 gaia_source tablosu
-- `kozmos.fotometri.kaynak.aciklik_fotometrisi`: [Howell2006] Bölüm 5: açıklık fotometrisi
-- `kozmos.fotometri.kaynak.kaynak_bul`: [BertinArnouts1996] saptama: eşik üstü bağlı pikseller
 - `kozmos.gozlem.dedektor.sinyal_gurultu_orani`: [MerlineHowell1995] arka plan kestirimi terimi (1 + n_pix/n_B); [Howell2006] Bölüm 4.4: CCD denklemi
-- `kozmos.gozlem.dedektor.yildiz_alani`: [Howell2006] Bölüm 5: nokta dağılım fonksiyonu (dairesel Gauss yaklaşımı)
-- `kozmos.karadelik.temel.hawking_buharlasma_suresi_s`: [Page1976] Hawking ışınımıyla kütle kaybı ve ömür (greybody düzeltmeli kesin sonuç orada)
-- `kozmos.karadelik.temel.isco_isinim_verimliligi`: [Bardeen1972] ISCO'daki özgül enerji Ẽ_ms
 - `kozmos.karadelik.temel.isco_ozgul_enerji_kerr`: [Bardeen1972] ISCO'daki özgül enerji Ẽ_ms = (1 − 2/(3 r̃_ms))^{1/2}
-- `kozmos.karadelik.temel.isco_yaricapi_kerr_rg`: [Bardeen1972] ISCO formülü r_ms = M{3 + Z2 ∓ [(3 − Z1)(3 + Z1 + 2Z2)]^{1/2}} (retrograde için + işareti)
-- `kozmos.karadelik.temel.yercekimsel_kirmiziya_kayma`: [Carroll2019] Schwarzschild metriği, g_tt = −(1 − 2GM/rc²); statik gözlemci
 - `kozmos.yildiz.imf.salpeter_dn_dm`: [Salpeter1955] özgün makale (eğim değeri)
 - `kozmos.yildiz.imf.salpeter_kutle_orani_ustunde`: [Salpeter1955] özgün makale (eğim değeri)
 - `kozmos.yildiz.imf.salpeter_ornekle`: [Salpeter1955] özgün makale (eğim değeri)

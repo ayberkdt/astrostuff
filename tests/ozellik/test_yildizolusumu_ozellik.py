@@ -122,7 +122,7 @@ def test_sfr_kalibrasyonu_dogrusal_ve_bant_sirasi(log_l_erg, k):
     for bant in ("FUV", "NUV", "Halfa", "TIR", "24um", "70um", "2-10keV"):
         a = ys.sfr_kalibrasyonu_gunes_kutlesi_yil(l_w, bant)
         assert abs(ys.sfr_kalibrasyonu_gunes_kutlesi_yil(k * l_w, bant) / a / k - 1) < 1e-12
-    # Aynı ışınım gücü için Hα'nın C değeri en küçük (41,27) ⇒ en büyük SFR çıkar.
+    # Hα'nın log C değeri (41,27) TIR'ınkinden (43,41) küçüktür ⇒ aynı ışınım gücü için daha büyük SFR çıkar.
     hs = ys.sfr_kalibrasyonu_gunes_kutlesi_yil(l_w, "Halfa")
     assert hs > ys.sfr_kalibrasyonu_gunes_kutlesi_yil(l_w, "TIR")
     assert np.isfinite(hs)

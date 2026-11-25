@@ -5,7 +5,7 @@ Gaia arşivinin eski ``tap-server`` adresi 25 Kasım 2026'da sorguya açılış
 sayfası döndürdüğü için kullanılmamıştır; AIP'deki ayna (gaia.aip.de)
 çalışmakta ama VOTable döndürmektedir.
 
-Katalog: Gaia DR3 [Vallenari2023]. Mutlak kadir tanımı ve kalite kesimi
+Katalog: Gaia DR3 [Vallenari2023]; sütun tanımları IRSA şema tablosundan [IRSA2026]. Mutlak kadir tanımı ve kalite kesimi
 yaklaşımı Gaia DR2 HR diyagramı makalesinden okunmuştur [Babusiaux2018].
 """
 
@@ -35,7 +35,11 @@ SUTUNLAR = (
     "RUWE kesimi uygulanır (RUWE DR2 makalesinde yoktur; Gaia DR3 sütunudur)",
 )
 @kaynak(
-    "Vallenari2023", yer="Gaia DR3 gaia_source tablosu", teyit="bekliyor", not_="sütun tanımları makaleden okunmadı"
+    "IRSA2026",
+    yer="TAP_SCHEMA.columns, table_name = 'gaia_dr3_source'",
+    teyit="okundu",
+    not_="sütun tanımları ve birimleri servisin şema tablosundan: parallax [mas], pmra/pmdec [mas/yr], "
+    "ruwe 'Renormalised unit weight error', bp_rp 'BP - RP colour' [mag]",
 )
 def yakin_yildizlar(
     onbellek_dizini: Path,
@@ -67,7 +71,7 @@ def yakin_yildizlar(
 
     Kaynaklar
     ---------
-    [Babusiaux2018] Ek B; [Vallenari2023].
+    [Babusiaux2018] Ek B; [IRSA2026] TAP_SCHEMA.columns.
 
     Geçerlilik
     ----------

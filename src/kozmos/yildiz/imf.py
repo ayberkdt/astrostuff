@@ -22,6 +22,11 @@ yalnızca orantılılık yazılıdır; süreklilik varsayımı, makaledeki toplu
 (ortalama kütle, BC ve M cücesi payları) yeniden üretilmesiyle testte sınanır.
 Chabrier'in log-normal ve kuvvet yasası katsayıları tablodaki değerlerle verilir ve
 m = 1'de yaklaşık yüzde 0,5 süreksizlik taşır (testte ölçülür).
+
+İki sınır notu. Chabrier fonksiyonunda tam m = 1 noktası kuvvet yasası dalına düşer ([Chabrier2003]
+Tablo 1 m <= 1'i log-normal dala verir); o tek noktada yoğunluk %0,47 farklıdır, tümlevler etkilenmez.
+[Kroupa2001] ayrıca çözülmemiş çiftler için düzeltilmiş bir biçim verir (eq:imfr: α1 = 1,8, α2 = 2,7);
+burada makalenin tek yıldızlar için verdiği, çift yanlılığı düzeltilmemiş biçimi (eq:imf) uygulanmıştır.
 """
 
 from __future__ import annotations

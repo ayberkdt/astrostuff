@@ -10,6 +10,11 @@ Boyutsuz değişkenler [Liu1995] Denk. 3 ile aynıdır: ξ = A r,
 A² = 4πG ρ_c^{(n-1)/n} / ((n+1) K) ve θ = (ρ/ρ_c)^{1/n}. Bu modüldeki
 fonksiyonlar SI birimlerindedir; n dizi değil tek sayıdır, çünkü her n için ayrı
 bir diferansiyel denklem çözülür (sonuç önbelleğe alınır).
+
+Ortalama molekül ağırlığı μ bu dosyada proton kütlesiyle çarpılır; [Liu1995] Denk. 42 atom hidrojeninin
+kütlesini kullanır (fark %0,05). ``olcekleme`` modülündeki Eddington fonksiyonları ise kaynakları
+[Bludman2010] gibi atomik kütle birimini kullanır; proton kütlesiyle farkı %0,73'tür. Aynı μ ile iki
+modülün sonuçları bu kadar ayrışır (Güneş, n = 3, μ = 0,62: merkez sıcaklığı 1,2241e7 ve 1,2151e7 K).
 """
 
 from __future__ import annotations
@@ -83,7 +88,7 @@ def lane_emden_coz(n: float, nokta_sayisi: int = 400) -> tuple[Dizi, Dizi, Dizi]
     Geçerlilik
     ----------
     n >= 5 için θ sıfıra ulaşmaz (n = 5'te sonsuz yarıçap). 0 < n < 1 için θ^n türevi
-    yüzeyde sonsuzdur; ξ_1 yine de 1e-9 bağıl doğrulukla bulunur (testte n = 0,5 sınanır).
+    yüzeyde sonsuzdur; ξ_1 yine de bulunur (n = 0,5 için bağımsız bir çözücünün değeriyle 1e-8 içinde uyuşur).
 
     Doğrulama
     ---------
@@ -224,7 +229,8 @@ def lane_emden_analitik(xi: ArrayLike, n: int) -> Dizi:
 
     Doğrulama
     ---------
-    tests/birim/test_yildiz.py: sayısal çözümle 1e-9 içinde uyum; denklemin kalıntısı.
+    tests/birim/test_yildiz.py: n = 0 ve n = 1 için sayısal çözümle 1e-9 içinde uyum; n = 5 için denklemin kalıntısı
+    (n = 5 sayısal olarak çözülmez: yarıçap sonsuzdur).
     """
     x = np.asarray(xi, dtype=float)
     if np.any(x < 0):
@@ -475,9 +481,9 @@ def politrop_yercekimi_enerjisi_j(kutle_kg: ArrayLike, yaricap_m: ArrayLike, n: 
 @kaynak("McKee2007", yer="TeX etiketleri eq:iddot, eq:calt (viriyal teoremi)", teyit="okundu")
 @kaynak(
     "Liu1995",
-    yer="Denk. 44 (E_g = -3/(5-n) G M²/R)",
+    yer="Denk. 44 ve 45",
     teyit="okundu",
-    not_="durağan, yüzey terimsiz, manyetik alansız küre için 2T + W = 0; T = (3/2)(k/μ m_p) M T̄ kütle ağırlıklı ortalamadır",
+    not_="Denk. 44 üç terimlidir; yüzeyde P = 0 ve Denk. 45 ile E_g = -3/(5-n) G M²/R olur. Durağan, yüzey terimsiz, manyetik alansız küre için 2T + W = 0; T = (3/2)(k/μ m_p) M T̄ kütle ağırlıklı ortalamadır",
 )
 def viriyal_ortalama_sicaklik_k(
     kutle_kg: ArrayLike, yaricap_m: ArrayLike, ortalama_molekul_agirligi: float, n: float = 3.0

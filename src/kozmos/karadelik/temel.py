@@ -103,11 +103,11 @@ def schwarzschild_yaricapi_m(kutle_kg: ArrayLike) -> Dizi:
 
 
 @kaynak(
-    "Carroll2019",
-    yer="Schwarzschild metriği, g_tt = −(1 − 2GM/rc²); statik gözlemci",
-    teyit="bekliyor",
-    not_="Formül hatırlanan biçimiyle yazıldı; kitabın metni açılmadı. Abramowicz2013'teki genel kırmızıya kayma "
-    "çarpanı (TeX etiketi redshift-factor) dairesel yörünge içindir, statik gözlemci için değil.",
+    "Carroll1997",
+    yer="Bölüm 7, Denk. 7.58-7.61",
+    teyit="okundu",
+    not_="sabit konumdaki iki gözlemci için ω2/ω1 = [(1 − 2GM/r1)/(1 − 2GM/r2)]^{1/2} (G = c = 1); "
+    "burada alıcı sonsuzda (r2 → ∞): 1 + z = (1 − R_S/r)^{−1/2}",
 )
 def yercekimsel_kirmiziya_kayma(yaricap_m: ArrayLike, kutle_kg: ArrayLike) -> Dizi:
     """Statik yayıcının sonsuzdaki gözlemciye göre kütle çekimsel kırmızıya kaymasını hesaplar.
@@ -128,7 +128,7 @@ def yercekimsel_kirmiziya_kayma(yaricap_m: ArrayLike, kutle_kg: ArrayLike) -> Di
 
     Kaynaklar
     ---------
-    [Carroll2019] Schwarzschild metriği (okunmadı; teyit bekliyor).
+    [Carroll1997] Denk. 7.58-7.61.
 
     Geçerlilik
     ----------
@@ -211,7 +211,7 @@ def kritik_carpisma_parametresi_m(kutle_kg: ArrayLike) -> Dizi:
 
 @kaynak(
     "EHT2019",
-    yer="§1 R_c = √27 r_g; §7 'Model Comparison and Parameter Estimation' θ_g ≡ GM/(c² D), d = α θ_g",
+    yer="§1 R_c = √27 r_g; §7 'Model Comparison and Parameter Estimation' θ_g ≡ GM/(c² D)",
     teyit="okundu",
     not_="Çap = 2 R_c / D küçük açı yaklaşımıdır (geometri, kaynakta yazılı değil). EHT'nin Schwarzschild için "
     "verdiği 37,6 ve 21,3 µas değerleri testte yeniden üretilir.",
@@ -235,7 +235,7 @@ def golge_acisal_capi_uas(kutle_kg: ArrayLike, uzaklik_m: ArrayLike) -> Dizi:
 
     Kaynaklar
     ---------
-    [EHT2019] §1 (R_c) ve §7 (θ_g, d = α θ_g).
+    [EHT2019] §1 (R_c) ve §7 (θ_g tanımı; oradaki d = α θ_g ışıma halkasının çapıdır, gölgenin değil).
 
     Geçerlilik
     ----------
@@ -326,16 +326,15 @@ def isco_yorunge_frekansi_hz(kutle_kg: ArrayLike) -> Dizi:
     "Abramowicz2013",
     yer="'Summary: characteristic radii and frequencies', TeX etiketi stable-radius-kerr (Bardeen vd. formülü)",
     teyit="okundu",
-    not_="Kaynağın formülü doğru (prograde) yörünge içindir; Z1 ve Z2 a* çiftidir, bu yüzden a* → −a* kaynak "
-    "formülünü değiştirmez. Retrograde için karekök işaretinin artıya dönmesi kaynakta yazılı değil; "
-    "bunun için Bardeen1972 bekliyor (bellekten). Her iki işaret de Abramowicz2013'ün epicyclic-radial "
-    "denkleminin (ω_r*)² = 0 koşuluyla testte bağımsız doğrulanır.",
+    not_="Kaynağın formülü doğru (prograde) yörünge içindir; Z1 ve Z2 a* çiftidir. Her iki işaret de "
+    "Abramowicz2013'ün epicyclic-radial denkleminin (ω_r*)² = 0 koşuluyla testte bağımsız doğrulanır.",
 )
 @kaynak(
-    "Bardeen1972",
-    yer="ISCO formülü r_ms = M{3 + Z2 ∓ [(3 − Z1)(3 + Z1 + 2Z2)]^{1/2}} (retrograde için + işareti)",
-    teyit="bekliyor",
-    not_="Yalnızca retrograde işaret seçimi için; makale açılmadı.",
+    "Reynolds2021",
+    yer="Bölüm 2: r_isco denklemi ve Z1, Z2 tanımları",
+    teyit="okundu",
+    not_="r_isco = (3 + Z2 ∓ [(3 − Z1)(3 + Z1 + 2Z2)]^{1/2}) r_g; ∓ işareti sırasıyla ileri ve geri yönlü "
+    "yörüngeler içindir. Özgün kaynak [Bardeen1972] okunmadı.",
 )
 def isco_yaricapi_kerr_rg(spin: ArrayLike) -> Dizi:
     """Kerr kara deliğin ISCO yarıçapını hesaplar (Bardeen, Press, Teukolsky formülü).
@@ -358,8 +357,7 @@ def isco_yaricapi_kerr_rg(spin: ArrayLike) -> Dizi:
 
     Kaynaklar
     ---------
-    [Abramowicz2013] TeX etiketi stable-radius-kerr (doğru yörünge);
-    [Bardeen1972] retrograde işareti (okunmadı; teyit bekliyor).
+    [Abramowicz2013] stable-radius-kerr; [Reynolds2021] Bölüm 2.
 
     Geçerlilik
     ----------
@@ -426,15 +424,14 @@ def isco_ozgul_enerji_kerr(spin: ArrayLike) -> Dizi:
     "Abramowicz2013",
     yer="§1 (Giriş), verim tanımı η ≡ L/(Ṁ c²)",
     teyit="okundu",
-    not_="Verimin 1 − E_ISCO olması (Novikov-Thorne varsayımı: ISCO içinde ışınım yok) kaynak metinde "
-    "denklem olarak okunmadı; E_ISCO için Bardeen1972 bekliyor. Inayoshi2020 dönmeyen kara delik için "
-    "'~0,06' der (testte 0,057 ile uyuşur).",
+    not_="Inayoshi2020 dönmeyen kara delik için '~0,06' der (testte 0,057 ile uyuşur).",
 )
 @kaynak(
-    "Bardeen1972",
-    yer="ISCO'daki özgül enerji Ẽ_ms",
-    teyit="bekliyor",
-    not_="η = 1 − Ẽ_ms ilişkisi hatırlanan biçimiyle yazıldı.",
+    "Reynolds2021",
+    yer="Bölüm 5: Novikov-Thorne diski için η = 1 − e_isco/c²",
+    teyit="okundu",
+    not_="e_isco: ISCO'da dairesel yörüngedeki birim kütlenin toplam enerjisi; e_isco'nun kapalı biçimi "
+    "isco_ozgul_enerji_kerr içindedir ve oradaki [Bardeen1972] kaydı bekliyor.",
 )
 def isco_isinim_verimliligi(spin: ArrayLike) -> Dizi:
     """İnce disk için ışınım verimini hesaplar: η = 1 − E_ISCO.
@@ -453,7 +450,7 @@ def isco_isinim_verimliligi(spin: ArrayLike) -> Dizi:
 
     Kaynaklar
     ---------
-    [Abramowicz2013] η tanımı; [Bardeen1972] E_ISCO (okunmadı; teyit bekliyor).
+    [Abramowicz2013] §1; [Reynolds2021] Bölüm 5.
 
     Geçerlilik
     ----------
@@ -657,7 +654,7 @@ def hawking_sicakligi_k(kutle_kg: ArrayLike) -> Dizi:
 
 @kaynak(
     "Page2005",
-    yer="TeX etiketi eq:2, S_bh = S_BH ≡ A/4 (Planck birimleri); A = 16π M² (Schwarzschild, eq:3 öncesi metin)",
+    yer="TeX etiketi eq:2, S_bh = S_BH ≡ A/4 (Planck birimleri); A = 16π M² (Schwarzschild, eq:3 sonrası paragraf)",
     teyit="okundu",
     not_="Planck birimlerinden SI'ya çeviri (S/k_B = A c³ / (4 G ħ)) tarafımdan yapıldı; kaynakta yazılı değil.",
 )
@@ -690,43 +687,125 @@ def bekenstein_hawking_entropisi(kutle_kg: ArrayLike) -> Dizi:
 
 
 @kaynak(
-    "Page1976",
-    yer="Hawking ışınımıyla kütle kaybı ve ömür (greybody düzeltmeli kesin sonuç orada)",
-    teyit="bekliyor",
-    not_="Kullanılan basit kestirim L = σ T_H⁴ A (yalnızca foton, kara cisim, greybody çarpanı 1) ile "
-    "dM/dt = −L/c², yani t = 5120π G² M³ / (ħ c⁴); makale açılmadı. T_H ve A [Page2005]'ten okundu.",
+    "Page2005",
+    yer="TeX etiketi eq:15",
+    teyit="okundu",
+    not_="−dM/dt = 1e-5 M⁻² (8,1830 n_1/2 + 3,3638 n_1 + 0,3836 n_2), Planck birimlerinde; n_s iki kutuplanmalı "
+    "kütlesiz spin-s tür sayısı. SI'ya çevrim (ħ c⁴/G² çarpanı) bu projede",
 )
+def hawking_kutle_kaybi_hizi_kg_s(
+    kutle_kg: ArrayLike, *, spin_yarim_tur: float = 0.0, spin_bir_tur: float = 1.0, spin_iki_tur: float = 1.0
+) -> Dizi:
+    """Dönmeyen kara deliğin Hawking ışınımıyla kütle kaybı hızını hesaplar.
+
+    −dM/dt = α ħ c⁴ / (G² M²),  α = 1e-5 (8,1830 n_½ + 3,3638 n_1 + 0,3836 n_2)
+
+    Katsayılar sayısal greybody hesaplarından gelir. Varsayılan türler foton
+    (n_1 = 1) ve gravitondur (n_2 = 1).
+
+    Parametreler
+    ------------
+    kutle_kg : float ya da ndarray
+    spin_yarim_tur, spin_bir_tur, spin_iki_tur : float
+        İki kutuplanmalı kütlesiz spin-½, spin-1 ve spin-2 tür sayıları.
+
+    Döndürür
+    --------
+    float ya da ndarray
+        Kütle kaybı hızı −dM/dt [kg s⁻¹], pozitif.
+
+    Kaynaklar
+    ---------
+    [Page2005] eq:15.
+
+    Geçerlilik
+    ----------
+    Yalnızca kütlesiz türler ve dönmeyen, yüksüz kara delik. Kütleli bir tür,
+    Hawking sıcaklığı o türün durgun kütle enerjisine yaklaştığında devreye
+    girer; elektronlar için bu yaklaşık 1e13-1e14 kg altındadır (mertebe
+    kestirimi, k T_H ~ m_e c²). Nötrinoların hangi kütlede "kütlesiz" sayılacağı
+    kütlelerine bağlıdır; varsayılanda sayılmazlar.
+
+    Doğrulama
+    ---------
+    tests/birim/test_karadelik.py: yalnız foton için kara cisim kestiriminin 1,62 katı; M⁻² ölçeklemesi.
+    """
+    m = _pozitif(kutle_kg, "kütle")
+    alfa = 1e-5 * (8.1830 * spin_yarim_tur + 3.3638 * spin_bir_tur + 0.3836 * spin_iki_tur)
+    return alfa * _HBAR * _C**4 / (_G**2 * m**2)
+
+
 @kaynak(
     "Page2005",
-    yer="TeX etiketi eq:3 (A, κ) ve §1 (T = κ/2π); yalnızca T_H ve A girdisi",
+    yer="TeX etiketi eq:15",
     teyit="okundu",
-    not_="Ömür formülü bu kaynakta yoktur (arandı: 15360, 5120, dM/dt bulunamadı).",
+    not_="eq:15'in M'ye göre integrali (türetim bu projede): t = G² M³ / (3 α ħ c⁴); α sabit tür sayıları için",
 )
-def hawking_buharlasma_suresi_s(kutle_kg: ArrayLike) -> Dizi:
-    """Hawking ışınımıyla tam buharlaşma süresinin kara cisim kestirimini hesaplar.
+def hawking_buharlasma_suresi_s(
+    kutle_kg: ArrayLike, *, spin_yarim_tur: float = 0.0, spin_bir_tur: float = 1.0, spin_iki_tur: float = 1.0
+) -> Dizi:
+    """Hawking ışınımıyla tam buharlaşma süresini greybody katsayılarıyla hesaplar.
 
-    L = σ_SB T_H⁴ A = ħ c⁶ / (15360π G² M²),  t = 5120π G² M³ / (ħ c⁴)
+    t = G² M³ / (3 α ħ c⁴),  α = 1e-5 (8,1830 n_½ + 3,3638 n_1 + 0,3836 n_2)
 
     Parametreler
     ------------
     kutle_kg : float ya da ndarray
         Başlangıç kütlesi [kg].
+    spin_yarim_tur, spin_bir_tur, spin_iki_tur : float
+        Kütlesiz tür sayıları; varsayılan foton ve graviton.
 
     Döndürür
     --------
     float ya da ndarray
-        Buharlaşma süresi [s]. Güneş kütlesi için ≈ 2e67 yıl; 1e12 kg için ≈ 2,7e12 yıl.
+        Buharlaşma süresi [s]. Güneş kütlesi için varsayılan türlerle yaklaşık 1,2e67 yıl.
 
     Kaynaklar
     ---------
-    [Page1976] kütle kaybı ve ömür (okunmadı; teyit bekliyor);
-    [Page2005] T_H ve alan A (okundu).
+    [Page2005] eq:15.
 
     Geçerlilik
     ----------
-    Yalnızca fotonlar yayılır, greybody çarpanı 1, yeni parçacık türleri yok. Kütle
-    ~1e11 kg altında ek türler (elektron, nötrino) devreye girer ve süre kısalır; sonuç
-    bu bölgede yalnızca büyüklük mertebesi içindir.
+    Tür sayıları buharlaşma boyunca sabit alınır. Gerçekte kütle azaldıkça
+    sıcaklık artar ve kütleli türler devreye girer; bu yüzden küçük başlangıç
+    kütlelerinde (yaklaşık 1e14 kg altı) gerçek süre buradakinden kısadır ve
+    sonuç yalnızca üst sınır niteliğindedir.
+
+    Doğrulama
+    ---------
+    tests/birim/test_karadelik.py: ``hawking_kutle_kaybi_hizi_kg_s`` ile sayısal tümlev; M³ ölçeklemesi.
+    """
+    m = _pozitif(kutle_kg, "kütle")
+    alfa = 1e-5 * (8.1830 * spin_yarim_tur + 3.3638 * spin_bir_tur + 0.3836 * spin_iki_tur)
+    return _G**2 * m**3 / (3.0 * alfa * _HBAR * _C**4)
+
+
+@kaynak(
+    "Page2005",
+    yer="TeX etiketi eq:3 (A, κ) ve §1 (T = κ/2π)",
+    teyit="okundu",
+    not_="L = σ T_H⁴ A kara cisim varsayımı ve t = 5120π G² M³ / (ħ c⁴) integrali bu projenin türetimidir; "
+    "kaynak yalnızca T_H ve A'yı verir. Kaynağın eq:15 greybody katsayısı yalnız foton için bu kestirimin 1,62 katıdır",
+)
+def hawking_buharlasma_suresi_kara_cisim_s(kutle_kg: ArrayLike) -> Dizi:
+    """Buharlaşma süresinin ders kitabı kara cisim kestirimini hesaplar.
+
+    L = σ_SB T_H⁴ A = ħ c⁶ / (15360π G² M²),  t = 5120π G² M³ / (ħ c⁴)
+
+    Döndürür
+    --------
+    float ya da ndarray
+        Süre [s]. Güneş kütlesi için yaklaşık 2,1e67 yıl.
+
+    Kaynaklar
+    ---------
+    [Page2005] eq:3, §1.
+
+    Geçerlilik
+    ----------
+    Yalnızca foton, greybody çarpanı 1. Bu varsayım ışıma hızını yalnız foton
+    için bile 1,62 kat küçük verir ve süreyi olduğundan uzun gösterir;
+    karşılaştırma ve öğretim amaçlıdır. Hesap için ``hawking_buharlasma_suresi_s`` kullanılmalıdır.
 
     Doğrulama
     ---------
