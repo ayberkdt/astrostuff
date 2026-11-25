@@ -31,7 +31,7 @@ Bulunan H0 belirsizliği yayımlanandan küçüktür. Üç bağımsız denetim b
 - Veri sürümündeki dört zincirin (emcee) hepsi, ilk %10'u atılınca ± 1,01 ile ± 1,04 arasında saçılım verir; baş kısım atılmazsa ± 1,03 ile ± 1,07 arasındadır. Düz ΛCDM zinciri 73,53 ± 1,01'dir.
 - Riess ve ark. (2022) temel sonucu ± 1,01'dir; aynı makalenin özeti, yüksek kırmızıya kaymalı süpernovalar eklendiğinde 73,30 ± 1,04 verir.
 
-Makale dört model için de ± 1,1 yazar; yayımlanan zincirlerin hiçbiri bu değeri vermez (tek ondalıkla hepsi ± 1,0'a yuvarlanır). Makale örnekleyici olarak PolyChord'u anar, veri sürümündeki zincirler emcee'dir; PolyChord zincirleri yayımlanmadı. Yayımlanan veri ve yayımlanan olabilirlik kodu, zincirle de zincirsiz de ± 1,0 verir; ± 1,1'in kaynağı açık veriden bulunamadı.
+Makale dört model için de ± 1,1 yazar; yayımlanan zincirlerin hiçbiri bu değeri vermez (tek ondalıkla hepsi ± 1,0'a yuvarlanır). Makale örnekleyici olarak PolyChord'u anar, veri sürümündeki zincirler emcee'dir; Yayımlanan zincirin başlığındaki yapılandırma durumu gösterir: zincir 16 yürüyüşçülü emcee koşusudur ve bütün yürüyüşçüler aynı noktadan başlar (baş kısmın geniş saçılımı buradan gelir); aynı yapılandırmada 250 canlı noktalı ayrı bir PolyChord çıktısı tanımlıdır (`122221_poly_P+SH0ES`), makale de 250 canlı nokta der. Bu çıktı veri sürümünde yoktur. Yayımlanan veri ve yayımlanan olabilirlik kodu, zincirle de zincirsiz de ± 1,0 verir; ± 1,1'i üreten koşu yayımlanmadığı için değer açık veriden yeniden üretilemez. Veri sürümü deposunda aynı soruyu soran açık bir kayıt vardır ([PantheonPlusSH0ES/DataRelease#16](https://github.com/PantheonPlusSH0ES/DataRelease/issues/16), 27 Ekim 2026; 25 Kasım 2026'da yanıtsız).
 
 ### Yıldız kataloğu: Gaia ile Güneş çevresi
 
