@@ -60,7 +60,7 @@ Yapılacaklar:
 - PSF fotometrisi [Stetson1987].
 - Astrometrik çözüm: saptanan kaynakların katalogla eşlenmesinden WCS uydurma. Başlıktaki WCS'in okunması ve katalog eşleme yazıldı [CalabrettaGreisen2002]; uyum adımı yok.
 - Fotometrik kalibrasyon hattı. Sıfır noktası örnek betikte 2MASS kadirleriyle ölçüldü (40 yıldızda 0,021 kadir saçılım); kitaplık fonksiyonu değil.
-- Gözlem planlamasına presesyon, nutasyon, kırılma, Güneş ve Ay konumu, alacakaranlık sınırları.
+- Gözlem planlamasına nutasyon, aberasyon, Güneş ve Ay konumu, alacakaranlık sınırları. Presesyon (`koordinat/presesyon.py`) ve kırılma (`gozlem/kirilma.py`) yazıldı [ERFA2023].
 - FITS tabloları ve sıkıştırılmış görüntüler. Görüntü uzantıları yazıldı.
 
 ## Optik tarafta yazılanlar

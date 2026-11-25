@@ -6,8 +6,8 @@
 
 Kitaplık çalışırken yalnızca NumPy ve SciPy kullanır. Astropy ve ERFA hesap için değil, sonuçları karşılaştırmak için vardır.
 
-- 218 fonksiyon, 35 sabit, 1035 test
-- 257 kaynak kaydının 248'inde denklem kaynağın metninden okundu; 9'u açıkça "bekliyor" işaretli
+- 223 fonksiyon, 35 sabit, 1056 test
+- 262 kaynak kaydının 254'ünde denklem kaynağın metninden okundu; 8'i açıkça "bekliyor" işaretli
 - Güncel sayılar: [plan/DURUM.md](plan/DURUM.md) (koddan üretilir)
 
 ## Kitaplıkla üretilen sonuçlar
@@ -85,7 +85,7 @@ Bir gaz bulutunun kendi çekimiyle çökebilmesi için gereken en küçük kütl
 
 - `arsiv`: TAP istemcisi, Gaia DR3 yıldız örneklemleri, 2MASS nokta kaynak koni sorgusu, Parlak Yıldız Kataloğu, SkyView görüntü kesitleri (DSS2, 2MASS, WISE), Pantheon+ verisi; her indirme SHA-256 özetiyle kayda geçer
 - `io`: FITS okuyucu ve yazıcı (FITS 4.0 standardından); birincil birim ve görüntü uzantıları
-- `gozlem`: hedef görünürlüğü ve hava kütlesi, CCD sinyal modeli, sentetik ham kare, sinyal-gürültü oranı
+- `gozlem`: hedef görünürlüğü ve hava kütlesi (presesyon ve atmosfer kırılmasıyla), CCD sinyal modeli, sentetik ham kare, sinyal-gürültü oranı
 - `indirgeme`: sigma kırpmalı kare birleştirme, bias/karanlık/düz alan düzeltmesi, kazanç ve okuma gürültüsü ölçümü, tek karede kozmik ışın temizliği (L.A.Cosmic), kaydırmalı kızılötesi karelerden gökyüzü çıkarma
 - `fotometri`: arka plan haritası, kaynak saptama ve örtüşen kaynakların ayrıştırılması, açıklık fotometrisi
 - `astrometri`: FITS WCS piksel-gök dönüşümü (TAN izdüşümü), katalog çapraz eşleme
@@ -104,7 +104,7 @@ Bir gaz bulutunun kendi çekimiyle çökebilmesi için gereken en küçük kütl
 **Altyapı**
 
 - `temel`: CODATA 2022 sabitleri, IAU nominal değerleri, açı aritmetiği
-- `zaman`, `koordinat`: Jülyen tarihi, artık saniyeler, yıldız zamanı, galaktik ve ufuk dönüşümleri
+- `zaman`, `koordinat`: Jülyen tarihi, artık saniyeler, yıldız zamanı, galaktik ve ufuk dönüşümleri, IAU 2006 presesyonu
 - `istatistik`: doğrusal uyum, MCMC, yakınsama tanıları, sağlam kestiriciler
 
 ## Kaynak kuralı nasıl işler
@@ -174,7 +174,7 @@ Depodaki şekiller yerel bir figür denetim aracıyla (`datawiz`) üretildi; ara
 ## Sınırlar
 
 - Yeni yazılan fizik modülleri kendi testleriyle, kapalı çözümlerle ve kaynaklardaki sayılarla sınandı. Bağımsız bir kitaplıkla karşılaştırma zaman, koordinat, kozmoloji, istatistik, FITS ve periyodogram modüllerinde var.
-- Gözlem planlaması presesyon, nutasyon ve kırılma içermez (hata yaklaşık 0,4 dereceye kadar).
+- Gözlem planlaması çerçeve yanlılığı, presesyon ve isteğe bağlı kırılma içerir; nutasyon, aberasyon ve UT1 − UTC farkı yoktur. 30 rastgele hedefte astropy ile yön farkı en çok 0,45 yay dakikasıdır (presesyonsuz hesapta 26 yay dakikası). Kırılma modeli yaklaşık 5° yüksekliğin altında geçersizdir.
 - FITS okuyucu birincil birimi ve görüntü uzantılarını okur; tablo uzantıları listelenir ama çözülmez, sıkıştırılmış görüntüler okunmaz.
 - Kaynak ayrıştırma aralarında belirgin eyer olan çiftleri ayırır: 2 FWHM aralıkta akı oranı 2'ye kadar çiftlerin %92-98'i, oran 3'te varsayılan ayarla %14'ü ayrışır. Açıklık fotometrisi dar açıklıkta yüzde birkaç eksik ölçer.
 - WCS yalnızca TAN izdüşümünü çözer; bozulma terimleri (SIP) ve görüntüden astrometrik çözüm (yıldız deseninden WCS bulma) yoktur.

@@ -2,11 +2,11 @@
 
 Bu dosya `python kaynakca/kutuk_raporu.py` ile kaynak kütüğünden üretilir; elle düzenlenmez.
 
-- Kaynağa bağlı açık fonksiyon: 218
-- Bütün kayıtları kaynak metninden okunmuş fonksiyon: 210
-- Kaynak kaydı: 257 (okundu: 248, bekliyor: 9)
+- Kaynağa bağlı açık fonksiyon: 223
+- Bütün kayıtları kaynak metninden okunmuş fonksiyon: 216
+- Kaynak kaydı: 262 (okundu: 254, bekliyor: 8)
 - Kaynaklı sabit: 35 (teyit bekleyen: 0)
-- Test fonksiyonu: 282 (parametreli ve özellik testleri tek sayılır)
+- Test fonksiyonu: 288 (parametreli ve özellik testleri tek sayılır)
 - Kaynak kuralından muaf altyapı fonksiyonu: 4
 
 `okundu`: denklem kod yazılırken kaynağın metninden okundu. `bekliyor`: denklem hatırlanan biçimiyle
@@ -26,7 +26,7 @@ yazıldı, testlerle sınandı, ama kaynağın metni henüz açılmadı.
 
 ### `kozmos.arsiv.ikimass`
 
-- `nokta_kaynaklari`: [TAP2019] Bölüm 2.7.3 (FORMAT) ve ADQL geometri işlevleri (CONTAINS, POINT, CIRCLE) (bekliyor); [IRSA2026] TAP_SCHEMA.columns, table_name = 'fp_psc' (okundu)
+- `nokta_kaynaklari`: [ADQL2023] Bölüm 4.2.11 (CIRCLE), 4.2.12 (CONTAINS), 4.2.18 (POINT) (okundu); [IRSA2026] TAP_SCHEMA.columns, table_name = 'fp_psc' (okundu)
 
 ### `kozmos.arsiv.pantheon`
 
@@ -80,9 +80,14 @@ yazıldı, testlerle sınandı, ama kaynağın metni henüz açılmadı.
 - `sinyal_gurultu_orani`: [MerlineHowell1995] arka plan kestirimi terimi (1 + n_pix/n_B) (bekliyor); [Howell2006] Bölüm 4.4: CCD denklemi (bekliyor)
 - `yildiz_alani`: [Photutils2026] API: photutils.psf.GaussianPRF, piksel üzerinde integral denklemi (okundu)
 
+### `kozmos.gozlem.kirilma`
+
+- `gozlenen_yukseklik`: [ERFA2023] refco.c: 'dZ = A tan Z + B tan^3 Z', Z gözlenen zenit uzaklığı (okundu)
+- `kirilma_sabitleri`: [ERFA2023] refco.c (okundu)
+
 ### `kozmos.gozlem.planlama`
 
-- `gorunurluk`: [ERFA2023] gmst06.c, hd2ae.c (okundu)
+- `gorunurluk`: [ERFA2023] gmst06.c, hd2ae.c, pmat06.c, refco.c (okundu)
 - `meridyen_gecisi_jd`: [ERFA2023] era00.c (dönme hızı), hd2ae.c (okundu)
 - `ufuk_ustu_suresi_saat`: [ERFA2023] hd2ae.c (yükseklik bileşeni) (okundu)
 
@@ -196,6 +201,12 @@ yazıldı, testlerle sınandı, ama kaynağın metni henüz açılmadı.
 - `icrs_den_galaktik`: [ERFA2023] icrs2g.c (okundu)
 - `saat_acisi_den_ufuk`: [ERFA2023] hd2ae.c (okundu)
 - `ufuk_den_saat_acisi`: [ERFA2023] ae2hd.c (okundu)
+
+### `kozmos.koordinat.presesyon`
+
+- `fukushima_williams_acilari`: [ERFA2023] pfw06.c (okundu)
+- `icrs_den_tarihin_ortalamasina`: [ERFA2023] pmat06.c (matris), s2c.c ve c2s.c (küresel ↔ birim vektör) (okundu)
+- `yanlilik_presesyon_matrisi`: [ERFA2023] pmat06.c, fw2m.c (okundu)
 
 ### `kozmos.kozmoloji.hubble_diyagrami`
 
@@ -380,6 +391,7 @@ yazıldı, testlerle sınandı, ama kaynağın metni henüz açılmadı.
 
 ## Kaynak başına fonksiyon sayısı
 
+- [ADQL2023]: 1
 - [Abramowicz2013]: 11
 - [Armitage2011]: 3
 - [Astropy2022]: 8
@@ -394,7 +406,7 @@ yazıldı, testlerle sınandı, ama kaynağın metni henüz açılmadı.
 - [Cohen2003]: 3
 - [CraigChambers2026]: 3
 - [EHT2019]: 4
-- [ERFA2023]: 28
+- [ERFA2023]: 33
 - [FITS2018]: 4
 - [ForemanMackey2013]: 3
 - [HoffleitWarren1991]: 1
@@ -427,7 +439,7 @@ yazıldı, testlerle sınandı, ama kaynağın metni henüz açılmadı.
 - [Schirmer2013]: 2
 - [Scolnic2022]: 1
 - [SkyView2026]: 1
-- [TAP2019]: 4
+- [TAP2019]: 3
 - [VanderPlas2018]: 4
 - [Vehtari2021]: 2
 - [Wright2010]: 3
@@ -436,7 +448,6 @@ yazıldı, testlerle sınandı, ama kaynağın metni henüz açılmadı.
 
 ## Kaynağı okunmayı bekleyenler
 
-- `kozmos.arsiv.ikimass.nokta_kaynaklari`: [TAP2019] Bölüm 2.7.3 (FORMAT) ve ADQL geometri işlevleri (CONTAINS, POINT, CIRCLE)
 - `kozmos.gozlem.dedektor.sinyal_gurultu_orani`: [MerlineHowell1995] arka plan kestirimi terimi (1 + n_pix/n_B); [Howell2006] Bölüm 4.4: CCD denklemi
 - `kozmos.karadelik.temel.isco_ozgul_enerji_kerr`: [Bardeen1972] ISCO'daki özgül enerji Ẽ_ms = (1 − 2/(3 r̃_ms))^{1/2}
 - `kozmos.yildiz.imf.salpeter_dn_dm`: [Salpeter1955] özgün makale (eğim değeri)

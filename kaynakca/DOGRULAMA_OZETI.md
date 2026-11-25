@@ -1,6 +1,6 @@
 # Doğrulama özeti
 
-Üretim: `dogrula.py`, 2026-11-25 14:38 UTC. Ayrıntı: `dogrulama_kaydi.json`.
+Üretim: `dogrula.py`, 2026-11-25 14:55 UTC. Ayrıntı: `dogrulama_kaydi.json`.
 
 ## Künyeler
 
@@ -386,7 +386,7 @@ BULUNAMADI: 1, DOGRULANDI: 212, ELLE: 18 (toplam 231).
 
 ## Atıf denetimi
 
-Plan belgelerinde kullanılan tanımlı anahtar: 222.
+Plan belgelerinde kullanılan tanımlı anahtar: 223.
 
 Tanımsız anahtar yok.
 

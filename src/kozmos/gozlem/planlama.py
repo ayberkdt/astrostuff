@@ -4,9 +4,12 @@ Var olan yapı taşlarını birleştirir: Greenwich ortalama yıldız zamanı
 (``zaman.julyen``, ERFA ``gmst06.c``) ve saat açısından ufuk koordinatlarına
 dönüşüm (``koordinat.donusum``, ERFA ``hd2ae.c``) [ERFA2023].
 
-Planlama doğruluğundadır: presesyon, nutasyon, aberasyon ve kırılma
-uygulanmaz. J2000 koordinatlarıyla 2026'da hata yaklaşık 0,4 dereceye kadar
-çıkar; teleskop yönlendirmesi için yeterli değildir.
+Koordinatlar çerçeve yanlılığı ve presesyonla tarihin ortalama ekvatoruna
+taşınır (``koordinat.presesyon``, ERFA ``pmat06.c``); istenirse atmosfer
+kırılması eklenir (``gozlem.kirilma``, ERFA ``refco.c``). Nutasyon, aberasyon,
+kutup hareketi ve UT1 − UTC farkı uygulanmaz; astropy ile ölçülen fark bir yay
+dakikasının altındadır (tests/kahin/test_planlama_kahin.py). Teleskop
+yönlendirmesi için yeterli değildir.
 """
 
 from __future__ import annotations
@@ -17,7 +20,9 @@ import numpy as np
 from numpy.typing import ArrayLike, NDArray
 
 from kozmos._kaynak import kaynak
+from kozmos.gozlem.kirilma import gozlenen_yukseklik
 from kozmos.koordinat.donusum import hava_kutlesi_duzlem_paralel, saat_acisi_den_ufuk
+from kozmos.koordinat.presesyon import icrs_den_tarihin_ortalamasina
 from kozmos.temel.aci import IKI_PI, eksi_pi_arti_pi
 from kozmos.zaman.julyen import greenwich_ortalama_yildiz_zamani
 
@@ -37,9 +42,10 @@ class Gorunurluk:
 
 @kaynak(
     "ERFA2023",
-    yer="gmst06.c, hd2ae.c",
+    yer="gmst06.c, hd2ae.c, pmat06.c, refco.c",
     teyit="okundu",
-    not_="H = GMST + doğu boylamı − sağ açıklık; ardından saat açısı → azimut, yükseklik. UT1 ≈ UTC ≈ TT alınır",
+    not_="koordinatlar yanlılık-presesyon matrisiyle tarihe taşınır; H = GMST + doğu boylamı − sağ açıklık; ardından "
+    "saat açısı → azimut, yükseklik; istenirse kırılma. UT1 ≈ UTC ≈ TT alınır",
 )
 def gorunurluk(
     sag_acikllik_rad: float,
@@ -48,17 +54,25 @@ def gorunurluk(
     dogu_boylami_rad: float,
     jd1: ArrayLike,
     jd2: ArrayLike = 0.0,
+    *,
+    tarihe_tasi: bool = True,
+    kirilma: tuple[float, float] | None = None,
 ) -> Gorunurluk:
     """Bir hedefin verilen anlardaki saat açısını, azimutunu, yüksekliğini ve hava kütlesini hesaplar.
 
     Parametreler
     ------------
     sag_acikllik_rad, dik_acikllik_rad : float
-        Hedefin koordinatları [rad].
+        Hedefin ICRS (J2000) koordinatları [rad].
     enlem_rad, dogu_boylami_rad : float
         Gözlemcinin enlemi ve doğuya artı boylamı [rad].
     jd1, jd2 : float ya da ndarray
         İki parçalı Jülyen tarihi (UTC).
+    tarihe_tasi : bool
+        Doğruysa koordinatlar tarihin ortalama ekvatoruna taşınır; yanlışsa verildiği gibi kullanılır
+        (koordinatlar zaten tarihin ekinoksundaysa).
+    kirilma : (A, B), isteğe bağlı
+        ``gozlem.kirilma.kirilma_sabitleri`` çıktısı; verilirse yükseklik gözlenen (kırılmış) yüksekliktir.
 
     Döndürür
     --------
@@ -66,22 +80,28 @@ def gorunurluk(
 
     Kaynaklar
     ---------
-    [ERFA2023] gmst06.c, hd2ae.c.
+    [ERFA2023] gmst06.c, hd2ae.c, pmat06.c, refco.c.
 
     Geçerlilik
     ----------
     UT1, UTC ve TT aynı sayılır (yıldız zamanında en çok birkaç saniyelik
-    etki). Koordinatlar tarihin ekinoksuna taşınmaz: J2000 koordinatlarıyla
-    hata yılda yaklaşık 50 yay saniyesi birikir. Hava kütlesi düzlem-paralel
-    yaklaşımdır; ufkun altında ``nan``.
+    etki). Nutasyon ve aberasyon uygulanmaz. ``tarihe_tasi=False`` ve J2000
+    koordinatlarıyla hata yılda yaklaşık 50 yay saniyesi birikir. Kırılma
+    modeli yaklaşık 5° yüksekliğin altında ``nan`` verir. Hava kütlesi
+    düzlem-paralel yaklaşımdır; ufkun altında ``nan``.
 
     Doğrulama
     ---------
-    tests/kahin/test_planlama_kahin.py: astropy AltAz ile 0,6 derece içinde uyum.
+    tests/kahin/test_planlama_kahin.py: astropy AltAz ile bir yay dakikası içinde uyum (kırılmalı ve kırılmasız).
     """
+    ra, dec = sag_acikllik_rad, dik_acikllik_rad
+    if tarihe_tasi:
+        ra, dec = icrs_den_tarihin_ortalamasina(ra, dec, jd1, jd2)
     gmst = greenwich_ortalama_yildiz_zamani(jd1, jd2, jd1, jd2)
-    saat_acisi = eksi_pi_arti_pi(gmst + dogu_boylami_rad - sag_acikllik_rad)
-    azimut, yukseklik = saat_acisi_den_ufuk(saat_acisi, dik_acikllik_rad, enlem_rad)
+    saat_acisi = eksi_pi_arti_pi(gmst + dogu_boylami_rad - ra)
+    azimut, yukseklik = saat_acisi_den_ufuk(saat_acisi, dec, enlem_rad)
+    if kirilma is not None:
+        yukseklik = gozlenen_yukseklik(yukseklik, *kirilma)
     return Gorunurluk(saat_acisi, azimut, yukseklik, hava_kutlesi_duzlem_paralel(yukseklik))
 
 
@@ -91,8 +111,18 @@ def gorunurluk(
     teyit="okundu",
     not_="meridyen geçişi H = 0; saat açısı UT1 günü başına 1,00273781191135448 tur ilerler",
 )
-def meridyen_gecisi_jd(sag_acikllik_rad: float, dogu_boylami_rad: float, jd_baslangic: float) -> float:
+def meridyen_gecisi_jd(
+    sag_acikllik_rad: float,
+    dogu_boylami_rad: float,
+    jd_baslangic: float,
+    *,
+    dik_acikllik_rad: float | None = None,
+) -> float:
     """Verilen andan sonraki ilk üst meridyen geçişinin Jülyen tarihini bulur.
+
+    ``dik_acikllik_rad`` verilirse koordinatlar ICRS sayılır ve sağ açıklık başlangıç
+    anının ortalama ekinoksuna taşınır (presesyon dik açıklığa da bağlıdır); verilmezse
+    sağ açıklık olduğu gibi kullanılır.
 
     Kaynaklar
     ---------
@@ -106,6 +136,8 @@ def meridyen_gecisi_jd(sag_acikllik_rad: float, dogu_boylami_rad: float, jd_basl
     ---------
     tests/kahin/test_planlama_kahin.py: bulunan anda saat açısı sıfır, yükseklik en büyük.
     """
+    if dik_acikllik_rad is not None:
+        sag_acikllik_rad = float(icrs_den_tarihin_ortalamasina(sag_acikllik_rad, dik_acikllik_rad, jd_baslangic)[0])
     gmst = float(greenwich_ortalama_yildiz_zamani(jd_baslangic, 0.0, jd_baslangic, 0.0))
     kalan = (sag_acikllik_rad - gmst - dogu_boylami_rad) % IKI_PI
     return jd_baslangic + kalan / IKI_PI / YILDIZ_GUNU_ORANI

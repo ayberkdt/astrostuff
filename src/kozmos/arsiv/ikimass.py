@@ -29,10 +29,12 @@ SUTUNLAR = "ra, dec, err_maj, j_m, h_m, k_m, k_cmsig, k_snr, ph_qual"
     "j_m/h_m/k_m 'selected default magnitude' [mag]; k_cmsig düzeltilmiş K belirsizliği; ph_qual fotometrik nitelik",
 )
 @kaynak(
-    "TAP2019",
-    yer="Bölüm 2.7.3 (FORMAT) ve ADQL geometri işlevleri (CONTAINS, POINT, CIRCLE)",
-    teyit="bekliyor",
-    not_="koni sorgusunun sözdizimi ADQL belgesinden okunmadı; IRSA servisinde çalıştığı sınandı",
+    "ADQL2023",
+    yer="Bölüm 4.2.11 (CIRCLE), 4.2.12 (CONTAINS), 4.2.18 (POINT)",
+    teyit="okundu",
+    not_="CONTAINS, ilk geometri ikincinin içinde ya da sınırındaysa 1 döndürür; WHERE içinde 0 ya da 1 ile "
+    "karşılaştırılır. CIRCLE merkez koordinatlarını ve yarıçapı derece alır. İlk argüman olarak verilen koordinat "
+    "sistemi dizgisi ('J2000') belgede tarihsel ve kullanımdan kalkmakta olan seçenektir; IRSA servisinde çalıştığı sınandı",
 )
 def nokta_kaynaklari(
     sag_acikllik_derece: float,
@@ -60,7 +62,7 @@ def nokta_kaynaklari(
 
     Kaynaklar
     ---------
-    [IRSA2026] TAP_SCHEMA.columns; [TAP2019]; katalog: [Skrutskie2006].
+    [IRSA2026] TAP_SCHEMA.columns; [ADQL2023] Bölüm 4.2.11, 4.2.12, 4.2.18; katalog: [Skrutskie2006].
 
     Geçerlilik
     ----------
