@@ -15,6 +15,8 @@ k'ıncı poz için zamanca en yakın m pozdan kurulur; her iki durumda nesneler
 
 from __future__ import annotations
 
+import warnings
+
 import numpy as np
 from numpy.typing import ArrayLike, NDArray
 
@@ -23,18 +25,32 @@ from kozmos._kaynak import kaynak
 Dizi = NDArray[np.float64]
 
 
-def _model(kareler: Dizi, maskeler: NDArray[np.bool_] | None, en_yuksegi_at: int) -> Dizi:
-    """Her karesi kendi ortancasına bölünmüş yığının piksel piksel ortancası (birim düzeyli model)."""
-    duzey = np.nanmedian(np.where(maskeler, np.nan, kareler) if maskeler is not None else kareler, axis=(1, 2))
-    yigin = kareler / duzey[:, None, None]
-    if maskeler is not None:
-        yigin = np.where(maskeler, np.nan, yigin)
+def _ortanca_model(yigin: Dizi, en_yuksegi_at: int) -> Dizi:
     if en_yuksegi_at > 0 and yigin.shape[0] > en_yuksegi_at + 1:
         yigin = np.sort(yigin, axis=0)  # nan'lar sona gider
         sayi = np.sum(np.isfinite(yigin), axis=0)
         sira = np.arange(yigin.shape[0])[:, None, None]
         yigin = np.where(sira >= sayi - en_yuksegi_at, np.nan, yigin)
-    return np.nanmedian(yigin, axis=0)
+    with np.errstate(all="ignore"), warnings.catch_warnings():
+        warnings.simplefilter("ignore", RuntimeWarning)  # bütün değerleri maskeli pikseller: aşağıda doldurulur
+        return np.nanmedian(yigin, axis=0)
+
+
+def _model(kareler: Dizi, maskeler: NDArray[np.bool_] | None, en_yuksegi_at: int) -> Dizi:
+    """Her karesi kendi ortancasına bölünmüş yığının piksel piksel ortancası (birim düzeyli model).
+
+    Bir piksel bütün karelerde maskeliyse (ya da atma sonrası değeri kalmıyorsa) o pikselde maskesiz
+    ortanca kullanılır; model hiçbir pikselde ``nan`` kalmaz.
+    """
+    duzey = np.nanmedian(np.where(maskeler, np.nan, kareler) if maskeler is not None else kareler, axis=(1, 2))
+    yigin = kareler / duzey[:, None, None]
+    if maskeler is None:
+        return _ortanca_model(yigin, en_yuksegi_at)
+    model = _ortanca_model(np.where(maskeler, np.nan, yigin), en_yuksegi_at)
+    bos = ~np.isfinite(model)
+    if bos.any():
+        model[bos] = _ortanca_model(yigin, en_yuksegi_at)[bos]
+    return model
 
 
 @kaynak(
@@ -76,7 +92,9 @@ def duragan_gokyuzu_cikar(
     En yüksek değeri atmak yıldız kalıntısını azaltır ama boş gökyüzünde ortancayı
     aşağı çeker: 12 karelik sentetik dizide artık, kare gürültüsünün yaklaşık onda
     biri kadar artıya kayar (tests/birim/test_gokyuzu.py). Nesne maskesi verilmişse
-    ``en_yuksegi_at=0`` bu yanlılığı kaldırır.
+    ``en_yuksegi_at=0`` bu yanlılığı kaldırır. Gerçek SOFI Ks dizisinde (16 kare, 28 dakika)
+    durağan model büyük ölçekli artığı 151 ADU'dan 0,8 ADU'ya indirmiştir
+    (``belgeler/kizilotesi_indirgeme.json``).
 
     Doğrulama
     ---------
@@ -131,7 +149,9 @@ def dinamik_gokyuzu_cikar(
     ----------
     Gökyüzünün biçimi dizi içinde değişiyorsa (kaynak: 10-30 dakikadan uzun
     yakın kızılötesi dizileri) gereklidir. Az komşu gürültüyü artırır: m kareden
-    kurulan modelin gürültüsü çıkarılan kareye yaklaşık 1/√m oranında eklenir.
+    kurulan modelin gürültüsü çıkarılan kareye yaklaşık 1/√m oranında eklenir. Gerçek SOFI
+    dizisinde (28 dakika) 8 komşulu dinamik model durağan modelden gürültülü çıkmıştır
+    (8,2 ve 7,1 ADU); kısa dizide durağan model yeğlenir.
 
     Doğrulama
     ---------

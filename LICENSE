@@ -20,6 +20,7 @@ kapsamındaki haklara dokunmaz.
 belgeler/ klasöründeki bazı şekiller üçüncü taraf gözlem verisinden
 türetilmiştir; yukarıdaki hak saklama bu şekilleri kapsamaz. Bunlardan
 optik_kizilotesi.png, Digitized Sky Survey verisi içerdiği için CC BY-NC-SA 4.0
+lisansıyla, kizilotesi_indirgeme.png ESO verisinden türetildiği için CC BY 4.0
 lisansıyla paylaşılır. Her şeklin tabi olduğu koşullar aynı bildirim
 dosyasında listelenmiştir.
 Analizlerin kullandığı veri setleri kendi sahiplerine aittir, çalışma anında
@@ -39,5 +40,6 @@ any kind.
 
 Figures under belgeler/ that are derived from third-party survey data are not
 covered by this reservation of rights; optik_kizilotesi.png contains Digitized
-Sky Survey data and is shared under CC BY-NC-SA 4.0. See
+Sky Survey data and is shared under CC BY-NC-SA 4.0; kizilotesi_indirgeme.png
+is derived from ESO data and is shared under CC BY 4.0. See
 UCUNCU_TARAF_BILDIRIMLERI.md for the terms that apply to each figure.

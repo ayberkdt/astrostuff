@@ -47,5 +47,43 @@
    "sigma_h0": 1.0029142701971483,
    "omega_m": 0.3469017116866236
   }
+ },
+ "yayimlanan_zincir": {
+  "sutunlar": [
+   "cosmological_parameters--omega_m",
+   "cosmological_parameters--h0",
+   "supernova_params--m",
+   "prior",
+   "post"
+  ],
+  "ornekleyici_satiri": "#sampler=emcee",
+  "ornek_sayisi": 160000,
+  "kesitler": {
+   "tamami": {
+    "ornek": 160000,
+    "h0": 73.5026847604877,
+    "sigma_h0": 1.0680215307742278
+   },
+   "ilk_yuzde_10_atilmis": {
+    "ornek": 144000,
+    "h0": 73.52652353199043,
+    "sigma_h0": 1.013924496438092
+   },
+   "ilk_yuzde_25_atilmis": {
+    "ornek": 120000,
+    "h0": 73.54394540863196,
+    "sigma_h0": 1.0152750424899442
+   },
+   "son_yari": {
+    "ornek": 80000,
+    "h0": 73.53542402987247,
+    "sigma_h0": 1.014469599869741
+   },
+   "ilk_yuzde_5": {
+    "ornek": 8000,
+    "h0": 73.08041459409705,
+    "sigma_h0": 1.7572883862578397
+   }
+  }
  }
 }

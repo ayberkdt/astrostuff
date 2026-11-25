@@ -250,7 +250,7 @@ def test_kelvin_helmholtz_gunes():
 
 
 def test_nukleer_zaman_olcegi():
-    # Tanım gereği: t = ε f M c² / L; ε = 0,007 ve f = 0,1 test girdisidir (kaynaklı bir öneri değildir).
+    # t = ε f M c² / L; ε = 0,007 ve f = 0,1 kaynağın Güneş için verdiği değerlerdir, sonuç ≈ 10^10 yıl [Pols2011].
     t = ol.nukleer_zaman_olcegi_yil(M_GUNES, GUNES_ISINIM_GUCU.deger, 0.007, 0.1)
     beklenen = 0.007 * 0.1 * M_GUNES * ISIK_HIZI.deger**2 / GUNES_ISINIM_GUCU.deger / YIL
     assert t == pytest.approx(beklenen, rel=1e-12)

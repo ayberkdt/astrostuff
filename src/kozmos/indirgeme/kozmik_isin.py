@@ -35,8 +35,10 @@ _ALT_ORNEKLEME = 2  # f_s
     "vanDokkum2001",
     yer="TeX etiketleri kernel.eq, noise.eq, sigmap.eq ve izleyen denklemler (S′, F, seçim ölçütü)",
     teyit="okundu",
-    not_="alt örnekleme çarpanı f_s = 2. σ_lim ve f_lim için makalede önerilen sayısal değerler aranmadı; "
-    "varsayılanlar (5 ve 2) bu projenin seçimidir. Komşu piksellere daha düşük eşik uygulama adımı yoktur",
+    not_="alt örnekleme çarpanı f_s = 2. f_lim: kaynak iyi örneklenmiş veride 2 (varsayılanı), eksik örneklenmiş "
+    "veride daha büyük değer önerir (WFPC2 geniş alan çipleri için yaklaşık 5). Kaynak, işaretlenen piksellerin "
+    "komşularına daha düşük eşik uygulanabildiğini söyler ama oranı vermez; 0,5 oranı ve komşularda da ince "
+    "yapı ölçütünün aranması bu projenin seçimidir (aranmazsa kozmik ışına bitişik yıldız çekirdekleri işaretlenir). σ_lim = 5 varsayılanı da bu projenin seçimidir",
 )
 def kozmik_isin_bul(
     goruntu_adu: ArrayLike,
@@ -46,6 +48,7 @@ def kozmik_isin_bul(
     sigma_lim: float = 5.0,
     f_lim: float = 2.0,
     en_cok_yineleme: int = 4,
+    komsu_esik_orani: float = 0.5,
 ) -> tuple[Dizi, Maske]:
     """Tek karede kozmik ışınları saptar ve temizler.
 
@@ -63,6 +66,9 @@ def kozmik_isin_bul(
         Laplace görüntüsünün ince yapı görüntüsüne en küçük oranı f_lim; yıldızları kozmik ışınlardan ayırır.
     en_cok_yineleme : int
         Yeni piksel işaretlenmeyince erken durur.
+    komsu_esik_orani : float
+        İşaretlenen piksellere bitişik piksellerde eşik ``komsu_esik_orani × sigma_lim`` olur; kozmik ışınların
+        sönük kenarlarını yakalar. 1 verilirse komşulara ayrı eşik uygulanmaz.
 
     Döndürür
     --------
@@ -78,7 +84,8 @@ def kozmik_isin_bul(
     PSF iyi örneklenmişse (FWHM yaklaşık 2,5 piksel ve üstü) yıldızlar güvenle
     ayrılır; eksik örneklenmiş veride ``f_lim`` büyütülmelidir. Kaynak, 5σ
     eşiğinde özgün görüntüdeki 5σ tepelerin yaklaşık yarısının işaretlendiğini
-    belirtir.
+    belirtir. Gerçek HST STIS karesinde iki pozun farkına karşı ölçülen tamlık ve
+    saflık ``belgeler/kozmik_isin_gercek_veri.json`` dosyasındadır.
 
     Doğrulama
     ---------
@@ -99,6 +106,9 @@ def kozmik_isin_bul(
         m3 = ndimage.median_filter(temiz, size=3, mode="nearest")
         ince = np.clip(m3 - ndimage.median_filter(m3, size=7, mode="nearest"), 0.01, None)
         yeni = (s_ussu > sigma_lim) & (l_arti / ince > f_lim) & ~maske
+        if komsu_esik_orani < 1.0 and (yeni | maske).any():
+            bitisik = ndimage.binary_dilation(yeni | maske, structure=np.ones((3, 3)))
+            yeni |= bitisik & (s_ussu > komsu_esik_orani * sigma_lim) & (l_arti / ince > f_lim) & ~maske
         if not yeni.any():
             break
         maske |= yeni

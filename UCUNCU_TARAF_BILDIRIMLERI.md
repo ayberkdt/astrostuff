@@ -65,6 +65,8 @@ Analizlerin kullandığı veri setleri depoya konmaz; çalışma anında kaynağ
 | `hr_diyagrami.png` | Gaia DR3 | CC BY-NC 3.0 IGO |
 | `gokyuzu_haritasi.png` | Parlak Yıldız Kataloğu, 5. baskı (HEASARC `bsc5p`) | Aşağıdaki nota bakınız |
 | `hubble_diyagrami.png` | Pantheon+SH0ES veri sürümü | Okunmadı |
+| `kozmik_isin_gercek_veri.png` | Hubble STIS, program 8310 (MAST) | MAST veri kullanım sayfası: NASA politikası gereği CC0; teşekkür metni beklenir |
+| `kizilotesi_indirgeme.png` | ESO NTT/SOFI, program 184.D-1152(F) | CC BY 4.0; telif hakkı ESO'dadır |
 
 ### Digitized Sky Survey
 
@@ -88,6 +90,8 @@ WISE Tüm Gökyüzü Sürümü açıklayıcı ekinin giriş bölümü şu teşek
 
 > This publication makes use of data products from the Wide-field Infrared Survey Explorer, which is a joint project of the University of California, Los Angeles, and the Jet Propulsion Laboratory/California Institute of Technology, funded by the National Aeronautics and Space Administration.
 
+Şekildeki veri taşımayan bölgenin nedeni aynı ekin uyarı notlarındadır (bölüm I.4.c.vii): doymuş pikseller tek pozlarda maskelenir ve Atlas görüntüsüne girmez; doyma sınırını aşan parlak bölgelerde yoğunluk ve belirsizlik haritaları NaN değeri taşır.
+
 ### IRSA
 
 Gaia ve 2MASS katalog sorguları IRSA üzerinden yapılmıştır. IRSA'nın "Acknowledging IRSA" sayfası şu metni ister:
@@ -101,6 +105,20 @@ ESA'nın Gaia lisans sayfası (`cosmos.esa.int/web/gaia-users/license`) Gaia ver
 ### Parlak Yıldız Kataloğu
 
 HEASARC'ın `bsc5p` sayfasındaki lisans notu, kataloğun yalnızca bilimsel araştırma amacıyla sunulduğunu, telif hakkının HEASARC'ta olmadığını ve ticari kullanım koşullarını açıklayamayacağını bildirir; basılı son sürümün (4. baskı) telif hakkı Yale University Observatory'dedir. Katalog bu depoda barındırılmaz; `gokyuzu_haritasi.png` katalogdaki konum ve kadirlerden çizilmiştir.
+
+### Hubble (MAST)
+
+MAST'ın veri kullanım sayfası, DSS gibi sayılan istisnalar dışındaki MAST verisinin kamu malı olduğunu ve NASA politikası gereği CC0 ile lisanslandığını bildirir; yayınlarda görevin ve STScI'nin anılmasını bekler. MAST'ın görev teşekkürleri sayfasındaki Hubble metni:
+
+> This research is based on observations made with the NASA/ESA Hubble Space Telescope obtained from the Space Telescope Science Institute, which is operated by the Association of Universities for Research in Astronomy, Inc., under NASA contract NAS5-26555. These observations are associated with program 8310.
+
+### ESO
+
+ESO Veri Erişim Politikası (`archive.eso.org/cms/eso-data-access-policy.html`), arşivdeki bütün verinin telif hakkının ESO'da kaldığını ve verinin Creative Commons Atıf 4.0 (CC BY 4.0) ile dağıtıldığını bildirir; verinin ESO kaynaklı olduğu belirtilmeli ve dosya başlıkları korunmalıdır. Ham veri kullanan yayınlar için istenen metin:
+
+> Based on observations collected at the European Southern Observatory under ESO programme 184.D-1152(F).
+
+Ham kareler bu depoda barındırılmaz; `kizilotesi_indirgeme.png` onlardan türetilmiştir ve CC BY 4.0 koşuluyla paylaşılır.
 
 ### SkyView ve Pantheon+
 

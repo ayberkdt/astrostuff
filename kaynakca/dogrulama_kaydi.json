@@ -1,5 +1,5 @@
 {
- "zaman": "2026-11-25 14:55 UTC",
+ "zaman": "2026-11-25 15:39 UTC",
  "kunyeler": [
   {
    "anahtar": "SOFA2023",
@@ -2673,16 +2673,8 @@
    "bib_baslik": "Physics of the Interstellar and Intergalactic Medium",
    "bib_yil": "2011",
    "kimlik": "isbn:9780691122144",
-   "dis": {
-    "kaynak": "Open Library",
-    "baslik": "Physics of the interstellar and intergalactic medium",
-    "yil": 2011,
-    "ilk_yazar": null,
-    "yayin": "Princeton University Press"
-   },
-   "baslik_benzerligi": 1.0,
-   "yil_farki": 0,
-   "durum": "DOGRULANDI"
+   "durum": "BULUNAMADI",
+   "aciklama": "dış kayıt okunamadı"
   },
   {
    "anahtar": "Paxton2011",
@@ -3435,6 +3427,32 @@
    "aciklama": "DOI, arXiv ya da ISBN yok; elle doğrulanacak"
   },
   {
+   "anahtar": "Howell1989",
+   "bib_baslik": "Two-dimensional aperture photometry: signal-to-noise ratio of point-source observations and optimal data-extraction techniques",
+   "bib_yil": "1989",
+   "kimlik": "doi:10.1086/132477",
+   "dis": {
+    "kaynak": "Crossref",
+    "baslik": "Two-dimensional aperture photometry - Signal-to-noise ratio of point-source observations and optimal data-extraction techniques",
+    "yil": 1989,
+    "ilk_yazar": "Howell",
+    "yayin": "Publications of the Astronomical Society of the Pacific",
+    "cilt": "101",
+    "sayfa": "616"
+   },
+   "baslik_benzerligi": 1.0,
+   "yil_farki": 0,
+   "durum": "DOGRULANDI"
+  },
+  {
+   "anahtar": "Pols2011",
+   "bib_baslik": "Stellar Structure and Evolution",
+   "bib_yil": "2011",
+   "kimlik": "https://www.astro.ru.nl/~onnop/education/stev_utrecht_notes/",
+   "durum": "ELLE",
+   "aciklama": "DOI, arXiv ya da ISBN yok; elle doğrulanacak"
+  },
+  {
    "anahtar": "TAP2019",
    "bib_baslik": "Table Access Protocol Version 1.1",
    "bib_yil": "2019",
@@ -3571,6 +3589,14 @@
    "baslik_benzerligi": 1.0,
    "yil_farki": 0,
    "durum": "DOGRULANDI"
+  },
+  {
+   "anahtar": "ADQL2023",
+   "bib_baslik": "Astronomical Data Query Language Version 2.1",
+   "bib_yil": "2023",
+   "kimlik": "https://www.ivoa.net/documents/ADQL/20231215/REC-ADQL-2.1.html",
+   "durum": "ELLE",
+   "aciklama": "DOI, arXiv ya da ISBN yok; elle doğrulanacak"
   },
   {
    "anahtar": "Abramowicz2013",
@@ -4831,6 +4857,6 @@
    "Springel2005",
    "WallJenkins2012"
   ],
-  "kullanilan_sayisi": 223
+  "kullanilan_sayisi": 226
  }
 }

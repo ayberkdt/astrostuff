@@ -6,9 +6,9 @@ okunmuştur:
 - Kroupa: çok parçalı kuvvet yasası, ξ(m) ∝ m^{-α_i} [Kroupa2001] (astro-ph/0009005).
 - Chabrier: m ≤ 1 M_⊙ için log-normal, m > 1 M_⊙ için kuvvet yasası, Tablo 1'deki
   "IMF" satırı [Chabrier2003] (astro-ph/0304382).
-- Salpeter: tek kuvvet yasası, α = 2,35. Salpeter'in kendi makalesi arXiv'de yoktur;
-  eğim değeri [Chabrier2003] ve [Kroupa2001] metinlerinden okunmuştur, Salpeter'in
-  özgün makalesi açılmadığı için [Salpeter1955] kaydı ``teyit="bekliyor"`` taşır.
+- Salpeter: tek kuvvet yasası, α = 2,35. Özgün makale ADS taramasından okunmuştur
+  [Salpeter1955, Denk. 5]: ξ ≈ 0,03 (M/M_⊙)^−1,35 logaritmik kütle aralığı başınadır
+  ve log(M/M_⊙) −0,4 ile +1,0 arasında verilmiştir; bu aralığın dışı dışdeğerlemedir.
 
 Her IMF için dört işlev vardır: normalleştirilmiş sayı yoğunluğu dN/dm, ortalama kütle,
 bir eşiğin üzerindeki kütle oranı ve ters dönüşümle rastgele örnekleme. Kütleler Güneş
@@ -207,9 +207,10 @@ def _chabrier(m_alt: float, m_ust: float) -> _Imf:
 @kaynak("Kroupa2001", yer="Sec. '0.1 < m < 1 M_⊙': Salpeter 1955, α = 2,35", teyit="okundu")
 @kaynak(
     "Salpeter1955",
-    yer="özgün makale (eğim değeri)",
-    teyit="bekliyor",
-    not_="makale arXiv'de yok ve açılmadı; α = 2,35 [Chabrier2003] ve [Kroupa2001] metinlerinden okundu",
+    yer="Denk. 2 (tanım) ve Denk. 5",
+    teyit="okundu",
+    not_="ADS taramasından okundu: dN = ξ(M) d(log10 M) dt/T0 ve ξ(M) ≈ 0,03 (M/M_⊙)^−1,35, log(M/M_⊙) −0,4 ile "
+    "+1,0 arasında. ξ logaritmik kütle aralığı başınadır; dN/dM ∝ M^−2,35",
 )
 def salpeter_dn_dm(kutle_gunes: ArrayLike, m_alt: float = 0.1, m_ust: float = 100.0, alfa: float = 2.35) -> Dizi:
     """Salpeter IMF'inin normalleştirilmiş sayı yoğunluğunu hesaplar.
@@ -232,7 +233,7 @@ def salpeter_dn_dm(kutle_gunes: ArrayLike, m_alt: float = 0.1, m_ust: float = 10
 
     Kaynaklar
     ---------
-    [Chabrier2003] IMF1; [Kroupa2001] Salpeter eğimi; [Salpeter1955] (teyit bekliyor).
+    [Chabrier2003] IMF1; [Kroupa2001] Salpeter eğimi; [Salpeter1955] Denk. 5.
 
     Geçerlilik
     ----------
@@ -247,7 +248,13 @@ def salpeter_dn_dm(kutle_gunes: ArrayLike, m_alt: float = 0.1, m_ust: float = 10
 
 @kaynak("Chabrier2003", yer="Sec. 'Mass function' ve 'Functional forms' (TeX etiketi IMF1)", teyit="okundu")
 @kaynak("Kroupa2001", yer="Sec. '0.1 < m < 1 M_⊙': Salpeter 1955, α = 2,35", teyit="okundu")
-@kaynak("Salpeter1955", yer="özgün makale (eğim değeri)", teyit="bekliyor", not_="makale açılmadı")
+@kaynak(
+    "Salpeter1955",
+    yer="Denk. 2 (tanım) ve Denk. 5",
+    teyit="okundu",
+    not_="ADS taramasından okundu: dN = ξ(M) d(log10 M) dt/T0 ve ξ(M) ≈ 0,03 (M/M_⊙)^−1,35, log(M/M_⊙) −0,4 ile "
+    "+1,0 arasında. ξ logaritmik kütle aralığı başınadır; dN/dM ∝ M^−2,35",
+)
 def salpeter_ortalama_kutle(m_alt: float = 0.1, m_ust: float = 100.0, alfa: float = 2.35) -> float:
     """Salpeter IMF'inin sayı ağırlıklı ortalama kütlesini hesaplar.
 
@@ -267,7 +274,7 @@ def salpeter_ortalama_kutle(m_alt: float = 0.1, m_ust: float = 100.0, alfa: floa
 
     Kaynaklar
     ---------
-    [Chabrier2003] IMF1; [Kroupa2001]; [Salpeter1955] (teyit bekliyor).
+    [Chabrier2003] IMF1; [Kroupa2001]; [Salpeter1955] Denk. 5.
 
     Doğrulama
     ---------
@@ -278,7 +285,13 @@ def salpeter_ortalama_kutle(m_alt: float = 0.1, m_ust: float = 100.0, alfa: floa
 
 @kaynak("Chabrier2003", yer="Sec. 'Mass function' ve 'Functional forms' (TeX etiketi IMF1)", teyit="okundu")
 @kaynak("Kroupa2001", yer="Sec. '0.1 < m < 1 M_⊙': Salpeter 1955, α = 2,35", teyit="okundu")
-@kaynak("Salpeter1955", yer="özgün makale (eğim değeri)", teyit="bekliyor", not_="makale açılmadı")
+@kaynak(
+    "Salpeter1955",
+    yer="Denk. 2 (tanım) ve Denk. 5",
+    teyit="okundu",
+    not_="ADS taramasından okundu: dN = ξ(M) d(log10 M) dt/T0 ve ξ(M) ≈ 0,03 (M/M_⊙)^−1,35, log(M/M_⊙) −0,4 ile "
+    "+1,0 arasında. ξ logaritmik kütle aralığı başınadır; dN/dM ∝ M^−2,35",
+)
 def salpeter_kutle_orani_ustunde(
     m_esik: ArrayLike, m_alt: float = 0.1, m_ust: float = 100.0, alfa: float = 2.35
 ) -> Dizi:
@@ -302,7 +315,7 @@ def salpeter_kutle_orani_ustunde(
 
     Kaynaklar
     ---------
-    [Chabrier2003] IMF1; [Kroupa2001]; [Salpeter1955] (teyit bekliyor).
+    [Chabrier2003] IMF1; [Kroupa2001]; [Salpeter1955] Denk. 5.
 
     Doğrulama
     ---------
@@ -313,7 +326,13 @@ def salpeter_kutle_orani_ustunde(
 
 @kaynak("Chabrier2003", yer="Sec. 'Mass function' ve 'Functional forms' (TeX etiketi IMF1)", teyit="okundu")
 @kaynak("Kroupa2001", yer="Sec. '0.1 < m < 1 M_⊙': Salpeter 1955, α = 2,35", teyit="okundu")
-@kaynak("Salpeter1955", yer="özgün makale (eğim değeri)", teyit="bekliyor", not_="makale açılmadı")
+@kaynak(
+    "Salpeter1955",
+    yer="Denk. 2 (tanım) ve Denk. 5",
+    teyit="okundu",
+    not_="ADS taramasından okundu: dN = ξ(M) d(log10 M) dt/T0 ve ξ(M) ≈ 0,03 (M/M_⊙)^−1,35, log(M/M_⊙) −0,4 ile "
+    "+1,0 arasında. ξ logaritmik kütle aralığı başınadır; dN/dM ∝ M^−2,35",
+)
 def salpeter_ornekle(
     rng: np.random.Generator, n: int, m_alt: float = 0.1, m_ust: float = 100.0, alfa: float = 2.35
 ) -> Dizi:
@@ -339,7 +358,7 @@ def salpeter_ornekle(
 
     Kaynaklar
     ---------
-    [Chabrier2003] IMF1; [Kroupa2001]; [Salpeter1955] (teyit bekliyor).
+    [Chabrier2003] IMF1; [Kroupa2001]; [Salpeter1955] Denk. 5.
 
     Doğrulama
     ---------

@@ -68,6 +68,22 @@
     "sacilim_kadir": 0.021029355475492603,
     "psf_fwhm_piksel": 3.2143293614672457
   },
+  "astrometrik_cozum": {
+    "bozulma": {
+      "donme_derece": 0.4,
+      "olcek_carpani": 1.004,
+      "kaydirma_piksel": [
+        18.0,
+        -14.0
+      ]
+    },
+    "bozuk_wcs_en_buyuk_hata_yaysaniye": 25.752724027168345,
+    "kaydirma_oyu": 252,
+    "kaydirma_sonrasi_en_buyuk_hata_yaysaniye": 3.1906639408866506,
+    "cozum_en_buyuk_hata_yaysaniye": 0.42793952000197566,
+    "cozume_giren_yildiz": 246,
+    "katalog_artik_rms_yaysaniye": 0.26826799804955026
+  },
   "yapay_yildiz": {
     "k": [
       10.5,

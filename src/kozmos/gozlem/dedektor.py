@@ -1,7 +1,6 @@
 """CCD/CMOS dedektörün sinyal modeli, sentetik kare üreteci ve sinyal-gürültü oranı.
 
-Model ve CCD denklemi [Howell2006] kitabının 3. ve 4. bölümlerine dayanır;
-kitabın metni bu çalışmada açılmamıştır ve kayıtlar "bekliyor" durumundadır.
+CCD denklemi Howell'in makalesinin ADS taramasından okunmuştur [Howell1989, Denk. 1].
 Üretecin amacı indirgeme algoritmalarını gerçeğin bilindiği veride
 sınamaktır: üretilen karenin altındaki gerçek sahne de döndürülür.
 """
@@ -149,12 +148,13 @@ def yildiz_alani(bicim: tuple[int, int], x: ArrayLike, y: ArrayLike, aki_e_s: Ar
 
 
 @kaynak(
-    "Howell2006",
-    yer="Bölüm 4.4: CCD denklemi",
-    teyit="bekliyor",
-    not_="S/N = N* / sqrt(N* + n_pix (1 + n_pix/n_B)(N_S + N_D + N_R²)); sayısallaştırma terimi yok",
+    "Howell1989",
+    yer="Denk. 1 ('CCD equation')",
+    teyit="okundu",
+    not_="S/N = N* / sqrt(N* + n_pix (N_s + N_d + N_r²)). (1 + n_pix/n_B) çarpanı kaynakta yoktur ve bu projede "
+    "türetilmiştir: n_B pikselin ortalamasıyla kestirilen arka planın varyansı σ²/n_B'dir ve n_pix pikselden "
+    "çıkarılınca n_pix² σ²/n_B ekler. Aynı terim Merline ve Howell (1995)'e atfedilir; o makale okunmadı",
 )
-@kaynak("MerlineHowell1995", yer="arka plan kestirimi terimi (1 + n_pix/n_B)", teyit="bekliyor")
 def sinyal_gurultu_orani(
     kaynak_e: ArrayLike,
     gokyuzu_e_piksel: ArrayLike,
@@ -182,7 +182,7 @@ def sinyal_gurultu_orani(
 
     Kaynaklar
     ---------
-    [Howell2006] Bölüm 4.4; [MerlineHowell1995].
+    [Howell1989] Denk. 1.
 
     Geçerlilik
     ----------
@@ -191,7 +191,8 @@ def sinyal_gurultu_orani(
 
     Doğrulama
     ---------
-    tests/birim/test_indirgeme.py: kaynak baskın limitte sqrt(N*); sentetik karelerde ölçülen saçılım.
+    tests/birim/test_indirgeme.py: kaynak baskın limitte sqrt(N*); sentetik karelerde ölçülen saçılım;
+    arka plan kestirimi teriminin Monte Carlo ile sınanması.
     """
     n = np.asarray(kaynak_e, dtype=float)
     arka = piksel_sayisi * (1.0 + piksel_sayisi / arka_plan_piksel_sayisi)

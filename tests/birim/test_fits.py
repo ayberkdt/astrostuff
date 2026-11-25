@@ -94,3 +94,20 @@ def test_cok_uzantili_dosya(tmp_path):
         fits.fits_oku(yol, hdu=3)  # tablo
     with pytest.raises(ValueError):
         fits.fits_oku(yol, hdu=0)  # veri yok
+
+
+def test_hierarch_kartlari(tmp_path):
+    # ESO HIERARCH kuralı: astropy 8 karakterden uzun ya da boşluklu anahtarları bu biçimde yazar.
+    hdu = astropy_fits.PrimaryHDU(np.zeros((4, 4), dtype=np.float32))
+    hdu.header["HIERARCH ESO DET DIT"] = (6.0, "Integration Time")
+    hdu.header["HIERARCH ESO DET NDIT"] = 15
+    hdu.header["HIERARCH ESO INS FILT1 NAME"] = "Ks"
+    hdu.header["HIERARCH ESO SEQ CUMOFFSETX"] = -208.333333
+    hdu.header["HIERARCH ESO TEL FOCU LEN"] = True
+    yol = tmp_path / "h.fits"
+    hdu.writeto(yol)
+    _, baslik = fits.fits_oku(yol)
+    kahin = astropy_fits.getheader(yol)
+    for anahtar in ("ESO DET DIT", "ESO DET NDIT", "ESO INS FILT1 NAME", "ESO SEQ CUMOFFSETX", "ESO TEL FOCU LEN"):
+        assert baslik[anahtar] == kahin[anahtar] and type(baslik[anahtar]) is type(kahin[anahtar])
+    assert baslik["NAXIS1"] == 4  # olağan kartlar etkilenmez

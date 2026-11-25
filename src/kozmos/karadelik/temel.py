@@ -334,7 +334,7 @@ def isco_yorunge_frekansi_hz(kutle_kg: ArrayLike) -> Dizi:
     yer="Bölüm 2: r_isco denklemi ve Z1, Z2 tanımları",
     teyit="okundu",
     not_="r_isco = (3 + Z2 ∓ [(3 − Z1)(3 + Z1 + 2Z2)]^{1/2}) r_g; ∓ işareti sırasıyla ileri ve geri yönlü "
-    "yörüngeler içindir. Özgün kaynak [Bardeen1972] okunmadı.",
+    "yörüngeler içindir. Aynı ifade özgün kaynakta Denk. 2.21'dir [Bardeen1972].",
 )
 def isco_yaricapi_kerr_rg(spin: ArrayLike) -> Dizi:
     """Kerr kara deliğin ISCO yarıçapını hesaplar (Bardeen, Press, Teukolsky formülü).
@@ -385,10 +385,10 @@ def _isco_enerjisi(spin: ArrayLike) -> Dizi:
 
 @kaynak(
     "Bardeen1972",
-    yer="ISCO'daki özgül enerji Ẽ_ms = (1 − 2/(3 r̃_ms))^{1/2}",
-    teyit="bekliyor",
-    not_="Formül hatırlanan biçimiyle yazıldı; makale açılmadı. Testte Ẽ(r) dairesel yörünge enerjisinin ISCO'da "
-    "minimum olması (dẼ/dr = 0) ve Schwarzschild değeri √(8/9) ile sınanır.",
+    yer="Denk. 2.20: kararlılık koşulu 1 − (E/μ)² ≥ (2/3)(M/r), eşitlik r = r_ms'de",
+    teyit="okundu",
+    not_="ADS taramasından okundu. Koşulun r_ms'deki eşitliği Ẽ_ms = (1 − 2/(3 r̃_ms))^{1/2} verir. Testte "
+    "Ẽ(r) dairesel yörünge enerjisinin ISCO'da minimum olması (dẼ/dr = 0) ve Schwarzschild değeri √(8/9) ile sınanır.",
 )
 def isco_ozgul_enerji_kerr(spin: ArrayLike) -> Dizi:
     """ISCO'daki dairesel yörüngenin birim durgun kütle başına enerjisini hesaplar.
@@ -407,7 +407,7 @@ def isco_ozgul_enerji_kerr(spin: ArrayLike) -> Dizi:
 
     Kaynaklar
     ---------
-    [Bardeen1972] ISCO özgül enerjisi (okunmadı; teyit bekliyor).
+    [Bardeen1972] Denk. 2.20.
 
     Geçerlilik
     ----------
@@ -431,7 +431,7 @@ def isco_ozgul_enerji_kerr(spin: ArrayLike) -> Dizi:
     yer="Bölüm 5: Novikov-Thorne diski için η = 1 − e_isco/c²",
     teyit="okundu",
     not_="e_isco: ISCO'da dairesel yörüngedeki birim kütlenin toplam enerjisi; e_isco'nun kapalı biçimi "
-    "isco_ozgul_enerji_kerr içindedir ve oradaki [Bardeen1972] kaydı bekliyor.",
+    "isco_ozgul_enerji_kerr içindedir [Bardeen1972, Denk. 2.20].",
 )
 def isco_isinim_verimliligi(spin: ArrayLike) -> Dizi:
     """İnce disk için ışınım verimini hesaplar: η = 1 − E_ISCO.

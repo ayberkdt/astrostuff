@@ -127,3 +127,19 @@ def test_ccd_denklemi_sentetik_fotometriyle():
     beklenen = float(dd.sinyal_gurultu_orani(kaynak_e, gokyuzu * poz, 0.0, 8.0, aciklik.sum()))
     assert olcum.mean() == pytest.approx(kaynak_e, rel=0.01)
     assert olcum.mean() / olcum.std(ddof=1) == pytest.approx(beklenen, rel=0.08)
+
+
+def test_arka_plan_kestirimi_terimi_monte_carlo():
+    # (1 + n_pix/n_B) çarpanı bu projede türetildi; burada doğrudan benzetimle sınanır.
+    # Kaynak yok (N* -> 0 limiti): açıklık toplamından n_B pikselin ortalamasıyla kestirilen arka plan çıkarılır.
+    u = np.random.default_rng(191)
+    n_pix, n_b, gokyuzu, okuma = 50, 100, 200.0, 5.0
+    deneme = 40000
+    aciklik = u.poisson(gokyuzu, (deneme, n_pix)) + u.normal(0, okuma, (deneme, n_pix))
+    halka = u.poisson(gokyuzu, (deneme, n_b)) + u.normal(0, okuma, (deneme, n_b))
+    olculen = (aciklik.sum(axis=1) - n_pix * halka.mean(axis=1)).std()
+    # S/N = N*/gürültü olduğundan N* = 1e-9 ile 1/(S/N) gürültünün kendisidir (kaynak Poisson terimi ihmal).
+    beklenen = 1e-9 / float(dd.sinyal_gurultu_orani(1e-9, gokyuzu, 0.0, okuma, n_pix, n_b))
+    terimsiz = 1e-9 / float(dd.sinyal_gurultu_orani(1e-9, gokyuzu, 0.0, okuma, n_pix))
+    assert olculen == pytest.approx(beklenen, rel=0.015)
+    assert beklenen / terimsiz == pytest.approx(np.sqrt(1.5), rel=1e-9) and abs(olculen / terimsiz - 1) > 0.15

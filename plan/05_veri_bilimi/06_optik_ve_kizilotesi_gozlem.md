@@ -48,7 +48,7 @@ Uygulananlar:
 
 Yapılacaklar:
 
-- **Gökyüzü çıkarma (yazıldı).** `indirgeme/gokyuzu.py` kaydırmalı karelerden durağan ve dinamik gökyüzü modeli kurar [Schirmer2013]. Sentetik dizide ölçülenler: kalabalık alanda nesne maskesi olmadan açıklık akısı %6,8 eksik çıkar, maskeyle %0,6; yığındaki en yüksek değeri atmak boş gökyüzünde artığı gürültünün onda biri kadar artıya kaydırır. Gerçek ham karelerle sınanmadı.
+- **Gökyüzü çıkarma (yazıldı).** `indirgeme/gokyuzu.py` kaydırmalı karelerden durağan ve dinamik gökyüzü modeli kurar [Schirmer2013]. Sentetik dizide ölçülenler: kalabalık alanda nesne maskesi olmadan açıklık akısı %6,8 eksik çıkar, maskeyle %0,6; yığındaki en yüksek değeri atmak boş gökyüzünde artığı gürültünün onda biri kadar artıya kaydırır. Gerçek SOFI Ks dizisinde (16 ham kare) büyük ölçekli artık 151 ADU'dan 0,8 ADU'ya indi; kayıt `belgeler/kizilotesi_indirgeme.json`.
 - **Isıl arka plan.** 3 µm'nin ötesinde teleskop ve atmosferin kendi ışıması baskındır; kısa poz, hızlı okuma ve nodlama gerekir. Arka plan foton gürültüsü `gozlem.dedektor.sinyal_gurultu_orani` ile hesaplanabilir, bant başına gökyüzü parlaklıkları eklenmelidir.
 - **Dedektör.** Kızılötesi diziler doğrusallıktan sapar ve yıkımsız okuma (rampa örnekleme) kullanır; doğrusallık düzeltmesi ve rampa uydurma ayrı fonksiyonlardır.
 - **Sönümleme.** Yakın kızılötesi renk artığından (`H − K`) görsel sönümlemenin kestirimi; sönümleme yasası gerekir [CCM1989; Fitzpatrick1999].
@@ -58,7 +58,8 @@ Yapılacaklar:
 ## Optik tarafta yapılacaklar
 
 - PSF fotometrisi [Stetson1987].
-- Astrometrik çözüm: saptanan kaynakların katalogla eşlenmesinden WCS uydurma. Başlıktaki WCS'in okunması ve katalog eşleme yazıldı [CalabrettaGreisen2002]; uyum adımı yok.
+- Kör astrometrik çözüm (ön bilgi olmadan yıldız deseninden WCS). Yaklaşık WCS'ten katalogla çözüm yazıldı: `astrometri/cozum.py` (oylamayla kaydırma, eşle-uydur yinelemesi) [CalabrettaGreisen2002].
+- Karanlık ve düz alan düzeltmesinin gerçek kızılötesi dizide uygulanması; `.fits.Z` açma.
 - Fotometrik kalibrasyon hattı. Sıfır noktası örnek betikte 2MASS kadirleriyle ölçüldü (40 yıldızda 0,021 kadir saçılım); kitaplık fonksiyonu değil.
 - Gözlem planlamasına nutasyon, aberasyon, Güneş ve Ay konumu, alacakaranlık sınırları. Presesyon (`koordinat/presesyon.py`) ve kırılma (`gozlem/kirilma.py`) yazıldı [ERFA2023].
 - FITS tabloları ve sıkıştırılmış görüntüler. Görüntü uzantıları yazıldı.

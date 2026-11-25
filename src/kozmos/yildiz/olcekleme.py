@@ -258,10 +258,11 @@ def kelvin_helmholtz_zaman_olcegi_s(kutle_kg: ArrayLike, yaricap_m: ArrayLike, i
 
 
 @kaynak(
-    "Kippenhahn2012",
-    yer="nükleer zaman ölçeği tanımı (bölüm ve denklem numarasına bakılmadı)",
-    teyit="bekliyor",
-    not_="kitap bu görevde açılmadı; t = verim · yakıt payı · M c² / L genel tanımdır ve ana kol ömrü tahmini için kullanılır",
+    "Pols2011",
+    yer="Bölüm 2.4.2, Denk. 2.37",
+    teyit="okundu",
+    not_="τ_nuc = φ f_nuc M c² / L ≈ 10^10 (M/M_⊙)(L_⊙/L) yıl. Kaynak hidrojen yanması için φ ≈ 0,007 ve Güneş benzeri "
+    "yıldızda f_nuc ≈ 0,1 (kütlenin %70'i hidrojen, yanma içteki ~%10'da) verir",
 )
 def nukleer_zaman_olcegi_yil(kutle_kg: ArrayLike, isinim_gucu_w: ArrayLike, verim: float, yakit_orani: float) -> Dizi:
     """Nükleer zaman ölçeğini ve ana kol ömrü tahminini hesaplar.
@@ -286,15 +287,18 @@ def nukleer_zaman_olcegi_yil(kutle_kg: ArrayLike, isinim_gucu_w: ArrayLike, veri
 
     Kaynaklar
     ---------
-    [Kippenhahn2012] (teyit bekliyor: bu görevde kitap açılmadı).
+    [Pols2011] Bölüm 2.4.2, Denk. 2.37.
 
     Geçerlilik
     ----------
-    ε ve f için varsayılan sayı verilmemiştir, çünkü okunmuş kaynağı yoktur.
+    ε ve f kullanıcıdan alınır. Kaynağın değerleri: hidrojen yanmasında ε ≈ 0,007, Güneş benzeri
+    yıldızda f ≈ 0,1; bunlarla Güneş için yaklaşık 10^10 yıl çıkar. Helyum ve daha ağır
+    yakıtlarda ε en az on kat küçüktür.
 
     Doğrulama
     ---------
-    tests/birim/test_yildiz.py: kütleyle doğrusal, ışınım gücüyle ters orantı; tanım gereği kapalı değer.
+    tests/birim/test_yildiz.py: kütleyle doğrusal, ışınım gücüyle ters orantı; tanım gereği kapalı değer;
+    kaynaktaki Güneş değeri (yaklaşık 10^10 yıl).
     """
     if not (0.0 < verim < 1.0 and 0.0 < yakit_orani <= 1.0):
         raise ValueError("verim (0,1) ve yakıt_orani (0,1] aralığında olmalı")

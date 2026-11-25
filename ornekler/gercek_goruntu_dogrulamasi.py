@@ -28,7 +28,7 @@ import _cizim as dw
 import numpy as np
 
 from kozmos.arsiv import ikimass, skyview
-from kozmos.astrometri import eslestirme, wcs
+from kozmos.astrometri import cozum, eslestirme, wcs
 from kozmos.fotometri import kaynak as fk
 from kozmos.gozlem import dedektor as dd
 from kozmos.istatistik import saglam
@@ -122,6 +122,34 @@ def main() -> None:
         yapay_kesir.append(bulundu / toplam)
     yapay_kesir = np.array(yapay_kesir)
 
+    # 6. Görüntüden astrometrik çözüm: başlıktaki WCS bilerek bozulur (0,4° dönme, %0,4 ölçek, 18 ve −14 piksel
+    # kaydırma) ve yalnızca saptanan kaynaklarla katalogdan yeniden çözülür; sonuç başlıktaki WCS ile karşılaştırılır.
+    aci = np.radians(0.4)
+    don = np.array([[np.cos(aci), -np.sin(aci)], [np.sin(aci), np.cos(aci)]])
+    bozuk = wcs.Wcs(crpix=w.crpix + np.array([18.0, -14.0]), crval=w.crval, cd=1.004 * don @ w.cd)
+    izgara_x, izgara_y = np.meshgrid(np.linspace(0, PIKSEL - 1, 5), np.linspace(0, PIKSEL - 1, 5))
+
+    def basliktan_fark(aday: wcs.Wcs) -> float:
+        r1, d1 = wcs.piksel_den_gok(aday, izgara_x, izgara_y)
+        r2, d2 = wcs.piksel_den_gok(w, izgara_x, izgara_y)
+        return float(np.max(np.hypot((r1 - r2) * np.cos(np.radians(d2)), d1 - d2)) * 3600.0)
+
+    kaymasiz, oy = cozum.kaydirma_bul(
+        bozuk, kaynaklar.x, kaynaklar.y, katalog["ra"], katalog["dec"], en_cok_piksel=40.0
+    )
+    cozulen = cozum.wcs_iyilestir(
+        kaymasiz, kaynaklar.x, kaynaklar.y, katalog["ra"], katalog["dec"], yaricap_yaysaniye=6.0
+    )
+    astrometrik_cozum = {
+        "bozulma": {"donme_derece": 0.4, "olcek_carpani": 1.004, "kaydirma_piksel": [18.0, -14.0]},
+        "bozuk_wcs_en_buyuk_hata_yaysaniye": basliktan_fark(bozuk),
+        "kaydirma_oyu": oy,
+        "kaydirma_sonrasi_en_buyuk_hata_yaysaniye": basliktan_fark(kaymasiz),
+        "cozum_en_buyuk_hata_yaysaniye": basliktan_fark(cozulen.wcs),
+        "cozume_giren_yildiz": cozulen.yildiz_sayisi,
+        "katalog_artik_rms_yaysaniye": cozulen.artik_rms_yaysaniye,
+    }
+
     sonuc = {
         "goruntu": {
             "tarama": "2MASS-K (SkyView)",
@@ -153,6 +181,7 @@ def main() -> None:
             "sacilim_kadir": sifir_sacilim,
             "psf_fwhm_piksel": fwhm,
         },
+        "astrometrik_cozum": astrometrik_cozum,
         "yapay_yildiz": {"k": yapay_kadir.tolist(), "bulunma_kesri": yapay_kesir.tolist(), "tohum": TOHUM},
     }
     cikti = KOK / "belgeler"

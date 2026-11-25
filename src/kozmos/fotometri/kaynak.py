@@ -306,7 +306,13 @@ def kaynak_bul(
         return KaynakListesi(bos, bos, bos, bos, np.empty(0, dtype=np.int64))
     sayi = np.asarray(ndimage.sum_labels(np.ones_like(g), etiket, gecerli)).astype(np.int64)
     pozitif = np.clip(g, 0.0, None)
-    merkez = np.array(ndimage.center_of_mass(pozitif, etiket, gecerli)).reshape(-1, 2)
+    with np.errstate(invalid="ignore", divide="ignore"):
+        merkez = np.array(ndimage.center_of_mass(pozitif, etiket, gecerli)).reshape(-1, 2)
+    # Yumuşatılmış görüntüde saptanan ama özgün görüntüde artı pikseli olmayan bölüt: ağırlık toplamı sıfırdır.
+    # Gerçek veride (SOFI yığını) görüldü; bu bölütlerde merkez, bölütün geometrik ortasıdır.
+    eksik = ~np.isfinite(merkez).all(axis=1)
+    if eksik.any():
+        merkez[eksik] = np.array(ndimage.center_of_mass(np.ones_like(g), etiket, gecerli[eksik])).reshape(-1, 2)
     aki = np.asarray(ndimage.sum_labels(g, etiket, gecerli))
     tepe = np.asarray(ndimage.maximum(g, etiket, gecerli))
     sira = np.argsort(-aki)

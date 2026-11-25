@@ -53,6 +53,13 @@ def _deger_coz(metin: str) -> bool | int | float | str:
     teyit="okundu",
     not_="anahtar adı 1-8. baytlar; değer göstergesi '= ' 9-10. baytlar; başlık 2880 baytlık bloklarda, END ile biter",
 )
+@kaynak(
+    "Hierarch2009",
+    yer="FITS kayıtlı kurallar sayfası: 'The HIERARCH Keyword Convention', Description",
+    teyit="okundu",
+    not_="HIERARCH kaydının 10-80. baytları boşlukla ayrılmış sınıflandırma sözcükleri, ardından '=' ve serbest "
+    "biçimli değer taşır. Kuralın tam belgesi (hierarch.pdf) okunmadı; yalnızca kayıt sayfasındaki tanım uygulandı",
+)
 def baslik_coz(ham: bytes) -> tuple[Baslik, int]:
     """Bir FITS başlığını anahtar-değer sözlüğüne çözer.
 
@@ -67,16 +74,18 @@ def baslik_coz(ham: bytes) -> tuple[Baslik, int]:
 
     Kaynaklar
     ---------
-    [FITS2018] Bölüm 3.3.1, 4.1.
+    [FITS2018] Bölüm 3.3.1, 4.1; [Hierarch2009] Description.
 
     Geçerlilik
     ----------
-    ``COMMENT``, ``HISTORY`` ve değer göstergesi taşımayan kayıtlar atlanır;
+    ESO'nun ``HIERARCH`` kayıtları, sözcükleri tek boşlukla birleştirilmiş anahtarla saklanır
+    (``HIERARCH ESO DET DIT = 6.0`` → ``baslik["ESO DET DIT"]``). ``COMMENT``, ``HISTORY`` ve
+    değer göstergesi taşımayan kayıtlar atlanır;
     ``CONTINUE`` ile uzatılmış dizgiler birleştirilmez. Aynı anahtar yinelenirse son değer kalır.
 
     Doğrulama
     ---------
-    tests/birim/test_fits.py: astropy.io.fits ile başlık değerlerinin karşılaştırılması.
+    tests/birim/test_fits.py: astropy.io.fits ile başlık değerlerinin karşılaştırılması; HIERARCH kartları.
     """
     baslik: Baslik = {}
     konum = 0
@@ -90,6 +99,9 @@ def baslik_coz(ham: bytes) -> tuple[Baslik, int]:
             break
         if kayit[8:10] == "= " and anahtar:
             baslik[anahtar] = _deger_coz(kayit[10:])
+        elif anahtar == "HIERARCH" and "=" in kayit[9:]:
+            ad, _, deger = kayit[9:].partition("=")
+            baslik[" ".join(ad.split())] = _deger_coz(deger)
     veri_baslangici = -(-konum // BLOK) * BLOK
     return baslik, veri_baslangici
 

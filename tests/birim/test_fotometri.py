@@ -150,3 +150,11 @@ def test_ayristirma_yalniz_yildizi_bolmez():
     tek = fk.kaynak_bul(goruntu, 100.0, 2.0, esik_sigma=4.0, yumusatma_fwhm=3.0)
     ayri = fk.kaynak_bul(goruntu, 100.0, 2.0, esik_sigma=4.0, yumusatma_fwhm=3.0, ayristirma_duzeyi=32)
     assert len(tek) == x.size and len(ayri) == x.size
+
+
+def test_arti_pikseli_olmayan_bolutun_merkezi_tanimli():
+    # Saptama görüntüsü ile ölçüm görüntüsü ayrışınca (yumuşatma) bölütün artı ağırlığı sıfır olabilir.
+    goruntu = np.zeros((40, 40))
+    goruntu[18:23, 18:23] = 5.0
+    liste = fk.kaynak_bul(goruntu, 6.0, 1.0, esik_sigma=-2.0, en_az_piksel=5)  # arka plan 6: bütün pikseller eksi
+    assert len(liste) >= 1 and np.all(np.isfinite(liste.x)) and np.all(np.isfinite(liste.y))

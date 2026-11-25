@@ -98,3 +98,13 @@ def test_girdi_denetimi():
         gokyuzu.dinamik_gokyuzu_cikar(kareler, np.arange(4.0))
     with pytest.raises(ValueError):
         gokyuzu.dinamik_gokyuzu_cikar(kareler, np.arange(5.0), komsu_sayisi=5)
+
+
+def test_her_karede_maskeli_piksel_modelde_bosluk_birakmaz():
+    # Gerçek SOFI dizisinde görülen durum: parlak bir nesnenin maskesi bir pikseli bütün karelerde örter.
+    kareler, yildizlar, zaman, _ = _dizi(144)
+    maskeler = yildizlar > GURULTU
+    maskeler[:, 40:44, 40:44] = True
+    cikti, model = gokyuzu.duragan_gokyuzu_cikar(kareler, maskeler=maskeler)
+    assert np.all(np.isfinite(model)) and np.all(np.isfinite(cikti))
+    assert np.all(np.isfinite(gokyuzu.dinamik_gokyuzu_cikar(kareler, zaman, komsu_sayisi=4, maskeler=maskeler)))

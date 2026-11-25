@@ -2,11 +2,11 @@
 
 Bu dosya `python kaynakca/kutuk_raporu.py` ile kaynak kütüğünden üretilir; elle düzenlenmez.
 
-- Kaynağa bağlı açık fonksiyon: 223
-- Bütün kayıtları kaynak metninden okunmuş fonksiyon: 216
-- Kaynak kaydı: 262 (okundu: 254, bekliyor: 8)
+- Kaynağa bağlı açık fonksiyon: 226
+- Bütün kayıtları kaynak metninden okunmuş fonksiyon: 226
+- Kaynak kaydı: 265 (okundu: 265, bekliyor: 0)
 - Kaynaklı sabit: 35 (teyit bekleyen: 0)
-- Test fonksiyonu: 288 (parametreli ve özellik testleri tek sayılır)
+- Test fonksiyonu: 296 (parametreli ve özellik testleri tek sayılır)
 - Kaynak kuralından muaf altyapı fonksiyonu: 4
 
 `okundu`: denklem kod yazılırken kaynağın metninden okundu. `bekliyor`: denklem hatırlanan biçimiyle
@@ -44,6 +44,12 @@ yazıldı, testlerle sınandı, ama kaynağın metni henüz açılmadı.
 - `csv_oku`: [TAP2019] Bölüm 2.7.3 (FORMAT): text/csv çıktısı (okundu)
 - `sorgula`: [TAP2019] Bölüm 2.1 (TAP-sync), 2.7.1 (LANG), 2.7.2 (QUERY), 2.7.3 (FORMAT) (okundu)
 
+### `kozmos.astrometri.cozum`
+
+- `kaydirma_bul`: [CalabrettaGreisen2002] TeX etiketi eq:px: CRPIX referans noktanın piksel konumudur (okundu)
+- `wcs_iyilestir`: [CalabrettaGreisen2002] TeX etiketi eq:px (okundu)
+- `wcs_uydur`: [CalabrettaGreisen2002] TeX etiketi eq:px (doğrusal piksel → ara koordinat bağıntısı) (okundu)
+
 ### `kozmos.astrometri.eslestirme`
 
 - `capraz_esle`: [ERFA2023] sepp.c, s2c.c (okundu)
@@ -77,7 +83,7 @@ yazıldı, testlerle sınandı, ama kaynağın metni henüz açılmadı.
 ### `kozmos.gozlem.dedektor`
 
 - `ham_kare_uret`: [CraigChambers2026] defter 01-05 'Calibration overview': ham görüntü denklemi (okundu)
-- `sinyal_gurultu_orani`: [MerlineHowell1995] arka plan kestirimi terimi (1 + n_pix/n_B) (bekliyor); [Howell2006] Bölüm 4.4: CCD denklemi (bekliyor)
+- `sinyal_gurultu_orani`: [Howell1989] Denk. 1 ('CCD equation') (okundu)
 - `yildiz_alani`: [Photutils2026] API: photutils.psf.GaussianPRF, piksel üzerinde integral denklemi (okundu)
 
 ### `kozmos.gozlem.kirilma`
@@ -108,7 +114,7 @@ yazıldı, testlerle sınandı, ama kaynağın metni henüz açılmadı.
 
 ### `kozmos.io.fits`
 
-- `baslik_coz`: [FITS2018] Bölüm 3.3.1 ve 4.1: başlık blokları, anahtar kaydı bileşenleri; END anahtarı (okundu)
+- `baslik_coz`: [Hierarch2009] FITS kayıtlı kurallar sayfası: 'The HIERARCH Keyword Convention', Description (okundu); [FITS2018] Bölüm 3.3.1 ve 4.1: başlık blokları, anahtar kaydı bileşenleri; END anahtarı (okundu)
 - `fits_oku`: [FITS2018] Tablo 8 (BITPIX), Denk. 3 (BZERO, BSCALE), Bölüm 5 (büyük uçlu bayt sırası), Şekil 1 (eksen sırası) (okundu)
 - `fits_yaz`: [FITS2018] Bölüm 3.3.1, 4.4.1 (zorunlu anahtarlar), Tablo 8, Bölüm 5 (okundu)
 - `hdu_listesi`: [FITS2018] Denk. 1 ve 2 (veri boyutu), Bölüm 3.3-3.4 (HDU sırası), XTENSION anahtarı (okundu)
@@ -168,7 +174,7 @@ yazıldı, testlerle sınandı, ama kaynağın metni henüz açılmadı.
 - `hawking_kutle_kaybi_hizi_kg_s`: [Page2005] TeX etiketi eq:15 (okundu)
 - `hawking_sicakligi_k`: [Page2005] §1; T = κ/(2π) ve TeX etiketi eq:3 (Schwarzschild: κ = 1/(4M), Planck birimlerinde) (okundu); [Abramowicz2013] §1 (Giriş), Hawking sıcaklığı dipnotu: T_H = ħc³/(8π G M k_B) (okundu)
 - `isco_isinim_verimliligi`: [Reynolds2021] Bölüm 5: Novikov-Thorne diski için η = 1 − e_isco/c² (okundu); [Abramowicz2013] §1 (Giriş), verim tanımı η ≡ L/(Ṁ c²) (okundu)
-- `isco_ozgul_enerji_kerr`: [Bardeen1972] ISCO'daki özgül enerji Ẽ_ms = (1 − 2/(3 r̃_ms))^{1/2} (bekliyor)
+- `isco_ozgul_enerji_kerr`: [Bardeen1972] Denk. 2.20: kararlılık koşulu 1 − (E/μ)² ≥ (2/3)(M/r), eşitlik r = r_ms'de (okundu)
 - `isco_yaricapi_kerr_rg`: [Reynolds2021] Bölüm 2: r_isco denklemi ve Z1, Z2 tanımları (okundu); [Abramowicz2013] 'Summary: characteristic radii and frequencies', TeX etiketi stable-radius-kerr (Bardeen vd. formülü) (okundu)
 - `isco_yaricapi_schwarzschild_m`: [Abramowicz2013] 'Summary: characteristic radii and frequencies' (TeX etiketi schwarzschild-frequencies), x_ms = 6 (okundu)
 - `isco_yorunge_frekansi_hz`: [Abramowicz2013] 'Summary: characteristic radii and frequencies', Ω_K² = GM/r³ (TeX etiketi schwarzschild-frequencies), x_ms = 6 (okundu)
@@ -254,10 +260,10 @@ yazıldı, testlerle sınandı, ama kaynağın metni henüz açılmadı.
 - `kroupa_kutle_orani_ustunde`: [Kroupa2001] Sec. 'The universal IMF', TeX etiketi eq:imf ve kütle payları cümleleri (okundu)
 - `kroupa_ornekle`: [Kroupa2001] Sec. 'The universal IMF', TeX etiketi eq:imf (okundu)
 - `kroupa_ortalama_kutle`: [Kroupa2001] Sec. 'The universal IMF', TeX etiketi eq:imf ve ortalama kütle cümlesi (okundu)
-- `salpeter_dn_dm`: [Salpeter1955] özgün makale (eğim değeri) (bekliyor); [Kroupa2001] Sec. '0.1 < m < 1 M_⊙': Salpeter 1955, α = 2,35 (okundu); [Chabrier2003] Sec. 'Mass function' ve 'Functional forms' (TeX etiketi IMF1): α = 2,35, x = 1,35 (okundu)
-- `salpeter_kutle_orani_ustunde`: [Salpeter1955] özgün makale (eğim değeri) (bekliyor); [Kroupa2001] Sec. '0.1 < m < 1 M_⊙': Salpeter 1955, α = 2,35 (okundu); [Chabrier2003] Sec. 'Mass function' ve 'Functional forms' (TeX etiketi IMF1) (okundu)
-- `salpeter_ornekle`: [Salpeter1955] özgün makale (eğim değeri) (bekliyor); [Kroupa2001] Sec. '0.1 < m < 1 M_⊙': Salpeter 1955, α = 2,35 (okundu); [Chabrier2003] Sec. 'Mass function' ve 'Functional forms' (TeX etiketi IMF1) (okundu)
-- `salpeter_ortalama_kutle`: [Salpeter1955] özgün makale (eğim değeri) (bekliyor); [Kroupa2001] Sec. '0.1 < m < 1 M_⊙': Salpeter 1955, α = 2,35 (okundu); [Chabrier2003] Sec. 'Mass function' ve 'Functional forms' (TeX etiketi IMF1) (okundu)
+- `salpeter_dn_dm`: [Salpeter1955] Denk. 2 (tanım) ve Denk. 5 (okundu); [Kroupa2001] Sec. '0.1 < m < 1 M_⊙': Salpeter 1955, α = 2,35 (okundu); [Chabrier2003] Sec. 'Mass function' ve 'Functional forms' (TeX etiketi IMF1): α = 2,35, x = 1,35 (okundu)
+- `salpeter_kutle_orani_ustunde`: [Salpeter1955] Denk. 2 (tanım) ve Denk. 5 (okundu); [Kroupa2001] Sec. '0.1 < m < 1 M_⊙': Salpeter 1955, α = 2,35 (okundu); [Chabrier2003] Sec. 'Mass function' ve 'Functional forms' (TeX etiketi IMF1) (okundu)
+- `salpeter_ornekle`: [Salpeter1955] Denk. 2 (tanım) ve Denk. 5 (okundu); [Kroupa2001] Sec. '0.1 < m < 1 M_⊙': Salpeter 1955, α = 2,35 (okundu); [Chabrier2003] Sec. 'Mass function' ve 'Functional forms' (TeX etiketi IMF1) (okundu)
+- `salpeter_ortalama_kutle`: [Salpeter1955] Denk. 2 (tanım) ve Denk. 5 (okundu); [Kroupa2001] Sec. '0.1 < m < 1 M_⊙': Salpeter 1955, α = 2,35 (okundu); [Chabrier2003] Sec. 'Mass function' ve 'Functional forms' (TeX etiketi IMF1) (okundu)
 
 ### `kozmos.yildiz.olcekleme`
 
@@ -271,7 +277,7 @@ yazıldı, testlerle sınandı, ama kaynağın metni henüz açılmadı.
 - `kelvin_helmholtz_zaman_olcegi_s`: [Zinnecker2007] Sec. 'The Accretion Phase / Formation of the Hydrostatic Core' metni ve GLOSSARY: t_KH = G M²/(R L) (okundu)
 - `kritik_acisal_hiz_rad_s`: [Paxton2013] mdotomega etiketli denklemi izleyen cümle: Ω_crit² = (1 - L/L_Edd) G M / R³ (okundu)
 - `log_yuzey_cekimi_cgs`: [Prsa2016] Tablo 'formu', 'log of surface gravity' satırı: 4,438068... + log M - 2 log R (okundu)
-- `nukleer_zaman_olcegi_yil`: [Kippenhahn2012] nükleer zaman ölçeği tanımı (bölüm ve denklem numarasına bakılmadı) (bekliyor)
+- `nukleer_zaman_olcegi_yil`: [Pols2011] Bölüm 2.4.2, Denk. 2.37 (okundu)
 - `ortalama_yogunluk_kg_m3`: [Bludman2010] Sec. I, Tablo I öncesi metin: ρ̄_n = 3M/4πR³ (okundu)
 - `serbest_dusme_zamani_s`: [McKee2007] TeX etiketi eq:tff (okundu)
 - `standart_model_isinim_gucu_w`: [Bludman2010] Sec. II.B: L = L_Edd [1 - β(M)] (okundu)
@@ -400,7 +406,7 @@ yazıldı, testlerle sınandı, ama kaynağın metni henüz açılmadı.
 - [Bludman2010]: 13
 - [Brout2022]: 8
 - [CODATA2022]: 3
-- [CalabrettaGreisen2002]: 3
+- [CalabrettaGreisen2002]: 6
 - [Carroll1997]: 1
 - [Chabrier2003]: 8
 - [Cohen2003]: 3
@@ -409,16 +415,16 @@ yazıldı, testlerle sınandı, ama kaynağın metni henüz açılmadı.
 - [ERFA2023]: 33
 - [FITS2018]: 4
 - [ForemanMackey2013]: 3
+- [Hierarch2009]: 1
 - [HoffleitWarren1991]: 1
 - [Hogg1999]: 17
 - [HoggBovyLang2010]: 3
-- [Howell2006]: 1
+- [Howell1989]: 1
 - [IRAF2026]: 1
 - [IRSA2026]: 2
 - [Inayoshi2020]: 5
 - [Kennicutt1998]: 2
 - [Kennicutt2012]: 1
-- [Kippenhahn2012]: 1
 - [Komossa2015]: 2
 - [Kroupa2001]: 8
 - [Krumholz2015]: 17
@@ -426,11 +432,11 @@ yazıldı, testlerle sınandı, ama kaynağın metni henüz açılmadı.
 - [Lupton2004]: 3
 - [Mamajek2015]: 2
 - [McKee2007]: 21
-- [MerlineHowell1995]: 1
 - [MurrayCorreia2010]: 4
 - [Page2005]: 7
 - [Paxton2013]: 2
 - [Photutils2026]: 3
+- [Pols2011]: 1
 - [Prsa2016]: 4
 - [Reynolds2021]: 2
 - [SExtractorBelge2026]: 2
@@ -448,10 +454,3 @@ yazıldı, testlerle sınandı, ama kaynağın metni henüz açılmadı.
 
 ## Kaynağı okunmayı bekleyenler
 
-- `kozmos.gozlem.dedektor.sinyal_gurultu_orani`: [MerlineHowell1995] arka plan kestirimi terimi (1 + n_pix/n_B); [Howell2006] Bölüm 4.4: CCD denklemi
-- `kozmos.karadelik.temel.isco_ozgul_enerji_kerr`: [Bardeen1972] ISCO'daki özgül enerji Ẽ_ms = (1 − 2/(3 r̃_ms))^{1/2}
-- `kozmos.yildiz.imf.salpeter_dn_dm`: [Salpeter1955] özgün makale (eğim değeri)
-- `kozmos.yildiz.imf.salpeter_kutle_orani_ustunde`: [Salpeter1955] özgün makale (eğim değeri)
-- `kozmos.yildiz.imf.salpeter_ornekle`: [Salpeter1955] özgün makale (eğim değeri)
-- `kozmos.yildiz.imf.salpeter_ortalama_kutle`: [Salpeter1955] özgün makale (eğim değeri)
-- `kozmos.yildiz.olcekleme.nukleer_zaman_olcegi_yil`: [Kippenhahn2012] nükleer zaman ölçeği tanımı (bölüm ve denklem numarasına bakılmadı)

@@ -1,14 +1,15 @@
 # Doğrulama özeti
 
-Üretim: `dogrula.py`, 2026-11-25 14:55 UTC. Ayrıntı: `dogrulama_kaydi.json`.
+Üretim: `dogrula.py`, 2026-11-25 15:39 UTC. Ayrıntı: `dogrulama_kaydi.json`.
 
 ## Künyeler
 
-BULUNAMADI: 1, DOGRULANDI: 212, ELLE: 18 (toplam 231).
+BULUNAMADI: 2, DOGRULANDI: 212, ELLE: 20 (toplam 234).
 
 ### Dış kaydı okunamayan
 
 - `IERS2010` (isbn:3898889896): dış kayıt okunamadı
+- `Draine2011` (isbn:9780691122144): dış kayıt okunamadı
 
 ### Elle doğrulanacak
 
@@ -24,12 +25,14 @@ BULUNAMADI: 1, DOGRULANDI: 212, ELLE: 18 (toplam 231).
 - `FITS2018` (https://fits.gsfc.nasa.gov/fits_standard.html): DOI, arXiv ya da ISBN yok; elle doğrulanacak
 - `CraigChambers2026` (https://github.com/astropy/ccd-reduction-and-photometry-guide): DOI, arXiv ya da ISBN yok; elle doğrulanacak
 - `IRAF2026` (https://github.com/iraf-community/iraf): DOI, arXiv ya da ISBN yok; elle doğrulanacak
+- `Pols2011` (https://www.astro.ru.nl/~onnop/education/stev_utrecht_notes/): DOI, arXiv ya da ISBN yok; elle doğrulanacak
 - `TAP2019` (https://www.ivoa.net/documents/TAP/20190927/REC-TAP-1.1.html): DOI, arXiv ya da ISBN yok; elle doğrulanacak
 - `SkyView2026` (https://skyview.gsfc.nasa.gov/current/docs/batchpage.html): DOI, arXiv ya da ISBN yok; elle doğrulanacak
 - `SExtractorBelge2026` (https://sextractor.readthedocs.io/en/latest/Background.html): DOI, arXiv ya da ISBN yok; elle doğrulanacak
 - `HoffleitWarren1991` (https://heasarc.gsfc.nasa.gov/W3Browse/star-catalog/bsc5p.html): DOI, arXiv ya da ISBN yok; elle doğrulanacak
 - `Photutils2026` (https://photutils.readthedocs.io/en/stable/): DOI, arXiv ya da ISBN yok; elle doğrulanacak
 - `IRSA2026` (https://irsa.ipac.caltech.edu/TAP): DOI, arXiv ya da ISBN yok; elle doğrulanacak
+- `ADQL2023` (https://www.ivoa.net/documents/ADQL/20231215/REC-ADQL-2.1.html): DOI, arXiv ya da ISBN yok; elle doğrulanacak
 
 ### Doğrulanan
 
@@ -209,7 +212,6 @@ BULUNAMADI: 1, DOGRULANDI: 212, ELLE: 18 (toplam 231).
 - `RybickiLightman1979`: Rybicki 1985, «Radiative Processes in Astrophysics». Wiley [Crossref, doi:10.1002/9783527618170]
 - `BinneyTremaine2008`:  2008, «Galactic Dynamics: (Second Edition) (Princeton Series in Astrophysics)». Princeton University Press [Open Library, isbn:9780691130279]
 - `Kippenhahn2012`: Kippenhahn 2012, «Stellar Structure and Evolution». Astronomy and Astrophysics Library [Crossref, doi:10.1007/978-3-642-30304-3]
-- `Draine2011`:  2011, «Physics of the interstellar and intergalactic medium». Princeton University Press [Open Library, isbn:9780691122144]
 - `Paxton2011`: Paxton 2011, «MODULES FOR EXPERIMENTS IN STELLAR ASTROPHYSICS (MESA)». The Astrophysical Journal Supplement Series, 192, 3 [Crossref, doi:10.1088/0067-0049/192/1/3]
 - `Choi2016`: Choi 2016, «MESA ISOCHRONES AND STELLAR TRACKS (MIST). I. SOLAR-SCALED MODELS». The Astrophysical Journal, 823, 102 [Crossref, doi:10.3847/0004-637X/823/2/102]
 - `Bressan2012`: Bressan 2012, «<scp>parsec</scp>
@@ -254,6 +256,7 @@ BULUNAMADI: 1, DOGRULANDI: 212, ELLE: 18 (toplam 231).
 - `ShapiroTeukolsky1983`: Shapiro 1983, «Black Holes, White Dwarfs, and Neutron Stars». Wiley [Crossref, doi:10.1002/9783527617661]
 - `Longair2011`: Longair 2011, «High Energy Astrophysics». Cambridge University Press [Crossref, doi:10.1017/CBO9780511778346]
 - `MurrayCorreia2010`: Murray 2010, «Keplerian Orbits and Dynamics of Exoplanets». Exoplanets, 2010, 526 pp., p.15-23 [arXiv, arXiv:1009.1738]
+- `Howell1989`: Howell 1989, «Two-dimensional aperture photometry - Signal-to-noise ratio of point-source observations and optimal data-extraction techniques». Publications of the Astronomical Society of the Pacific, 101, 616 [Crossref, doi:10.1086/132477]
 - `Babusiaux2018`: Gaia Collaboration 2018, «<i>Gaia</i>
                     Data Release 2». Astronomy &amp; Astrophysics, 616, A10 [Crossref, doi:10.1051/0004-6361/201832843]
 - `Lupton2004`: Lupton 2004, «Preparing Red‐Green‐Blue Images from CCD Data». Publications of the Astronomical Society of the Pacific, 116, 133-137 [Crossref, doi:10.1086/382245]
@@ -386,7 +389,7 @@ BULUNAMADI: 1, DOGRULANDI: 212, ELLE: 18 (toplam 231).
 
 ## Atıf denetimi
 
-Plan belgelerinde kullanılan tanımlı anahtar: 223.
+Plan belgelerinde kullanılan tanımlı anahtar: 226.
 
 Tanımsız anahtar yok.
 
