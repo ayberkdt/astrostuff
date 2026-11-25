@@ -1,7 +1,7 @@
 """Koordinat sistemleri arası dönüşümler.
 
 Galaktik dönüşüm matrisi ve ufuk dönüşümü ERFA kaynak dosyalarından
-okunmuştur [ERFA2024]: ``icrs2g.c``, ``hd2ae.c``, ``ae2hd.c``. Galaktik
+okunmuştur [ERFA2023]: ``icrs2g.c``, ``hd2ae.c``, ``ae2hd.c``. Galaktik
 sistemin tanımı Hipparcos kataloğundaki biçimdir; ERFA matrisi bu tanımdan
 tam duyarlıkla türetir ve katalog kaynağı olarak ESA SP-1200'ü anar.
 """
@@ -27,7 +27,7 @@ ICRS_DEN_GALAKTIK = np.array(
 
 
 @kaynak(
-    "ERFA2024",
+    "ERFA2023",
     yer="icrs2g.c",
     teyit="okundu",
     not_="kuzey galaktik kutup α = 192.85948°, δ = 27.12825°; çıkış düğümü boylamı 32.93192° (Hipparcos tanımı)",
@@ -46,7 +46,7 @@ def icrs_den_galaktik(sag_acikllik_rad: ArrayLike, dik_acikllik_rad: ArrayLike) 
 
     Kaynaklar
     ---------
-    [ERFA2024] icrs2g.c.
+    [ERFA2023] icrs2g.c.
 
     Geçerlilik
     ----------
@@ -60,13 +60,13 @@ def icrs_den_galaktik(sag_acikllik_rad: ArrayLike, dik_acikllik_rad: ArrayLike) 
     return birim_vektor_den_kuresel(v @ ICRS_DEN_GALAKTIK.T)
 
 
-@kaynak("ERFA2024", yer="icrs2g.c", teyit="okundu", not_="ters dönüşüm matrisin devriğidir; g2icrs.c ayrıca okunmadı")
+@kaynak("ERFA2023", yer="icrs2g.c", teyit="okundu", not_="ters dönüşüm matrisin devriğidir; g2icrs.c ayrıca okunmadı")
 def galaktik_den_icrs(boylam_rad: ArrayLike, enlem_rad: ArrayLike) -> tuple[Dizi, Dizi]:
     """Galaktik boylam ve enlemi ICRS sağ açıklık ve dik açıklığına çevirir.
 
     Kaynaklar
     ---------
-    [ERFA2024] icrs2g.c.
+    [ERFA2023] icrs2g.c.
 
     Doğrulama
     ---------
@@ -77,7 +77,7 @@ def galaktik_den_icrs(boylam_rad: ArrayLike, enlem_rad: ArrayLike) -> tuple[Dizi
 
 
 @kaynak(
-    "ERFA2024",
+    "ERFA2023",
     yer="hd2ae.c",
     teyit="okundu",
     not_="azimut kuzeyden doğuya; birim vektör bileşenleri hd2ae.c içindeki x, y, z",
@@ -101,7 +101,7 @@ def saat_acisi_den_ufuk(
 
     Kaynaklar
     ---------
-    [ERFA2024] hd2ae.c.
+    [ERFA2023] hd2ae.c.
 
     Geçerlilik
     ----------
@@ -123,7 +123,7 @@ def saat_acisi_den_ufuk(
     return sifir_iki_pi(azimut), np.arctan2(z, r)
 
 
-@kaynak("ERFA2024", yer="ae2hd.c", teyit="okundu")
+@kaynak("ERFA2023", yer="ae2hd.c", teyit="okundu")
 def ufuk_den_saat_acisi(azimut_rad: ArrayLike, yukseklik_rad: ArrayLike, enlem_rad: ArrayLike) -> tuple[Dizi, Dizi]:
     """Azimut ve yüksekliği saat açısı ve dik açıklığa çevirir.
 
@@ -133,7 +133,7 @@ def ufuk_den_saat_acisi(azimut_rad: ArrayLike, yukseklik_rad: ArrayLike, enlem_r
 
     Kaynaklar
     ---------
-    [ERFA2024] ae2hd.c.
+    [ERFA2023] ae2hd.c.
 
     Doğrulama
     ---------
@@ -150,7 +150,7 @@ def ufuk_den_saat_acisi(azimut_rad: ArrayLike, yukseklik_rad: ArrayLike, enlem_r
 
 
 @kaynak(
-    "ERFA2024",
+    "ERFA2023",
     yer="hd2ae.c (z bileşeni)",
     teyit="okundu",
     not_="sec z yalnızca düzlem-paralel atmosfer yaklaşımıdır; yaklaşımın kaynağı [KastenYoung1989] okunmadı",
@@ -160,7 +160,7 @@ def hava_kutlesi_duzlem_paralel(yukseklik_rad: ArrayLike) -> Dizi:
 
     Kaynaklar
     ---------
-    [ERFA2024] hd2ae.c (yükseklik tanımı).
+    [ERFA2023] hd2ae.c (yükseklik tanımı).
 
     Geçerlilik
     ----------

@@ -2,11 +2,11 @@
 
 Bu dosya `python kaynakca/kutuk_raporu.py` ile kaynak kütüğünden üretilir; elle düzenlenmez.
 
-- Kaynağa bağlı açık fonksiyon: 70
+- Kaynağa bağlı açık fonksiyon: 80
 - Bütün kayıtları kaynak metninden okunmuş fonksiyon: 59
-- Kaynak kaydı: 72 (okundu: 61, bekliyor: 11)
+- Kaynak kaydı: 83 (okundu: 61, bekliyor: 22)
 - Kaynaklı sabit: 35 (teyit bekleyen: 2)
-- Test fonksiyonu: 86 (parametreli ve özellik testleri tek sayılır)
+- Test fonksiyonu: 95 (parametreli ve özellik testleri tek sayılır)
 - Kaynak kuralından muaf altyapı fonksiyonu: 1
 
 `okundu`: denklem kod yazılırken kaynağın metninden okundu. `bekliyor`: denklem hatırlanan biçimiyle
@@ -28,6 +28,18 @@ yazıldı, testlerle sınandı, ama kaynağın metni henüz açılmadı.
 - `yorunge_donemi_s`: [MurrayDermott1999] Bölüm 2.3, Kepler'in üçüncü yasası (bekliyor)
 - `yorunge_hizi_m_s`: [MurrayDermott1999] Bölüm 2.4, vis-viva (bekliyor)
 
+### `kozmos.gozlem.dedektor`
+
+- `ham_kare_uret`: [Howell2006] Bölüm 3-4: CCD sinyal modeli (bekliyor)
+- `sinyal_gurultu_orani`: [MerlineHowell1995] arka plan kestirimi terimi (1 + n_pix/n_B) (bekliyor); [Howell2006] Bölüm 4.4: CCD denklemi (bekliyor)
+- `yildiz_alani`: [Howell2006] Bölüm 5: nokta dağılım fonksiyonu (dairesel Gauss yaklaşımı) (bekliyor)
+
+### `kozmos.indirgeme.kalibrasyon`
+
+- `birlestir`: [Howell2006] Bölüm 4: kalibrasyon karelerinin birleştirilmesi (bekliyor)
+- `kare_indirge`: [Howell2006] Bölüm 4: bias, karanlık ve düz alan düzeltmesi; gürültü yayılımı (bekliyor)
+- `kazanc_ve_okuma_gurultusu`: [Janesick2007] foton aktarım yöntemi: iki düz ve iki bias karesinden kazanç ve okuma gürültüsü (bekliyor)
+
 ### `kozmos.isinim.kadir`
 
 - `bolometrik_kadirden_isinim_gucu_w`: [Mamajek2015] M_Bol tanımı; L_0 = 3,0128e28 W (okundu)
@@ -46,6 +58,13 @@ yazıldı, testlerle sınandı, ama kaynağın metni henüz açılmadı.
 - `rhat_sira_normallestirilmis`: [Vehtari2021] Bölüm 4.1-4.2: sıra normalleştirme ve katlama denklemleri (okundu)
 - `topluluk_ornekle`: [GoodmanWeare2010] gerdirme hamlesi (bekliyor); [ForemanMackey2013] Denk. proposal, acceptance; Algoritma 3 (paralel gerdirme hamlesi) (okundu)
 
+### `kozmos.istatistik.saglam`
+
+- `ciftagirlik_konum`: [Beers1990] çift ağırlıklı konum kestiricisi (bekliyor)
+- `ciftagirlik_olcek`: [Beers1990] çift ağırlıklı ölçek kestiricisi (bekliyor)
+- `mad_olcek`: [Beers1990] ortanca mutlak sapma (MAD) ve Gauss ölçeklemesi (bekliyor)
+- `sigma_kirp`: [Beers1990] yinelemeli kırpma (bekliyor)
+
 ### `kozmos.istatistik.uyum`
 
 - `dogru_uydur`: [HoggBovyLang2010] TeX etiketi eq:fofx, eq:lsf (okundu)
@@ -54,11 +73,11 @@ yazıldı, testlerle sınandı, ama kaynağın metni henüz açılmadı.
 
 ### `kozmos.koordinat.donusum`
 
-- `galaktik_den_icrs`: [ERFA2024] icrs2g.c (okundu)
-- `hava_kutlesi_duzlem_paralel`: [ERFA2024] hd2ae.c (z bileşeni) (okundu)
-- `icrs_den_galaktik`: [ERFA2024] icrs2g.c (okundu)
-- `saat_acisi_den_ufuk`: [ERFA2024] hd2ae.c (okundu)
-- `ufuk_den_saat_acisi`: [ERFA2024] ae2hd.c (okundu)
+- `galaktik_den_icrs`: [ERFA2023] icrs2g.c (okundu)
+- `hava_kutlesi_duzlem_paralel`: [ERFA2023] hd2ae.c (z bileşeni) (okundu)
+- `icrs_den_galaktik`: [ERFA2023] icrs2g.c (okundu)
+- `saat_acisi_den_ufuk`: [ERFA2023] hd2ae.c (okundu)
+- `ufuk_den_saat_acisi`: [ERFA2023] ae2hd.c (okundu)
 
 ### `kozmos.kozmoloji.hubble_diyagrami`
 
@@ -87,31 +106,31 @@ yazıldı, testlerle sınandı, ama kaynağın metni henüz açılmadı.
 
 ### `kozmos.temel.aci`
 
-- `acisal_ayriklik`: [ERFA2024] sepp.c (okundu)
-- `birim_vektor_den_kuresel`: [ERFA2024] c2s.c (okundu)
-- `derece_den_radyan`: [ERFA2024] erfam.h ERFA_DD2R (okundu)
-- `eksi_pi_arti_pi`: [ERFA2024] anpm.c (okundu)
-- `kuresel_den_birim_vektor`: [ERFA2024] s2c.c (okundu)
-- `radyan_dan_derece`: [ERFA2024] erfam.h ERFA_DD2R (okundu)
-- `sifir_iki_pi`: [ERFA2024] anp.c (okundu)
-- `yaysaniye_den_radyan`: [ERFA2024] erfam.h ERFA_DAS2R (okundu)
+- `acisal_ayriklik`: [ERFA2023] sepp.c (okundu)
+- `birim_vektor_den_kuresel`: [ERFA2023] c2s.c (okundu)
+- `derece_den_radyan`: [ERFA2023] erfam.h ERFA_DD2R (okundu)
+- `eksi_pi_arti_pi`: [ERFA2023] anpm.c (okundu)
+- `kuresel_den_birim_vektor`: [ERFA2023] s2c.c (okundu)
+- `radyan_dan_derece`: [ERFA2023] erfam.h ERFA_DD2R (okundu)
+- `sifir_iki_pi`: [ERFA2023] anp.c (okundu)
+- `yaysaniye_den_radyan`: [ERFA2023] erfam.h ERFA_DAS2R (okundu)
 
 ### `kozmos.zaman.julyen`
 
-- `dunya_donme_acisi`: [ERFA2024] era00.c (okundu)
-- `greenwich_ortalama_yildiz_zamani`: [ERFA2024] gmst06.c (okundu)
-- `jd_den_takvim`: [ERFA2024] jd2cal.c (okundu)
-- `ortalama_egiklik`: [ERFA2024] obl06.c (okundu)
-- `tai_den_tt`: [ERFA2024] erfam.h ERFA_TTMTAI, ERFA_DAYSEC (okundu)
-- `takvim_den_jd`: [ERFA2024] cal2jd.c; erfam.h ERFA_DJM0 (okundu)
-- `takvim_den_mjd`: [ERFA2024] cal2jd.c (okundu)
-- `tt_den_tai`: [ERFA2024] erfam.h ERFA_TTMTAI, ERFA_DAYSEC (okundu)
-- `yerel_ortalama_yildiz_zamani`: [ERFA2024] gmst06.c; boylam doğuya artı (bekliyor)
+- `dunya_donme_acisi`: [ERFA2023] era00.c (okundu)
+- `greenwich_ortalama_yildiz_zamani`: [ERFA2023] gmst06.c (okundu)
+- `jd_den_takvim`: [ERFA2023] jd2cal.c (okundu)
+- `ortalama_egiklik`: [ERFA2023] obl06.c (okundu)
+- `tai_den_tt`: [ERFA2023] erfam.h ERFA_TTMTAI, ERFA_DAYSEC (okundu)
+- `takvim_den_jd`: [ERFA2023] cal2jd.c; erfam.h ERFA_DJM0 (okundu)
+- `takvim_den_mjd`: [ERFA2023] cal2jd.c (okundu)
+- `tt_den_tai`: [ERFA2023] erfam.h ERFA_TTMTAI, ERFA_DAYSEC (okundu)
+- `yerel_ortalama_yildiz_zamani`: [ERFA2023] gmst06.c; boylam doğuya artı (bekliyor)
 
 ### `kozmos.zaman.olcekler`
 
-- `tai_eksi_utc_s`: [ERFA2024] dat.c (okundu)
-- `tt_eksi_utc_s`: [ERFA2024] dat.c; erfam.h ERFA_TTMTAI (okundu)
+- `tai_eksi_utc_s`: [ERFA2023] dat.c (okundu)
+- `tt_eksi_utc_s`: [ERFA2023] dat.c; erfam.h ERFA_TTMTAI (okundu)
 
 ### `kozmos.zamanserisi.periyodogram`
 
@@ -147,27 +166,31 @@ yazıldı, testlerle sınandı, ama kaynağın metni henüz açılmadı.
 - `JUPITER_EKVATOR_YARICAPI` = 71492000 m (kesin) [Prsa2016] Tablo 1 (okundu)
 - `JUPITER_KUTUP_YARICAPI` = 66854000 m (kesin) [Prsa2016] Tablo 1 (okundu)
 - `BOLOMETRIK_SIFIR_ISINIM_GUCU` = 3.0128e+28 W (kesin) [Mamajek2015] L_0 tanımı (okundu)
-- `ASTRONOMIK_BIRIM` = 149597870700 m (kesin) [ERFA2024] erfam.h ERFA_DAU (okundu)
-- `GUN_SANIYE` = 86400 s (kesin) [ERFA2024] erfam.h ERFA_DAYSEC (okundu)
-- `JULYEN_YILI_GUN` = 365.25 gün (kesin) [ERFA2024] erfam.h ERFA_DJY (okundu)
-- `JULYEN_YUZYILI_GUN` = 36525 gün (kesin) [ERFA2024] erfam.h ERFA_DJC (okundu)
-- `J2000_JD` = 2451545 gün (kesin) [ERFA2024] erfam.h ERFA_DJ00 (okundu)
-- `MJD_SIFIR_JD` = 2400000.5 gün (kesin) [ERFA2024] erfam.h ERFA_DJM0 (okundu)
-- `TT_EKSI_TAI` = 32.184 s (kesin) [ERFA2024] erfam.h ERFA_TTMTAI (okundu)
+- `ASTRONOMIK_BIRIM` = 149597870700 m (kesin) [ERFA2023] erfam.h ERFA_DAU (okundu)
+- `GUN_SANIYE` = 86400 s (kesin) [ERFA2023] erfam.h ERFA_DAYSEC (okundu)
+- `JULYEN_YILI_GUN` = 365.25 gün (kesin) [ERFA2023] erfam.h ERFA_DJY (okundu)
+- `JULYEN_YUZYILI_GUN` = 36525 gün (kesin) [ERFA2023] erfam.h ERFA_DJC (okundu)
+- `J2000_JD` = 2451545 gün (kesin) [ERFA2023] erfam.h ERFA_DJ00 (okundu)
+- `MJD_SIFIR_JD` = 2400000.5 gün (kesin) [ERFA2023] erfam.h ERFA_DJM0 (okundu)
+- `TT_EKSI_TAI` = 32.184 s (kesin) [ERFA2023] erfam.h ERFA_TTMTAI (okundu)
 - `PARSEK` = 3.08567758149e+16 m (kesin) [Mamajek2015] parsek tanımı notu (bekliyor; türetim: au · 648000 / pi)
 - `MEGAPARSEK` = 3.08567758149e+22 m (kesin) [Mamajek2015] parsek tanımı notu (bekliyor; türetim: 1e6 · parsek)
-- `JULYEN_YILI_SANIYE` = 31557600 s (kesin) [ERFA2024] erfam.h ERFA_DJY · ERFA_DAYSEC (okundu; türetim: 365.25 · 86400)
+- `JULYEN_YILI_SANIYE` = 31557600 s (kesin) [ERFA2023] erfam.h ERFA_DJY · ERFA_DAYSEC (okundu; türetim: 365.25 · 86400)
 
 ## Kaynak başına fonksiyon sayısı
 
+- [Beers1990]: 4
 - [Brout2022]: 8
 - [CODATA2022]: 1
-- [ERFA2024]: 24
+- [ERFA2023]: 24
 - [ForemanMackey2013]: 3
 - [GoodmanWeare2010]: 1
 - [Hogg1999]: 17
 - [HoggBovyLang2010]: 3
+- [Howell2006]: 5
+- [Janesick2007]: 1
 - [Mamajek2015]: 2
+- [MerlineHowell1995]: 1
 - [MurrayDermott1999]: 4
 - [RybickiLightman1979]: 2
 - [Scolnic2022]: 1
@@ -180,10 +203,20 @@ yazıldı, testlerle sınandı, ama kaynağın metni henüz açılmadı.
 - `kozmos.efemeris.kepler.gercek_anomali`: [MurrayDermott1999] Bölüm 2.4, gerçek anomali
 - `kozmos.efemeris.kepler.yorunge_donemi_s`: [MurrayDermott1999] Bölüm 2.3, Kepler'in üçüncü yasası
 - `kozmos.efemeris.kepler.yorunge_hizi_m_s`: [MurrayDermott1999] Bölüm 2.4, vis-viva
+- `kozmos.gozlem.dedektor.ham_kare_uret`: [Howell2006] Bölüm 3-4: CCD sinyal modeli
+- `kozmos.gozlem.dedektor.sinyal_gurultu_orani`: [MerlineHowell1995] arka plan kestirimi terimi (1 + n_pix/n_B); [Howell2006] Bölüm 4.4: CCD denklemi
+- `kozmos.gozlem.dedektor.yildiz_alani`: [Howell2006] Bölüm 5: nokta dağılım fonksiyonu (dairesel Gauss yaklaşımı)
+- `kozmos.indirgeme.kalibrasyon.birlestir`: [Howell2006] Bölüm 4: kalibrasyon karelerinin birleştirilmesi
+- `kozmos.indirgeme.kalibrasyon.kare_indirge`: [Howell2006] Bölüm 4: bias, karanlık ve düz alan düzeltmesi; gürültü yayılımı
+- `kozmos.indirgeme.kalibrasyon.kazanc_ve_okuma_gurultusu`: [Janesick2007] foton aktarım yöntemi: iki düz ve iki bias karesinden kazanç ve okuma gürültüsü
 - `kozmos.isinim.kadir.planck_dalgaboyu`: [RybickiLightman1979] Bölüm 1.5, Planck tayfı
 - `kozmos.isinim.kadir.planck_frekans`: [RybickiLightman1979] Bölüm 1.5, Planck tayfı
 - `kozmos.istatistik.mcmc.oz_ilinti_suresi`: [ForemanMackey2013] Bölüm 3 (öz ilinti süresi)
 - `kozmos.istatistik.mcmc.topluluk_ornekle`: [GoodmanWeare2010] gerdirme hamlesi
-- `kozmos.zaman.julyen.yerel_ortalama_yildiz_zamani`: [ERFA2024] gmst06.c; boylam doğuya artı
+- `kozmos.istatistik.saglam.ciftagirlik_konum`: [Beers1990] çift ağırlıklı konum kestiricisi
+- `kozmos.istatistik.saglam.ciftagirlik_olcek`: [Beers1990] çift ağırlıklı ölçek kestiricisi
+- `kozmos.istatistik.saglam.mad_olcek`: [Beers1990] ortanca mutlak sapma (MAD) ve Gauss ölçeklemesi
+- `kozmos.istatistik.saglam.sigma_kirp`: [Beers1990] yinelemeli kırpma
+- `kozmos.zaman.julyen.yerel_ortalama_yildiz_zamani`: [ERFA2023] gmst06.c; boylam doğuya artı
 - `kozmos.zamanserisi.periyodogram.frekans_izgarasi`: [VanderPlas2018] Bölüm 7.1 (frekans ızgarası), eq:n-eval
 - `kozmos.zamanserisi.periyodogram.yanlis_alarm_olasiligi`: [VanderPlas2018] eq:LS-prob-z ve eq:FAP-neff çevresi

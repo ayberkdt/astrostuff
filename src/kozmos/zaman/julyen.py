@@ -1,6 +1,6 @@
 """Takvim, Jülyen tarihi, Dünya dönme açısı ve yıldız zamanı.
 
-Algoritmalar ve katsayılar ERFA kaynak dosyalarından okunmuştur [ERFA2024]:
+Algoritmalar ve katsayılar ERFA kaynak dosyalarından okunmuştur [ERFA2023]:
 ``cal2jd.c``, ``jd2cal.c``, ``era00.c``, ``gmst06.c``, ``obl06.c``.
 
 Jülyen tarihi iki parçalı tutulur (``jd1 + jd2``); toplam tek ``float64`` ile
@@ -26,7 +26,7 @@ _AY_UZUNLUKLARI = np.array([31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31])
 
 
 @kaynak(
-    "ERFA2024",
+    "ERFA2023",
     yer="cal2jd.c",
     teyit="okundu",
     not_="Gregoryen takvim; C'deki sıfıra doğru tamsayı bölmesi (im-14)/12 açıkça uygulanır",
@@ -46,7 +46,7 @@ def takvim_den_mjd(yil: ArrayLike, ay: ArrayLike, gun: ArrayLike) -> NDArray[np.
 
     Kaynaklar
     ---------
-    [ERFA2024] cal2jd.c.
+    [ERFA2023] cal2jd.c.
 
     Geçerlilik
     ----------
@@ -78,7 +78,7 @@ def takvim_den_mjd(yil: ArrayLike, ay: ArrayLike, gun: ArrayLike) -> NDArray[np.
     )
 
 
-@kaynak("ERFA2024", yer="cal2jd.c; erfam.h ERFA_DJM0", teyit="okundu")
+@kaynak("ERFA2023", yer="cal2jd.c; erfam.h ERFA_DJM0", teyit="okundu")
 def takvim_den_jd(yil: ArrayLike, ay: ArrayLike, gun: ArrayLike, gun_kesri: ArrayLike = 0.0) -> Dizi:
     """Gregoryen takvim tarihinden Jülyen tarihini verir.
 
@@ -97,7 +97,7 @@ def takvim_den_jd(yil: ArrayLike, ay: ArrayLike, gun: ArrayLike, gun_kesri: Arra
 
     Kaynaklar
     ---------
-    [ERFA2024] cal2jd.c; erfam.h ERFA_DJM0.
+    [ERFA2023] cal2jd.c; erfam.h ERFA_DJM0.
 
     Doğrulama
     ---------
@@ -107,7 +107,7 @@ def takvim_den_jd(yil: ArrayLike, ay: ArrayLike, gun: ArrayLike, gun_kesri: Arra
 
 
 @kaynak(
-    "ERFA2024",
+    "ERFA2023",
     yer="jd2cal.c",
     teyit="okundu",
     not_="takvim çevrimi aynen; gün kesrinin dengeli toplaması sadeleştirilmiştir",
@@ -123,7 +123,7 @@ def jd_den_takvim(
 
     Kaynaklar
     ---------
-    [ERFA2024] jd2cal.c.
+    [ERFA2023] jd2cal.c.
 
     Geçerlilik
     ----------
@@ -156,13 +156,13 @@ def jd_den_takvim(
     return yil, ay, gun, f
 
 
-@kaynak("ERFA2024", yer="erfam.h ERFA_TTMTAI, ERFA_DAYSEC", teyit="okundu")
+@kaynak("ERFA2023", yer="erfam.h ERFA_TTMTAI, ERFA_DAYSEC", teyit="okundu")
 def tai_den_tt(jd1: ArrayLike, jd2: ArrayLike = 0.0) -> tuple[Dizi, Dizi]:
     """TAI'yi TT'ye çevirir: TT = TAI + 32,184 s.
 
     Kaynaklar
     ---------
-    [ERFA2024] erfam.h ERFA_TTMTAI.
+    [ERFA2023] erfam.h ERFA_TTMTAI.
 
     Doğrulama
     ---------
@@ -171,13 +171,13 @@ def tai_den_tt(jd1: ArrayLike, jd2: ArrayLike = 0.0) -> tuple[Dizi, Dizi]:
     return np.asarray(jd1, dtype=float), np.asarray(jd2, dtype=float) + TT_EKSI_TAI_S / GUN_S
 
 
-@kaynak("ERFA2024", yer="erfam.h ERFA_TTMTAI, ERFA_DAYSEC", teyit="okundu")
+@kaynak("ERFA2023", yer="erfam.h ERFA_TTMTAI, ERFA_DAYSEC", teyit="okundu")
 def tt_den_tai(jd1: ArrayLike, jd2: ArrayLike = 0.0) -> tuple[Dizi, Dizi]:
     """TT'yi TAI'ye çevirir: TAI = TT − 32,184 s.
 
     Kaynaklar
     ---------
-    [ERFA2024] erfam.h ERFA_TTMTAI.
+    [ERFA2023] erfam.h ERFA_TTMTAI.
 
     Doğrulama
     ---------
@@ -187,7 +187,7 @@ def tt_den_tai(jd1: ArrayLike, jd2: ArrayLike = 0.0) -> tuple[Dizi, Dizi]:
 
 
 @kaynak(
-    "ERFA2024",
+    "ERFA2023",
     yer="era00.c",
     teyit="okundu",
     not_="θ = 2π (f + 0.7790572732640 + 0.00273781191135448 t); t = UT1 − J2000 [gün]",
@@ -207,7 +207,7 @@ def dunya_donme_acisi(ut1_jd1: ArrayLike, ut1_jd2: ArrayLike = 0.0) -> Dizi:
 
     Kaynaklar
     ---------
-    [ERFA2024] era00.c.
+    [ERFA2023] era00.c.
 
     Doğrulama
     ---------
@@ -221,7 +221,7 @@ def dunya_donme_acisi(ut1_jd1: ArrayLike, ut1_jd2: ArrayLike = 0.0) -> Dizi:
     return sifir_iki_pi(IKI_PI * (f + 0.7790572732640 + 0.00273781191135448 * t))
 
 
-@kaynak("ERFA2024", yer="gmst06.c", teyit="okundu", not_="ERA + TT'de 5. derece polinom; katsayılar yay saniyesi")
+@kaynak("ERFA2023", yer="gmst06.c", teyit="okundu", not_="ERA + TT'de 5. derece polinom; katsayılar yay saniyesi")
 def greenwich_ortalama_yildiz_zamani(
     ut1_jd1: ArrayLike, ut1_jd2: ArrayLike, tt_jd1: ArrayLike, tt_jd2: ArrayLike
 ) -> Dizi:
@@ -234,7 +234,7 @@ def greenwich_ortalama_yildiz_zamani(
 
     Kaynaklar
     ---------
-    [ERFA2024] gmst06.c.
+    [ERFA2023] gmst06.c.
 
     Geçerlilik
     ----------
@@ -252,7 +252,7 @@ def greenwich_ortalama_yildiz_zamani(
     return sifir_iki_pi(dunya_donme_acisi(ut1_jd1, ut1_jd2) + polinom * YAYSANIYE_RAD)
 
 
-@kaynak("ERFA2024", yer="obl06.c", teyit="okundu", not_="ε0 = 84381.406″ ve 5. derece polinom")
+@kaynak("ERFA2023", yer="obl06.c", teyit="okundu", not_="ε0 = 84381.406″ ve 5. derece polinom")
 def ortalama_egiklik(tt_jd1: ArrayLike, tt_jd2: ArrayLike = 0.0) -> Dizi:
     """Ekliptiğin ortalama eğikliğini (IAU 2006) hesaplar.
 
@@ -263,7 +263,7 @@ def ortalama_egiklik(tt_jd1: ArrayLike, tt_jd2: ArrayLike = 0.0) -> Dizi:
 
     Kaynaklar
     ---------
-    [ERFA2024] obl06.c.
+    [ERFA2023] obl06.c.
 
     Doğrulama
     ---------
@@ -275,7 +275,7 @@ def ortalama_egiklik(tt_jd1: ArrayLike, tt_jd2: ArrayLike = 0.0) -> Dizi:
 
 
 @kaynak(
-    "ERFA2024",
+    "ERFA2023",
     yer="gmst06.c; boylam doğuya artı",
     teyit="bekliyor",
     not_="yerel yıldız zamanı = GMST + doğu boylamı; ortalama (görünür değil)",
@@ -287,7 +287,7 @@ def yerel_ortalama_yildiz_zamani(
 
     Kaynaklar
     ---------
-    [ERFA2024] gmst06.c.
+    [ERFA2023] gmst06.c.
 
     Geçerlilik
     ----------

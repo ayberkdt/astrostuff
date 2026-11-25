@@ -1,5 +1,5 @@
 {
- "zaman": "2026-11-25 12:22 UTC",
+ "zaman": "2026-11-25 13:10 UTC",
  "kunyeler": [
   {
    "anahtar": "SOFA2023",
@@ -2923,6 +2923,483 @@
    "kimlik": "https://ui.adsabs.harvard.edu/abs/1977A&A....54..661T",
    "durum": "ELLE",
    "aciklama": "DOI, arXiv ya da ISBN yok; elle doğrulanacak"
+  },
+  {
+   "anahtar": "ERFA2023",
+   "bib_baslik": "ERFA: Essential Routines for Fundamental Astronomy, C kaynak kodu (master dalı, 25 Kasım 2026'da okundu; dosyalardaki telif bildirimi 2013-2023)",
+   "bib_yil": "2023",
+   "kimlik": "https://github.com/liberfa/erfa",
+   "durum": "ELLE",
+   "aciklama": "DOI, arXiv ya da ISBN yok; elle doğrulanacak"
+  },
+  {
+   "anahtar": "PyERFA2020",
+   "bib_baslik": "liberfa/pyerfa",
+   "bib_yil": "2020",
+   "kimlik": "doi:10.5281/zenodo.3940699",
+   "dis": {
+    "kaynak": "DataCite",
+    "baslik": "liberfa/pyerfa v1.7.0",
+    "yil": 2020,
+    "ilk_yazar": "Kerkwijk",
+    "yayin": "Zenodo"
+   },
+   "baslik_benzerligi": 1.0,
+   "yil_farki": 0,
+   "durum": "DOGRULANDI"
+  },
+  {
+   "anahtar": "Gorski2005",
+   "bib_baslik": "HEALPix: A Framework for High-Resolution Discretization and Fast Analysis of Data Distributed on the Sphere",
+   "bib_yil": "2005",
+   "kimlik": "doi:10.1086/427976",
+   "dis": {
+    "kaynak": "Crossref",
+    "baslik": "HEALPix: A Framework for High‐Resolution Discretization and Fast Analysis of Data Distributed on the Sphere",
+    "yil": 2005,
+    "ilk_yazar": "Gorski",
+    "yayin": "The Astrophysical Journal",
+    "cilt": "622",
+    "sayfa": "759-771"
+   },
+   "baslik_benzerligi": 0.995,
+   "yil_farki": 0,
+   "durum": "DOGRULANDI"
+  },
+  {
+   "anahtar": "Cash1979",
+   "bib_baslik": "Parameter estimation in astronomy through application of the likelihood ratio",
+   "bib_yil": "1979",
+   "kimlik": "doi:10.1086/156922",
+   "dis": {
+    "kaynak": "Crossref",
+    "baslik": "Parameter estimation in astronomy through application of the likelihood ratio",
+    "yil": 1979,
+    "ilk_yazar": "Cash",
+    "yayin": "The Astrophysical Journal",
+    "cilt": "228",
+    "sayfa": "939"
+   },
+   "baslik_benzerligi": 1.0,
+   "yil_farki": 0,
+   "durum": "DOGRULANDI"
+  },
+  {
+   "anahtar": "HoffmanGelman2014",
+   "bib_baslik": "The No-U-Turn Sampler: Adaptively Setting Path Lengths in Hamiltonian Monte Carlo",
+   "bib_yil": "2011",
+   "kimlik": "arXiv:1111.4246",
+   "dis": {
+    "kaynak": "arXiv",
+    "baslik": "The No-U-Turn Sampler: Adaptively Setting Path Lengths in Hamiltonian Monte Carlo",
+    "yil": 2011,
+    "ilk_yazar": "Hoffman",
+    "yayin": null,
+    "doi": null
+   },
+   "baslik_benzerligi": 1.0,
+   "yil_farki": 0,
+   "durum": "DOGRULANDI"
+  },
+  {
+   "anahtar": "LandySzalay1993",
+   "bib_baslik": "Bias and variance of angular correlation functions",
+   "bib_yil": "1993",
+   "kimlik": "doi:10.1086/172900",
+   "dis": {
+    "kaynak": "Crossref",
+    "baslik": "Bias and variance of angular correlation functions",
+    "yil": 1993,
+    "ilk_yazar": "Landy",
+    "yayin": "The Astrophysical Journal",
+    "cilt": "412",
+    "sayfa": "64"
+   },
+   "baslik_benzerligi": 1.0,
+   "yil_farki": 0,
+   "durum": "DOGRULANDI"
+  },
+  {
+   "anahtar": "Fried1966",
+   "bib_baslik": "Optical Resolution Through a Randomly Inhomogeneous Medium for Very Long and Very Short Exposures",
+   "bib_yil": "1966",
+   "kimlik": "doi:10.1364/JOSA.56.001372",
+   "dis": {
+    "kaynak": "Crossref",
+    "baslik": "Optical Resolution Through a Randomly Inhomogeneous Medium for Very Long and Very Short Exposures",
+    "yil": 1966,
+    "ilk_yazar": "Fried",
+    "yayin": "Journal of the Optical Society of America",
+    "cilt": "56",
+    "sayfa": "1372"
+   },
+   "baslik_benzerligi": 1.0,
+   "yil_farki": 0,
+   "durum": "DOGRULANDI"
+  },
+  {
+   "anahtar": "Ciddor1996",
+   "bib_baslik": "Refractive index of air: new equations for the visible and near infrared",
+   "bib_yil": "1996",
+   "kimlik": "doi:10.1364/AO.35.001566",
+   "dis": {
+    "kaynak": "Crossref",
+    "baslik": "Refractive index of air: new equations for the visible and near infrared",
+    "yil": 1996,
+    "ilk_yazar": "Ciddor",
+    "yayin": "Applied Optics",
+    "cilt": "35",
+    "sayfa": "1566"
+   },
+   "baslik_benzerligi": 1.0,
+   "yil_farki": 0,
+   "durum": "DOGRULANDI"
+  },
+  {
+   "anahtar": "KrisciunasSchaefer1991",
+   "bib_baslik": "A model of the brightness of moonlight",
+   "bib_yil": "1991",
+   "kimlik": "doi:10.1086/132921",
+   "dis": {
+    "kaynak": "Crossref",
+    "baslik": "A model of the brightness of moonlight",
+    "yil": 1991,
+    "ilk_yazar": "Krisciunas",
+    "yayin": "Publications of the Astronomical Society of the Pacific",
+    "cilt": "103",
+    "sayfa": "1033"
+   },
+   "baslik_benzerligi": 1.0,
+   "yil_farki": 0,
+   "durum": "DOGRULANDI"
+  },
+  {
+   "anahtar": "Zechmeister2009",
+   "bib_baslik": "The generalised Lomb-Scargle periodogram. A new formalism for the floating-mean and Keplerian periodograms",
+   "bib_yil": "2009",
+   "kimlik": "doi:10.1051/0004-6361:200811296",
+   "dis": {
+    "kaynak": "Crossref",
+    "baslik": "The generalised Lomb-Scargle periodogram",
+    "yil": 2009,
+    "ilk_yazar": "Zechmeister",
+    "yayin": "Astronomy &amp; Astrophysics",
+    "cilt": "496",
+    "sayfa": "577-584"
+   },
+   "baslik_benzerligi": 1.0,
+   "yil_farki": 0,
+   "durum": "DOGRULANDI"
+  },
+  {
+   "anahtar": "Baluev2008",
+   "bib_baslik": "Assessing the statistical significance of periodogram peaks",
+   "bib_yil": "2008",
+   "kimlik": "doi:10.1111/j.1365-2966.2008.12689.x",
+   "dis": {
+    "kaynak": "Crossref",
+    "baslik": "Assessing the statistical significance of periodogram peaks",
+    "yil": 2008,
+    "ilk_yazar": "Baluev",
+    "yayin": "Monthly Notices of the Royal Astronomical Society",
+    "cilt": "385",
+    "sayfa": "1279-1285"
+   },
+   "baslik_benzerligi": 1.0,
+   "yil_farki": 0,
+   "durum": "DOGRULANDI"
+  },
+  {
+   "anahtar": "Lucy1974",
+   "bib_baslik": "An iterative technique for the rectification of observed distributions",
+   "bib_yil": "1974",
+   "kimlik": "doi:10.1086/111605",
+   "dis": {
+    "kaynak": "Crossref",
+    "baslik": "An iterative technique for the rectification of observed distributions",
+    "yil": 1974,
+    "ilk_yazar": "Lucy",
+    "yayin": "The Astronomical Journal",
+    "cilt": "79",
+    "sayfa": "745"
+   },
+   "baslik_benzerligi": 1.0,
+   "yil_farki": 0,
+   "durum": "DOGRULANDI"
+  },
+  {
+   "anahtar": "Richardson1972",
+   "bib_baslik": "Bayesian-Based Iterative Method of Image Restoration",
+   "bib_yil": "1972",
+   "kimlik": "doi:10.1364/JOSA.62.000055",
+   "dis": {
+    "kaynak": "Crossref",
+    "baslik": "Bayesian-Based Iterative Method of Image Restoration*",
+    "yil": 1972,
+    "ilk_yazar": "Richardson",
+    "yayin": "Journal of the Optical Society of America",
+    "cilt": "62",
+    "sayfa": "55"
+   },
+   "baslik_benzerligi": 1.0,
+   "yil_farki": 0,
+   "durum": "DOGRULANDI"
+  },
+  {
+   "anahtar": "Anscombe1948",
+   "bib_baslik": "The transformation of Poisson, binomial and negative-binomial data",
+   "bib_yil": "1948",
+   "kimlik": "doi:10.1093/biomet/35.3-4.246",
+   "dis": {
+    "kaynak": "Crossref",
+    "baslik": "THE TRANSFORMATION OF POISSON, BINOMIAL AND NEGATIVE-BINOMIAL DATA",
+    "yil": 1948,
+    "ilk_yazar": "ANSCOMBE",
+    "yayin": "Biometrika",
+    "cilt": "35",
+    "sayfa": "246-254"
+   },
+   "baslik_benzerligi": 1.0,
+   "yil_farki": 0,
+   "durum": "DOGRULANDI"
+  },
+  {
+   "anahtar": "Lupton1999",
+   "bib_baslik": "A Modified Magnitude System that Produces Well-Behaved Magnitudes, Colors, and Errors Even for Low Signal-to-Noise Ratio Measurements",
+   "bib_yil": "1999",
+   "kimlik": "doi:10.1086/301004",
+   "dis": {
+    "kaynak": "Crossref",
+    "baslik": "A Modified Magnitude System that Produces Well-Behaved Magnitudes, Colors, and Errors Even for Low Signal-to-Noise Ratio Measurements",
+    "yil": 1999,
+    "ilk_yazar": "Lupton",
+    "yayin": "The Astronomical Journal",
+    "cilt": "118",
+    "sayfa": "1406-1410"
+   },
+   "baslik_benzerligi": 1.0,
+   "yil_farki": 0,
+   "durum": "DOGRULANDI"
+  },
+  {
+   "anahtar": "Padmanabhan2008",
+   "bib_baslik": "An Improved Photometric Calibration of the Sloan Digital Sky Survey Imaging Data",
+   "bib_yil": "2008",
+   "kimlik": "doi:10.1086/524677",
+   "dis": {
+    "kaynak": "Crossref",
+    "baslik": "An Improved Photometric Calibration of the Sloan Digital Sky Survey Imaging Data",
+    "yil": 2008,
+    "ilk_yazar": "Padmanabhan",
+    "yayin": "The Astrophysical Journal",
+    "cilt": "674",
+    "sayfa": "1217-1233"
+   },
+   "baslik_benzerligi": 1.0,
+   "yil_farki": 0,
+   "durum": "DOGRULANDI"
+  },
+  {
+   "anahtar": "Shannon1949",
+   "bib_baslik": "Communication in the Presence of Noise",
+   "bib_yil": "1949",
+   "kimlik": "doi:10.1109/JRPROC.1949.232969",
+   "dis": {
+    "kaynak": "Crossref",
+    "baslik": "Communication in the Presence of Noise",
+    "yil": 1949,
+    "ilk_yazar": "Shannon",
+    "yayin": "Proceedings of the IRE",
+    "cilt": "37",
+    "sayfa": "10-21"
+   },
+   "baslik_benzerligi": 1.0,
+   "yil_farki": 0,
+   "durum": "DOGRULANDI"
+  },
+  {
+   "anahtar": "Harris1978",
+   "bib_baslik": "On the use of windows for harmonic analysis with the discrete Fourier transform",
+   "bib_yil": "1978",
+   "kimlik": "doi:10.1109/PROC.1978.10837",
+   "dis": {
+    "kaynak": "Crossref",
+    "baslik": "On the use of windows for harmonic analysis with the discrete Fourier transform",
+    "yil": 1978,
+    "ilk_yazar": "Harris",
+    "yayin": "Proceedings of the IEEE",
+    "cilt": "66",
+    "sayfa": "51-83"
+   },
+   "baslik_benzerligi": 1.0,
+   "yil_farki": 0,
+   "durum": "DOGRULANDI"
+  },
+  {
+   "anahtar": "Peters1964",
+   "bib_baslik": "Gravitational Radiation and the Motion of Two Point Masses",
+   "bib_yil": "1964",
+   "kimlik": "doi:10.1103/PhysRev.136.B1224",
+   "dis": {
+    "kaynak": "Crossref",
+    "baslik": "Gravitational Radiation and the Motion of Two Point Masses",
+    "yil": 1964,
+    "ilk_yazar": "Peters",
+    "yayin": "Physical Review",
+    "cilt": "136",
+    "sayfa": "B1224-B1232"
+   },
+   "baslik_benzerligi": 1.0,
+   "yil_farki": 0,
+   "durum": "DOGRULANDI"
+  },
+  {
+   "anahtar": "Allen2012",
+   "bib_baslik": "FINDCHIRP: An algorithm for detection of gravitational waves from inspiraling compact binaries",
+   "bib_yil": "2012",
+   "kimlik": "doi:10.1103/PhysRevD.85.122006",
+   "dis": {
+    "kaynak": "Crossref",
+    "baslik": "FINDCHIRP: An algorithm for detection of gravitational waves from inspiraling compact binaries",
+    "yil": 2012,
+    "ilk_yazar": "Allen",
+    "yayin": "Physical Review D",
+    "cilt": "85",
+    "sayfa": "122006"
+   },
+   "baslik_benzerligi": 1.0,
+   "yil_farki": 0,
+   "durum": "DOGRULANDI"
+  },
+  {
+   "anahtar": "Blanchet2014",
+   "bib_baslik": "Gravitational Radiation from Post-Newtonian Sources and Inspiralling Compact Binaries",
+   "bib_yil": "2014",
+   "kimlik": "doi:10.12942/lrr-2014-2",
+   "dis": {
+    "kaynak": "Crossref",
+    "baslik": "Gravitational Radiation from Post-Newtonian Sources and Inspiralling Compact Binaries",
+    "yil": 2014,
+    "ilk_yazar": "Blanchet",
+    "yayin": "Living Reviews in Relativity",
+    "cilt": "17",
+    "sayfa": "2"
+   },
+   "baslik_benzerligi": 1.0,
+   "yil_farki": 0,
+   "durum": "DOGRULANDI"
+  },
+  {
+   "anahtar": "Maggiore2007",
+   "bib_baslik": "Gravitational Waves: Volume 1: Theory and Experiments",
+   "bib_yil": "2007",
+   "kimlik": "doi:10.1093/acprof:oso/9780198570745.001.0001",
+   "dis": {
+    "kaynak": "Crossref",
+    "baslik": "Gravitational Waves",
+    "yil": 2007,
+    "ilk_yazar": "Maggiore",
+    "yayin": "Oxford University PressOxford",
+    "cilt": null,
+    "sayfa": null
+   },
+   "baslik_benzerligi": 1.0,
+   "yil_farki": 0,
+   "durum": "DOGRULANDI"
+  },
+  {
+   "anahtar": "Carroll2019",
+   "bib_baslik": "Spacetime and Geometry: An Introduction to General Relativity",
+   "bib_yil": "2019",
+   "kimlik": "doi:10.1017/9781108770385",
+   "dis": {
+    "kaynak": "Crossref",
+    "baslik": "Spacetime and Geometry",
+    "yil": 2019,
+    "ilk_yazar": "Carroll",
+    "yayin": "Cambridge University Press",
+    "cilt": null,
+    "sayfa": null
+   },
+   "baslik_benzerligi": 1.0,
+   "yil_farki": 0,
+   "durum": "DOGRULANDI"
+  },
+  {
+   "anahtar": "ShapiroTeukolsky1983",
+   "bib_baslik": "Black Holes, White Dwarfs, and Neutron Stars: The Physics of Compact Objects",
+   "bib_yil": "1983",
+   "kimlik": "doi:10.1002/9783527617661",
+   "dis": {
+    "kaynak": "Crossref",
+    "baslik": "Black Holes, White Dwarfs, and Neutron Stars",
+    "yil": 1983,
+    "ilk_yazar": "Shapiro",
+    "yayin": "Wiley",
+    "cilt": null,
+    "sayfa": null
+   },
+   "baslik_benzerligi": 1.0,
+   "yil_farki": 0,
+   "durum": "DOGRULANDI"
+  },
+  {
+   "anahtar": "Longair2011",
+   "bib_baslik": "High Energy Astrophysics",
+   "bib_yil": "2011",
+   "kimlik": "doi:10.1017/CBO9780511778346",
+   "dis": {
+    "kaynak": "Crossref",
+    "baslik": "High Energy Astrophysics",
+    "yil": 2011,
+    "ilk_yazar": "Longair",
+    "yayin": "Cambridge University Press",
+    "cilt": null,
+    "sayfa": null
+   },
+   "baslik_benzerligi": 1.0,
+   "yil_farki": 0,
+   "durum": "DOGRULANDI"
+  },
+  {
+   "anahtar": "Shupe2005",
+   "bib_baslik": "The SIP Convention for Representing Distortion in FITS Image Headers",
+   "bib_yil": "2005",
+   "kimlik": "https://ui.adsabs.harvard.edu/abs/2005ASPC..347..491S",
+   "durum": "ELLE",
+   "aciklama": "DOI, arXiv ya da ISBN yok; elle doğrulanacak"
+  },
+  {
+   "anahtar": "Moffat1969",
+   "bib_baslik": "A Theoretical Investigation of Focal Stellar Images in the Photographic Emulsion and Application to Photographic Photometry",
+   "bib_yil": "1969",
+   "kimlik": "https://ui.adsabs.harvard.edu/abs/1969A&A.....3..455M",
+   "durum": "ELLE",
+   "aciklama": "DOI, arXiv ya da ISBN yok; elle doğrulanacak"
+  },
+  {
+   "anahtar": "Bretagnon1988",
+   "bib_baslik": "Planetary theories in rectangular and spherical variables. VSOP 87 solutions",
+   "bib_yil": "1988",
+   "kimlik": "https://ui.adsabs.harvard.edu/abs/1988A&A...202..309B",
+   "durum": "ELLE",
+   "aciklama": "DOI, arXiv ya da ISBN yok; elle doğrulanacak"
+  },
+  {
+   "anahtar": "Perryman1997",
+   "bib_baslik": "The Hipparcos and Tycho Catalogues",
+   "bib_yil": "1997",
+   "kimlik": "https://ui.adsabs.harvard.edu/abs/1997ESASP1200.....E",
+   "durum": "ELLE",
+   "aciklama": "DOI, arXiv ya da ISBN yok; elle doğrulanacak"
+  },
+  {
+   "anahtar": "FITS2018",
+   "bib_baslik": "Definition of the Flexible Image Transport System (FITS), Version 4.0",
+   "bib_yil": "2018",
+   "kimlik": "https://fits.gsfc.nasa.gov/fits_standard.html",
+   "durum": "ELLE",
+   "aciklama": "DOI, arXiv ya da ISBN yok; elle doğrulanacak"
   }
  ],
  "paketler": [
@@ -3835,10 +4312,11 @@
    "Peebles1993",
    "Perlmutter1999",
    "Prusti2016",
+   "PyERFA2020",
    "Riess1998",
    "Springel2005",
    "WallJenkins2012"
   ],
-  "kullanilan_sayisi": 159
+  "kullanilan_sayisi": 188
  }
 }

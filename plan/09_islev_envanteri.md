@@ -6,9 +6,9 @@ Her fonksiyon satırı adı, girdi ve çıktı birimlerini ve birincil kaynağı
 
 ## `temel`
 
-**`sabitler`** (uygulandı). CODATA 2022 fiziksel sabitleri [CODATA2022], IAU 2015 B3 nominal Güneş ve gezegen değerleri [Prsa2016], IAU 2015 B2 bolometrik sıfır noktası [Mamajek2015], zaman sabitleri [ERFA2024]. Eklenecek: Güneş'in bant bant mutlak kadirleri, gezegen kütle parametrelerinin tamamı [Park2021], Dünya elipsoidi (WGS84 ve GRS80) [IERS2010].
+**`sabitler`** (uygulandı). CODATA 2022 fiziksel sabitleri [CODATA2022], IAU 2015 B3 nominal Güneş ve gezegen değerleri [Prsa2016], IAU 2015 B2 bolometrik sıfır noktası [Mamajek2015], zaman sabitleri [ERFA2023]. Eklenecek: Güneş'in bant bant mutlak kadirleri, gezegen kütle parametrelerinin tamamı [Park2021], Dünya elipsoidi (WGS84 ve GRS80) [IERS2010].
 
-**`aci`** (uygulandı). Derece, yay saniyesi ve radyan dönüşümleri, aralık indirgeme, birim vektör dönüşümleri, açısal ayrıklık [ERFA2024]. Eklenecek:
+**`aci`** (uygulandı). Derece, yay saniyesi ve radyan dönüşümleri, aralık indirgeme, birim vektör dönüşümleri, açısal ayrıklık [ERFA2023]. Eklenecek:
 
 - `altmislik_den_derece`, `derece_den_altmislik`: dizgi ayrıştırma ve biçimlendirme; eksi sıfır durumu.
 - `konum_acisi(l1, b1, l2, b2) → rad`: kuzeyden doğuya.
@@ -20,11 +20,11 @@ Her fonksiyon satırı adı, girdi ve çıktı birimlerini ve birincil kaynağı
 
 ## `zaman`
 
-**`julyen`** (uygulandı). Takvim ↔ MJD/JD, TAI ↔ TT, Dünya dönme açısı, Greenwich ve yerel ortalama yıldız zamanı, ortalama eğiklik [ERFA2024].
+**`julyen`** (uygulandı). Takvim ↔ MJD/JD, TAI ↔ TT, Dünya dönme açısı, Greenwich ve yerel ortalama yıldız zamanı, ortalama eğiklik [ERFA2023].
 
-**`olcekler`**.
+**`olcekler`** (kısmen uygulandı: `tai_eksi_utc_s`, `tt_eksi_utc_s` [ERFA2023]).
 
-- `utc_den_tai(jd1, jd2) → (jd1, jd2)`: artık saniye tablosu; tablonun son geçerlilik tarihi denetlenir [IERS2010].
+- `utc_den_tai(jd1, jd2) → (jd1, jd2)`: artık saniye gününün ele alınmasıyla [IERS2010].
 - `tt_den_tdb(jd1, jd2, ...) → (jd1, jd2)`: tek terimli düşük duyarlık biçimi ve tam seri [Kaplan2005].
 - `utc_den_ut1(jd1, jd2, dut1_s)`: DUT1 dışarıdan verilir.
 - `delta_t_s(yil)`: tarihsel polinomlar [Meeus1998].
@@ -35,7 +35,7 @@ Her fonksiyon satırı adı, girdi ve çıktı birimlerini ve birincil kaynağı
 
 ## `koordinat`
 
-**`donusum`** (uygulandı). ICRS ↔ galaktik, saat açısı ↔ ufuk, düzlem-paralel hava kütlesi [ERFA2024].
+**`donusum`** (uygulandı). ICRS ↔ galaktik, saat açısı ↔ ufuk, düzlem-paralel hava kütlesi [ERFA2023].
 
 Eklenecek:
 
@@ -82,18 +82,24 @@ Eklenecek:
 
 ## `gozlem`
 
+**`dedektor`** (uygulandı; kaynak kayıtları bekliyor). `ham_kare_uret`, `yildiz_alani`, `sinyal_gurultu_orani` [Howell2006; MerlineHowell1995].
+
+Eklenecek:
+
 - `hedef_gorunurlugu(hedef, gozlemci, zamanlar) → (yukseklik, hava_kutlesi)`.
 - `ay_ayrikligi_ve_aydinlanma`; `gokyuzu_parlakligi_ay` [KrisciunasSchaefer1991].
-- `ccd_sinyal_gurultu(kaynak_e, gokyuzu_e, karanlik_e, okuma_e, n_pix, n_arka)` [MerlineHowell1995].
 - `poz_suresi(hedef_sn, ...)`, `doyma_suresi`.
 - `gorus_fwhm(r0, dalga_boyu, hava_kutlesi)` [Fried1966].
-- `sentetik_kare(yildizlar, psf, dedektor, uretec)`: sentetik veri üreteci [Howell2006].
-- `foton_aktarim_egrisi(duz_cifti_listesi) → (kazanc, okuma_gurultusu)` [Janesick2007].
+- Üretece eklenecekler: kozmik ışın, sıcak piksel, doyma, Moffat PSF [Moffat1969].
+- `foton_aktarim_egrisi(duz_cifti_listesi)`: çok düzeyli varyans-ortalama uyumu [Janesick2007].
 
 ## `indirgeme`
 
-- `ana_bias`, `ana_karanlik`, `ana_duz`: sigma kırpmalı birleştirme.
-- `kare_indirge(ham, bias, karanlik, duz, kazanc, okuma)`: varyans ve maske yayılımıyla [Howell2006].
+**`kalibrasyon`** (uygulandı; kaynak kayıtları bekliyor). `birlestir`, `kare_indirge`, `kazanc_ve_okuma_gurultusu` [Howell2006; Janesick2007].
+
+Eklenecek:
+
+- Maske düzlemi ve ana kalibrasyon karelerinin gürültüsünün varyansa eklenmesi.
 - `kozmik_isin_laplace(goruntu, ...)` [vanDokkum2001].
 - `arka_plan_haritasi(goruntu, hucre, suzgec)` [BertinArnouts1996].
 - `hizala`, `yeniden_ornekle`, `birlestir`; `drizzle` [FruchterHook2002].
@@ -133,15 +139,16 @@ Eklenecek:
 
 **`uyum`** (uygulandı). Kovaryanslı χ², doğrusal en küçük kareler, doğru uydurma [HoggBovyLang2010].
 
-**`mcmc`** (uygulandı). Gerdirme hamlesi, topluluk örnekleyici [ForemanMackey2013], öz ilinti süresi ve bölünmüş R̂ (kaynak kayıtları bekliyor) [GelmanRubin1992].
+**`mcmc`** (uygulandı). Gerdirme hamlesi, topluluk örnekleyici [ForemanMackey2013], bölünmüş ve sıra normalleştirilmiş R̂ [Vehtari2021], öz ilinti süresi (kaynak kaydı bekliyor).
+
+**`saglam`** (uygulandı; kaynak kayıtları bekliyor). Sigma kırpma, MAD ölçeği, çift ağırlıklı konum ve ölçek [Beers1990].
 
 Eklenecek:
 
-- `sigma_kirp`, `mad_olcek`, `ciftagirlik_konum`, `ciftagirlik_olcek` [Beers1990].
 - `yayilim_dogrusal(f, x, kov)`, `yayilim_monte_carlo`.
 - `dogru_uydur_iki_eksen(x, y, sx, sy, ic_sacilma)` [HoggBovyLang2010; Kelly2007].
 - `karisim_modeli_aykiri` [HoggBovyLang2010].
-- `metropolis_hastings` [Metropolis1953; Hastings1970]; `rhat_sira_normallestirilmis` [Vehtari2021].
+- `metropolis_hastings` [Metropolis1953; Hastings1970]; etkin örnek sayısı [Vehtari2021]; klasik R̂ ile karşılaştırma [GelmanRubin1992].
 - `ic_ice_ornekle` [Skilling2006].
 - `bootstrap`, `jackknife` [Efron1979].
 - `paralakstan_uzaklik_sonsali(paralaks, sigma, onsel)` [BailerJones2015].
@@ -149,14 +156,14 @@ Eklenecek:
 
 ## `kozmoloji`
 
-**`uzaklik`** (uygulandı). `E(z)`, eşyürüyen, enine eşyürüyen, açısal çap ve ışınım gücü uzaklıkları, uzaklık modülü, geriye bakış zamanı, hacim elemanı, Hubble uzaklığı ve zamanı [Hogg1999; Brout2022].
+**`uzaklik`** (uygulandı). `E(z)`, eşyürüyen, enine eşyürüyen, açısal çap ve ışınım gücü uzaklıkları, uzaklık modülü, geriye bakış zamanı, hacim elemanı ve eşyürüyen hacim, iki kırmızıya kayma arası açısal çap uzaklığı, Doppler kayması ve özel hız, Hubble uzaklığı ve zamanı [Hogg1999; Brout2022].
 
 **`hubble_diyagrami`** (uygulandı). Veri seçimi, artık vektörü, olabilirlik, kapalı biçimli en iyi mutlak kadir [Brout2022].
 
 Eklenecek:
 
 - Radyasyon ve kütleli nötrino terimleri; `w0wa` parametrelemesi [ChevallierPolarski2001; Linder2003].
-- `evrenin_yasi_gyr`, `esyuruyen_hacim_mpc3` ([Hogg1999] Denk. 29), `acisal_cap_uzakligi_z1_z2` (Denk. 19).
+- `evrenin_yasi_gyr` (radyasyon terimiyle birlikte).
 - `kozmografik_uzaklik(z, h0, q0, j0)` [Riess2022].
 - `ses_ufku_eh98(omega_m_h2, omega_b_h2)` [EisensteinHu1998]; `bao_uzakliklari(z)` (`D_V`, `D_M/r_d`, `D_H/r_d`) [DESI2025].
 - `buyume_carpani(z)` [Dodelson2020].

@@ -1,7 +1,7 @@
 """Zaman ölçekleri arasındaki farklar: TAI − UTC ve türevleri.
 
 Artık saniye tablosu ve 1972 öncesi sürüklenme katsayıları ERFA ``dat.c``
-dosyasından okunmuştur [ERFA2024]. Tablo yeni bir artık saniye ilan
+dosyasından okunmuştur [ERFA2023]. Tablo yeni bir artık saniye ilan
 edildiğinde güncellenmelidir; ``TABLO_SURUM_YILI`` tablonun ait olduğu ERFA
 sürüm yılıdır.
 """
@@ -80,7 +80,7 @@ _SURUKLENME: tuple[tuple[float, float], ...] = (
 )
 
 
-@kaynak("ERFA2024", yer="dat.c", teyit="okundu", not_="tablo 2017-01-01 girişiyle biter; ERFA sürüm yılı 2023")
+@kaynak("ERFA2023", yer="dat.c", teyit="okundu", not_="tablo 2017-01-01 girişiyle biter; ERFA sürüm yılı 2023")
 def tai_eksi_utc_s(yil: int, ay: int, gun: int, gun_kesri: float = 0.0) -> float:
     """Verilen UTC tarihinde TAI − UTC farkını (ΔAT) saniye olarak verir.
 
@@ -98,7 +98,7 @@ def tai_eksi_utc_s(yil: int, ay: int, gun: int, gun_kesri: float = 0.0) -> float
 
     Kaynaklar
     ---------
-    [ERFA2024] dat.c.
+    [ERFA2023] dat.c.
 
     Geçerlilik
     ----------
@@ -133,13 +133,13 @@ def tai_eksi_utc_s(yil: int, ay: int, gun: int, gun_kesri: float = 0.0) -> float
     return fark
 
 
-@kaynak("ERFA2024", yer="dat.c; erfam.h ERFA_TTMTAI", teyit="okundu", not_="TT − UTC = (TAI − UTC) + 32,184 s")
+@kaynak("ERFA2023", yer="dat.c; erfam.h ERFA_TTMTAI", teyit="okundu", not_="TT − UTC = (TAI − UTC) + 32,184 s")
 def tt_eksi_utc_s(yil: int, ay: int, gun: int, gun_kesri: float = 0.0) -> float:
     """Verilen UTC tarihinde TT − UTC farkını saniye olarak verir.
 
     Kaynaklar
     ---------
-    [ERFA2024] dat.c; erfam.h ERFA_TTMTAI.
+    [ERFA2023] dat.c; erfam.h ERFA_TTMTAI.
 
     Doğrulama
     ---------

@@ -44,7 +44,7 @@ Her sistem bir temel düzlem ve bir başlangıç doğrultusuyla tanımlanır.
 - **Ufuk (alt-az):** `sin h = sin φ sin δ + cos φ cos δ cos H`; azimut için `atan2` biçimi. Azimutun kuzeyden doğuya ölçülmesi kuralı sabittir; Meeus güneyden ölçer [Meeus1998, Böl. 13], fark notta yazılır.
 - **Ekvatoral (α, δ):** saat açısı `H = LST − α`.
 - **Ekliptik (λ, β):** eğiklik `ε` çevresinde `R1(ε)` dönmesi.
-- **Galaktik (l, b):** ICRS'ten sabit bir dönme matrisi. Matris kuzey galaktik kutbun konumu ve galaktik merkezin konum açısından kurulur; sabitlerin kaynağı Hipparcos kataloğudur [Perryman1997]; matrisin tam duyarlıklı değerleri ERFA `icrs2g.c` dosyasından okunmuş ve uygulanmıştır [ERFA2024].
+- **Galaktik (l, b):** ICRS'ten sabit bir dönme matrisi. Matris kuzey galaktik kutbun konumu ve galaktik merkezin konum açısından kurulur; sabitlerin kaynağı Hipparcos kataloğudur [Perryman1997]; matrisin tam duyarlıklı değerleri ERFA `icrs2g.c` dosyasından okunmuş ve uygulanmıştır [ERFA2023].
 - **Süpergalaktik:** galaktikten sabit dönme.
 
 ## 5. Gözlemciye indirgeme zinciri

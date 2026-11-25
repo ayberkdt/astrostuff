@@ -48,7 +48,7 @@ def esyuruyen_uzaklik_mpc(z, kozmoloji):
 
 `tests/test_kaynak_kurali.py` her açık fonksiyon için dört şeyi denetler: kayıt var mı, anahtar [kaynakçada](kaynakca/kaynaklar.bib) tanımlı mı, belge dizgisi aynı anahtarı anıyor mu, `Doğrulama` bölümündeki test dosyası gerçekten var mı. Kaynakçadaki künyeler de ayrıca sınanır: [kaynakca/dogrula.py](kaynakca/dogrula.py) her DOI'yi Crossref'e, her arXiv kimliğini arXiv'e, her ISBN'i Open Library'ye sorar ve başlık ile yılı karşılaştırır.
 
-Güncel sayılar [plan/DURUM.md](plan/DURUM.md) dosyasındadır; bu dosya elle yazılmaz, kütükten üretilir. İlk sürümde 70 fonksiyon ve 35 sabit vardır; 72 kaynak kaydının 61'i kaynağından okunmuş, 11'i beklemektedir.
+Güncel sayılar [plan/DURUM.md](plan/DURUM.md) dosyasındadır; bu dosya elle yazılmaz, kütükten üretilir. İlk sürümde 80 fonksiyon ve 35 sabit vardır; 83 kaynak kaydının 61 tanesi kaynağından okunmuş, 22 tanesi beklemektedir.
 
 ## Neler var
 
@@ -58,11 +58,12 @@ Güncel sayılar [plan/DURUM.md](plan/DURUM.md) dosyasındadır; bu dosya elle y
 - **`efemeris`**: Kepler denklemi, gerçek anomali, yörünge dönemi, vis-viva.
 - **`isinim`**: bolometrik kadir (IAU 2015 B2), uzaklık modülü, Planck fonksiyonu.
 - **`kozmoloji`**: `E(z)`, eşyürüyen, açısal çap ve ışınım gücü uzaklıkları, geriye bakış zamanı, eşyürüyen hacim, Doppler kayması ve özel hız; süpernova Hubble diyagramı olabilirliği.
-- **`istatistik`**: kovaryanslı doğrusal en küçük kareler, afin değişmez topluluk örnekleyici (gerdirme hamlesi), öz ilinti süresi, bölünmüş ve sıra normalleştirilmiş R̂.
+- **`gozlem`** ve **`indirgeme`**: CCD sinyal modeli, sentetik ham kare ve yıldız alanı üreteci, CCD denklemiyle sinyal-gürültü oranı; sigma kırpmalı kare birleştirme, bias, karanlık ve düz alan düzeltmesi (varyans düzlemiyle), foton aktarım yöntemiyle kazanç ve okuma gürültüsü ölçümü.
+- **`istatistik`**: sigma kırpma, MAD ve çift ağırlıklı kestiriciler, kovaryanslı doğrusal en küçük kareler, afin değişmez topluluk örnekleyici (gerdirme hamlesi), öz ilinti süresi, bölünmüş ve sıra normalleştirilmiş R̂.
 - **`zamanserisi`**: klasik ve yüzen ortalamalı, ağırlıklı Lomb-Scargle periyodogramı.
 - **`arsiv`**: Pantheon+SH0ES verisinin indirilmesi, SHA-256 özet kaydı, tablo ve kovaryans okuma.
 
-Kitaplık çalışırken yalnızca NumPy ve SciPy kullanır. Astropy ve ERFA hesap için değil, sonuçları karşılaştırmak için vardır: uzaklıklar `astropy.cosmology` ile 10⁻⁹, zaman ve koordinat fonksiyonları ERFA ile 10⁻¹² rad, periyodogram `astropy.timeseries` ile 10⁻¹⁰ düzeyinde uyuşur.
+Kitaplık çalışırken yalnızca NumPy ve SciPy kullanır. Astropy ve ERFA hesap için değil, sonuçları karşılaştırmak için vardır: uzaklıklar `astropy.cosmology` ile 10⁻⁹, zaman ve koordinat fonksiyonları ERFA ile 10⁻¹² rad, periyodogram `astropy.timeseries` ile 10⁻¹⁰ düzeyinde uyuşur. İndirgeme hattının kâhini sentetik veridir: bilinen bir sahneden üretilen ham kareler indirgenir ve sonuç girilen sahneyle karşılaştırılır; artıklar yansızdır ve varyans düzlemi gerçek saçılımı öngörür (χ²/N ≈ 1).
 
 ## Kurulum ve test
 
@@ -99,7 +100,7 @@ Plan belgelerindeki denklemler planlama düzeyindedir ve hatırlanan bilgiye day
 
 ## Sırada ne var
 
-Yer tabanlı gözlem hattı: zaman ölçeklerinin tamamlanması, presesyon ve nutasyon, gözlem planlayıcı; ardından sentetik CCD üreteci, görüntü indirgeme, fotometri ve astrometri. Ayrıntı [yol haritasında](plan/07_yol_haritasi.md).
+Yer tabanlı gözlem hattının devamı: zaman ölçeklerinin tamamlanması, presesyon ve nutasyon, gözlem planlayıcı; kozmik ışın temizliği, arka plan haritası, kaynak saptama, açıklık fotometrisi ve astrometri. Dedektör ve indirgeme fonksiyonlarının kaynak kayıtları (Howell, Janesick) henüz `bekliyor` durumundadır; kitaplar açılıp denklemler teyit edilecektir. Ayrıntı [yol haritasında](plan/07_yol_haritasi.md).
 
 ## Lisans
 

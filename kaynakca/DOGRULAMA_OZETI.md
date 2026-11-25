@@ -1,10 +1,10 @@
 # Doğrulama özeti
 
-Üretim: `dogrula.py`, 2026-11-25 12:22 UTC. Ayrıntı: `dogrulama_kaydi.json`.
+Üretim: `dogrula.py`, 2026-11-25 13:10 UTC. Ayrıntı: `dogrulama_kaydi.json`.
 
 ## Künyeler
 
-BULUNAMADI: 1, DOGRULANDI: 162, ELLE: 4 (toplam 167).
+BULUNAMADI: 1, DOGRULANDI: 186, ELLE: 10 (toplam 197).
 
 ### Dış kaydı okunamayan
 
@@ -16,6 +16,12 @@ BULUNAMADI: 1, DOGRULANDI: 162, ELLE: 4 (toplam 167).
 - `LeavittPickering1912` (https://ui.adsabs.harvard.edu/abs/1912HarCi.173....1L): DOI, arXiv ya da ISBN yok; elle doğrulanacak
 - `Tripp1998` (https://ui.adsabs.harvard.edu/abs/1998A&A...331..815T): DOI, arXiv ya da ISBN yok; elle doğrulanacak
 - `TullyFisher1977` (https://ui.adsabs.harvard.edu/abs/1977A&A....54..661T): DOI, arXiv ya da ISBN yok; elle doğrulanacak
+- `ERFA2023` (https://github.com/liberfa/erfa): DOI, arXiv ya da ISBN yok; elle doğrulanacak
+- `Shupe2005` (https://ui.adsabs.harvard.edu/abs/2005ASPC..347..491S): DOI, arXiv ya da ISBN yok; elle doğrulanacak
+- `Moffat1969` (https://ui.adsabs.harvard.edu/abs/1969A&A.....3..455M): DOI, arXiv ya da ISBN yok; elle doğrulanacak
+- `Bretagnon1988` (https://ui.adsabs.harvard.edu/abs/1988A&A...202..309B): DOI, arXiv ya da ISBN yok; elle doğrulanacak
+- `Perryman1997` (https://ui.adsabs.harvard.edu/abs/1997ESASP1200.....E): DOI, arXiv ya da ISBN yok; elle doğrulanacak
+- `FITS2018` (https://fits.gsfc.nasa.gov/fits_standard.html): DOI, arXiv ya da ISBN yok; elle doğrulanacak
 
 ### Doğrulanan
 
@@ -215,6 +221,30 @@ BULUNAMADI: 1, DOGRULANDI: 162, ELLE: 4 (toplam 167).
                     Quantities, Including Concentration, Profile Slopes, Petrosian Indices, and Kron Magnitudes». Publications of the Astronomical Society of Australia, 22, 118-127 [Crossref, doi:10.1071/AS05001]
 - `Springel2005`: Springel 2005, «The cosmological simulation code gadget-2». Monthly Notices of the Royal Astronomical Society, 364, 1105-1134 [Crossref, doi:10.1111/j.1365-2966.2005.09655.x]
 - `Abbott2016`: Abbott 2016, «Observation of Gravitational Waves from a Binary Black Hole Merger». Physical Review Letters, 116, 061102 [Crossref, doi:10.1103/PhysRevLett.116.061102]
+- `PyERFA2020`: Kerkwijk 2020, «liberfa/pyerfa v1.7.0». Zenodo [DataCite, doi:10.5281/zenodo.3940699]
+- `Gorski2005`: Gorski 2005, «HEALPix: A Framework for High‐Resolution Discretization and Fast Analysis of Data Distributed on the Sphere». The Astrophysical Journal, 622, 759-771 [Crossref, doi:10.1086/427976]
+- `Cash1979`: Cash 1979, «Parameter estimation in astronomy through application of the likelihood ratio». The Astrophysical Journal, 228, 939 [Crossref, doi:10.1086/156922]
+- `HoffmanGelman2014`: Hoffman 2011, «The No-U-Turn Sampler: Adaptively Setting Path Lengths in Hamiltonian Monte Carlo».  [arXiv, arXiv:1111.4246]
+- `LandySzalay1993`: Landy 1993, «Bias and variance of angular correlation functions». The Astrophysical Journal, 412, 64 [Crossref, doi:10.1086/172900]
+- `Fried1966`: Fried 1966, «Optical Resolution Through a Randomly Inhomogeneous Medium for Very Long and Very Short Exposures». Journal of the Optical Society of America, 56, 1372 [Crossref, doi:10.1364/JOSA.56.001372]
+- `Ciddor1996`: Ciddor 1996, «Refractive index of air: new equations for the visible and near infrared». Applied Optics, 35, 1566 [Crossref, doi:10.1364/AO.35.001566]
+- `KrisciunasSchaefer1991`: Krisciunas 1991, «A model of the brightness of moonlight». Publications of the Astronomical Society of the Pacific, 103, 1033 [Crossref, doi:10.1086/132921]
+- `Zechmeister2009`: Zechmeister 2009, «The generalised Lomb-Scargle periodogram». Astronomy &amp; Astrophysics, 496, 577-584 [Crossref, doi:10.1051/0004-6361:200811296]
+- `Baluev2008`: Baluev 2008, «Assessing the statistical significance of periodogram peaks». Monthly Notices of the Royal Astronomical Society, 385, 1279-1285 [Crossref, doi:10.1111/j.1365-2966.2008.12689.x]
+- `Lucy1974`: Lucy 1974, «An iterative technique for the rectification of observed distributions». The Astronomical Journal, 79, 745 [Crossref, doi:10.1086/111605]
+- `Richardson1972`: Richardson 1972, «Bayesian-Based Iterative Method of Image Restoration*». Journal of the Optical Society of America, 62, 55 [Crossref, doi:10.1364/JOSA.62.000055]
+- `Anscombe1948`: ANSCOMBE 1948, «THE TRANSFORMATION OF POISSON, BINOMIAL AND NEGATIVE-BINOMIAL DATA». Biometrika, 35, 246-254 [Crossref, doi:10.1093/biomet/35.3-4.246]
+- `Lupton1999`: Lupton 1999, «A Modified Magnitude System that Produces Well-Behaved Magnitudes, Colors, and Errors Even for Low Signal-to-Noise Ratio Measurements». The Astronomical Journal, 118, 1406-1410 [Crossref, doi:10.1086/301004]
+- `Padmanabhan2008`: Padmanabhan 2008, «An Improved Photometric Calibration of the Sloan Digital Sky Survey Imaging Data». The Astrophysical Journal, 674, 1217-1233 [Crossref, doi:10.1086/524677]
+- `Shannon1949`: Shannon 1949, «Communication in the Presence of Noise». Proceedings of the IRE, 37, 10-21 [Crossref, doi:10.1109/JRPROC.1949.232969]
+- `Harris1978`: Harris 1978, «On the use of windows for harmonic analysis with the discrete Fourier transform». Proceedings of the IEEE, 66, 51-83 [Crossref, doi:10.1109/PROC.1978.10837]
+- `Peters1964`: Peters 1964, «Gravitational Radiation and the Motion of Two Point Masses». Physical Review, 136, B1224-B1232 [Crossref, doi:10.1103/PhysRev.136.B1224]
+- `Allen2012`: Allen 2012, «FINDCHIRP: An algorithm for detection of gravitational waves from inspiraling compact binaries». Physical Review D, 85, 122006 [Crossref, doi:10.1103/PhysRevD.85.122006]
+- `Blanchet2014`: Blanchet 2014, «Gravitational Radiation from Post-Newtonian Sources and Inspiralling Compact Binaries». Living Reviews in Relativity, 17, 2 [Crossref, doi:10.12942/lrr-2014-2]
+- `Maggiore2007`: Maggiore 2007, «Gravitational Waves». Oxford University PressOxford [Crossref, doi:10.1093/acprof:oso/9780198570745.001.0001]
+- `Carroll2019`: Carroll 2019, «Spacetime and Geometry». Cambridge University Press [Crossref, doi:10.1017/9781108770385]
+- `ShapiroTeukolsky1983`: Shapiro 1983, «Black Holes, White Dwarfs, and Neutron Stars». Wiley [Crossref, doi:10.1002/9783527617661]
+- `Longair2011`: Longair 2011, «High Energy Astrophysics». Cambridge University Press [Crossref, doi:10.1017/CBO9780511778346]
 
 ## Paketler (PyPI)
 
@@ -321,8 +351,8 @@ BULUNAMADI: 1, DOGRULANDI: 162, ELLE: 4 (toplam 167).
 
 ## Atıf denetimi
 
-Plan belgelerinde kullanılan tanımlı anahtar: 159.
+Plan belgelerinde kullanılan tanımlı anahtar: 188.
 
 Tanımsız anahtar yok.
 
-Kaynakçada olup planda anılmayan: 8.
+Kaynakçada olup planda anılmayan: 9.

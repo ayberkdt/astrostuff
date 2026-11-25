@@ -6,7 +6,7 @@ kaynak metinlerinden 25 Kasım 2026'da okunmuştur:
 - CODATA 2022: NIST ``allascii.txt`` tablosu [CODATA2022].
 - IAU 2015 B3 nominal Güneş ve gezegen değerleri: [Prsa2016], Tablo 1.
 - IAU 2015 B2 bolometrik sıfır noktası: [Mamajek2015].
-- Astronomik birim, Jülyen yılı ve yüzyılı, J2000: ERFA ``erfam.h`` [ERFA2024].
+- Astronomik birim, Jülyen yılı ve yüzyılı, J2000: ERFA ``erfam.h`` [ERFA2023].
 
 Türetilmiş sabitler (``PARSEK``, ``MEGAPARSEK`` ...) tanımlarından hesaplanır
 ve ``turetim`` alanında formülü taşır.
@@ -117,14 +117,14 @@ JUPITER_KUTUP_YARICAPI = Sabit("nominal Jüpiter kutup yarıçapı", 6.6854e7, "
 # --- IAU 2015 B2 bolometrik sıfır noktası [Mamajek2015] ------------------------------
 BOLOMETRIK_SIFIR_ISINIM_GUCU = Sabit("M_bol = 0 ışınım gücü", 3.0128e28, "W", 0.0, "Mamajek2015", "L_0 tanımı")
 
-# --- ERFA erfam.h [ERFA2024] ---------------------------------------------------------
-ASTRONOMIK_BIRIM = Sabit("astronomik birim", 149_597_870.7e3, "m", 0.0, "ERFA2024", "erfam.h ERFA_DAU")
-GUN_SANIYE = Sabit("gün", 86_400.0, "s", 0.0, "ERFA2024", "erfam.h ERFA_DAYSEC")
-JULYEN_YILI_GUN = Sabit("Jülyen yılı", 365.25, "gün", 0.0, "ERFA2024", "erfam.h ERFA_DJY")
-JULYEN_YUZYILI_GUN = Sabit("Jülyen yüzyılı", 36_525.0, "gün", 0.0, "ERFA2024", "erfam.h ERFA_DJC")
-J2000_JD = Sabit("J2000.0 Jülyen tarihi", 2_451_545.0, "gün", 0.0, "ERFA2024", "erfam.h ERFA_DJ00")
-MJD_SIFIR_JD = Sabit("MJD sıfır noktası", 2_400_000.5, "gün", 0.0, "ERFA2024", "erfam.h ERFA_DJM0")
-TT_EKSI_TAI = Sabit("TT − TAI", 32.184, "s", 0.0, "ERFA2024", "erfam.h ERFA_TTMTAI")
+# --- ERFA erfam.h [ERFA2023] ---------------------------------------------------------
+ASTRONOMIK_BIRIM = Sabit("astronomik birim", 149_597_870.7e3, "m", 0.0, "ERFA2023", "erfam.h ERFA_DAU")
+GUN_SANIYE = Sabit("gün", 86_400.0, "s", 0.0, "ERFA2023", "erfam.h ERFA_DAYSEC")
+JULYEN_YILI_GUN = Sabit("Jülyen yılı", 365.25, "gün", 0.0, "ERFA2023", "erfam.h ERFA_DJY")
+JULYEN_YUZYILI_GUN = Sabit("Jülyen yüzyılı", 36_525.0, "gün", 0.0, "ERFA2023", "erfam.h ERFA_DJC")
+J2000_JD = Sabit("J2000.0 Jülyen tarihi", 2_451_545.0, "gün", 0.0, "ERFA2023", "erfam.h ERFA_DJ00")
+MJD_SIFIR_JD = Sabit("MJD sıfır noktası", 2_400_000.5, "gün", 0.0, "ERFA2023", "erfam.h ERFA_DJM0")
+TT_EKSI_TAI = Sabit("TT − TAI", 32.184, "s", 0.0, "ERFA2023", "erfam.h ERFA_TTMTAI")
 
 # --- Türetilmiş sabitler -------------------------------------------------------------
 # Parsek: 1 yay saniyelik paralaksa karşılık gelen uzaklık, au · 648000/π.
@@ -154,7 +154,7 @@ JULYEN_YILI_SANIYE = Sabit(
     JULYEN_YILI_GUN.deger * GUN_SANIYE.deger,
     "s",
     0.0,
-    "ERFA2024",
+    "ERFA2023",
     "erfam.h ERFA_DJY · ERFA_DAYSEC",
     turetim="365.25 · 86400",
 )

@@ -1,9 +1,9 @@
 {
- "zaman": "2026-11-25T12:48:28+00:00",
- "sure_s": 774.6,
+ "zaman": "2026-11-25T13:10:26+00:00",
+ "sure_s": 690.9,
  "kod": {
   "kozmos": "0.1.0",
-  "git": "971857032a295960e649b5bf25af77b08792cf39 (çalışma ağacı kirli)"
+  "git": "e19b7aace3fe6c1577495593a93b0b60bbc7a56a (çalışma ağacı kirli)"
  },
  "ortam": {
   "python": "3.12.1",
@@ -84,6 +84,11 @@
     1.0159625956752063,
     1.0274705220863194,
     1.018083392249459
+   ],
+   "rhat_sira_normallestirilmis": [
+    1.0159674221147579,
+    1.027397756483555,
+    1.0180720694128493
    ],
    "ortalama_kabul_orani": 0.65190625,
    "zincir_yeterince_uzun": true

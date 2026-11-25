@@ -14,7 +14,7 @@ Kabul: kaynak göstermeyen örnek bir fonksiyon testi düşürür; gösteren ge�
 
 ## Aşama 1: Temel (kısmen)
 
-Yazılanlar: `temel/sabitler.py`, `temel/aci.py`, `istatistik/uyum.py`. Kalanlar: `temel/vektor.py`, `temel/sayisal/`, sağlam istatistik, belirsizlik yayılımı, Hubble 1929 tablosu.
+Yazılanlar: `temel/sabitler.py`, `temel/aci.py`, `istatistik/uyum.py`, `istatistik/saglam.py`. Kalanlar: `temel/vektor.py`, `temel/sayisal/`, belirsizlik yayılımı, Hubble 1929 tablosu.
 
 - `temel/sabitler.py` [CODATA2022; Prsa2016], `temel/birimler.py`, `temel/aci.py`, `temel/vektor.py`.
 - `temel/sayisal/`: kök bulma, integral, ADD çözücüler, enterpolasyon.
@@ -25,7 +25,7 @@ Kabul: Hubble projesi Basamak 0 [Hubble1929].
 
 ## Aşama 2: Zaman ve koordinat (kısmen)
 
-Yazılanlar: `zaman/julyen.py` (takvim, ERA, GMST, eğiklik), `koordinat/donusum.py` (galaktik, ufuk), `efemeris/kepler.py`. Kalanlar: UTC ve TDB dönüşümleri, presesyon ve nutasyon, kırılma, Güneş ve Ay konumları, planlayıcı.
+Yazılanlar: `zaman/julyen.py` (takvim, ERA, GMST, eğiklik), `zaman/olcekler.py` (TAI − UTC), `koordinat/donusum.py` (galaktik, ufuk), `efemeris/kepler.py`. Kalanlar: TDB dönüşümü, presesyon ve nutasyon, kırılma, Güneş ve Ay konumları, planlayıcı.
 
 - `zaman/`: Jülyen tarihi, ölçek dönüşümleri, yıldız zamanı.
 - `koordinat/`: küresel dönüşümler, Düzey 1 presesyon ve nutasyon, ufuk dönüşümü, kırılma.
@@ -44,7 +44,9 @@ Yazılanlar: `kozmoloji/uzaklik.py`, `kozmoloji/hubble_diyagrami.py`, `istatisti
 
 Kabul: Hubble projesi Basamak 1-3. Bu aşama projenin ilk bilim sonucunu verir ve dedektör ya da görüntü işleme gerektirmediği için öne alınmıştır.
 
-## Aşama 4: Işınım ve dedektör modeli
+## Aşama 4: Işınım ve dedektör modeli (başlandı)
+
+Yazılanlar: `isinim/kadir.py`, `gozlem/dedektor.py` (sinyal modeli, sentetik ham kare, yıldız alanı, CCD denklemi). Kalanlar: filtreler ve sentetik fotometri, sönümleme, FITS okuyucu.
 
 - `isinim/`: kara cisim, kadir sistemleri, filtreler, sentetik fotometri, sönümleme.
 - `gozlem/dedektor.py`, `gozlem/sinyal_gurultu.py`; sentetik görüntü üreteci.
@@ -52,7 +54,9 @@ Kabul: Hubble projesi Basamak 1-3. Bu aşama projenin ilk bilim sonucunu verir v
 
 Kabul: Vega ve Güneş sentetik fotometrisi; sentetik CCD karesinin üretimi.
 
-## Aşama 5: Görüntü indirgeme ve fotometri
+## Aşama 5: Görüntü indirgeme ve fotometri (başlandı)
+
+Yazılanlar: `indirgeme/kalibrasyon.py` (kare birleştirme, bias/karanlık/düz alan düzeltmesi, foton aktarımı); sentetik veride sınandı. Kalanlar: kozmik ışın, arka plan, fotometri, astrometri, arşiv erişimi.
 
 - `indirgeme/`: kalibrasyon, kozmik ışın, arka plan, birleştirme.
 - `fotometri/`: kaynak saptama, açıklık ve PSF fotometrisi, kalibrasyon.
@@ -112,7 +116,7 @@ Her konu başlamadan önce kendi saha taraması yapılır.
 
 İlk dört adım (tanımlayıcı dili, iskelet, kaynakların okunması, sabitlerin aktarılması) tamamlanmıştır. Sıradakiler:
 
-1. `bekliyor` durumundaki kaynak kayıtlarının kapatılması ([DURUM.md](DURUM.md) listesi): Kepler bağıntıları, Planck fonksiyonu, öz ilinti süresi, R̂.
+1. `bekliyor` durumundaki kaynak kayıtlarının kapatılması ([DURUM.md](DURUM.md) listesi): Kepler bağıntıları, Planck fonksiyonu, öz ilinti süresi, sağlam kestiriciler, dedektör modeli ve indirgeme adımları.
 2. Hubble 1929 tablosunun makaleden aktarılması (Basamak 0).
 3. Aşama 1'in kalanı: sayısal yöntemler, sağlam istatistik, belirsizlik yayılımı.
 4. Aşama 2'nin kalanı: UTC ve TDB, presesyon ve nutasyon, gözlem planlayıcı (P1).
