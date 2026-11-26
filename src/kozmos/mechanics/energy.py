@@ -125,7 +125,8 @@ def potential_energy_j(masses_kg: ArrayLike, positions_m: ArrayLike, softening_m
 
     Validity
     --------
-    O(N^2) time and 56 N^2 bytes of peak memory (measured with ``tracemalloc``, eps > 0: 56.0005 N^2 at N = 1000
+    O(N^2) time and 56 N^2 bytes of peak memory (measured with ``tracemalloc`` on Windows, eps > 0; 48.0 N^2 at
+    N = 500 on Linux, where the test suite runs as well: 56.0005 N^2 at N = 1000
     and 56.0001 N^2 at N = 2000, i.e. 56 MB and 224 MB; the N x N x 3 displacement array and its relatives are
     the bulk); for N = 10^4 this is about 5.6 GB. With a nonzero eps the energy is the exact conserved
     energy of the softened equations of motion of ``accelerations_m_s2`` (same eps). Two coincident particles with

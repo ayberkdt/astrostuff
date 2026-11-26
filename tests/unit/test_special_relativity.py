@@ -393,7 +393,9 @@ def test_energy_momentum_relation_and_limits():
         p = relativistic_momentum(m, v)
         assert np.linalg.norm(p) == pytest.approx(lorentz_factor(speed) * m * speed, rel=1e-13, abs=0)
         assert energy_from_momentum_j(m, np.linalg.norm(p)) == pytest.approx(total_energy_j(m, speed), rel=1e-13, abs=0)
-        assert total_energy_j(m, speed) == pytest.approx(C * four_momentum(m, v)[0], rel=1e-14, abs=0)
+        # the two routines form |v| separately, and one unit in the last place of |v|^2 is amplified by gamma^2
+        # (up to 500 here): 1.2e-14 on the CI machines, where the limit of 1e-14 failed on every platform but one
+        assert total_energy_j(m, speed) == pytest.approx(C * four_momentum(m, v)[0], rel=1e-12, abs=0)
     assert total_energy_j(m, 0.0) == m * C**2
     assert energy_from_momentum_j(0.0, 3.0e-20) == pytest.approx(3.0e-20 * C, rel=1e-15, abs=0)  # photon
     assert energy_from_momentum_j(m, 0.0) == m * C**2
