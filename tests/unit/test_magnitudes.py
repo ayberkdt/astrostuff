@@ -19,7 +19,7 @@ def test_solar_bolometric_magnitude():
 
 def test_distance_modulus():
     assert float(magnitudes.distance_modulus_from_pc(10.0)) == 0.0
-    assert float(magnitudes.distance_modulus_from_pc(1e6)) == pytest.approx(25.0)
+    assert float(magnitudes.distance_modulus_from_pc(1e6)) == pytest.approx(25.0, rel=1e-6, abs=0)
 
 
 def test_planck_integral_stefan_boltzmann():

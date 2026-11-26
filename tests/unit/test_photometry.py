@@ -79,7 +79,9 @@ def test_smoothing_recovers_faint_source():
 
 def test_aperture_area_and_enclosed_flux():
     flux, area = photometry.aperture_photometry(np.ones((60, 60)), [30.2], [29.7], 7.5, subpixels=9)
-    assert area[0] == pytest.approx(np.pi * 7.5**2, rel=2e-3, abs=0) and flux[0] == pytest.approx(area[0])
+    assert area[0] == pytest.approx(np.pi * 7.5**2, rel=2e-3, abs=0) and flux[0] == pytest.approx(
+        area[0], rel=1e-6, abs=0
+    )
     # For a Gaussian PSF the flux fraction within radius r is 1 − exp(−r²/2σ²).
     sigma = FWHM / 2.3548200450309493
     scene = 50.0 + detector.star_field((81, 81), [40.3], [39.8], [1e4], FWHM)

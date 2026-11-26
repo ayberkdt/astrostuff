@@ -11,8 +11,10 @@ def test_invariants_of_known_triangle():
     # 3-4-5 right triangle: shortest side 3, longest 5; R = 5/3. Vertex 1 is the common end of the shortest and longest sides;
     # the cosine of the angle there is adjacent side / hypotenuse = 3/5.
     u = triangles.build_triangles([0.0, 3.0, 3.0], [0.0, 0.0, 4.0])
-    assert u.ratio[0] == pytest.approx(5.0 / 3.0) and u.cosine[0] == pytest.approx(0.6)
-    assert u.log_perimeter[0] == pytest.approx(np.log(12.0))
+    assert u.ratio[0] == pytest.approx(5.0 / 3.0, rel=1e-6, abs=0) and u.cosine[0] == pytest.approx(
+        0.6, rel=1e-6, abs=0
+    )
+    assert u.log_perimeter[0] == pytest.approx(np.log(12.0), rel=1e-6, abs=0)
     assert list(u.vertices[0]) == [0, 1, 2]  # vertex 1 = (0,0), vertex 2 = (3,0), vertex 3 = (3,4)
     # A thin triangle exceeding the ratio limit is discarded.
     assert triangles.build_triangles([0.0, 1.0, 30.0], [0.0, 0.0, 0.1]).ratio.size == 0

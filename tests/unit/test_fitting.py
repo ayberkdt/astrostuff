@@ -41,7 +41,7 @@ def test_full_covariance_same_as_diagonal():
 def test_line_through_origin():
     x = np.array([1.0, 2.0, 3.0, 4.0])
     result = fitting.fit_line(x, 3.0 * x, 1.0, through_origin=True)
-    assert result.parameters == pytest.approx([3.0])
+    assert result.parameters == pytest.approx([3.0], rel=1e-6, abs=0)
     assert result.chi_square == pytest.approx(0.0, abs=1e-20)
 
 

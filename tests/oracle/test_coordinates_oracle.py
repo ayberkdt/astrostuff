@@ -61,5 +61,5 @@ def test_horizon_known_cases():
 
 def test_airmass():
     assert float(transforms.airmass_plane_parallel(math.pi / 2)) == 1.0
-    assert float(transforms.airmass_plane_parallel(math.radians(30.0))) == pytest.approx(2.0)
+    assert float(transforms.airmass_plane_parallel(math.radians(30.0))) == pytest.approx(2.0, rel=1e-6, abs=0)
     assert np.isnan(transforms.airmass_plane_parallel(-0.1))

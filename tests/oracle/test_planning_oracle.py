@@ -85,12 +85,16 @@ def test_time_above_horizon():
     dec = np.radians([-60.0, -20.0, 0.0, 40.0])
     rotation_hr = 24.0 / 1.00273781191135448  # one rotation of the Earth in SI hours: 23.9345
     assert rotation_hr == pytest.approx(23.9345, abs=5e-5)
-    assert planning.time_above_horizon_hr(dec, 0.0) == pytest.approx(rotation_hr / 2)  # half a rotation at the equator
+    assert planning.time_above_horizon_hr(dec, 0.0) == pytest.approx(
+        rotation_hr / 2, rel=1e-6, abs=0
+    )  # half a rotation at the equator
     assert float(planning.time_above_horizon_hr(math.radians(80.0), LATITUDE)) == pytest.approx(
-        rotation_hr
+        rotation_hr, rel=1e-6, abs=0
     )  # circumpolar
     assert float(planning.time_above_horizon_hr(math.radians(-70.0), LATITUDE)) == 0.0  # star that never rises
-    assert float(planning.time_above_horizon_hr(0.0, LATITUDE)) == pytest.approx(rotation_hr / 2)  # celestial equator
+    assert float(planning.time_above_horizon_hr(0.0, LATITUDE)) == pytest.approx(
+        rotation_hr / 2, rel=1e-6, abs=0
+    )  # celestial equator
     # The duration gets shorter as the limit rises.
     assert planning.time_above_horizon_hr(0.0, LATITUDE, math.radians(30)) < planning.time_above_horizon_hr(
         0.0, LATITUDE

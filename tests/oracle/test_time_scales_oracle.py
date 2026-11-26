@@ -25,7 +25,7 @@ def test_leap_second_boundaries():
         assert scales.tai_minus_utc_s(year, month, 1) == erfa.dat(year, month, 1, 0.0)
     assert scales.tai_minus_utc_s(2016, 12, 31) == 36.0
     assert scales.tai_minus_utc_s(2017, 1, 1) == 37.0
-    assert scales.tt_minus_utc_s(2017, 1, 1) == pytest.approx(69.184)
+    assert scales.tt_minus_utc_s(2017, 1, 1) == pytest.approx(69.184, rel=1e-6, abs=0)
 
 
 def test_validity_limit():

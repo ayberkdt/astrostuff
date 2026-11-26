@@ -57,4 +57,4 @@ def test_false_alarm_against_astropy():
 def test_grid():
     t = np.array([0.0, 3.0, 10.0])
     f = periodogram.frequency_grid(t, 1.0, oversampling=5.0)
-    assert f[0] == pytest.approx(1 / 50) and np.allclose(np.diff(f), 1 / 50) and f[-1] >= 1.0
+    assert f[0] == pytest.approx(1 / 50, rel=1e-6, abs=0) and np.allclose(np.diff(f), 1 / 50) and f[-1] >= 1.0

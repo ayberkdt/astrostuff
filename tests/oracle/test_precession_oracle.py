@@ -89,4 +89,4 @@ def test_observed_altitude_round_trip():
     topocentric = observed - (a * t + b * t**3)  # forward model: Z_topo = Z_obs + dZ
     assert np.max(np.abs(refraction.observed_altitude(topocentric, a, b) - observed)) < 1e-11
     assert np.isnan(refraction.observed_altitude(np.radians(2.0), a, b))
-    assert float(refraction.observed_altitude(np.pi / 2, a, b)) == pytest.approx(np.pi / 2)
+    assert float(refraction.observed_altitude(np.pi / 2, a, b)) == pytest.approx(np.pi / 2, rel=1e-6, abs=0)

@@ -37,7 +37,7 @@ def test_hogg_equation_17_zero_lambda():
 
 def test_omega_k():
     assert distances.Cosmology.flat(70, 0.3).omega_k == pytest.approx(0.0, abs=1e-15)
-    assert distances.Cosmology(70, 0.3, 0.6).omega_k == pytest.approx(0.1)
+    assert distances.Cosmology(70, 0.3, 0.6).omega_k == pytest.approx(0.1, rel=1e-6, abs=0)
 
 
 def test_invalid_input():

@@ -678,8 +678,10 @@ def test_log_rebin_grid_and_example():
     out = velocity.rebin_log_wavelength(lam, 2.0 + 3e-3 * lam, n_bins=2048, wavelength_range_angstrom=(4550.0, 6200.0))
     steps = np.diff(np.log(out.wavelength_angstrom))
     assert np.allclose(steps, 1.0 / out.bins_per_ln_lambda, rtol=1e-9, atol=0)  # rounding of log of 4-digit numbers
-    assert out.wavelength_angstrom[0] == pytest.approx(4550.0) and out.wavelength_angstrom[-1] == pytest.approx(6200.0)
-    assert out.bins_per_ln_lambda == pytest.approx(2047.0 / np.log(6200.0 / 4550.0))
+    assert out.wavelength_angstrom[0] == pytest.approx(4550.0, rel=1e-6, abs=0) and out.wavelength_angstrom[
+        -1
+    ] == pytest.approx(6200.0, rel=1e-6, abs=0)
+    assert out.bins_per_ln_lambda == pytest.approx(2047.0 / np.log(6200.0 / 4550.0), rel=1e-6, abs=0)
     # [TonryDavis1979] Sect. IV: 4550-6200 A in 2048 bins, a velocity of about 45 km per second shifts a feature by one bin.
     assert 44.5 < C_KM_S / out.bins_per_ln_lambda < 46.0
     # linear interpolation reproduces a linear function exactly
@@ -807,9 +809,9 @@ def test_half_amplitude_wavenumber_gaussian_correlation():
 
 def test_shift_error_paper_numbers():
     # Eq. 35 of [TonryDavis1979]: N = 2048 and 2B = 100 give (1/4)(2048/100) = 5.12, printed as 5 / (1 + r).
-    assert velocity.shift_error_bins(2048, 0.0, 50.0) == pytest.approx(5.12)
-    assert velocity.shift_error_bins(2048, 4.0, 50.0) == pytest.approx(5.12 / 5.0)
-    assert velocity.shift_error_bins(2048, 4.0, 50.0, scale=2.0) == pytest.approx(2.0 * 5.12 / 5.0)
+    assert velocity.shift_error_bins(2048, 0.0, 50.0) == pytest.approx(5.12, rel=1e-6, abs=0)
+    assert velocity.shift_error_bins(2048, 4.0, 50.0) == pytest.approx(5.12 / 5.0, rel=1e-6, abs=0)
+    assert velocity.shift_error_bins(2048, 4.0, 50.0, scale=2.0) == pytest.approx(2.0 * 5.12 / 5.0, rel=1e-6, abs=0)
     with pytest.raises(ValueError):
         velocity.shift_error_bins(2048, -1.0, 50.0)
 

@@ -109,7 +109,7 @@ def test_combine_rejects_cosmic_rays():
 
 def test_ccd_equation_limits():
     # Source dominated: S/N → sqrt(N*).
-    assert float(detector.signal_to_noise(1e6, 0.0, 0.0, 0.0, 10)) == pytest.approx(1e3)
+    assert float(detector.signal_to_noise(1e6, 0.0, 0.0, 0.0, 10)) == pytest.approx(1e3, rel=1e-6, abs=0)
     # Sky dominated: S/N → N* / sqrt(n_pix · N_S).
     assert float(detector.signal_to_noise(100.0, 1e5, 0.0, 5.0, 50)) == pytest.approx(
         100 / np.sqrt(50 * 1e5), rel=1e-3, abs=0

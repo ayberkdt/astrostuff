@@ -14,9 +14,10 @@ Hence the metric function must be complex safe, and the accuracy is limited by t
 are large in the coordinates (of order 1/r or r) to leave a curvature of order M/r^3. The error estimates are
 carried to the Riemann tensor and compared with it in an orthonormal frame: a tensor that is not known to
 ``rtol`` (1e-6 by default) raises ``CurvaturePrecisionError``, and one that vanishes within its uncertainty
-is returned with a ``CurvaturePrecisionWarning`` (flat space gives rounding noise; so does a curvature that
-is more than about twelve orders of magnitude below the connection terms, as for a comoving radius whose
-physical size is tiny against the curvature radius). Measured for Schwarzschild in units of the mass or in
+is returned as exactly zero with a ``CurvaturePrecisionWarning`` that states the bound (flat space in
+curvilinear coordinates; also a curvature that is more than about twelve orders of magnitude below the
+connection terms, as for a comoving radius whose physical size is tiny against the curvature radius: there the
+zero means "not resolved", and every scalar formed from the tensor is zero as well). Measured for Schwarzschild in units of the mass or in
 metres for 1e9 solar masses alike: relative error of the Kretschmann scalar 2e-13 at 4 M, 1e-11 at 100 M,
 3e-10 at 1e4 M; refused at 1e6 M (estimate 7e-6). Measured (tests/unit/test_curvature.py): the Ricci tensor of Schwarzschild
 and Kerr vanishes to an absolute 4e-12 ... 1e-9, which is 8e-11 ... 4e-9 of sqrt(K) for 3 M <= r <= 10 M and
@@ -134,7 +135,7 @@ def riemann_tensor(metric: Metric, x: ArrayLike, rtol: float = 1e-6) -> Array:
     )
     # The tensor must be known to rtol. The one exception is a tensor that vanishes within its uncertainty while
     # that uncertainty is itself below rtol of the connection terms that cancel: flat space in curvilinear
-    # coordinates, which is returned as it is (zero with rounding noise).
+    # coordinates, which is returned as exactly zero, with a warning.
     known = uncertainty <= rtol * size
     vanishing = size <= _ZERO_WITHIN * uncertainty and uncertainty <= rtol * terms
     if not (known or vanishing):
@@ -144,14 +145,18 @@ def riemann_tensor(metric: Metric, x: ArrayLike, rtol: float = 1e-6) -> Array:
             "(far from the source, or with coordinates of very different sizes)"
         )
     if not known and size > 0.0:
+        bound = max(size, uncertainty)
         warnings.warn(
             f"the Riemann tensor vanishes within its numerical uncertainty ({uncertainty:.1e} in orthonormal "
-            f"components, {uncertainty / terms:.1e} of the connection terms that cancel): the values returned are "
-            "rounding noise around zero. If the spacetime is not flat there, its curvature is too small against the "
-            "connection terms to be seen in these coordinates",
+            f"components, {uncertainty / terms:.1e} of the connection terms that cancel) and is returned as zero. "
+            f"If the spacetime is not flat there, its orthonormal components are below about {bound:.1e} and too "
+            "small against the connection terms to be seen in these coordinates",
             CurvaturePrecisionWarning,
             stacklevel=2,
         )
+        # rounding noise around zero is not returned: scalars formed from it (the Kretschmann scalar is its
+        # square) would look like results
+        riemann = np.zeros_like(riemann)
     return riemann
 
 

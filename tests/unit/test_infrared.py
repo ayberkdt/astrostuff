@@ -9,7 +9,7 @@ def test_zero_points_table_values():
     expected = {"J": 1594.0, "H": 1024.0, "Ks": 666.7, "W1": 306.681, "W2": 170.663, "W3": 29.0448, "W4": 8.2839}
     for name, flux in expected.items():
         assert float(infrared.flux_jy_from_vega_magnitude(0.0, name)) == flux
-        assert float(infrared.flux_jy_from_vega_magnitude(2.5, name)) == pytest.approx(flux / 10.0)
+        assert float(infrared.flux_jy_from_vega_magnitude(2.5, name)) == pytest.approx(flux / 10.0, rel=1e-6, abs=0)
     with pytest.raises(ValueError):
         infrared.band("Z")
 

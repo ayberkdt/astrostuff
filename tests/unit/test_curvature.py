@@ -16,6 +16,7 @@ source.
 
 from __future__ import annotations
 
+import warnings
 from functools import partial
 
 import numpy as np
@@ -25,6 +26,7 @@ from kozmos.core._differentiation import jacobian
 from kozmos.core.constants import GRAVITATIONAL_CONSTANT, MEGAPARSEC, SPEED_OF_LIGHT
 from kozmos.cosmology import Cosmology
 from kozmos.cosmology.dark_energy import critical_density_kg_m3, hubble_parameter_km_s_mpc
+from kozmos.relativity import curvature
 from kozmos.relativity.curvature import (
     einstein_tensor,
     kretschmann_scalar,
@@ -494,3 +496,69 @@ def test_flrw_einstein_tensor_gives_the_critical_density_of_the_cosmology_packag
     # tolerance 1e-10.
     assert g_tt == pytest.approx(4.0 / (3.0 * t_geo**2), rel=1e-10, abs=0)
     assert rho == pytest.approx(critical_density_kg_m3(z, cosmology), rel=1e-10, abs=0)
+
+
+# --------------------------------------------------------------------------------------
+# the precision guard of the Riemann tensor
+# --------------------------------------------------------------------------------------
+
+
+def test_curvature_that_is_not_known_to_rtol_is_refused():
+    """Schwarzschild at r = 1e6 M: the curvature M / r^3 is 1e-18 against connection terms of 1 / r^2 = 1e-12.
+
+    Measured: the error estimate is 6.1e-6 of the tensor, above the default limit 1e-6, so the default call raises;
+    with rtol = 1e-4 the value is returned, and its true error is 1.1e-8.
+    """
+    metric = partial(schwarzschild_metric, mass_geometric_m=1.0)
+    point = [0.0, 1e6, 1.0, 0.3]
+    with pytest.raises(curvature.CurvaturePrecisionError, match="relative accuracy"):
+        kretschmann_scalar(metric, point)
+    with pytest.raises(curvature.CurvaturePrecisionError):
+        riemann_tensor(metric, point)
+    loose = kretschmann_scalar(metric, point, rtol=1e-4)
+    assert loose == pytest.approx(48.0 / 1e36, rel=1e-6, abs=0)
+    # well inside the limit nothing is raised and nothing is warned about
+    with warnings.catch_warnings():
+        warnings.simplefilter("error")
+        near = kretschmann_scalar(metric, [0.0, 1e4, 1.0, 0.3])
+    assert near == pytest.approx(48.0 / 1e24, rel=1e-8, abs=0)  # measured 3.3e-10
+
+
+def test_flat_space_in_spherical_coordinates_is_exactly_zero_with_a_warning():
+    """Schwarzschild coordinates with M = 0: Christoffel terms of order 1 / r^2 cancel to nothing.
+
+    The tensor vanishes within its uncertainty; it is returned as exactly zero (no rounding noise for scalars to
+    square), and the warning says that this is a statement within an uncertainty.
+    """
+    flat = partial(schwarzschild_metric, mass_geometric_m=0.0)
+    with pytest.warns(curvature.CurvaturePrecisionWarning, match="returned as zero"):
+        riemann = riemann_tensor(flat, [0.0, 5.0, 1.0, 0.3])
+    assert riemann.shape == (4, 4, 4, 4)
+    assert np.all(riemann == 0.0)
+    with pytest.warns(curvature.CurvaturePrecisionWarning):
+        assert kretschmann_scalar(flat, [0.0, 5.0, 1.0, 0.3]) == 0.0
+    # Cartesian flat space has no connection terms at all: zero without any warning
+    with warnings.catch_warnings():
+        warnings.simplefilter("error")
+        assert np.all(riemann_tensor(minkowski_metric, [0.0, 1.0, 2.0, 3.0]) == 0.0)
+
+
+def test_unresolved_curvature_is_zero_with_a_warning_and_never_noise():
+    """FLRW with a(t) = 1e-12 t^(2/3) at comoving r = 0.5: the true Kretschmann scalar is 12 [(a''/a)^2 + (a'/a)^4]
+    = 0.185 at t = 2, but the spatial connection terms are 1 / (a r)^2 = 2.5e24, twenty-five orders above it.
+
+    Before, the rounding noise of the cancellation was returned and its square appeared as a Kretschmann scalar.
+    Now the result is zero and the warning carries the size below which nothing can be said.
+    """
+
+    def metric(x):
+        return flrw_metric(x, lambda t: 1e-12 * t ** (2.0 / 3.0), 0.0)
+
+    point = [2.0, 0.5, 1.0, 0.3]
+    with pytest.warns(curvature.CurvaturePrecisionWarning, match="below about"):
+        assert kretschmann_scalar(metric, point) == 0.0
+    with pytest.warns(curvature.CurvaturePrecisionWarning):
+        assert ricci_scalar(metric, point) == 0.0
+    # the same spacetime with a scale factor of order one is resolved: K = 12 [(2/9 / 4)^2 + (1/3)^4]
+    resolved = kretschmann_scalar(lambda x: flrw_metric(x, lambda t: t ** (2.0 / 3.0), 0.0), point)
+    assert resolved == pytest.approx(12.0 * ((2.0 / 9.0 / 4.0) ** 2 + (1.0 / 3.0) ** 4), rel=1e-8, abs=0)

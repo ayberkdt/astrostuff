@@ -704,3 +704,22 @@ def test_finite_method_integrates_at_the_default_tolerances():
     _check("coordinates, finite against complex", float(np.max(np.abs(q_finite - q_exact))), 5e-9)
     _check("velocities, finite against complex", float(np.max(np.abs(v_finite - v_exact))), 5e-9)
     assert count[0] < 300_000  # measured 91546 evaluations of the Lagrangian
+
+
+def test_action_uses_exactly_the_requested_number_of_gauss_legendre_nodes():
+    """L = v^4 on a cubic spline is a polynomial of degree 8 on every interval.
+
+    n nodes are exact up to degree 2 n - 1, so five nodes integrate it exactly and four do not (measured
+    difference 1.4e-10 relative). A routine that used one node fewer than asked would fail the first assertion.
+    """
+    times = np.linspace(0.0, 2.0, 9)
+    path = np.sin(1.3 * times)[:, None]
+
+    def quartic(q, v, t):
+        return v[0] ** 4
+
+    exact = lg.action(quartic, times, path, nodes=8)
+    assert lg.action(quartic, times, path, nodes=5) == pytest.approx(exact, rel=1e-14, abs=0)
+    assert lg.action(quartic, times, path) == pytest.approx(exact, rel=1e-14, abs=0)  # the default is five
+    assert abs(lg.action(quartic, times, path, nodes=4) / exact - 1.0) > 2e-11
+    assert abs(lg.action(quartic, times, path, nodes=6) / exact - 1.0) < 1e-14

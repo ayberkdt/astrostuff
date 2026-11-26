@@ -480,7 +480,7 @@ def test_hawking_greybody_page_eq15():
     assert float(photon_only) / float(blackbody_rate) == pytest.approx(1.623, abs=2e-3)
     # M⁻² scaling and additivity of the species coefficients.
     assert float(basics.hawking_mass_loss_rate_kg_s(2 * m0)) == pytest.approx(
-        float(basics.hawking_mass_loss_rate_kg_s(m0)) / 4
+        float(basics.hawking_mass_loss_rate_kg_s(m0)) / 4, rel=1e-6, abs=0
     )
     total = basics.hawking_mass_loss_rate_kg_s(m0, spin_half=3.0)
     assert float(total) / float(basics.hawking_mass_loss_rate_kg_s(m0)) == pytest.approx(

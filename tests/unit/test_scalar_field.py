@@ -17,8 +17,8 @@ S6 = np.sqrt(6.0)
 
 
 def test_energy_density_pressure_and_equation_of_state():
-    assert sf.scalar_rho(2.0, 3.0) == pytest.approx(5.0)
-    assert sf.scalar_p(2.0, 3.0) == pytest.approx(-1.0)
+    assert sf.scalar_rho(2.0, 3.0) == pytest.approx(5.0, rel=1e-6, abs=0)
+    assert sf.scalar_p(2.0, 3.0) == pytest.approx(-1.0, rel=1e-6, abs=0)
     assert sf.scalar_eos(0.0, 1.7) == -1.0  # slow-roll limit [Copeland2006] line 2680
     assert sf.scalar_eos(1.3, 0.0) == 1.0  # stiff matter, line 2682
     phi_dot, v = np.array([0.1, 1.0, 5.0]), np.array([2.0, 1.0, 0.3])
@@ -162,7 +162,11 @@ def test_trajectory_started_near_the_scalar_dominated_saddle_ends_on_the_scaling
 
 def test_trajectory_is_continuous_backwards_and_reports_the_requested_grid():
     s = sf.integrate_exponential_quintessence(0.2, 0.3, 1.0, 0.0, (0.0, -3.0), n_eval=np.linspace(0.0, -3.0, 7))
-    assert s.n.shape == (7,) and s.x[0] == pytest.approx(0.2) and s.y[0] == pytest.approx(0.3)
+    assert (
+        s.n.shape == (7,)
+        and s.x[0] == pytest.approx(0.2, rel=1e-6, abs=0)
+        and s.y[0] == pytest.approx(0.3, rel=1e-6, abs=0)
+    )
     assert np.allclose(s.omega_phi, s.x**2 + s.y**2, rtol=1e-15)
 
 

@@ -241,7 +241,7 @@ def test_cosmology_validation():
         distances.Cosmology(70.0, 0.3, 0.7, omega_r=-1e-5)
     k = distances.Cosmology.flat(70.0, 0.3, w=-0.9, wa=0.1, omega_r=1e-4)
     assert k.omega_k == pytest.approx(0.0, abs=1e-15)
-    assert k.omega_lambda == pytest.approx(1.0 - 0.3 - 1e-4)
+    assert k.omega_lambda == pytest.approx(1.0 - 0.3 - 1e-4, rel=1e-6, abs=0)
 
 
 # --- bouncing models: E^2 <= 0 somewhere ------------------------------------------------------------------------

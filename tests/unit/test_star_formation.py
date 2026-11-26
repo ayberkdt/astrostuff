@@ -431,6 +431,6 @@ def test_jeans_mass_cube_definition_and_molecular_weights():
     )
     # Same helium abundance: 2.33 · 1.2 = 2.8 (within rounding) and 2.8 / 2 = 1.4.
     assert clouds.MOLECULAR_WEIGHT_PER_H2 == pytest.approx(clouds.MEAN_MOLECULAR_WEIGHT * 1.2, rel=2e-3, abs=0)
-    assert clouds.MOLECULAR_WEIGHT_PER_H == pytest.approx(clouds.MOLECULAR_WEIGHT_PER_H2 / 2)
+    assert clouds.MOLECULAR_WEIGHT_PER_H == pytest.approx(clouds.MOLECULAR_WEIGHT_PER_H2 / 2, rel=1e-6, abs=0)
     # If n_H2 is given with the default μ (per particle), the density comes out 17 % too low.
     assert float(clouds.mass_density_kg_m3(1e10)) / rho == pytest.approx(2.33 / 2.8, rel=1e-12, abs=0)
