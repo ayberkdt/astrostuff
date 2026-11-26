@@ -393,3 +393,221 @@ def test_two_bodies_in_si_units_are_integrated():
     q, v = lg.integrate_lagrangian(binary, q0, v0, [0.0, 0.25 * period])
     expected = [0.0, -0.5 * separation, 0.0, 0.5 * separation]  # a quarter of a turn
     assert np.allclose(q[-1], expected, rtol=0, atol=1e-7 * separation)
+
+
+# --------------------------------------------------------------------------------------
+# untested in the second mutation run (plan/AUDIT_2026-11-26.md, eleventh round)
+# --------------------------------------------------------------------------------------
+
+
+def test_complex_step_takes_its_scale_from_the_coordinates():
+    """The step is 1e-30 of the coordinate; a zero coordinate takes the smallest non-zero one below 1, or 1; the
+    step is not below 1e-280. Each line fails for one mutant of those rules (a zero where 1e-100 is right, sinh 1
+    where 1 is right, an overflow, a false refusal)."""
+    assert np.array_equal(d.jacobian(lambda x: 1e-100 * x[0] + x[1], [0.0, 1.0]), [1e-100, 1.0])
+    assert np.array_equal(d.jacobian(lambda x: 1e-100 * (x[0] + x[1]), [0.0, 0.0]), [1e-100, 1e-100])
+    fine = d.jacobian(lambda x: 1e-30 * np.sin(x[0] / 1e-30) + x[1], [0.0, 1e-30], check=False)
+    assert np.allclose(fine, [1.0, 1.0], rtol=1e-12, atol=0)
+    finer = d.jacobian(lambda x: 1e-45 * np.sin(x[0] / 1e-45) + x[1] + x[2], [0.0, 1e-30, 1e-10], check=False)
+    assert np.allclose(finer, [1.0, 1.0, 1.0], rtol=1e-12, atol=0)
+    assert d.jacobian(lambda x: 1e-30 * x[0], [1e-270])[0] == pytest.approx(1e-30, rel=1e-12, abs=0)
+
+
+def test_finite_jacobian_of_an_offset_function_at_large_arguments():
+    """f = C + sin(x0) cos(x1) at (1e6, 2e6), where the first step (1e3) spans 160 periods.
+
+    With C = 1e10 the rounding of f allows 1e-4 at best: the estimate says so and the call that returns no estimate
+    refuses. Mutants of the noise floor and of the fill of undetermined elements returned -0.0038 and 1.5e-13 for
+    the true 0.707 and -0.229.
+    """
+    x = np.array([1e6, 2e6])
+    exact = np.array([np.cos(1e6) * np.cos(2e6), -np.sin(1e6) * np.sin(2e6)])
+    value, error = d.jacobian_with_error(lambda y: np.array([1e10 + np.sin(y[0]) * np.cos(y[1])]), x, "finite")
+    assert np.all(np.abs(value[0] - exact) <= error[0]) and np.all(error[0] < 1e-3)  # measured 6e-6 and 1e-4
+    with pytest.raises(ValueError, match="could not be determined"):
+        d.jacobian(lambda y: np.array([1e10 + np.sin(y[0]) * np.cos(y[1])]), x, "finite")
+    for offset, tolerance in ((0.0, 1e-8), (1e6, 1e-7)):  # measured 9e-10 and 9e-9
+        value = d.jacobian(lambda y, c=offset: np.array([c + np.sin(y[0]) * np.cos(y[1])]), x, "finite")[0]
+        assert np.allclose(value, exact, rtol=tolerance, atol=0)
+
+
+def test_strict_rule_of_the_functions_that_return_no_estimate():
+    """Undetermined elements are accepted only below 1e-7 of the largest determined one; determined ones always."""
+
+    def offset(constant):
+        return lambda y: np.array([constant + np.sin(y[0]) * np.cos(y[1])])
+
+    with pytest.raises(ValueError, match="could not be determined"):
+        d.jacobian(offset(1e14), [0.3, 1.1], "finite")  # true derivatives 0.43 and -0.26; a mutant returned -1.6e-7, 0
+    point = np.array([1e-3, 5.0])
+    exact = np.array([np.cos(1e-3) * np.cos(5.0), -np.sin(1e-3) * np.sin(5.0)])
+    assert np.allclose(d.jacobian(offset(1e6), point, "finite")[0], exact, rtol=1e-6, atol=1e-9)
+    # a vector function with one element whose dependence is below the spacing of its values (1e16 + x) and one that
+    # varies: the far confirmation must be made for the first although the second does not look constant
+    value, error = d.jacobian_with_error(lambda y: np.array([1e16 + y[0], y[0]]), [0.3], "finite")
+    assert abs(value[0, 0] - 1.0) <= error[0, 0] and value[1, 0] == pytest.approx(1.0, rel=1e-12, abs=0)
+    # an element that is identically zero only on a part of the steps is not anchored at zero
+    value, _ = d.hessian_with_error(lambda y: np.sin(y[0]) * y[1] ** 2 + 1e6, [0.0, 2.0], "finite")
+    assert value[0, 1] == pytest.approx(4.0, rel=1e-6, abs=0)  # a mutant returned 2.0
+
+
+def test_second_derivatives_without_an_estimate_are_strict():
+    def kinked(y):
+        return y[0] * np.abs(y[0]) + y[1]
+
+    def mixed(a, b):
+        return a[0] * np.abs(b[0]) + 1e12
+
+    with pytest.raises(ValueError):
+        d.hessian(kinked, [0.0, 1.0], "finite")
+    with pytest.raises(ValueError):
+        d.hessian_with_error(kinked, [0.0, 1.0], "finite", strict=True)
+    with pytest.raises(ValueError):
+        d.mixed_second(mixed, [1.0], [0.0], "finite")
+    with pytest.raises(ValueError):
+        d.mixed_second_with_error(mixed, [1.0], [0.0], "finite", strict=True)
+    value, error = d.hessian_with_error(kinked, [0.0, 1.0], "finite")  # not strict: the estimate tells
+    assert error[0, 0] > 0.1
+
+
+def test_a_test_that_cannot_be_made_says_so():
+    with pytest.raises(ValueError, match="could not be checked against finite differences"):
+        d.gradient(lambda x: np.abs(x[0]), [0.0])
+
+
+@pytest.mark.parametrize("where", ["first state", "middle time", "last time", "velocity window", "time window"])
+def test_analyticity_is_tested_at_the_first_state_and_at_every_output_time(where):
+    """A free particle from q = 0 with v = 1 and a term 0.3 |q - c| that is switched on in a window which the path
+    crosses at one output time only (or in a window of the velocity, or of the time). Each case fails for a mutant
+    that skips, or reads wrongly, one of the tests."""
+    times = np.array([0.0, 1.0, 2.0, 3.0])
+    start_q, start_v = 0.0, 1.0
+
+    def kink(q):
+        return 0.3 * np.abs(q[0] - 10.0)
+
+    def lagrangian(q, v, t):
+        position, velocity = np.real(q[0]), np.real(v[0])
+        if where == "first state":
+            active = np.abs(position) < 0.3
+        elif where == "middle time":
+            active = np.abs(position - 2.0) < 0.3
+        elif where == "last time":
+            active = np.abs(position - 3.0) < 0.3
+        elif where == "velocity window":
+            active = (np.abs(velocity - 1.0) < 0.3) & (np.abs(position - 1.0) < 0.3)
+        else:
+            active = np.abs(np.real(t) - 2.0) < 0.3
+        return 0.5 * v[0] ** 2 + np.where(active, kink(q), 0.0)
+
+    with pytest.raises(ValueError, match="not analytic|could not be checked"):
+        lg.integrate_lagrangian(lagrangian, [start_q], [start_v], times, rtol=1e-6, atol=1e-8)
+
+
+def test_generator_with_a_negative_velocity_coefficient_needs_the_acceleration():
+    def free(q, v, t):
+        return 0.5 * v[0] ** 2
+
+    for sign in (1.0, -1.0):
+        with pytest.raises(ValueError, match="depends on the velocity"):
+            nt.symmetry_variation(free, [0.3], [2.0], 0.0, lambda q, v, t, s=sign: np.array([s * 0.5 * v[0]]))
+
+
+def test_virial_ratio_is_formed_about_the_barycentre():
+    """Circular binary displaced by 1e22 m: 6.0e-6 from 1 with positions relative to the barycentre, 1.04e-5 with the
+    plain positions, 3.6e-5 with a wrong sign. Also: an infinite G M has an infinite escape speed, not an error."""
+    mass, separation, offset = 2e30, 1.5e11, 1e22
+    speed = np.sqrt(G * mass / (2.0 * separation))
+    x = np.array([[offset - 0.5 * separation, 0.0, 0.0], [offset + 0.5 * separation, 0.0, 0.0]])
+    v = np.array([[0.0, -speed, 0.0], [0.0, speed, 0.0]])
+    assert abs(en.virial_ratio([mass, mass], x, v) - 1.0) < 8e-6
+    assert en.escape_speed_m_s(np.inf, 1.0) == np.inf
+
+
+def test_precision_guard_of_the_accelerations_at_its_thresholds(monkeypatch):
+    """The guard, with derivative terms and estimates given by hand: a = W^-1 (F - C v - D), one coordinate with
+    W = 1 and F = 1 (so |a| + size = 2 and the allowed error is 1e-6 * (2 + 1e-3 * 2) = 2.002e-6), then two
+    coordinates of which one vanishes (allowed there: 1e-3 of that, 2e-9)."""
+
+    def terms(force, force_error, w, w_error, n):
+        zero = np.zeros((n, n))
+        return lambda *args, **kwargs: (
+            (np.array(force), np.array(force_error)),
+            (np.array(w), np.array(w_error)),
+            (zero, zero),
+            (np.zeros(n), np.zeros(n)),
+        )
+
+    def accelerations(n=1):
+        return lg._accelerations(lambda q, v, t: 0.0, np.zeros(n), np.zeros(n), 0.0, "finite", 1e12, False)
+
+    monkeypatch.setattr(lg, "_terms", terms([1.0], [1.9e-6], [[1.0]], [[0.0]], 1))
+    assert accelerations()[0] == 1.0
+    monkeypatch.setattr(lg, "_terms", terms([1.0], [2.1e-6], [[1.0]], [[0.0]], 1))
+    with pytest.raises(lg.DerivativePrecisionError):
+        accelerations()
+    # the estimate of W counts, multiplied by |a|
+    monkeypatch.setattr(lg, "_terms", terms([1.0], [0.0], [[1.0]], [[2.1e-6]], 1))
+    with pytest.raises(lg.DerivativePrecisionError):
+        accelerations()
+    monkeypatch.setattr(lg, "_terms", terms([1.0], [0.0], [[1.0]], [[1.9e-6]], 1))
+    assert accelerations()[0] == 1.0
+    # a coordinate without any term is allowed a thousandth of the tolerance on the common scale
+    identity = [[1.0, 0.0], [0.0, 1.0]]
+    nothing = [[0.0, 0.0], [0.0, 0.0]]
+    monkeypatch.setattr(lg, "_terms", terms([1.0, 0.0], [0.0, 1.9e-9], identity, nothing, 2))
+    assert np.array_equal(accelerations(2), [1.0, 0.0])
+    monkeypatch.setattr(lg, "_terms", terms([1.0, 0.0], [0.0, 2.1e-9], identity, nothing, 2))
+    with pytest.raises(lg.DerivativePrecisionError):
+        accelerations(2)
+
+
+def test_argument_checks_name_what_is_wrong():
+    def free(q, v, t):
+        return 0.5 * np.sum(v * v)
+
+    with pytest.raises(ValueError, match="non-empty 1-D"):
+        lg.generalized_momenta(free, [[1.0, 2.0]], [[0.1, 0.2]])
+    with pytest.raises(ValueError, match="non-empty 1-D"):
+        lg.generalized_momenta(free, [], [])
+    with pytest.raises(ValueError, match="same length as q"):
+        lg.euler_lagrange_residual(free, [0.1, 0.2], [0.3, 0.4], [0.0])
+    with pytest.raises(ValueError, match=r"shape \(len\(times\), n\)"):
+        lg.action(free, [0.0, 1.0, 2.0, 3.0], np.zeros((3, 1)))
+    with pytest.raises(ValueError, match=r"shape \(4,\)"):
+        curvature.riemann_tensor(lambda x: np.diag([-1.0, 1.0, 1.0, 1.0]), [0.0, 1.0, 2.0])
+
+
+def test_an_undetermined_element_needs_1e_minus_7_of_the_largest_determined_one():
+    """[x, C + sin x] at 0.3: the first element is determined (derivative 1); the second is known to 5.6e-6 for
+    C = 1e8 and to 1.4e-5 for C = 1e9, which is not 1e-7 of 1, and the call without an estimate refuses. (For
+    C = 1e7 it is known to 1e-6 of its own value and is returned.)"""
+    for constant in (1e8, 1e9):
+        with pytest.raises(ValueError, match="could not be determined"):
+            d.jacobian(lambda x, c=constant: np.array([x[0], c + np.sin(x[0])]), [0.3], "finite")
+        value, error = d.jacobian_with_error(lambda x, c=constant: np.array([x[0], c + np.sin(x[0])]), [0.3], "finite")
+        assert abs(value[1, 0] - np.cos(0.3)) <= error[1, 0] < 1e-4
+    value = d.jacobian(lambda x: np.array([x[0], 1e7 + np.sin(x[0])]), [0.3], "finite")
+    assert value[1, 0] == pytest.approx(np.cos(0.3), rel=1e-6, abs=0)
+
+
+def test_precision_guard_of_the_residual_at_its_threshold(monkeypatch):
+    """W = 1, F = 1, a = 1: the terms have size 2 and the residual may be uncertain by 1e-6 * (2 + 1e-3 * 2)."""
+
+    def terms(force_error):
+        zero = np.zeros((1, 1))
+        return lambda *args, **kwargs: (
+            (np.array([1.0]), np.array([force_error])),
+            (np.array([[1.0]]), zero),
+            (zero, zero),
+            (np.zeros(1), np.zeros(1)),
+        )
+
+    def residual():
+        return lg.euler_lagrange_residual(lambda q, v, t: 0.0, [0.0], [0.0], [1.0], 0.0, "finite")
+
+    monkeypatch.setattr(lg, "_terms", terms(1.9e-6))
+    assert residual()[0] == 0.0
+    monkeypatch.setattr(lg, "_terms", terms(2.1e-6))
+    with pytest.raises(lg.DerivativePrecisionError, match="residual"):
+        residual()
