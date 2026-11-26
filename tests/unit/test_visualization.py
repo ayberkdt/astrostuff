@@ -15,7 +15,7 @@ def test_asinh_limits():
     assert np.all(np.diff(y) >= 0) and y[0] == 0.0
     # Logarithmic at the bright end: 100 times the input raises the output by ln(100)/Q.
     b = stretch.asinh_stretch(np.array([1e5, 1e7]), black=0.0, alpha=1.0, q=5.0)
-    assert b[1] - b[0] == pytest.approx(np.log(100.0) / 5.0, rel=1e-6)
+    assert b[1] - b[0] == pytest.approx(np.log(100.0) / 5.0, rel=1e-6, abs=0)
 
 
 def test_lupton_preserves_color():
@@ -24,8 +24,8 @@ def test_lupton_preserves_color():
     rgb = stretch.lupton_rgb(r, g, b, alpha=0.05, q=8.0)
     assert rgb.shape == (30, 40, 3) and rgb.min() >= 0.0 and rgb.max() <= 1.0 + 1e-12
     # Color ratios are preserved independent of brightness: R/G = r/g, G/B = g/b.
-    assert rgb[..., 0] / rgb[..., 1] == pytest.approx(r / g, rel=1e-10)
-    assert rgb[..., 1] / rgb[..., 2] == pytest.approx(g / b, rel=1e-10)
+    assert rgb[..., 0] / rgb[..., 1] == pytest.approx(r / g, rel=1e-10, abs=0)
+    assert rgb[..., 1] / rgb[..., 2] == pytest.approx(g / b, rel=1e-10, abs=0)
     # A pixel 1000 times brighter with the same color saturates but keeps its color (does not turn white).
     bright = stretch.lupton_rgb(np.array([[3e4]]), np.array([[1e4]]), np.array([[5e3]]), alpha=0.05, q=8.0)[0, 0]
     assert (

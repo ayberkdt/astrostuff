@@ -18,7 +18,6 @@ from numpy.typing import ArrayLike, NDArray
 
 from kozmos._sources import source
 from kozmos.core.constants import (
-    GM_SUN,
     GRAVITATIONAL_CONSTANT,
     PROTON_MASS,
     SPEED_OF_LIGHT,
@@ -34,7 +33,6 @@ _M_P = PROTON_MASS.value
 _SIGMA_T = THOMSON_CROSS_SECTION.value
 _SIGMA_SB = STEFAN_BOLTZMANN.value
 # Solar mass [kg]: nominal GM_sun / G (from the IAU 2015 B3 and CODATA 2022 constants).
-_SOLAR_MASS_KG = GM_SUN.value / _G
 _KAPPA_ES = _SIGMA_T / _M_P  # pure hydrogen, fully ionized [m² kg⁻¹]
 
 
@@ -346,6 +344,8 @@ def thin_disk_peak_temperature_radius_m(inner_radius_m: ArrayLike) -> Array:
     Validity
     --------
     Newtonian disk, zero torque at r_in; the validity conditions of the [Armitage2011] profile.
+    Another review quotes the maximum at 25/9 r_in for the same profile; maximising the profile gives 49/36 r_in
+    (checked numerically in the test), which is what this function returns.
 
     Verification
     ------------
@@ -366,7 +366,7 @@ def thin_disk_peak_temperature_k(
 ) -> Array:
     """Compute the maximum effective temperature of a thin disk.
 
-    T_max = { 3 G M Ṁ / (8π σ_SB r_in³) · (6/7)⁶ / 7 }^{1/4} ≈ 0,488 (3 G M Ṁ / 8π σ r_in³)^{1/4}
+    T_max = { 3 G M Ṁ / (8π σ_SB r_in³) · (6/7)⁶ / 7 }^{1/4} ≈ 0.488 (3 G M Ṁ / 8π σ r_in³)^{1/4}
 
     Parameters
     ----------
@@ -472,7 +472,7 @@ def hills_mass_kg(stellar_mass_kg: ArrayLike, stellar_radius_m: ArrayLike) -> Ar
     Returns
     -------
     float or ndarray
-        M_H [kg]. ≈ 1.2e8 M☉ for the Sun.
+        M_H [kg]. 1.14e8 M☉ for the Sun.
 
     References
     ----------

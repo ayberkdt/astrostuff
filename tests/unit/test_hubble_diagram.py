@@ -54,10 +54,10 @@ def test_closed_form_absolute_magnitude_matches_numerical_minimization():
         options={"xatol": 1e-10},
     )
     assert m == pytest.approx(numeric.x, abs=1e-7)
-    assert chi2 == pytest.approx(2 * numeric.fun, rel=1e-9)
+    assert chi2 == pytest.approx(2 * numeric.fun, rel=1e-9, abs=0)
     assert abs(m - TRUE["m"]) < 4 * sigma
     # Definition of Δχ² = 1: χ² increases by one at M̂ ± σ_M.
-    assert -2 * hubble_diagram.log_likelihood(data, cosmology, m + sigma) - chi2 == pytest.approx(1.0, rel=1e-6)
+    assert -2 * hubble_diagram.log_likelihood(data, cosmology, m + sigma) - chi2 == pytest.approx(1.0, rel=1e-6, abs=0)
 
 
 def test_parameter_recovery():
@@ -89,6 +89,6 @@ def test_h0_and_m_degeneracy_without_cepheids():
     data = hubble_diagram.prepare_data(columns, cov, calibrators=False)
     m1, _, chi2_1 = hubble_diagram.best_absolute_magnitude(data, Cosmology.flat(60.0, 0.31))
     m2, _, chi2_2 = hubble_diagram.best_absolute_magnitude(data, Cosmology.flat(80.0, 0.31))
-    assert chi2_1 == pytest.approx(chi2_2, rel=1e-9)
+    assert chi2_1 == pytest.approx(chi2_2, rel=1e-9, abs=0)
     # As H0 grows the model distance shrinks and μ decreases; M = m − μ rises by the same amount.
     assert m2 - m1 == pytest.approx(5 * np.log10(80.0 / 60.0), abs=1e-8)

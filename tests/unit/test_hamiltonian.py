@@ -83,9 +83,8 @@ def test_free_relativistic_particle(momentum):
 
 
 def test_inversion_boundary_region_of_the_relativistic_particle():
-    """L = -m sqrt(1 - v^2): the inversion works up to p = 2.125e5 m (bisection, see the docstring of
-    ``hamiltonian_from_lagrangian``; it was 50.3 m and then 6683 m in earlier versions) and raises
-    ``LegendreTransformError`` above, where 1 - v is below 1.1e-11. If the differentiation helpers change, re-measure the
+    """L = -m sqrt(1 - v^2): the inversion works up to p = 1.14e4 m (bisection, see the docstring of
+    ``hamiltonian_from_lagrangian``) and raises ``LegendreTransformError`` above, where 1 - v is below 4e-9. If the differentiation helpers change, re-measure the
     limit and update the docstring and this test together."""
     mass = 1.4
 
@@ -93,13 +92,13 @@ def test_inversion_boundary_region_of_the_relativistic_particle():
         return -mass * np.sqrt(1.0 - np.sum(v * v))
 
     h = hm.hamiltonian_from_lagrangian(relativistic)
-    # measured for p / m = 40 ... 2e5: relative error of H <= 2.2e-16, error of v <= 1.9e-15 (at 3000 m)
-    for ratio in (40.0, 50.0, 55.0, 60.0, 100.0, 1000.0, 3000.0, 6000.0, 6600.0, 6800.0, 1e4, 1e5, 2e5):
+    # measured for p / m = 40 ... 1e4: relative error of H <= 2.1e-16, error of v <= 4.6e-15 (at 6000 m)
+    for ratio in (40.0, 50.0, 55.0, 60.0, 100.0, 1000.0, 3000.0, 6000.0, 6600.0, 6800.0, 1e4):
         p = np.array([ratio * mass])
         exact = np.hypot(p[0], mass)
         _check(f"H(p = {ratio} m)", abs(h(np.zeros(1), p) - exact) / exact, 1e-14)
         _check(f"v(p = {ratio} m)", abs(h.velocity(np.zeros(1), p)[0] - p[0] / exact), 2e-14)
-    for ratio in (2.3e5, 1e6, 1e8):
+    for ratio in (1.3e4, 1e6, 1e8):
         with pytest.raises(LegendreTransformError):
             h(np.zeros(1), np.array([ratio * mass]))
 
@@ -110,7 +109,7 @@ def test_inversion_failures_are_reported_not_hidden():
 
     h = hm.hamiltonian_from_lagrangian(relativistic)
     with pytest.raises(LegendreTransformError):
-        h(np.zeros(1), np.array([1e6]))  # beyond 2.125e5 m (see the boundary test)
+        h(np.zeros(1), np.array([1e6]))  # beyond 1.14e4 m (see the boundary test)
 
     def no_solution(q, v, t):
         return -np.cos(v[0])  # p = sin(v) never reaches 2
@@ -461,3 +460,26 @@ def test_input_validation():
         hm.hamilton_equations(oscillator_h, [0.0, 1.0], [0.0])
     with pytest.raises(ValueError, match="strictly increasing"):
         hm.integrate_hamiltonian(oscillator_h, [0.0], [1.0], [1.0])
+
+
+def test_momenta_far_from_one_are_not_taken_for_converged():
+    """An electron in a magnetic field, SI units: p is of order 1e-24.
+
+    With a tolerance against max(1, |p|) the starting velocity 0 was accepted as the solution and H came out as 0.
+    """
+    mass, charge, field = 9.109e-31, 1.602e-19, 1.0
+
+    def electron(q, v, t):
+        return 0.5 * mass * (v[0] ** 2 + v[1] ** 2) + 0.5 * charge * field * (q[0] * v[1] - q[1] * v[0])
+
+    q, p = np.array([1e-6, 2e-6]), np.array([1e-24, -2e-24])
+    h = hm.hamiltonian_from_lagrangian(electron)
+    potential = 0.5 * charge * field * np.array([-q[1], q[0]])  # the vector potential times the charge
+    exact = float(np.sum((p - potential) ** 2)) / (2.0 * mass)
+    assert h(q, p) == pytest.approx(exact, rel=1e-12, abs=0)
+    assert np.allclose(h.velocity(q, p), (p - potential) / mass, rtol=1e-12)
+
+
+def test_integration_times_must_increase_strictly():
+    with pytest.raises(ValueError, match="strictly increasing"):
+        hm.integrate_hamiltonian(lambda q, p, t: 0.5 * p[0] ** 2 + 0.5 * q[0] ** 2, [0.3], [0.1], [0.0, 0.0, 1.0])

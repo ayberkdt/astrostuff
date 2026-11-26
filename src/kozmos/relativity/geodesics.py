@@ -6,7 +6,8 @@ lambda, for example ``partial(schwarzschild_metric, mass_geometric_m=1.0)``. Uni
 
 Derivatives of the metric are taken with the helper ``kozmos.core._differentiation``: by default the
 complex-step method, which is exact to rounding (the metric function must then be complex safe, as the
-functions of ``kozmos.relativity.metrics`` are), or with ``method="finite"`` (four-point central difference)
+functions of ``kozmos.relativity.metrics`` are), or with ``method="finite"`` (six-point differences with an
+error estimate)
 for a metric that cannot take a complex argument.
 
 Naming: the quantities called four-velocity in the literature are named "tangent" here (``normalize_tangent``,
@@ -46,14 +47,21 @@ def _christoffel_from(ginv: Array, dg: Array) -> Array:
     return 0.5 * np.einsum("ad,dbc->abc", ginv, term)
 
 
+def _christoffel(metric: Metric, point: Array, method: Method, check: bool) -> Array:
+    """Christoffel symbols; ``check=False`` skips the analyticity check of the complex-step derivative."""
+    g = np.asarray(metric(point), dtype=float)
+    dg = jacobian(metric, point, method=method, check=check)
+    return _christoffel_from(metric_inverse(g), dg)
+
+
 @source(
     "Carroll1997",
     where="Section 3, Eq. 3.21 (TeX line 3411)",
     status="read",
     note="Gamma^sigma_mu_nu = 1/2 g^{sigma rho}(d_mu g_{nu rho} + d_nu g_{rho mu} - d_rho g_{mu nu}); the "
-    "derivatives d_l g_mn come from the complex-step or four-point finite-difference helper",
+    "derivatives d_l g_mn come from the complex-step or finite-difference helper",
 )
-def christoffel_symbols(metric: Metric, x: ArrayLike, method: Method = "complex") -> Array:
+def christoffel_symbols(metric: Metric, x: ArrayLike, method: Method = "complex", check: bool = True) -> Array:
     """Compute the Christoffel symbols Gamma^a_bc of a metric at a point.
 
     Parameters
@@ -64,9 +72,13 @@ def christoffel_symbols(metric: Metric, x: ArrayLike, method: Method = "complex"
         Coordinates of the point.
     method : {"complex", "finite"}, optional
         Derivative method of kozmos.core._differentiation.jacobian. "complex" is exact to rounding and checks
-        itself against real central differences (ValueError if the metric is not analytic); "finite" has
-        relative error about 1e-12 for a smooth metric whose scale of variation is of order one or larger
-        and about 2e-16 / h for a smaller scale, h being the step the helper has to use.
+        itself against finite differences (ValueError if the metric is not analytic); "finite" has a
+        relative error of about 1e-12 for a smooth metric at unit scale and returns nothing that its own
+        error estimate does not support (ValueError otherwise).
+    check : bool, optional
+        Compare the complex-step derivative of the metric with finite differences and refuse a metric that is
+        not analytic (default). The comparison costs about sixty evaluations of the metric; ``False`` skips it,
+        for repeated calls with a metric that has been checked at a nearby point.
 
     Returns
     -------
@@ -79,9 +91,9 @@ def christoffel_symbols(metric: Metric, x: ArrayLike, method: Method = "complex"
 
     Validity
     --------
-    Needs a non-degenerate metric at x and first derivatives only. The finite-difference step of the helper
-    starts at 1e-3 max(1, |x_i|) and is reduced until it resolves the metric; a metric that varies on less
-    than 1e-9 of that scale is refused.
+    Needs a non-degenerate metric at x and first derivatives only. Measured with the complex step for
+    Schwarzschild from 2.001 M to 1e9 M, in units of the mass and in metres for 1e9 solar masses: 4e-13 on the
+    nine non-zero symbols.
 
     Verification
     ------------
@@ -90,10 +102,7 @@ def christoffel_symbols(metric: Metric, x: ArrayLike, method: Method = "complex"
     coordinates against Gamma^r_theta_theta = -r and the others, a metric with abs() is rejected by the complex
     method.
     """
-    point = _point(x)
-    g = np.asarray(metric(point), dtype=float)
-    dg = jacobian(metric, point, method=method)
-    return _christoffel_from(metric_inverse(g), dg)
+    return _christoffel(metric, _point(x), method, check)
 
 
 @source(
@@ -102,7 +111,7 @@ def christoffel_symbols(metric: Metric, x: ArrayLike, method: Method = "complex"
     status="read",
     note="d^2 x^mu/d lambda^2 = -Gamma^mu_rho_sigma (dx^rho/d lambda)(dx^sigma/d lambda)",
 )
-def geodesic_acceleration(metric: Metric, x: ArrayLike, u: ArrayLike) -> Array:
+def geodesic_acceleration(metric: Metric, x: ArrayLike, u: ArrayLike, check: bool = True) -> Array:
     """Compute d^2 x^a / d lambda^2 = -Gamma^a_bc u^b u^c along a geodesic.
 
     Parameters
@@ -113,6 +122,10 @@ def geodesic_acceleration(metric: Metric, x: ArrayLike, u: ArrayLike) -> Array:
         Coordinates.
     u : ndarray, shape (4,)
         Tangent vector dx^mu / d lambda.
+    check : bool, optional
+        Compare the complex-step derivative of the metric with finite differences and refuse a metric that is
+        not analytic (default). The comparison costs about sixty evaluations of the metric; ``False`` skips it,
+        for repeated calls with a metric that has been checked at a nearby point.
 
     Returns
     -------
@@ -133,7 +146,7 @@ def geodesic_acceleration(metric: Metric, x: ArrayLike, u: ArrayLike) -> Array:
     tests/unit/test_geodesics.py: zero for straight lines in Cartesian coordinates; centripetal value for a
     circular Schwarzschild orbit; integrate_geodesic built on it conserves E, L and the norm.
     """
-    gamma = christoffel_symbols(metric, x)
+    gamma = _christoffel(metric, _point(x), "complex", check)
     uu = _point(u, "u")
     return -np.einsum("abc,b,c->a", gamma, uu, uu)
 
@@ -424,7 +437,8 @@ def integrate_geodesic(
     rtol, atol : float, optional
         Tolerances of the DOP853 integrator.
     method : {"complex", "finite"}, optional
-        Derivative method for the Christoffel symbols at every step.
+        Derivative method for the Christoffel symbols at every step. With "complex" the check that the metric
+        is analytic is made at the first and at the last point of the integration, not at every step.
 
     Returns
     -------
@@ -455,12 +469,17 @@ def integrate_geodesic(
         raise ValueError("affine_parameters must be strictly monotonic")
     start = np.concatenate([_point(x0, "x0"), _point(u0, "u0")])
 
+    # the metric is checked for analyticity at the first point and at the last one; in between the complex-step
+    # derivative is used without the check, which costs seven extra evaluations per coordinate
+    _christoffel(metric, start[:4], method, True)
+
     def rhs(_lam: float, y: Array) -> Array:
         position, tangent = y[:4], y[4:]
-        gamma = christoffel_symbols(metric, position, method=method)
+        gamma = _christoffel(metric, position, method, False)
         return np.concatenate([tangent, -np.einsum("abc,b,c->a", gamma, tangent, tangent)])
 
     result = solve_ivp(rhs, (params[0], params[-1]), start, method="DOP853", t_eval=params, rtol=rtol, atol=atol)
     if not result.success:
         raise RuntimeError(f"geodesic integration failed: {result.message}")
+    _christoffel(metric, result.y[:4, -1], method, True)
     return result.y[:4].T.copy(), result.y[4:].T.copy()

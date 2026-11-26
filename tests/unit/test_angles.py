@@ -17,4 +17,4 @@ def test_separation_known_values():
     assert np.isclose(angles.angular_separation(0.3, math.pi / 2, 2.0, 0.0), math.pi / 2)
     # A very small angle at which the cosine formula loses precision.
     small = 1e-9
-    assert np.isclose(angles.angular_separation(1.0, 0.0, 1.0 + small, 0.0), small, rtol=1e-6)
+    assert np.isclose(angles.angular_separation(1.0, 0.0, 1.0 + small, 0.0), small, rtol=1e-6, atol=0.0)

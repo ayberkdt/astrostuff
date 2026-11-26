@@ -198,8 +198,8 @@ def symmetry_defect(
     Validity
     --------
     A single point cannot prove a symmetry; the tests sample random (q, v, a, t). The value has the units of L per
-    unit time. The size of rounding noise is about 1e-12 times the largest term (complex step with a
-    finite-difference outer derivative).
+    unit time. The size of rounding noise is about 1e-12 times the largest term at unit scale (complex step
+    with a finite-difference outer derivative).
 
     Verification
     ------------

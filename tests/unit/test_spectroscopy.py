@@ -74,7 +74,7 @@ def test_alternative_sigma_convention_difference():
         for _ in range(30):
             air_b = lam_vac / (1 + n1(1e4 / air_b))
         diff = abs(float(wavelengths.vacuum_to_air(lam_vac)) - air_b)
-        assert diff == pytest.approx(expected, rel=0.05)
+        assert diff == pytest.approx(expected, rel=0.05, abs=0)
 
 
 def test_air_vacuum_range_guard():
@@ -89,7 +89,7 @@ def test_air_vacuum_range_guard():
 def test_doppler_relativistic_and_first_order():
     rest = 6562.8
     # 1 + z = sqrt(3) at beta = 0.5 ([Hogg1999] Eq. 9).
-    assert wavelengths.doppler_shifted_wavelength(1.0, 0.5 * C_KM_S) == pytest.approx(np.sqrt(3.0), rel=1e-14)
+    assert wavelengths.doppler_shifted_wavelength(1.0, 0.5 * C_KM_S) == pytest.approx(np.sqrt(3.0), rel=1e-14, abs=0)
     v = np.array([-300.0, -30.0, 0.0, 30.0, 300.0])
     rel = wavelengths.doppler_shifted_wavelength(rest, v, True)
     nonrel = wavelengths.doppler_shifted_wavelength(rest, v, False)
@@ -115,7 +115,7 @@ def test_resolving_power_tonry_davis_example():
     dv = wavelengths.velocity_resolution_km_s(r)
     assert dv == pytest.approx(119.917, abs=1e-3)
     assert round(float(dv), -1) == 120.0
-    assert wavelengths.resolving_power_from_velocity(dv) == pytest.approx(2500.0, rel=1e-14)
+    assert wavelengths.resolving_power_from_velocity(dv) == pytest.approx(2500.0, rel=1e-14, abs=0)
 
 
 def test_velocity_resolution_first_order_error():
@@ -123,10 +123,10 @@ def test_velocity_resolution_first_order_error():
     for r in (100.0, 1000.0, 10000.0):
         dv_first = wavelengths.velocity_resolution_km_s(r)
         dv_rel = wavelengths.radial_velocity_from_wavelengths(1.0 + 1.0 / r, 1.0, True)
-        assert (dv_first - dv_rel) / dv_rel == pytest.approx(0.5 / r, rel=2e-2)
+        assert (dv_first - dv_rel) / dv_rel == pytest.approx(0.5 / r, rel=2e-2, abs=0)
     # measured: 0.05 percent at R = 1000.
     dv_rel = wavelengths.radial_velocity_from_wavelengths(1.001, 1.0, True)
-    assert abs(1 - dv_rel / wavelengths.velocity_resolution_km_s(1000.0)) == pytest.approx(5.0e-4, rel=0.02)
+    assert abs(1 - dv_rel / wavelengths.velocity_resolution_km_s(1000.0)) == pytest.approx(5.0e-4, rel=0.02, abs=0)
 
 
 # --------------------------------------------------------------------------------------------------- lines
@@ -141,7 +141,7 @@ def test_equivalent_width_noiseless_gaussian_area():
     flux = _gauss_line(lam, 6000.07, 1.5, 0.3)
     result = lines.equivalent_width(lam, flux, (5988.0, 6012.0), flux_sigma=0.01)
     exact = 0.3 * 1.5 * np.sqrt(2.0 * np.pi)  # the +-8 sigma window holds all but 1e-15 of the area
-    assert result.value_angstrom == pytest.approx(exact, rel=1e-6)
+    assert result.value_angstrom == pytest.approx(exact, rel=1e-6, abs=0)
     assert result.window_width_angstrom == pytest.approx(24.0, abs=1e-12)
 
 
@@ -166,14 +166,14 @@ def test_equivalent_width_uncertainty_formulas():
     # Pixel width h = 0.5; the window edges 10.0 and 20.0 lie at pixel centres, so the two end pixels count half
     # (weight 0.25) and 19 pixels count fully: sigma_W^2 = sum (w sigma / Fc)^2 = (19 * 0.25 + 2 * 0.0625) (0.02/2)^2.
     r = lines.equivalent_width(lam, flux, (10.0, 20.0), flux_sigma=0.02, continuum=2.0 * np.ones_like(lam))
-    assert r.sigma_angstrom == pytest.approx(np.sqrt(19 * 0.25 + 2 * 0.0625) * 0.02 / 2.0, rel=1e-12)
+    assert r.sigma_angstrom == pytest.approx(np.sqrt(19 * 0.25 + 2 * 0.0625) * 0.02 / 2.0, rel=1e-12, abs=0)
     # window on pixel edges (10.25 ... 19.75): 19 pixels of weight 0.5, sigma_W = h sqrt(M) sigma / Fc
     r = lines.equivalent_width(lam, flux, (10.25, 19.75), flux_sigma=0.02, continuum=2.0 * np.ones_like(lam))
-    assert r.sigma_angstrom == pytest.approx(0.5 * np.sqrt(19.0) * 0.02 / 2.0, rel=1e-12)
+    assert r.sigma_angstrom == pytest.approx(0.5 * np.sqrt(19.0) * 0.02 / 2.0, rel=1e-12, abs=0)
     # Continuum-level term: (window - W) sigma_c / Fc with W = 0 for flux = continuum.
     r = lines.equivalent_width(lam, 2.0 * flux, (10.0, 20.0), flux_sigma=0.0, continuum=2.0, continuum_sigma=0.1)
     assert r.value_angstrom == pytest.approx(0.0, abs=1e-12)
-    assert r.sigma_angstrom == pytest.approx(10.0 * 0.1 / 2.0, rel=1e-12)
+    assert r.sigma_angstrom == pytest.approx(10.0 * 0.1 / 2.0, rel=1e-12, abs=0)
     with pytest.raises(ValueError):
         lines.equivalent_width(lam, flux, (10.0, 50.0), flux_sigma=0.1)
     with pytest.raises(ValueError):
@@ -216,10 +216,10 @@ def test_equivalent_width_scatter_matches_formal_uncertainty(snr):
 def test_vollmann_eversberg_weak_line_limit():
     # F = Fc: sigma(W) = sqrt(2) (window - W) / SNR (TeX label eq8 follows from eq4).
     value = lines.equivalent_width_sigma_vollmann_eversberg(10.0, 0.5, 50.0, 1.0, 1.0)
-    assert value == pytest.approx(np.sqrt(2.0) * 9.5 / 50.0, rel=1e-14)
+    assert value == pytest.approx(np.sqrt(2.0) * 9.5 / 50.0, rel=1e-14, abs=0)
     # Poisson low-flux line: sqrt(1 + Fc/F) with Fc/F = 4 gives sqrt(5).
     value = lines.equivalent_width_sigma_vollmann_eversberg(10.0, 7.5, 50.0, 0.25, 1.0)
-    assert value == pytest.approx(np.sqrt(5.0) * 2.5 / 50.0, rel=1e-14)
+    assert value == pytest.approx(np.sqrt(5.0) * 2.5 / 50.0, rel=1e-14, abs=0)
 
 
 @pytest.mark.parametrize("depth", [0.3, 0.6])
@@ -250,11 +250,13 @@ def test_gaussian_fit_noiseless_recovery():
     assert fit.centre == pytest.approx(6000.3, abs=1e-6)
     assert fit.sigma == pytest.approx(1.8, abs=1e-6)
     assert fit.amplitude == pytest.approx(-0.5, abs=1e-6)
-    assert fit.fwhm == pytest.approx(2.0 * np.sqrt(2.0 * np.log(2.0)) * 1.8, rel=1e-6)
+    assert fit.fwhm == pytest.approx(2.0 * np.sqrt(2.0 * np.log(2.0)) * 1.8, rel=1e-6, abs=0)
     continuum_at_centre = 2.0 * (1.0 + 0.01 * 0.3)
-    assert fit.continuum_at_centre == pytest.approx(continuum_at_centre, rel=1e-6)
-    assert fit.depth == pytest.approx(0.5 / continuum_at_centre, rel=1e-6)
-    assert fit.equivalent_width == pytest.approx(0.5 * 1.8 * np.sqrt(2.0 * np.pi) / continuum_at_centre, rel=1e-6)
+    assert fit.continuum_at_centre == pytest.approx(continuum_at_centre, rel=1e-6, abs=0)
+    assert fit.depth == pytest.approx(0.5 / continuum_at_centre, rel=1e-6, abs=0)
+    assert fit.equivalent_width == pytest.approx(
+        0.5 * 1.8 * np.sqrt(2.0 * np.pi) / continuum_at_centre, rel=1e-6, abs=0
+    )
     assert fit.reduced_chi2 < 1e-6
 
 
@@ -264,7 +266,7 @@ def test_gaussian_fit_emission_line_signs():
     fit = lines.fit_gaussian_line(lam, flux, 0.01, continuum_order=0)
     assert fit.amplitude == pytest.approx(0.8, abs=1e-6)
     assert fit.depth < 0 and fit.equivalent_width < 0
-    assert fit.equivalent_width == pytest.approx(-0.8 * 1.2 * np.sqrt(2.0 * np.pi), rel=1e-6)
+    assert fit.equivalent_width == pytest.approx(-0.8 * 1.2 * np.sqrt(2.0 * np.pi), rel=1e-6, abs=0)
 
 
 @pytest.mark.parametrize("snr", [30.0, 100.0, 300.0])
@@ -303,7 +305,7 @@ def test_gaussian_fit_without_sigma_scales_to_residuals():
     without = lines.fit_gaussian_line(x, flux)
     assert without.centre == pytest.approx(with_sigma.centre, abs=1e-8)
     # the residual rms is within sampling error of 0.02, so the scaled errors are close to the absolute ones
-    assert without.centre_sigma == pytest.approx(with_sigma.centre_sigma, rel=0.35)
+    assert without.centre_sigma == pytest.approx(with_sigma.centre_sigma, rel=0.35, abs=0)
     assert without.reduced_chi2 == 1.0
     with pytest.raises(ValueError):
         lines.fit_gaussian_line(x[:4], flux[:4])
@@ -358,7 +360,9 @@ def test_voigt_peak_value_and_half_width():
 
     sigma, gamma = 0.9, 0.4
     peak = float(lines.voigt_profile(0.0, sigma, gamma))
-    assert peak == pytest.approx(erfcx(gamma / (np.sqrt(2.0) * sigma)) / (sigma * np.sqrt(2.0 * np.pi)), rel=1e-13)
+    assert peak == pytest.approx(
+        erfcx(gamma / (np.sqrt(2.0) * sigma)) / (sigma * np.sqrt(2.0 * np.pi)), rel=1e-13, abs=0
+    )
 
 
 # ----------------------------------------------------------------------------------------------- extraction
@@ -437,10 +441,10 @@ def test_horne_variance_ratio_eq10_closed_form():
     opt = extraction.optimal_extract(data, profile=profile, **kw)
     box = extraction.box_extract(data, **kw)
     ratio = box.variance[0] / opt.variance[0]
-    assert ratio == pytest.approx(12.0 / (2.0 * np.sqrt(np.pi) * SIGMA_PIX), rel=0.03)  # 1.69 within sampling
+    assert ratio == pytest.approx(12.0 / (2.0 * np.sqrt(np.pi) * SIGMA_PIX), rel=0.03, abs=0)  # 1.69 within sampling
     # In the continuous limit: exactly n_ap * sum(P^2) with sum(P^2) = 1/(2 sqrt(pi) sigma) for a well sampled Gaussian.
     p_ap = profile[ap[0] : ap[1], 0] / profile[ap[0] : ap[1], 0].sum()
-    assert opt.variance[0] == pytest.approx(16.0 / np.sum(p_ap**2), rel=1e-12)
+    assert opt.variance[0] == pytest.approx(16.0 / np.sum(p_ap**2), rel=1e-12, abs=0)
 
 
 def test_optimal_extract_matches_horne_equations_directly():
@@ -537,7 +541,7 @@ def test_table_one_variance_underestimates_when_pixels_are_masked():
     assert eq9.rejected[15, 10] and eq9.rejected.sum() == 1
     ratio = t1.variance[10] / eq9.variance[10]
     p_sum = float(np.sum(eq9.mask[:, 10] * eq9.profile[:, 10]))
-    assert ratio == pytest.approx(p_sum, rel=1e-12)
+    assert ratio == pytest.approx(p_sum, rel=1e-12, abs=0)
     assert 0.7 < ratio < 0.9
     other = np.arange(40) != 10
     assert np.allclose(t1.variance[other], eq9.variance[other], rtol=1e-12)
@@ -743,8 +747,8 @@ def test_correlation_peak_fit_parabola_and_gaussian():
             velocity.CrossCorrelation(lags, c), lag_window_bins=(-20.0, 20.0), n_points=11
         )
         assert peak.centre_bins == pytest.approx(delta, abs=1e-9)
-        assert peak.height == pytest.approx(0.8, rel=1e-12)
-        assert peak.fwhm_bins == pytest.approx(9.0, rel=1e-9)
+        assert peak.height == pytest.approx(0.8, rel=1e-12, abs=0)
+        assert peak.fwhm_bins == pytest.approx(9.0, rel=1e-9, abs=0)
 
     # Gaussian peaks at fractional positions in +-2 bins: the largest vertex error of the parabola fit (measured)
     # is 0.074 bin for FWHM 9 and 11 points (the paper's choice), 0.012 bin with 5 points, 0.029 bin for FWHM 15
@@ -784,7 +788,7 @@ def test_r_statistic_closed_forms():
     amp = 0.05
     odd = amp * np.sin(2.0 * np.pi * 9.0 * (lags) / n)
     c = velocity.CrossCorrelation(lags.astype(float), even + odd)
-    assert velocity.correlation_r_statistic(c, 0.0, 1.0) == pytest.approx(1.0 / (np.sqrt(2.0) * amp), rel=1e-9)
+    assert velocity.correlation_r_statistic(c, 0.0, 1.0) == pytest.approx(1.0 / (np.sqrt(2.0) * amp), rel=1e-9, abs=0)
     # the same even peak centred at a fractional position is still symmetric about it (band-limited Fourier shift)
     centred = np.exp(-0.5 * (((n_idx - n // 2 - 0.37) + n / 2) % n - n / 2) ** 2 / 4.0**2)
     r_big = velocity.correlation_r_statistic(velocity.CrossCorrelation(lags.astype(float), centred), 0.37, 1.0)
@@ -798,7 +802,7 @@ def test_half_amplitude_wavenumber_gaussian_correlation():
     c = np.exp(-0.5 * (lags / s) ** 2)
     k_half = n * np.sqrt(2.0 * np.log(2.0)) / (2.0 * np.pi * s)
     est = velocity.half_amplitude_wavenumber(velocity.CrossCorrelation(lags.astype(float), c))
-    assert est == pytest.approx(k_half, rel=0.02)
+    assert est == pytest.approx(k_half, rel=0.02, abs=0)
 
 
 def test_shift_error_paper_numbers():
@@ -853,8 +857,8 @@ def test_velocity_scatter_vs_estimated_error():
         diff = np.array(found) - np.array(true)
         scatter = diff.std()
         assert abs(diff.mean()) < 3.5 * scatter / np.sqrt(diff.size) + 0.3
-        assert scatter == pytest.approx(scatter_ref, rel=0.2)
-        assert scatter / np.sqrt(np.mean(np.square(err))) == pytest.approx(ratio_ref, rel=0.2)
+        assert scatter == pytest.approx(scatter_ref, rel=0.2, abs=0)
+        assert scatter / np.sqrt(np.mean(np.square(err))) == pytest.approx(ratio_ref, rel=0.2, abs=0)
     # the estimated error decreases monotonically with S/N and the estimate is within a factor 1.3 of the scatter
     # for S/N <= 50
 

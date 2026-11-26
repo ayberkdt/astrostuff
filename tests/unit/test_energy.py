@@ -64,10 +64,10 @@ def test_circular_two_body_energies_and_virial():
     m = np.array([M1, M2])
     mu_red = M1 * M2 / (M1 + M2)
     speed2 = mu / AU
-    assert kinetic_energy_j(m, v) == pytest.approx(0.5 * mu_red * speed2, rel=1e-14)
-    assert potential_energy_j(m, x) == pytest.approx(-G * M1 * M2 / AU, rel=1e-14)
-    assert total_energy_j(m, x, v) == pytest.approx(-0.5 * G * M1 * M2 / AU, rel=1e-14)
-    assert virial_ratio(m, x, v) == pytest.approx(1.0, rel=1e-14)
+    assert kinetic_energy_j(m, v) == pytest.approx(0.5 * mu_red * speed2, rel=1e-14, abs=0)
+    assert potential_energy_j(m, x) == pytest.approx(-G * M1 * M2 / AU, rel=1e-14, abs=0)
+    assert total_energy_j(m, x, v) == pytest.approx(-0.5 * G * M1 * M2 / AU, rel=1e-14, abs=0)
+    assert virial_ratio(m, x, v) == pytest.approx(1.0, rel=1e-14, abs=0)
 
 
 def test_circular_two_body_barycentre_momentum_and_angular_momentum():
@@ -85,9 +85,9 @@ def test_circular_two_body_barycentre_momentum_and_angular_momentum():
 def test_circular_accelerations_closed_form():
     (x, _), _ = circular()
     a = accelerations_m_s2([M1, M2], x)
-    assert a[0, 0] == pytest.approx(G * M2 / AU**2, rel=1e-14)  # star pulled toward +x
-    assert a[1, 0] == pytest.approx(-G * M1 / AU**2, rel=1e-14)
-    assert np.allclose(a[:, 1:], 0.0)
+    assert a[0, 0] == pytest.approx(G * M2 / AU**2, rel=1e-14, abs=0)  # star pulled toward +x
+    assert a[1, 0] == pytest.approx(-G * M1 / AU**2, rel=1e-14, abs=0)
+    assert np.allclose(a[:, 1:], 0.0, atol=0.0)  # exactly 0 by symmetry (all bodies on the x axis; measured 0.0)
 
 
 def test_consistency_with_the_kepler_module():
@@ -98,7 +98,7 @@ def test_consistency_with_the_kepler_module():
     law, as for a second-order scheme. Tolerance 1e-4 at N = 1000 (measured 8.3e-5 in position and velocity).
     """
     (x, v), mu = circular()
-    assert np.linalg.norm(v[1] - v[0]) == pytest.approx(orbital_speed_m_s(AU, AU, mu), rel=1e-14)
+    assert np.linalg.norm(v[1] - v[0]) == pytest.approx(orbital_speed_m_s(AU, AU, mu), rel=1e-14, abs=0)
     period = orbital_period_s(AU, mu)
     n = 1000
     _, q, vv = integrate(lambda q, t: accelerations_m_s2([M1, M2], q), x, v, period / n, n)
@@ -117,10 +117,10 @@ def test_softened_two_body_potential_and_force_closed_form():
     x = np.array([[0.0, 0.0, 0.0], [3.0e10, 4.0e10, 0.0]])
     m = [M1, M2]
     r2 = 5.0e10**2
-    assert potential_energy_j(m, x, eps) == pytest.approx(-G * M1 * M2 / np.sqrt(r2 + eps**2), rel=1e-14)
+    assert potential_energy_j(m, x, eps) == pytest.approx(-G * M1 * M2 / np.sqrt(r2 + eps**2), rel=1e-14, abs=0)
     a = accelerations_m_s2(m, x, eps)
     # a_0 = G m2 (x1 - x0) / (r^2 + eps^2)^(3/2)
-    assert np.allclose(a[0], G * M2 * x[1] / (r2 + eps**2) ** 1.5, rtol=1e-14)
+    assert np.allclose(a[0], G * M2 * x[1] / (r2 + eps**2) ** 1.5, rtol=1e-14, atol=0.0)  # a ~ 1e-7 m/s^2
     assert np.allclose(M1 * a[0] + M2 * a[1], 0.0, atol=1e-14 * np.abs(M1 * a[0]).max())
 
 
@@ -284,7 +284,7 @@ def test_virial_ratio_at_periapsis_and_apoapsis_and_its_time_average():
     vp = orbital_speed_m_s(rp, AU, mu)  # from the vis-viva module, independent of energy.py
     x, v = two_body(M1, M2, rp, vp)
     m = np.array([M1, M2])
-    assert virial_ratio(m, x, v) == pytest.approx(1.0 + e, rel=1e-13)
+    assert virial_ratio(m, x, v) == pytest.approx(1.0 + e, rel=1e-13, abs=0)
     n = 4000
     period = orbital_period_s(AU, mu)
     _, q, vel = integrate(lambda y, t: accelerations_m_s2(m, y), x, v, period / n, n)
@@ -292,7 +292,7 @@ def test_virial_ratio_at_periapsis_and_apoapsis_and_its_time_average():
     kinetic = np.array([kinetic_energy_j(m, vel[i]) for i in range(n)])
     potential = np.array([potential_energy_j(m, q[i]) for i in range(n)])
     # apoapsis is reached at half the period
-    assert ratio[n // 2] == pytest.approx(1.0 - e, rel=1e-4)
+    assert ratio[n // 2] == pytest.approx(1.0 - e, rel=1e-4, abs=0)
     assert 2.0 * kinetic.mean() / np.abs(potential).mean() == pytest.approx(1.0, abs=5e-5)
     assert ratio.mean() != pytest.approx(1.0, abs=0.05)
 
@@ -306,7 +306,7 @@ def test_virial_ratio_equals_2T_over_potential_energy_without_softening():
     x = rng.normal(size=(25, 3)) * 1e11
     v = rng.normal(size=(25, 3)) * 1e4
     expected = 2.0 * kinetic_energy_j(m, v) / abs(potential_energy_j(m, x))
-    assert virial_ratio(m, x, v) == pytest.approx(expected, rel=1e-14)
+    assert virial_ratio(m, x, v) == pytest.approx(expected, rel=1e-14, abs=0)
 
 
 # --------------------------------------------------------------------------------------
@@ -327,9 +327,9 @@ def test_orbit_elements_from_a_periapsis_state(e):
     rel_v = np.array([0.0, vp, 0.0])
     c = vis_viva_constant_m2_s2(rel_x, rel_v, mu)
     h = specific_angular_momentum_m2_s(rel_x, rel_v)
-    assert c == pytest.approx(-mu / (2.0 * AU), rel=1e-12)
-    assert np.linalg.norm(h) == pytest.approx(np.sqrt(mu * AU * (1.0 - e**2)), rel=1e-12)
-    assert semi_major_axis_from_vis_viva_constant_m(c, mu) == pytest.approx(AU, rel=1e-12)
+    assert c == pytest.approx(-mu / (2.0 * AU), rel=1e-12, abs=0)
+    assert np.linalg.norm(h) == pytest.approx(np.sqrt(mu * AU * (1.0 - e**2)), rel=1e-12, abs=0)
+    assert semi_major_axis_from_vis_viva_constant_m(c, mu) == pytest.approx(AU, rel=1e-12, abs=0)
     assert eccentricity_from_vis_viva_constant(c, np.linalg.norm(h), mu) == pytest.approx(e, abs=1e-13)
 
 
@@ -337,7 +337,7 @@ def test_vis_viva_constant_is_the_total_energy_per_reduced_mass():
     mu = G * (M1 + M2)
     x, v = two_body(M1, M2, 0.7 * AU, 0.8 * np.sqrt(mu / (0.7 * AU)))
     c = vis_viva_constant_m2_s2(x[1] - x[0], v[1] - v[0], mu)
-    assert total_energy_j([M1, M2], x, v) / (M1 * M2 / (M1 + M2)) == pytest.approx(c, rel=1e-12)
+    assert total_energy_j([M1, M2], x, v) / (M1 * M2 / (M1 + M2)) == pytest.approx(c, rel=1e-12, abs=0)
 
 
 def test_vis_viva_constant_vectorised_and_hyperbolic_axis_is_negative():
@@ -402,8 +402,8 @@ def test_escape_speed_against_the_kepler_module():
     1/a = 0 (parabola). Measured relative differences 0 and 0; C / (mu / r) = 0 at v_esc."""
     mu = G * M1
     v_esc = escape_speed_m_s(mu, AU)
-    assert v_esc == pytest.approx(np.sqrt(2.0) * orbital_speed_m_s(AU, AU, mu), rel=1e-14)
-    assert v_esc == pytest.approx(orbital_speed_m_s(AU, np.inf, mu), rel=1e-14)
+    assert v_esc == pytest.approx(np.sqrt(2.0) * orbital_speed_m_s(AU, AU, mu), rel=1e-14, abs=0)
+    assert v_esc == pytest.approx(orbital_speed_m_s(AU, np.inf, mu), rel=1e-14, abs=0)
     assert vis_viva_constant_m2_s2([AU, 0, 0], [0, v_esc, 0], mu) == pytest.approx(0.0, abs=1e-6 * mu / AU)
     assert np.allclose(escape_speed_m_s(mu, [AU, 4 * AU]), [v_esc, v_esc / 2.0], rtol=1e-14)
 
@@ -426,11 +426,66 @@ def test_uniform_sphere_binding_energy_against_a_shell_integral():
     scipy.integrate.quad. Measured relative difference 4e-16 (quad error estimate 2.6e27 J on E_b = 2.3e41 J)."""
     mass, radius = 2.0e30, 6.957e8
     value, _ = quad(lambda r: G * mass * (r / radius) ** 3 / r * 3.0 * mass * r**2 / radius**3, 0.0, radius)
-    assert uniform_sphere_binding_energy_j(mass, radius) == pytest.approx(value, rel=1e-12)
+    assert uniform_sphere_binding_energy_j(mass, radius) == pytest.approx(value, rel=1e-12, abs=0)
 
 
 def test_uniform_sphere_binding_energy_scaling():
     base = uniform_sphere_binding_energy_j(1.0e30, 1.0e9)
-    assert uniform_sphere_binding_energy_j(2.0e30, 1.0e9) == pytest.approx(4.0 * base, rel=1e-14)
-    assert uniform_sphere_binding_energy_j(1.0e30, 2.0e9) == pytest.approx(0.5 * base, rel=1e-14)
+    assert uniform_sphere_binding_energy_j(2.0e30, 1.0e9) == pytest.approx(4.0 * base, rel=1e-14, abs=0)
+    assert uniform_sphere_binding_energy_j(1.0e30, 2.0e9) == pytest.approx(0.5 * base, rel=1e-14, abs=0)
     assert base > 0.0
+
+
+# --------------------------------------------------------------------------------------
+# mutation-testing survivors: weighting, handedness and the strict inequalities of the input checks
+# --------------------------------------------------------------------------------------
+
+
+def test_barycenter_is_mass_weighted_for_unequal_masses():
+    """R = sum m_i x_i / sum m_i with masses 1, 2, 5 (hand value). The unweighted mean (sum x_i / sum m_i) of the
+    same numbers is a different vector, so a lost weight cannot pass."""
+    m = np.array([1.0, 2.0, 5.0])
+    x = np.array([[1.0, 0.0, 2.0], [0.0, 4.0, 0.0], [3.0, 1.0, -1.0]])
+    expected = np.array([(1.0 + 15.0) / 8.0, (8.0 + 5.0) / 8.0, (2.0 - 5.0) / 8.0])  # (2, 13/8, -3/8)
+    assert np.array_equal(barycenter_m(m, x), expected)  # exact: all numbers are dyadic
+    assert not np.allclose(x.sum(axis=0) / m.sum(), expected)
+
+
+def test_barycenter_velocity_is_mass_weighted_for_unequal_masses():
+    m = np.array([1.0, 2.0, 5.0])
+    v = np.array([[8.0, 0.0, 2.0], [0.0, 4.0, 0.0], [1.0, 1.0, -1.0]])
+    expected = np.array([(8.0 + 5.0) / 8.0, (8.0 + 5.0) / 8.0, (2.0 - 5.0) / 8.0])  # (13/8, 13/8, -3/8)
+    assert np.array_equal(barycenter_velocity_m_s(m, v), expected)
+    assert not np.allclose(v.sum(axis=0) / m.sum(), expected)
+
+
+def test_specific_angular_momentum_sign_of_a_counter_clockwise_orbit():
+    """r = (2, 0, 0) m and v = (0, 3, 0) m/s go counter-clockwise seen from +z: h = r x v = (0, 0, +6) m^2/s."""
+    h = specific_angular_momentum_m2_s([2.0, 0.0, 0.0], [0.0, 3.0, 0.0])
+    assert h[2] > 0.0
+    assert np.array_equal(h, [0.0, 0.0, 6.0])
+    h_cw = specific_angular_momentum_m2_s([2.0, 0.0, 0.0], [0.0, -3.0, 0.0])  # clockwise
+    assert np.array_equal(h_cw, [0.0, 0.0, -6.0])
+
+
+def test_a_zero_mass_is_rejected_but_a_tiny_positive_mass_is_not():
+    x = np.zeros((2, 3))
+    with pytest.raises(ValueError, match="masses must be positive"):
+        potential_energy_j([0.0, 1.0], x + [[0.0] * 3, [1.0, 0.0, 0.0]])
+    with pytest.raises(ValueError, match="masses must be positive"):
+        barycenter_m([1.0, 0.0], x)
+    with pytest.raises(ValueError, match="masses must be positive"):
+        barycenter_m([1.0, -1.0], x)
+    with pytest.raises(ValueError, match="masses must be positive"):
+        barycenter_m([1.0, np.nan], x)
+    assert np.array_equal(barycenter_m([1.0, 1e-300], x), np.zeros(3))  # the check is strict, not a threshold
+
+
+def test_escape_speed_rejects_a_zero_distance_but_accepts_a_tiny_one():
+    with pytest.raises(ValueError, match="distance_m must be positive"):
+        escape_speed_m_s(1.0, 0.0)
+    with pytest.raises(ValueError, match="distance_m must be positive"):
+        escape_speed_m_s(1.0, [1.0, 0.0])
+    with pytest.raises(ValueError, match="distance_m must be positive"):
+        escape_speed_m_s(1.0, -1.0)
+    assert escape_speed_m_s(0.5, 1.0) == pytest.approx(1.0, rel=1e-15, abs=0)  # sqrt(2 * 0.5 / 1)

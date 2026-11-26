@@ -36,11 +36,13 @@ def test_de_rho_ratio_equals_the_integral_of_frieman_eq_rho_scaling():
             integral = quad(
                 lambda lnp, k=k: 1.0 + de.de_eos(np.expm1(lnp), k), 0.0, np.log1p(z), epsabs=0, epsrel=1e-13
             )[0]
-            assert de.de_rho_ratio(z, k) == pytest.approx(np.exp(3.0 * integral), rel=1e-12)
+            assert de.de_rho_ratio(z, k) == pytest.approx(np.exp(3.0 * integral), rel=1e-12, abs=0)
 
 
 def test_constant_w_density_ratio():
-    assert de.de_rho_ratio(3.0, distances.Cosmology.flat(70, 0.3, w=-0.9)) == pytest.approx(4.0 ** (3 * 0.1), rel=1e-14)
+    assert de.de_rho_ratio(3.0, distances.Cosmology.flat(70, 0.3, w=-0.9)) == pytest.approx(
+        4.0 ** (3 * 0.1), rel=1e-14, abs=0
+    )
     assert np.all(de.de_rho_ratio(Z, LCDM) == 1.0)
 
 
@@ -93,7 +95,7 @@ def test_acceleration_onset_lcdm_closed_form():
     for om in (0.25, 0.3, 0.4):
         k = distances.Cosmology.flat(70.0, om)
         assert de.acceleration_onset_redshift(k) == pytest.approx(
-            (2.0 * (1.0 - om) / om) ** (1.0 / 3.0) - 1.0, rel=1e-12
+            (2.0 * (1.0 - om) / om) ** (1.0 / 3.0) - 1.0, rel=1e-12, abs=0
         )
 
 
@@ -102,7 +104,7 @@ def test_acceleration_onset_constant_w_closed_form():
     for w in (-0.8, -1.2):
         k = distances.Cosmology.flat(70.0, 0.3, w=w)
         expected = (-(1.0 + 3.0 * w) * 0.7 / 0.3) ** (-1.0 / (3.0 * w)) - 1.0
-        assert de.acceleration_onset_redshift(k) == pytest.approx(expected, rel=1e-12)
+        assert de.acceleration_onset_redshift(k) == pytest.approx(expected, rel=1e-12, abs=0)
 
 
 def test_acceleration_onset_raises_without_sign_change():
@@ -116,13 +118,15 @@ def test_matter_de_equality_constant_w_closed_form():
     # [Frieman2008] sec2.tex line 278: 1 + z = (Omega_M/Omega_DE)^{1/(3w)}; checked for both signs of 1 + w
     for w in (-1.0, -0.8, -1.2):
         k = distances.Cosmology.flat(70.0, 0.3, w=w)
-        assert de.matter_de_equality_redshift(k) == pytest.approx((0.3 / 0.7) ** (1.0 / (3.0 * w)) - 1.0, rel=1e-12)
+        assert de.matter_de_equality_redshift(k) == pytest.approx(
+            (0.3 / 0.7) ** (1.0 / (3.0 * w)) - 1.0, rel=1e-12, abs=0
+        )
 
 
 def test_matter_de_equality_cpl_equal_densities():
     z_eq = de.matter_de_equality_redshift(CPL)
     assert 0.0 < z_eq < 2.0
-    assert de.omega_matter(z_eq, CPL) == pytest.approx(de.omega_de(z_eq, CPL), rel=1e-12)
+    assert de.omega_matter(z_eq, CPL) == pytest.approx(de.omega_de(z_eq, CPL), rel=1e-12, abs=0)
 
 
 def test_matter_de_equality_raises():
@@ -135,8 +139,8 @@ def test_matter_de_equality_raises():
 def test_matter_radiation_equality():
     k = distances.Cosmology.flat(70.0, 0.3, omega_r=8.5e-5)
     z_eq = de.matter_radiation_equality_redshift(k)
-    assert z_eq == pytest.approx(0.3 / 8.5e-5 - 1.0, rel=1e-14)
-    assert de.omega_matter(z_eq, k) == pytest.approx(de.omega_radiation(z_eq, k), rel=1e-13)
+    assert z_eq == pytest.approx(0.3 / 8.5e-5 - 1.0, rel=1e-14, abs=0)
+    assert de.omega_matter(z_eq, k) == pytest.approx(de.omega_radiation(z_eq, k), rel=1e-13, abs=0)
     with pytest.raises(ValueError):
         de.matter_radiation_equality_redshift(LCDM)
 
@@ -145,7 +149,7 @@ def test_critical_density_matches_the_published_number():
     # [Frieman2008] sec2.tex line 94: rho_crit = 1.88e-29 h^2 g cm^-3 = 1.88e-26 h^2 kg m^-3 (three digits)
     for h in (0.5, 0.7, 1.0):
         k = distances.Cosmology.flat(100.0 * h, 0.3)
-        assert de.critical_density_kg_m3(0.0, k) == pytest.approx(1.88e-26 * h**2, rel=3e-3)
+        assert de.critical_density_kg_m3(0.0, k) == pytest.approx(1.88e-26 * h**2, rel=3e-3, abs=0)
 
 
 def test_critical_density_scales_as_e_squared():
@@ -158,16 +162,18 @@ def test_critical_density_scales_as_e_squared():
 
 def test_hubble_parameter_is_h0_times_e():
     assert np.allclose(de.hubble_parameter_km_s_mpc(Z, CPL), 70.0 * distances.e_function(Z, CPL), rtol=1e-15)
-    assert de.hubble_parameter_km_s_mpc(0.0, FULL) == pytest.approx(68.0, rel=1e-15)
+    assert de.hubble_parameter_km_s_mpc(0.0, FULL) == pytest.approx(68.0, rel=1e-15, abs=0)
 
 
 def test_de_mass_density_and_lambda():
     k = distances.Cosmology.flat(70.0, 0.3)
     rho = de.critical_density_kg_m3(0.0, k) * 0.7
-    assert np.allclose(de.de_mass_density_kg_m3(Z, k), rho, rtol=1e-14)  # constant for w = -1
+    assert np.allclose(
+        de.de_mass_density_kg_m3(Z, k), rho, rtol=1e-14, atol=0.0
+    )  # constant for w = -1; rho ~ 6e-27 kg/m^3
     # [Frieman2008] sec2.tex line 62: Lambda = 8 pi G rho_VAC (c = 1); in SI divide by c^2
     lam = 8.0 * np.pi * GRAVITATIONAL_CONSTANT.value * rho / SPEED_OF_LIGHT.value**2
-    assert de.cosmological_constant_lambda(k) == pytest.approx(lam, rel=1e-14)
+    assert de.cosmological_constant_lambda(k) == pytest.approx(lam, rel=1e-14, abs=0)
     assert 1.0e-52 < de.cosmological_constant_lambda(k) < 1.4e-52  # the usual order of magnitude, 1.1e-52 m^-2
     with pytest.raises(ValueError):
         de.cosmological_constant_lambda(distances.Cosmology.flat(70.0, 0.3, w=-0.9))
@@ -198,7 +204,7 @@ def test_age_with_radiation_against_quad():
         ref = quad(
             lambda u: 1.0 / distances.e_function(np.expm1(u), k), np.log1p(z), 80.0, epsabs=0, epsrel=1e-13, limit=500
         )[0]
-        assert de.age_gyr(z, k) == pytest.approx(distances.hubble_time_gyr(k) * ref, rel=1e-12)
+        assert de.age_gyr(z, k) == pytest.approx(distances.hubble_time_gyr(k) * ref, rel=1e-12, abs=0)
 
 
 def test_age_requires_matter_or_radiation():
@@ -214,8 +220,8 @@ def test_big_rip_time_exact_for_pure_phantom_and_estimate_with_matter():
         distances.hubble_time_gyr(pure)
         * quad(lambda a: 1.0 / (a * distances.e_function(1.0 / a - 1.0, pure)), 1.0, np.inf)[0]
     )
-    assert de.big_rip_time_gyr(pure) == pytest.approx(exact, rel=1e-12)
-    assert exact == pytest.approx(2.0 * distances.hubble_time_gyr(pure) / beta, rel=1e-12)
+    assert de.big_rip_time_gyr(pure) == pytest.approx(exact, rel=1e-12, abs=0)
+    assert exact == pytest.approx(2.0 * distances.hubble_time_gyr(pure) / beta, rel=1e-12, abs=0)
     # with matter the source's formula is an estimate: measured difference from the integral
     k = distances.Cosmology.flat(70.0, 0.3, w=-1.5)
     numerical = (
@@ -331,7 +337,7 @@ def test_scan_resolves_two_roots_2p5e_3_apart_in_ln_1pz(monkeypatch):
     # the grid step is 9.8e-4 for z_max = 50, so a window of 2.5e-3 holds at least two nodes and is found: the first
     # root is the lower edge of the window
     root = de._first_sign_change(_two_roots_close_together, 50.0)
-    assert root == pytest.approx(np.expm1(np.log(2.0) - 1.25e-3), rel=1e-11)  # measured difference 3.3e-16
+    assert root == pytest.approx(np.expm1(np.log(2.0) - 1.25e-3), rel=1e-11, abs=0)  # measured difference 3.3e-16
     # a 50-point grid (step 0.08) steps over the window: the pair of roots is missed
     monkeypatch.setattr(de, "_SCAN_POINTS", 50)
     assert de._first_sign_change(_two_roots_close_together, 50.0) is None

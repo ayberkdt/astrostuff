@@ -36,7 +36,7 @@ def test_fit_wcs_finds_known_solution():
     assert np.max(np.abs(c.wcs.cd / truth.cd - 1)) < 2e-4
     assert np.max(np.abs(c.wcs.crpix - truth.crpix)) < 0.03
     # 0.08 pixel noise on two axes: position residual rms ≈ 0.08 · √2 pixel = 0.11 arcseconds.
-    assert c.residual_rms_arcsec == pytest.approx(0.08 * np.sqrt(2.0), rel=0.15)
+    assert c.residual_rms_arcsec == pytest.approx(0.08 * np.sqrt(2.0), rel=0.15, abs=0)
     assert _max_difference_arcsec(c.wcs, truth) < 0.05
     # If the tangent point is not given, the mean direction of the stars is used; the transformation on the sky is unchanged.
     free = solve.fit_wcs(x, y, ra, dec)

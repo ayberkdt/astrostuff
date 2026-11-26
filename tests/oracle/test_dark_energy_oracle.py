@@ -166,7 +166,7 @@ def test_deceleration_parameter_against_finite_differences_of_astropy_efunc(name
 def test_equality_and_onset_redshifts_against_astropy_density_parameters():
     ours, astropy_model = MODELS["lcdm"]
     z_eq = de.matter_de_equality_redshift(ours)
-    assert astropy_model.Om(z_eq) == pytest.approx(astropy_model.Ode(z_eq), rel=1e-12)
+    assert astropy_model.Om(z_eq) == pytest.approx(astropy_model.Ode(z_eq), rel=1e-12, abs=0)
     # the acceleration onset: astropy q from -1 - dlnE/dlna vanishes
     z_acc = de.acceleration_onset_redshift(ours)
     h = 1e-4

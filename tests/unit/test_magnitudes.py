@@ -26,7 +26,7 @@ def test_planck_integral_stefan_boltzmann():
     # ∫ B_ν dν = σ T⁴ / π
     t = 5772.0
     integral, _ = quad(lambda nu: float(magnitudes.planck_frequency(nu, t)), 1e11, 3e16, limit=200)
-    assert integral == pytest.approx(float(magnitudes.blackbody_flux(t)) / math.pi, rel=1e-8)
+    assert integral == pytest.approx(float(magnitudes.blackbody_flux(t)) / math.pi, rel=1e-8, abs=0)
 
 
 def test_wien_peak_wavelength():
@@ -37,7 +37,7 @@ def test_wien_peak_wavelength():
         method="bounded",
         options={"xatol": 1e-14},
     ).x
-    assert peak * t == pytest.approx(constants.WIEN_WAVELENGTH.value, rel=1e-6)
+    assert peak * t == pytest.approx(constants.WIEN_WAVELENGTH.value, rel=1e-6, abs=0)
 
 
 def test_solar_luminosity_from_nominal_values():
@@ -48,12 +48,19 @@ def test_solar_luminosity_from_nominal_values():
         * constants.SOLAR_RADIUS.value**2
         * float(magnitudes.blackbody_flux(constants.SOLAR_EFFECTIVE_TEMPERATURE.value))
     )
-    assert luminosity == pytest.approx(constants.SOLAR_LUMINOSITY.value, rel=1e-3)
+    assert luminosity == pytest.approx(constants.SOLAR_LUMINOSITY.value, rel=1e-3, abs=0)
 
 
 def test_derived_constants_match_nist_digits():
-    # Truncated digits in the NIST table: 5.670 374 419... e-8 and 1.438 776 877... e-2.
+    # Truncated digits in the NIST table: 5.670 374 419... e-8, 1.438 776 877... e-2 and 2.897 771 955... e-3.
     # The table truncates instead of rounding; the comparison therefore uses the leading digits.
     assert f"{constants.STEFAN_BOLTZMANN.value:.14e}".startswith("5.670374419")
     assert f"{constants.SECOND_RADIATION_CONSTANT.value:.14e}".startswith("1.438776877")
     assert np.isclose(constants.PARSEC.value, 3.0856775814913673e16, rtol=1e-15)
+    assert f"{constants.WIEN_WAVELENGTH.value:.14e}".startswith("2.897771955")
+    # the root of x = 5 (1 - exp(-x)) behind it, against the Lambert-W closed form x = 5 + W(-5 exp(-5))
+    from scipy.special import lambertw
+
+    root = 5.0 + float(np.real(lambertw(-5.0 * np.exp(-5.0))))
+    expected = constants.PLANCK.value * constants.SPEED_OF_LIGHT.value / (constants.BOLTZMANN.value * root)
+    assert constants.WIEN_WAVELENGTH.value == pytest.approx(expected, rel=1e-15, abs=0)

@@ -59,11 +59,13 @@ def test_doppler_and_peculiar_velocity():
     v = np.array([-3000.0, -300.0, 0.0, 300.0, 30000.0, 150000.0])
     z = distances.doppler_redshift(v)
     assert np.allclose(distances.doppler_velocity_km_s(z), v, rtol=1e-12, atol=1e-9)
-    assert float(distances.doppler_redshift(30.0)) == pytest.approx(30.0 / SPEED_OF_LIGHT_KM_S, rel=1e-4)  # z ≈ v/c
+    assert float(distances.doppler_redshift(30.0)) == pytest.approx(
+        30.0 / SPEED_OF_LIGHT_KM_S, rel=1e-4, abs=0
+    )  # z ≈ v/c
     # The z_obs generated from the rule (1 + z_obs) = (1 + z_cos)(1 + v/c) gives back the same v at small velocity.
     z_cos, velocity = 0.05, 300.0
     z_obs = (1 + z_cos) * (1 + velocity / SPEED_OF_LIGHT_KM_S) - 1
-    assert float(distances.peculiar_velocity_km_s(z_obs, z_cos)) == pytest.approx(velocity, rel=1e-12)
+    assert float(distances.peculiar_velocity_km_s(z_obs, z_cos)) == pytest.approx(velocity, rel=1e-12, abs=0)
 
 
 def test_non_finite_redshifts_give_nan_without_aborting_the_call():

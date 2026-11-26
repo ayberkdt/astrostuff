@@ -58,14 +58,14 @@ def test_gaussian_fit_vs_astropy_levmar():
     best = fitter(init, x, flux, weights=np.full(x.size, 1.0 / noise))
     # Same model, same weights: the optimum agrees to the optimiser tolerances (measured relative differences:
     # centre 6.5e-7, sigma 9.8e-7, amplitude 3.0e-7; formal errors 1e-5 to 2e-5), so 1e-5 and 1e-3 are used.
-    assert ours.centre == pytest.approx(best.mean_0.value, rel=1e-5)
-    assert ours.sigma == pytest.approx(abs(best.stddev_0.value), rel=1e-5)
-    assert ours.amplitude == pytest.approx(best.amplitude_0.value, rel=1e-5)
+    assert ours.centre == pytest.approx(best.mean_0.value, rel=1e-5, abs=0)
+    assert ours.sigma == pytest.approx(abs(best.stddev_0.value), rel=1e-5, abs=0)
+    assert ours.amplitude == pytest.approx(best.amplitude_0.value, rel=1e-5, abs=0)
     cov = fitter.fit_info["param_cov"]
     # astropy parameter order: amplitude_0, mean_0, stddev_0, slope_1, intercept_1; ours: amplitude, centre, sigma.
-    assert ours.amplitude_sigma == pytest.approx(np.sqrt(cov[0, 0]), rel=1e-3)
-    assert ours.centre_sigma == pytest.approx(np.sqrt(cov[1, 1]), rel=1e-3)
-    assert ours.sigma_sigma == pytest.approx(np.sqrt(cov[2, 2]), rel=1e-3)
+    assert ours.amplitude_sigma == pytest.approx(np.sqrt(cov[0, 0]), rel=1e-3, abs=0)
+    assert ours.centre_sigma == pytest.approx(np.sqrt(cov[1, 1]), rel=1e-3, abs=0)
+    assert ours.sigma_sigma == pytest.approx(np.sqrt(cov[2, 2]), rel=1e-3, abs=0)
 
 
 @pytest.mark.parametrize("v_km_s", [-250.0, -12.0, 30.0, 4.0e4])

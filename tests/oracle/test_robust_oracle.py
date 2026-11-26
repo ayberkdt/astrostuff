@@ -17,9 +17,9 @@ def _contaminated(seed, n=500):
 @pytest.mark.parametrize("seed", [71, 72, 73])
 def test_location_and_scale_against_astropy(seed):
     x = _contaminated(seed)
-    assert float(robust.mad_scale(x)) == pytest.approx(astropy_stats.mad_std(x), rel=1e-13)
-    assert robust.biweight_location(x) == pytest.approx(astropy_stats.biweight_location(x), rel=1e-12)
-    assert robust.biweight_scale(x) == pytest.approx(astropy_stats.biweight_scale(x), rel=1e-12)
+    assert float(robust.mad_scale(x)) == pytest.approx(astropy_stats.mad_std(x), rel=1e-13, abs=0)
+    assert robust.biweight_location(x) == pytest.approx(astropy_stats.biweight_location(x), rel=1e-12, abs=0)
+    assert robust.biweight_scale(x) == pytest.approx(astropy_stats.biweight_scale(x), rel=1e-12, abs=0)
     # Despite the outliers they stay close to the true values; the mean and standard deviation do not.
     assert abs(robust.biweight_location(x) - 10.0) < 0.4 and abs(robust.biweight_scale(x) - 2.0) < 0.4
     assert abs(x.mean() - 10.0) > 1.0
@@ -39,6 +39,6 @@ def test_sigma_clip_against_astropy(seed):
 
 def test_mad_axis_and_zero_scale():
     x = np.random.default_rng(76).normal(size=(40, 7))
-    assert robust.mad_scale(x, axis=0) == pytest.approx(astropy_stats.mad_std(x, axis=0), rel=1e-13)
+    assert robust.mad_scale(x, axis=0) == pytest.approx(astropy_stats.mad_std(x, axis=0), rel=1e-13, abs=0)
     constant = np.full(20, 3.0)
     assert robust.biweight_location(constant) == 3.0 and robust.biweight_scale(constant) == 0.0

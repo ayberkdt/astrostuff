@@ -30,7 +30,7 @@ _EPS = float(np.finfo(float).eps)
 # The residual dL/dv - p cannot be made smaller than the rounding of v (half an ulp) times |W|, plus the rounding of
 # the evaluation itself. For L = -m sqrt(1 - v^2) the residual at the last iterate, in units of
 # eps (||W||_inf max|v| + max(1, max|p|)), was at most 8.3 over p / m = 40, 50, 60, 100, 300, 1000, 3000, 5000, 6000,
-# 6600, 6683; _RESOLUTION_FACTOR = 16 is about twice that (400 log-uniform p / m in [1, 2.08e5] all converged).
+# 6600, 6683; _RESOLUTION_FACTOR = 16 is about twice that (600 log-uniform p / m in [1, 6600] all converged).
 _RESOLUTION_FACTOR = 16.0
 Hamiltonian = Callable[[Array, Array, float], ArrayLike]
 Observable = Callable[[Array, Array, float], ArrayLike]
@@ -46,7 +46,7 @@ class LegendreHamiltonian:
     The inversion is a damped Newton iteration v <- v - W^{-1} (dL/dv - p), W = d2L/dv dv. For a Lagrangian
     quadratic in v the map p(v) is affine and one step is exact. The step is halved (at most 30 times) while
     the trial point is outside the domain of L (non-finite value) or does not reduce the largest residual
-    component. Convergence is declared when max |dL/dv - p| <= ``tolerance`` * max(1, max |p|) or when the
+    component. Convergence is declared when max |dL/dv - p| <= ``tolerance`` * max(max |p|, max |dL/dv(v_start)|) or when the
     residual has reached the resolution of the map, 16 eps (||W||_inf max|v| + max(1, max|p|)) (half an ulp of v
     times |W|, plus the rounding of the evaluation: no iterate can do better, and H is stationary in v, so the
     resulting error of H is of second order); otherwise ``LegendreTransformError`` is raised.
@@ -117,8 +117,11 @@ class LegendreHamiltonian:
         if q_arr.size != p_arr.size:
             raise ValueError("q and p must have the same length")
         v = np.zeros_like(q_arr) if v_guess is None else _vector(v_guess, "v_guess").copy()
-        scale = max(1.0, float(np.max(np.abs(p_arr))))
-        residual = _dl_dv(self.lagrangian, q_arr, v, t, self.method) - p_arr
+        start = _dl_dv(self.lagrangian, q_arr, v, t, self.method)
+        # the size of the momenta in the problem, not 1: an electron has p of order 1e-24 in SI units, and a
+        # tolerance against max(1, |p|) would accept the starting velocity as the solution
+        scale = max(float(np.max(np.abs(p_arr))), float(np.max(np.abs(start))))
+        residual = start - p_arr
         for _ in range(self.max_iterations):
             norm = float(np.max(np.abs(residual)))
             if norm <= self.tolerance * scale:
@@ -210,7 +213,8 @@ def hamiltonian_from_lagrangian(
     method : {"complex", "finite"}, optional
         Differentiation method used in the Newton iteration and in ``derivatives``.
     tolerance : float, optional
-        Convergence: max |dL/dv - p| <= tolerance * max(1, max |p|). Default 1e-13.
+        Convergence: max |dL/dv - p| <= tolerance * max(max |p|, max |dL/dv| at the starting velocity).
+        Default 1e-13.
     max_iterations : int, optional
         Newton iterations before ``LegendreTransformError`` (default 100).
 
@@ -236,19 +240,17 @@ def hamiltonian_from_lagrangian(
     undefined there needs ``LegendreHamiltonian.velocity`` with a ``v_guess``. If the map has several branches,
     the branch reached from v = 0 is returned. The Newton matrix uses a step that shrinks until both sides lie in
     the domain of L, and convergence is judged at the resolution of the map (see ``LegendreHamiltonian``), so the
-    free relativistic particle L = -m sqrt(1 - v^2) is inverted up to p = 2.125e5 m (measured by bisection in one
-    dimension, m = 1: 212532.6 m; 400 log-uniform momenta below the limit all converged with a relative error of H
-    of at most 2.2e-16, and 1.5e5 m converges along (0.6, -0.8, 0) and along the diagonal in three dimensions).
-    At the limit 1 - v is 1.1e-11: the check of ``kozmos.core._differentiation`` that the Lagrangian is analytic
-    needs a real step of at least 1e-12 on both sides of the trial velocity, and beyond the limit no such step
-    stays inside |v| < 1, so ``LegendreTransformError`` is raised. (Before the Newton matrix and the convergence
-    test were changed the limit was 50.3 m, and before the check used steps below 1e-9 it was 6683 m.) The object does not accept complex arguments (differentiate it with
+    free relativistic particle L = -m sqrt(1 - v^2) is inverted up to p = 1.14e4 m (measured by bisection in one
+    dimension, m = 1). At the limit 1 - v is 4e-9: the check of ``kozmos.core._differentiation`` that the
+    Lagrangian is analytic needs real steps that stay inside |v| < 1 on both sides of the trial velocity, and
+    for a step that small the rounding of v + h (2e-16 against h) exceeds the accuracy it requires; beyond the
+    limit ``LegendreTransformError`` is raised. The object does not accept complex arguments (differentiate it with
     ``method="finite"`` or use its exact ``derivatives``).
 
     Verification
     ------------
-    tests/unit/test_hamiltonian.py: H = sqrt(p^2 + m^2) for the free relativistic particle from |p| = 0 to 2e5 m
-    (boundary region included, and the failure above 2.2e5 m), H = p^2/2m + k q^2/2 for the oscillator in one
+    tests/unit/test_hamiltonian.py: H = sqrt(p^2 + m^2) for the free relativistic particle from |p| = 0 to 1e4 m
+    (boundary region included, and the failure above 1.3e4 m), an electron in SI units, H = p^2/2m + k q^2/2 for the oscillator in one
     Newton step, the charged particle H = (p - e A)^2/2m, and, for L = (1 + 0.3 t) v^2/2 - q^2/2, H and all three components of
     ``derivatives`` (including dH/dt) against the closed form.
     """

@@ -42,6 +42,7 @@ from kozmos.mechanics.integrators import (
     symplectic_step_separable,
 )
 from kozmos.mechanics.lagrangian import (
+    DerivativePrecisionError,
     Lagrangian,
     SingularInertiaError,
     action,
@@ -81,6 +82,7 @@ __all__ = [
     "BoundaryTerm",
     "canonical_symmetry_variation",
     "conformal_particle_charges",
+    "DerivativePrecisionError",
     "eccentricity_from_vis_viva_constant",
     "energy",
     "escape_speed_m_s",

@@ -10,7 +10,7 @@ def test_chi_square_against_direct_inverse():
     a = u.normal(size=(40, 40))
     c = a @ a.T + 40 * np.eye(40)
     r = u.normal(size=40)
-    assert fitting.chi_square(r, cholesky(c, lower=True)) == pytest.approx(r @ np.linalg.inv(c) @ r, rel=1e-11)
+    assert fitting.chi_square(r, cholesky(c, lower=True)) == pytest.approx(r @ np.linalg.inv(c) @ r, rel=1e-11, abs=0)
 
 
 def test_fit_line_against_polyfit():
@@ -20,8 +20,8 @@ def test_fit_line_against_polyfit():
     y = 2.5 * x - 1.0 + u.normal(0, sigma)
     result = fitting.fit_line(x, y, sigma)
     coefficient, cov = np.polyfit(x, y, 1, w=1 / sigma, cov="unscaled")
-    assert result.parameters == pytest.approx(coefficient[::-1], rel=1e-10)  # our order is [b, m]
-    assert result.covariance == pytest.approx(cov[::-1, ::-1], rel=1e-9)
+    assert result.parameters == pytest.approx(coefficient[::-1], rel=1e-10, abs=0)  # our order is [b, m]
+    assert result.covariance == pytest.approx(cov[::-1, ::-1], rel=1e-9, abs=0)
     assert result.degrees_of_freedom == 48
     assert np.all(np.abs(result.parameters - [-1.0, 2.5]) < 4 * result.uncertainties)
 
@@ -34,8 +34,8 @@ def test_full_covariance_same_as_diagonal():
     a = np.column_stack([np.ones_like(x), x])
     diagonal = fitting.linear_least_squares(a, y, sigma)
     full = fitting.linear_least_squares(a, y, np.diag(sigma**2))
-    assert diagonal.parameters == pytest.approx(full.parameters, rel=1e-12)
-    assert diagonal.chi_square == pytest.approx(full.chi_square, rel=1e-12)
+    assert diagonal.parameters == pytest.approx(full.parameters, rel=1e-12, abs=0)
+    assert diagonal.chi_square == pytest.approx(full.chi_square, rel=1e-12, abs=0)
 
 
 def test_line_through_origin():

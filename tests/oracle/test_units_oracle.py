@@ -73,7 +73,7 @@ def test_scale_factor_and_dimension_against_astropy(ours, theirs):
     exponents = dict(zip(BASE_DIMENSIONS, (float(e) for e in unit.dimension.exponents), strict=True))
     assert {k: v for k, v in exponents.items() if v} == {k: v for k, v in dimension.items() if v}
     tolerance, _ = KNOWN_DIFFERENCES.get(ours, (4.5e-16, "rounding: 4 double-precision roundings"))
-    assert unit.scale == pytest.approx(scale, rel=tolerance), (ours, unit.scale / scale - 1.0)
+    assert unit.scale == pytest.approx(scale, rel=tolerance, abs=0), (ours, unit.scale / scale - 1.0)
 
 
 def test_rows_cover_every_registered_symbol_with_an_astropy_equivalent():
@@ -117,10 +117,10 @@ def test_with_units_matches_plain_calls_whose_inputs_astropy_converted():
     mass = 3.0e6
     expected = basics.schwarzschild_radius_m((mass * u.Msun).to_value(u.kg))
     got = with_units(basics.schwarzschild_radius_m)(Quantity(mass, "Msun"))
-    assert got.value == pytest.approx(expected, rel=1e-14)
+    assert got.value == pytest.approx(expected, rel=1e-14, abs=0)
 
     radius_rsun, teff_mk = 2.5, 6.2e6
     expected = scaling.luminosity_w((radius_rsun * u.Rsun).to_value(u.m), (teff_mk * u.mK).to_value(u.K))
     got = with_units(scaling.luminosity_w)(Quantity(radius_rsun, "Rsun"), Quantity(teff_mk, "mK"))
-    assert got.value == pytest.approx(expected, rel=1e-14)
-    assert got.to_value("Lsun") == pytest.approx((expected * u.W).to_value(u.Lsun), rel=1e-14)
+    assert got.value == pytest.approx(expected, rel=1e-14, abs=0)
+    assert got.to_value("Lsun") == pytest.approx((expected * u.W).to_value(u.Lsun), rel=1e-14, abs=0)

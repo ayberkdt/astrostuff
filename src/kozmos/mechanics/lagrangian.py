@@ -6,7 +6,12 @@ a float. Every derivative of the Lagrangian is taken numerically with
 ``kozmos.core._differentiation``: ``method="complex"`` (complex step, exact to rounding, needs a
 function that is analytic and accepts complex arrays: avoid ``abs``, ``np.linalg.norm``,
 ``np.hypot``, comparisons and casts to float inside the Lagrangian; use ``np.sqrt(np.sum(q * q))``)
-or ``method="finite"`` (four-point central difference, about 1e-9 relative).
+or ``method="finite"`` (six-point differences with an error estimate and a step that is searched over
+many decades; about 1e-10 relative at unit scale). Second derivatives are finite differences of the first
+ones by the same rule. Every difference carries an estimate of its error, and the functions that combine
+them (the accelerations) refuse a result whose propagated estimate exceeds 1e-6: a Lagrangian written in
+units in which its terms differ by many orders of magnitude gives ``DerivativePrecisionError`` rather than
+a wrong number.
 
 The equations were read from Banados and Reyes [BanadosReyes2016] (arXiv:1601.03616, TeX file
 AGR-9.tex; line numbers below refer to that file). That source states the Euler-Lagrange equations
@@ -25,24 +30,29 @@ from scipy.integrate import solve_ivp
 from scipy.interpolate import CubicSpline
 
 from kozmos._sources import source
-from kozmos.core._differentiation import Method, gradient, hessian, jacobian, mixed_second
+from kozmos.core._differentiation import (
+    Method,
+    _checked_at,
+    _finite_jacobian,
+    _first,
+    gradient,
+    hessian,
+    jacobian,
+)
 
 Array = NDArray[np.float64]
 Lagrangian = Callable[[Array, Array, float], ArrayLike]
 
 _MAX_CONDITION = 1e12  # default limit on cond(W) in euler_lagrange_accelerations
-# Smallest singular value of W below which W is treated as zero, in units of max |p|. W is a difference of
-# momenta over a step of 1e-3 (when the Lagrangian varies on the scale of its arguments), so its rounding error
-# is about 2.2e-16 / 1e-3 * max |p| = 2e-13 max |p| with the complex-step momenta and about 1e-9 max |p| with
-# the finite ones; the thresholds sit two to three orders above that. They must not sit higher: a momentum with
-# a large velocity-independent part (a charge in a strong vector potential, L = v^2/2 + 1e10 v) has a W that is
-# small compared with max |p| and still well determined. A 1 x 1 matrix always has condition number 1, so the
-# condition number alone cannot detect a Lagrangian that is linear in the single velocity.
-_ZERO_FLOOR = {"complex": 2e-11, "finite": 1e-6}
+_PRECISION = 1e-6  # largest estimated relative error of an acceleration that is returned
 
 
 class SingularInertiaError(ValueError):
     """The matrix of second velocity derivatives of the Lagrangian is (numerically) singular."""
+
+
+class DerivativePrecisionError(ValueError):
+    """The numerical derivatives of the Lagrangian do not determine the result to the required accuracy."""
 
 
 def _vector(x: ArrayLike, name: str) -> Array:
@@ -76,13 +86,93 @@ def _d2l_dvdv(lagrangian: Lagrangian, q: Array, v: Array, t: float, method: Meth
     return hessian(lambda x: lagrangian(q, x, t), v, method)
 
 
-def _d2l_dvdq(lagrangian: Lagrangian, q: Array, v: Array, t: float, method: Method) -> Array:
-    """Matrix C[i, j] = d2 L / dv_i dq_j."""
-    return mixed_second(lambda x, y: lagrangian(y, x, t), v, q, method)
+def _terms(lagrangian: Lagrangian, q: Array, v: Array, t: float, method: Method, check: bool, plan: dict | None = None):
+    """Force F, and W, C, D with estimates of their absolute errors.
+
+    The momentum p(q, v, t) = dL/dv is differentiated once with respect to the whole state z = (q, v, t):
+    dp/dv = W, dp/dq = C, dp/dt = D. With ``check`` the Lagrangian is tested for analyticity in z first.
+    """
+    n = q.size
+    z = np.concatenate([q, v, [float(t)]])
+
+    def whole(y: Array):
+        return lagrangian(y[:n], y[n : 2 * n], y[2 * n])
+
+    if check and method == "complex":
+        _checked_at(whole, z, method)
+
+    def momentum(y: Array) -> Array:
+        return _first(lambda x: lagrangian(y[:n], x, y[2 * n]), y[n : 2 * n], method, check=False)[0]
+
+    block, block_error = _finite_jacobian(momentum, z, plan)
+    force, force_error = _first(lambda x: lagrangian(x, v, t), q, method, check=False)
+    w, w_error = block[:, n : 2 * n], block_error[:, n : 2 * n]
+    return (
+        (force, force_error),
+        (0.5 * (w + w.T), 0.5 * (w_error + w_error.T)),
+        (block[:, :n], block_error[:, :n]),
+        (block[:, 2 * n], block_error[:, 2 * n]),
+    )
 
 
-def _d2l_dvdt(lagrangian: Lagrangian, q: Array, v: Array, t: float, method: Method) -> Array:
-    return mixed_second(lambda x, y: lagrangian(q, x, y[0]), v, np.array([float(t)]), method)[:, 0]
+def _accelerations(
+    lagrangian: Lagrangian,
+    q: Array,
+    v: Array,
+    t: float,
+    method: Method,
+    max_condition: float,
+    check: bool,
+    plan: dict | None = None,
+) -> Array:
+    (force, force_error), (w, w_error), (cross, cross_error), (explicit, explicit_error) = _terms(
+        lagrangian, q, v, t, method, check, plan
+    )
+    # the condition number is taken on the matrix scaled to unit diagonal: generalized coordinates have different
+    # units (a length and an angle), and the plain condition number would only measure that
+    diagonal = np.abs(np.diagonal(w))
+    if np.any(diagonal == 0.0):
+        raise SingularInertiaError(
+            "the matrix d2L/dv dv has a zero on its diagonal: the Lagrangian is linear in a velocity or does not "
+            "contain it (constraints, gauge freedom, a first-order Lagrangian), and the Euler-Lagrange equations "
+            "cannot be solved for the accelerations"
+        )
+    scale = np.sqrt(diagonal)
+    outer = np.outer(scale, scale)
+    cond = float(np.linalg.cond(w / outer))
+    if not np.isfinite(cond) or cond > max_condition:
+        raise SingularInertiaError(
+            f"the matrix d2L/dv dv is singular (condition number {cond:.3g} > {max_condition:.3g} after scaling to "
+            "unit diagonal): the Euler-Lagrange equations cannot be solved for the accelerations"
+        )
+    inverse = np.linalg.inv(w / outer) / outer
+    a = inverse @ (force - cross @ v - explicit)
+    # propagate the error estimates: delta a = |W^-1| (dF + dC |v| + dD + dW |a|)
+    size = np.abs(inverse) @ (np.abs(force) + np.abs(cross) @ np.abs(v) + np.abs(explicit))
+    error = np.abs(inverse) @ (force_error + cross_error @ np.abs(v) + explicit_error + w_error @ np.abs(a))
+    # Coordinates have different units, so their accelerations are compared after multiplication by
+    # sqrt(W_ii): sqrt(W_ii) a_i has the unit of sqrt(energy) / time for every coordinate. A component that
+    # vanishes by symmetry is allowed an error of a thousandth of the tolerance on that common scale.
+    weight = np.abs(a) + size
+    allowed = _PRECISION * (weight + 1e-3 * float(np.max(scale * weight)) / scale)
+    # At an equilibrium every term vanishes and there is nothing to compare with. The derivatives of the Lagrangian
+    # are themselves known no better than about 1e-11 |L| / max(1, |q_j|), so an acceleration is allowed that
+    # rounding level when all the terms lie at or below it. Only with the complex step, where the force dL/dq is
+    # exact: with finite differences a force that small against the Lagrangian is not determined at all.
+    with np.errstate(all="ignore"):
+        level = abs(float(np.real(lagrangian(q, v, t))))
+    rounding = 1e-10 * (np.abs(inverse) @ (level / np.maximum(1.0, np.abs(q))))
+    if method == "complex" and float(np.max(scale * weight)) <= 1e3 * float(np.max(scale * rounding)):
+        allowed = allowed + rounding
+    if np.any(error > allowed):
+        worst = int(np.argmax(error / np.where(allowed > 0.0, allowed, 1e-300)))
+        raise DerivativePrecisionError(
+            f"the acceleration of coordinate {worst} is known to {error[worst]:.2e} only, against terms of size "
+            f"{size[worst]:.2e} (allowed fraction {_PRECISION:.0e}). The numerical derivatives of the Lagrangian are "
+            "too noisy at this state: its terms differ by many orders of magnitude, or a coordinate is far from "
+            "its natural scale. Rescale the coordinates (for example to units in which the state is of order one)"
+        )
+    return a
 
 
 @source(
@@ -208,9 +298,9 @@ def inertia_matrix(
 
     Validity
     --------
-    Four-point central difference of the complex-step gradient: about 1e-12 relative for a smooth
-    Lagrangian (about 1e-9 with ``method="finite"``). The Euler-Lagrange equations can be solved for the
-    accelerations only where W is non-singular.
+    Finite difference of the complex-step gradient with an error estimate: about 1e-12 relative for a smooth
+    Lagrangian of unit scale (about 1e-9 with ``method="finite"``); ValueError if no step determines it. The
+    Euler-Lagrange equations can be solved for the accelerations only where W is non-singular.
 
     Verification
     ------------
@@ -313,10 +403,12 @@ def euler_lagrange_accelerations(
     Raises
     ------
     SingularInertiaError
-        If cond(W) > ``max_condition`` (default 1e12), or if the smallest singular value of W is not above the
-        rounding floor 2e-11 max|p| (1e-6 max|p| for ``method="finite"``; this catches a Lagrangian linear in
-        the velocity, for which W is zero and a 1 x 1 matrix has condition number 1). Typical causes:
-        constraints, gauge freedom, a first-order Lagrangian.
+        If W has a zero on its diagonal, or if its condition number after scaling to unit diagonal exceeds
+        ``max_condition`` (default 1e12). Typical causes: constraints, gauge freedom, a first-order Lagrangian.
+    DerivativePrecisionError
+        If the error estimates of the numerical derivatives, propagated to the accelerations, exceed 1e-6 of
+        the terms that make them up. This happens when the terms of the Lagrangian differ by many orders of
+        magnitude or a coordinate is far from its natural scale; the remedy is to rescale the coordinates.
 
     References
     ----------
@@ -324,9 +416,11 @@ def euler_lagrange_accelerations(
 
     Validity
     --------
-    Mixed derivatives are central differences of complex-step gradients: relative error about 1e-12.
-    The singularity test is a numerical threshold: a matrix W with a genuine singular value below the floor
-    (for example a tiny mass 1e-10 together with momenta of order one) is reported as singular.
+    The momentum dL/dv (complex step) is differentiated once with respect to (q, v, t) by finite differences;
+    relative error about 1e-12 at unit scale. Measured in SI units: a planet (1e27 kg at 7.8e11 m) 1e-16,
+    the polar Kepler problem 4e-14, an electron in a Coulomb field 1e-13, a relativistic particle at
+    1 - v/c = 1e-6 5e-9. The singularity test uses the condition number of W scaled to unit diagonal, so
+    that coordinates of different units (a length and an angle) do not count as near-singular.
     A Lagrangian with a singular W needs the Hamiltonian constraint analysis, which is not implemented.
 
     Verification
@@ -335,21 +429,7 @@ def euler_lagrange_accelerations(
     pendulum and the charged particle; singular case raises.
     """
     q_arr, v_arr = _state(q, v)
-    w = _d2l_dvdv(lagrangian, q_arr, v_arr, t, method)
-    singular_values = np.linalg.svd(w, compute_uv=False)
-    p_scale = float(np.max(np.abs(_dl_dv(lagrangian, q_arr, v_arr, t, method))))
-    floor = _ZERO_FLOOR[method] * p_scale
-    cond = np.inf if singular_values[-1] <= floor else float(singular_values[0] / singular_values[-1])
-    if not np.isfinite(cond) or cond > max_condition:
-        raise SingularInertiaError(
-            f"the matrix d2L/dv dv is singular (smallest singular value {singular_values[-1]:.3g}, condition "
-            f"number {cond:.3g} > {max_condition:.3g}, zero floor {floor:.3g}): the Euler-Lagrange equations "
-            "cannot be solved for the accelerations"
-        )
-    force = _dl_dq(lagrangian, q_arr, v_arr, t, method)
-    cross = _d2l_dvdq(lagrangian, q_arr, v_arr, t, method)
-    explicit = _d2l_dvdt(lagrangian, q_arr, v_arr, t, method)
-    return np.linalg.solve(w, force - cross @ v_arr - explicit)
+    return _accelerations(lagrangian, q_arr, v_arr, t, method, max_condition, True)
 
 
 @source(
@@ -403,10 +483,7 @@ def euler_lagrange_residual(
     a_arr = _vector(a, "a")
     if a_arr.size != q_arr.size:
         raise ValueError("a must have the same length as q")
-    w = _d2l_dvdv(lagrangian, q_arr, v_arr, t, method)
-    force = _dl_dq(lagrangian, q_arr, v_arr, t, method)
-    cross = _d2l_dvdq(lagrangian, q_arr, v_arr, t, method)
-    explicit = _d2l_dvdt(lagrangian, q_arr, v_arr, t, method)
+    (force, _), (w, _), (cross, _), (explicit, _) = _terms(lagrangian, q_arr, v_arr, t, method, True)
     return w @ a_arr + cross @ v_arr + explicit - force
 
 
@@ -463,8 +540,9 @@ def integrate_lagrangian(
     Validity
     --------
     The local error is controlled by rtol and atol only; conserved quantities drift at the level the tests
-    measure (see tests/unit/test_lagrangian.py), not exactly. Each right-hand side evaluation costs a few
-    dozen evaluations of the Lagrangian, so the routine is meant for small n.
+    measure (see tests/unit/test_lagrangian.py), not exactly. Measured for two coordinates: a right-hand side
+    costs about 66 evaluations of the Lagrangian with the complex step and about 860 with ``method="finite"``,
+    whose accelerations carry noise of about 1e-9 relative, so the routine is meant for small n.
 
     Verification
     ------------
@@ -478,8 +556,15 @@ def integrate_lagrangian(
     if t_arr.ndim != 1 or t_arr.size < 2 or np.any(np.diff(t_arr) <= 0.0):
         raise ValueError("times must be a strictly increasing 1-D array with at least two values")
 
+    # the Lagrangian is checked for analyticity at the first state and at the last one; in between the complex-step
+    # derivatives are used without that check (the error estimate of every acceleration is still enforced)
+    # the steps of the finite differences are chosen at the first state and reused while each still passes its
+    # check at the state where it is used; they are chosen afresh whenever one does not
+    plan: dict = {}
+    _accelerations(lagrangian, q0_arr, v0_arr, float(t_arr[0]), method, max_condition, True, plan)
+
     def rhs(t: float, y: Array) -> Array:
-        a = euler_lagrange_accelerations(lagrangian, y[:n], y[n:], t, method, max_condition)
+        a = _accelerations(lagrangian, y[:n], y[n:], t, method, max_condition, False, plan)
         return np.concatenate([y[n:], a])
 
     solution = solve_ivp(
@@ -493,6 +578,7 @@ def integrate_lagrangian(
     )
     if not solution.success:
         raise RuntimeError(f"integration failed: {solution.message}")
+    _accelerations(lagrangian, solution.y[:n, -1], solution.y[n:, -1], float(t_arr[-1]), method, max_condition, True)
     return solution.y[:n].T, solution.y[n:].T
 
 

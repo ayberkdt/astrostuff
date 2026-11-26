@@ -212,7 +212,7 @@ def test_fsigma8():
     reference = np.array([_lcdm_integral_slope(z) * 0.8 * _lcdm_integral_growth(z, LCDM) for z in Z])
     # measured maximum relative difference 3.7e-11 (the central difference in the reference slope)
     assert np.max(np.abs(growth.fsigma8(Z, LCDM, 0.8) / reference - 1.0)) < 1e-9
-    assert growth.fsigma8(0.0, LCDM, 0.8) == pytest.approx(reference[0], rel=1e-9)
+    assert growth.fsigma8(0.0, LCDM, 0.8) == pytest.approx(reference[0], rel=1e-9, abs=0)
 
 
 # --- independent integration of the growth equation in the scale factor ------------------------------------------

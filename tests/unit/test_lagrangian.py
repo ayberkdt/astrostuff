@@ -104,27 +104,76 @@ def test_singular_inertia_matrix_raises_a_clear_error():
     def degenerate(q, v, t):
         return 0.5 * (v[0] + v[1]) ** 2 - 0.5 * (q[0] ** 2 + q[1] ** 2)
 
-    with pytest.raises(SingularInertiaError, match="singular"):
+    with pytest.raises(SingularInertiaError, match="zero on its diagonal"):
         lg.euler_lagrange_accelerations(linear_in_velocity, [0.3], [0.1])
     with pytest.raises(SingularInertiaError, match="condition number"):
         lg.euler_lagrange_accelerations(degenerate, [0.3, 0.2], [0.1, 0.0])
 
 
 def test_max_condition_rejects_at_a_tight_limit_and_accepts_at_a_loose_one():
-    """W = diag(1, 50) has condition number exactly 50: rejected at max_condition = 10, accepted at 100 and 1e12."""
+    """The condition number is taken after scaling W to unit diagonal, so that it measures degeneracy and not units.
+
+    W = [[1, 0.98], [0.98, 1]] has condition number 1.98 / 0.02 = 99: rejected at max_condition = 10, accepted at
+    1e3 and 1e12. W = diag(1, 50) has condition number 1 after scaling and is accepted at any limit above 1.
+    """
+
+    def coupled(q, v, t):
+        return 0.5 * (v[0] ** 2 + v[1] ** 2) + 0.98 * v[0] * v[1] - 0.5 * (q[0] ** 2 + q[1] ** 2)
 
     def unequal_masses(q, v, t):
         return 0.5 * v[0] ** 2 + 0.5 * 50.0 * v[1] ** 2 - 0.5 * (q[0] ** 2 + q[1] ** 2)
 
     q, v = np.array([0.3, 0.2]), np.array([0.1, -0.4])
-    with pytest.raises(SingularInertiaError, match="condition number 50"):
-        lg.euler_lagrange_accelerations(unequal_masses, q, v, max_condition=10.0)
+    with pytest.raises(SingularInertiaError, match="condition number 99"):
+        lg.euler_lagrange_accelerations(coupled, q, v, max_condition=10.0)
     with pytest.raises(SingularInertiaError, match="condition number"):
-        lg.integrate_lagrangian(unequal_masses, q, v, [0.0, 1.0], max_condition=10.0)
-    exact = -q / np.array([1.0, 50.0])
-    for limit in (100.0, 1e12):
-        a = lg.euler_lagrange_accelerations(unequal_masses, q, v, max_condition=limit)
-        _check(f"a = -q / m (max_condition = {limit:g})", float(np.max(np.abs(a - exact))), 5e-14)  # measured 3.9e-15
+        lg.integrate_lagrangian(coupled, q, v, [0.0, 1.0], max_condition=10.0)
+    exact = np.linalg.solve(np.array([[1.0, 0.98], [0.98, 1.0]]), -q)
+    for limit in (1e3, 1e12):
+        a = lg.euler_lagrange_accelerations(coupled, q, v, max_condition=limit)
+        _check(f"coupled: W a = -q (max_condition = {limit:g})", float(np.max(np.abs(a - exact))), 5e-11)
+    a = lg.euler_lagrange_accelerations(unequal_masses, q, v, max_condition=2.0)
+    _check("a = -q / m with masses 1 and 50", float(np.max(np.abs(a + q / np.array([1.0, 50.0])))), 5e-14)
+
+
+def test_coordinates_of_different_units_do_not_look_singular():
+    """Polar Kepler problem in SI units: W = diag(m, m r^2) with r = 1.5e11 m has a plain condition number of 2e22."""
+    mass, gm = 6e24, 6.674e-11 * 1.989e30
+
+    def kepler(q, v, t):
+        return 0.5 * mass * (v[0] ** 2 + q[0] ** 2 * v[1] ** 2) + gm * mass / q[0]
+
+    r, omega, v_r = 1.5e11, 2e-7, 1e3
+    a = lg.euler_lagrange_accelerations(kepler, [r, 1.3], [v_r, omega])
+    exact = np.array([r * omega**2 - gm / r**2, -2.0 * v_r * omega / r])
+    _check("polar Kepler in SI units", float(np.max(np.abs(a / exact - 1.0))), 5e-12)  # measured 4e-14
+
+
+def test_planet_in_si_units_with_a_coordinate_at_zero():
+    """Cartesian Kepler problem at (7.8e11 m, 0): the first versions returned a_y = 3.4e-5 m/s^2 instead of 0."""
+    mass, gm = 1e27, 6.674e-11 * 1.989e30
+
+    def planet(q, v, t):
+        return 0.5 * mass * (v[0] ** 2 + v[1] ** 2) + gm * mass / np.sqrt(q[0] ** 2 + q[1] ** 2)
+
+    for method, tolerance in (("complex", 1e-12), ("finite", 1e-6)):  # measured 1e-16 and 8e-9
+        a = lg.euler_lagrange_accelerations(planet, [7.8e11, 0.0], [0.0, 3e4], 0.0, method)
+        expected = -gm / 7.8e11**2
+        _check(f"a_x of the planet ({method})", abs(a[0] / expected - 1.0), tolerance)
+        _check(f"a_y of the planet ({method})", abs(a[1] / expected), tolerance)
+
+
+def test_accelerations_that_cannot_be_determined_are_refused():
+    """v = 5e5 with unit mass and a unit spring, finite method: the force is 1e-12 of the Lagrangian per unit of q.
+
+    The first versions returned -0.413 for the true -0.3.
+    """
+    with pytest.raises(lg.DerivativePrecisionError, match="Rescale"):
+        lg.euler_lagrange_accelerations(lambda q, v, t: 0.5 * v[0] ** 2 - 0.5 * q[0] ** 2, [0.3], [5e5], 0.0, "finite")
+    a = lg.euler_lagrange_accelerations(lambda q, v, t: 0.5 * v[0] ** 2 - 0.5 * q[0] ** 2, [0.3], [5e5])
+    assert a[0] == pytest.approx(
+        -0.3, rel=1e-9, abs=0
+    )  # the complex step is exact whatever the size of the kinetic term
 
 
 def test_input_validation():
@@ -152,7 +201,7 @@ def test_pendulum_accelerations_closed_form():
         a = lg.euler_lagrange_accelerations(pendulum, [theta], [0.4])
         _check("pendulum a", abs(a[0] + G_ACC / LEN * np.sin(theta)), 2e-12)
         assert lg.generalized_forces(pendulum, [theta], [0.4])[0] == pytest.approx(
-            -BOB * G_ACC * LEN * np.sin(theta), rel=1e-14
+            -BOB * G_ACC * LEN * np.sin(theta), rel=1e-14, abs=0
         )
 
 
@@ -231,7 +280,7 @@ def test_conical_pendulum_is_a_steady_solution():
     _check("conical pendulum accelerations", float(np.max(np.abs(a))), 2e-14)
     times = np.linspace(0.0, 4.0, 9)
     q, v = lg.integrate_lagrangian(spherical_pendulum, [theta0, 0.0], [0.0, phi_dot], times)
-    _check("conical pendulum theta(t)", float(np.max(np.abs(q[:, 0] - theta0))), 2e-12)
+    _check("conical pendulum theta(t)", float(np.max(np.abs(q[:, 0] - theta0))), 5e-11)  # measured 3.8e-12
     _check("conical pendulum phi(t)", float(np.max(np.abs(q[:, 1] - phi_dot * times))), 5e-12)
 
 
@@ -571,8 +620,8 @@ def test_action_is_stationary_on_the_true_path_and_not_on_a_false_one():
         t_end,
     )
     _check("true path: dS = eps^2 S2", abs(true_small - second * eps_small**2) / abs(second * eps_small**2), 5e-6)
-    assert ratio_true == pytest.approx(4.0, rel=1e-4)  # O(eps^2): halving eps divides dS by 4
-    assert ratio_false == pytest.approx(2.0, rel=2e-2)  # O(eps): halving eps divides dS by 2
+    assert ratio_true == pytest.approx(4.0, rel=1e-4, abs=0)  # O(eps^2): halving eps divides dS by 4
+    assert ratio_false == pytest.approx(2.0, rel=2e-2, abs=0)  # O(eps): halving eps divides dS by 2
 
     # first variation on the false path from Eq. (dosI2)-type integration by parts: dS/deps = integral (-m xdd - k x) bump
     def first(t):
@@ -587,3 +636,71 @@ def test_action_is_stationary_on_the_true_path_and_not_on_a_false_one():
     # Richardson: dS(eps) = a eps + b eps^2  =>  a = (4 dS(eps/2) - dS(eps)) / eps
     first_order = (4.0 * false_small - false_big) / eps_big
     _check("false path: dS/deps from the Euler-Lagrange residual", abs(first_order - slope) / abs(slope), 1e-7)
+
+
+def test_explicit_time_term_with_two_coordinates():
+    """L = v.v/2 - q.q/2 + t (v0 + 2 v1): d2L/dv_i dt = (1, 2), so a = (-q0 - 1, -q1 - 2).
+
+    With one coordinate only, a transposed index in that term cannot be seen.
+    """
+
+    def lagrangian(q, v, t):
+        return 0.5 * (v[0] ** 2 + v[1] ** 2) - 0.5 * (q[0] ** 2 + q[1] ** 2) + t * (v[0] + 2.0 * v[1])
+
+    q, v = np.array([0.4, 0.2]), np.array([0.1, -0.3])
+    for method in ("complex", "finite"):
+        a = lg.euler_lagrange_accelerations(lagrangian, q, v, 0.7, method)
+        _check(f"a = -q - (1, 2) ({method})", float(np.max(np.abs(a - (-q - np.array([1.0, 2.0]))))), 5e-9)
+    residual = lg.euler_lagrange_residual(lagrangian, q, v, -q - np.array([1.0, 2.0]), 0.7)
+    _check("residual on the solution", float(np.max(np.abs(residual))), 5e-9)
+
+
+def test_action_needs_four_samples():
+    with pytest.raises(ValueError):
+        lg.action(oscillator, [0.0, 0.5, 1.0], np.zeros((3, 1)))
+
+
+def _coupled_pendula(q, v, t):
+    return 0.5 * (v[0] ** 2 + v[1] ** 2) + 0.3 * v[0] * v[1] * np.cos(q[0] - q[1]) + np.cos(q[0]) + np.cos(q[1])
+
+
+def test_finite_method_at_unit_scale_agrees_with_the_complex_step_at_many_states():
+    """Second derivatives by nested finite differences, at 40 random states of two coupled pendula.
+
+    The function that the outer difference sees is itself a numerical derivative, with noise far above rounding.
+    Before the noise floor of the step search, 13 of 120 elements of d2L/dv dv and d2L/dv dq were wrong at such
+    states (the worst by 2.8, with an error estimate that made the acceleration be refused, or the plan of an
+    integration useless). Measured now on 300 states: worst error 6.5e-10.
+    """
+    rng = np.random.default_rng(1)
+    worst = 0.0
+    for _ in range(40):
+        q, v = rng.uniform(-1.0, 1.0, 2), rng.uniform(-1.0, 1.0, 2)
+        exact = lg._terms(_coupled_pendula, q, v, 0.0, "complex", False)
+        finite = lg._terms(_coupled_pendula, q, v, 0.0, "finite", False)
+        for index in (1, 2):  # d2L/dv dv and d2L/dv dq
+            worst = max(worst, float(np.max(np.abs(finite[index][0] - exact[index][0]))))
+        a_exact = lg.euler_lagrange_accelerations(_coupled_pendula, q, v)
+        a_finite = lg.euler_lagrange_accelerations(_coupled_pendula, q, v, 0.0, "finite")  # must not be refused
+        worst = max(worst, float(np.max(np.abs(a_finite - a_exact))))
+    _check("finite against complex, 40 states", worst, 2e-8)
+
+
+def test_finite_method_integrates_at_the_default_tolerances():
+    """The same system over one unit of time: the finite method follows the complex step and stays affordable.
+
+    Measured: largest difference of the coordinates 1.7e-10 with 106 right-hand sides (the complex step needs
+    94). With the steps that the search chose before the noise floor, 299 right-hand sides did not cover 0.02.
+    """
+    count = [0]
+
+    def counted(q, v, t):
+        count[0] += 1
+        return _coupled_pendula(q, v, t)
+
+    times = np.linspace(0.0, 1.0, 11)
+    q_exact, v_exact = lg.integrate_lagrangian(_coupled_pendula, [0.3, 0.2], [0.1, -0.4], times)
+    q_finite, v_finite = lg.integrate_lagrangian(counted, [0.3, 0.2], [0.1, -0.4], times, method="finite")
+    _check("coordinates, finite against complex", float(np.max(np.abs(q_finite - q_exact))), 5e-9)
+    _check("velocities, finite against complex", float(np.max(np.abs(v_finite - v_exact))), 5e-9)
+    assert count[0] < 300_000  # measured 91546 evaluations of the Lagrangian

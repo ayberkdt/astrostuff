@@ -30,7 +30,7 @@ def test_background_level_unbiased():
     image, _, *_ = _field(111)
     level, rms = photometry.estimate_background(image)
     assert level == pytest.approx(200.0, abs=0.3)  # despite the stars; a plain mean would be biased
-    assert rms == pytest.approx(5.0, rel=0.1)
+    assert rms == pytest.approx(5.0, rel=0.1, abs=0)
     assert image.mean() - 200.0 > 1.0
 
 
@@ -39,7 +39,7 @@ def test_background_map_follows_slope():
     bkg_map, rms = photometry.background_map(image, cell=32)
     interior = (slice(32, -32), slice(32, -32))
     assert np.abs(bkg_map[interior] / ground[interior] - 1).max() < 0.01
-    assert np.median(rms) == pytest.approx(5.0, rel=0.15)
+    assert np.median(rms) == pytest.approx(5.0, rel=0.15, abs=0)
     # On a steep slope the variation within a cell adds to the noise: the rms map comes out larger than the true noise.
     _, rms_steep = photometry.background_map(_field(112, slope=0.3)[0], cell=32)
     assert np.median(rms_steep) > 5.5
@@ -79,7 +79,7 @@ def test_smoothing_recovers_faint_source():
 
 def test_aperture_area_and_enclosed_flux():
     flux, area = photometry.aperture_photometry(np.ones((60, 60)), [30.2], [29.7], 7.5, subpixels=9)
-    assert area[0] == pytest.approx(np.pi * 7.5**2, rel=2e-3) and flux[0] == pytest.approx(area[0])
+    assert area[0] == pytest.approx(np.pi * 7.5**2, rel=2e-3, abs=0) and flux[0] == pytest.approx(area[0])
     # For a Gaussian PSF the flux fraction within radius r is 1 − exp(−r²/2σ²).
     sigma = FWHM / 2.3548200450309493
     scene = 50.0 + detector.star_field((81, 81), [40.3], [39.8], [1e4], FWHM)
@@ -125,7 +125,7 @@ def test_close_pairs_are_deblended():
     distance = np.hypot(deblended.x[None, :] - x[:, None], deblended.y[None, :] - y[:, None]).min(axis=1)
     assert np.sum(distance < 1.0) >= 29  # every separated component is found within one pixel
     # Total flux is conserved: deblending shares pixels, it does not add or remove them.
-    assert deblended.flux.sum() == pytest.approx(single.flux.sum(), rel=1e-12)
+    assert deblended.flux.sum() == pytest.approx(single.flux.sum(), rel=1e-12, abs=0)
     assert deblended.n_pixels.sum() == single.n_pixels.sum()
 
 

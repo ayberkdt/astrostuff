@@ -492,3 +492,79 @@ def test_input_validation():
         nt.translation_generator([1.0, 0.0, 0.0])(np.zeros(4), np.zeros(4), 0.0)
     with pytest.raises(ValueError, match="same length"):
         nt.symmetry_defect(central_3d, np.zeros(3) + 1, np.zeros(3), 0.0, nt.t_translation_generator, a=np.zeros(2))
+
+
+# --------------------------------------------------------------------------------------
+# mutation-testing survivors: the evaluation point of the Jacobian, the explicit time derivative of K, the
+# velocity-dependence threshold and the size check of the rotation axis
+# --------------------------------------------------------------------------------------
+
+
+def _free_with_spring(q, v, t):
+    return 0.5 * np.sum(v * v) - 0.5 * np.sum(q * q)
+
+
+def _quadratic_generator(q, v, t):
+    """delta_s q = (q0 q1, q1^2): NONLINEAR in q, so its Jacobian depends on the point where it is evaluated."""
+    return np.array([q[0] * q[1], q[1] * q[1]])
+
+
+@pytest.mark.parametrize("method", ["complex", "finite"])
+def test_symmetry_variation_of_a_generator_nonlinear_in_q_has_a_closed_form(method):
+    """At q = (2, 3), v = (5, 7) with L = v.v/2 - q.q/2: d(delta_s q)/dt = J(q) v = (v0 q1 + q0 v1, 2 q1 v1) = (29, 42),
+    dL/dv . that = 5 * 29 + 7 * 42 = 439 and dL/dq . delta_s q = -(2 * 6 + 3 * 9) = -39, so delta_s L = 400 exactly.
+    A Jacobian taken at the point v instead of q would give 1036 - 39 = 997."""
+    q, v = np.array([2.0, 3.0]), np.array([5.0, 7.0])
+    got = nt.symmetry_variation(_free_with_spring, q, v, 0.5, _quadratic_generator, method=method)
+    assert got == pytest.approx(400.0, rel=1e-6 if method == "finite" else 1e-12, abs=0)
+    assert abs(got - 997.0) > 500.0
+
+
+def test_symmetry_defect_includes_the_explicit_time_derivative_of_the_boundary_term():
+    """K(q, t) = q0 t^2 does not depend on v, so a=None is allowed. With a zero variation the defect is
+    -dK/dt = -(t^2 v0 + 2 q0 t) = -(9 * 5 + 2 * 2 * 3) = -57 at q0 = 2, v0 = 5, t = 3; without the dK/dt term it would
+    be -45."""
+
+    def boundary(q, v, t):
+        return q[0] * t**2
+
+    def zero_generator(q, v, t):
+        return np.zeros(2)
+
+    defect = nt.symmetry_defect(
+        _free_with_spring, [2.0, 3.0], [5.0, 7.0], 3.0, zero_generator, boundary_term=boundary, a=None
+    )
+    assert defect == pytest.approx(-57.0, rel=1e-9, abs=0)
+
+
+def test_velocity_dependence_threshold_is_1e_minus_12():
+    """A generator or boundary term whose velocity derivative is 1e-11 (above the documented 1e-12, below 1e-10)
+    must demand the acceleration; one with 1e-13 (below the threshold) must not. The complex-step derivative of a
+    linear function is exact, so the derivatives are the stated numbers."""
+    q, v = np.array([1.0, 2.0]), np.array([0.3, -0.4])
+
+    def weak_generator(q, v, t):
+        return np.array([1e-11 * v[0], 0.0])
+
+    def tiny_generator(q, v, t):
+        return np.array([1e-13 * v[0], 0.0])
+
+    def weak_boundary(q, v, t):
+        return 1e-11 * v[0]
+
+    def tiny_boundary(q, v, t):
+        return 1e-13 * v[0]
+
+    with pytest.raises(ValueError, match="depends on the velocity"):
+        nt.symmetry_variation(_free_with_spring, q, v, 0.0, weak_generator)
+    with pytest.raises(ValueError, match="depends on the velocity"):
+        nt.symmetry_defect(_free_with_spring, q, v, 0.0, _quadratic_generator, boundary_term=weak_boundary)
+    nt.symmetry_variation(_free_with_spring, q, v, 0.0, tiny_generator)  # no error
+    nt.symmetry_defect(_free_with_spring, q, v, 0.0, _quadratic_generator, boundary_term=tiny_boundary)  # no error
+
+
+def test_rotation_generator_needs_exactly_three_axis_components():
+    for axis in ([1.0, 0.0], [1.0, 0.0, 0.0, 0.0], [0.0] * 6):
+        with pytest.raises(ValueError, match="three components"):
+            nt.rotation_generator(axis)
+    assert callable(nt.rotation_generator([0.0, 0.0, 1.0]))

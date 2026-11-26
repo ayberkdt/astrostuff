@@ -52,8 +52,8 @@ def test_killing_constants_are_noether_charges():
     # the source's charge is Q = K - p . delta q; with delta q = unit shift of t or phi and K = 0, Q = -p_t or -p_phi
     charge_t = noether.noether_charge(_geodesic_lagrangian, X, U, 0.0, lambda q, v, t: np.array([1.0, 0, 0, 0]))
     charge_phi = noether.noether_charge(_geodesic_lagrangian, X, U, 0.0, lambda q, v, t: np.array([0, 0, 0, 1.0]))
-    assert charge_t == pytest.approx(energy, rel=1e-13)
-    assert charge_phi == pytest.approx(-angular_momentum, rel=1e-13)
+    assert charge_t == pytest.approx(energy, rel=1e-13, abs=0)
+    assert charge_phi == pytest.approx(-angular_momentum, rel=1e-13, abs=0)
     # both shifts are symmetries (defect 0); a shift of r is not
     acceleration = geodesics.geodesic_acceleration(_kerr, X, U)
     for index, is_symmetry in ((0, True), (3, True), (1, False)):
@@ -65,7 +65,7 @@ def test_killing_constants_are_noether_charges():
 def test_energy_function_of_the_metric_lagrangian_is_half_the_norm():
     # L is homogeneous of degree 2 in the velocities, so h = p.v - L = L
     h = lagrangian.jacobi_function(_geodesic_lagrangian, X, U)
-    assert h == pytest.approx(0.5 * geodesics.tangent_norm_squared(_kerr, X, U), rel=1e-13)
+    assert h == pytest.approx(0.5 * geodesics.tangent_norm_squared(_kerr, X, U), rel=1e-13, abs=0)
 
 
 @pytest.mark.parametrize(("radius", "spin"), [(6.0, 0.0), (4.0, 0.7), (2.5, 0.95), (12.0, -0.7), (9.5, -0.95)])
@@ -84,13 +84,13 @@ def test_kerr_circular_orbit_formulas_satisfy_the_geodesic_equation(radius, spin
     g = metric(x)
     u_t = 1.0 / np.sqrt(-(g[0, 0] + 2.0 * g[0, 3] * omega + g[3, 3] * omega**2))
     u = u_t * np.array([1.0, 0.0, 0.0, omega])
-    assert geodesics.tangent_norm_squared(metric, x, u) == pytest.approx(-1.0, rel=1e-13)
+    assert geodesics.tangent_norm_squared(metric, x, u) == pytest.approx(-1.0, rel=1e-13, abs=0)
     # a circular orbit needs no radial (and no polar) acceleration: measured |a| <= 2.8e-17
     assert np.all(np.abs(geodesics.geodesic_acceleration(metric, x, u)) < 1e-13)
     energy, angular_momentum = geodesics.stationary_axisymmetric_constants(metric, x, u)
-    assert energy == pytest.approx(float(kerr.kerr_circular_orbit_specific_energy(radius, spin)), rel=1e-12)
+    assert energy == pytest.approx(float(kerr.kerr_circular_orbit_specific_energy(radius, spin)), rel=1e-12, abs=0)
     assert direction * angular_momentum == pytest.approx(
-        float(kerr.kerr_circular_orbit_specific_angular_momentum_rg(radius, spin)), rel=1e-12
+        float(kerr.kerr_circular_orbit_specific_angular_momentum_rg(radius, spin)), rel=1e-12, abs=0
     )
 
 
@@ -103,11 +103,11 @@ def test_klein_gordon_equation_follows_from_the_scalar_field_lagrangian():
     phi, phi_dot, t = 0.4, -0.25, 1.7
     expected = -3.0 * (2.0 / (3.0 * t)) * phi_dot - (-1.5 * np.exp(-1.5 * phi) + 0.6 * phi)
     result = lagrangian.euler_lagrange_accelerations(lagrangian_density, [phi], [phi_dot], t)
-    assert result[0] == pytest.approx(expected, rel=1e-11)  # measured 2.0e-14
+    assert result[0] == pytest.approx(expected, rel=1e-11, abs=0)  # measured 2.0e-14
     # the energy function is a^3 rho with the density of the scalar-field module, and it is not conserved
     potential = np.exp(-1.5 * phi) + 0.3 * phi**2
     h = lagrangian.jacobi_function(lagrangian_density, [phi], [phi_dot], t)
-    assert h == pytest.approx(t**2 * float(scalar_field.scalar_rho(phi_dot, potential)), rel=1e-13)
+    assert h == pytest.approx(t**2 * float(scalar_field.scalar_rho(phi_dot, potential)), rel=1e-13, abs=0)
 
 
 def test_cosmological_redshift_from_a_null_geodesic_of_the_flrw_metric():
@@ -136,7 +136,7 @@ def test_symplectic_integrator_agrees_with_the_lagrangian_integrator():
         _, q, v = integrators.integrate(lambda q, t: -np.sin(q), q0, v0, end / n, n, scheme="forest_ruth")
         errors.append(max(abs(q[-1, 0] - q_ref[-1, 0]), abs(v[-1, 0] - v_ref[-1, 0])))
     assert errors[1] < 1e-9  # measured 5.4e-12 (8.4e-11 with 500 steps)
-    assert errors[0] / errors[1] == pytest.approx(16.0, rel=0.1)  # fourth order; measured ratio 15.56
+    assert errors[0] / errors[1] == pytest.approx(16.0, rel=0.1, abs=0)  # fourth order; measured ratio 15.56
 
 
 def _oscillation_frequency(times, signal):
@@ -174,5 +174,5 @@ def test_kerr_epicyclic_frequencies_equal_the_oscillations_of_a_perturbed_geodes
     radial = float(kerr.kerr_radial_epicyclic_frequency_hz(mass_kg, radius, spin)) * two_pi * time_unit_s
     vertical = float(kerr.kerr_vertical_epicyclic_frequency_hz(mass_kg, radius, spin)) * two_pi * time_unit_s
     # measured relative differences: at most 4e-9 (radial) and 7e-6 (vertical, set by the sampling of the crossings)
-    assert _oscillation_frequency(x[:, 0], x[:, 1]) == pytest.approx(radial, rel=3e-5)
-    assert _oscillation_frequency(x[:, 0], x[:, 2]) == pytest.approx(vertical, rel=3e-5)
+    assert _oscillation_frequency(x[:, 0], x[:, 1]) == pytest.approx(radial, rel=3e-5, abs=0)
+    assert _oscillation_frequency(x[:, 0], x[:, 2]) == pytest.approx(vertical, rel=3e-5, abs=0)

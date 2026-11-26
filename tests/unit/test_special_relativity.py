@@ -57,21 +57,25 @@ def _random_velocity(rng: np.random.Generator, beta_max: float) -> np.ndarray:
 
 def test_lorentz_factor_closed_forms():
     assert lorentz_factor(0.0) == 1.0
-    assert lorentz_factor(0.6 * C) == pytest.approx(1.25, rel=1e-15)
-    assert lorentz_factor(0.8 * C) == pytest.approx(5.0 / 3.0, rel=1e-15)
+    assert lorentz_factor(0.6 * C) == pytest.approx(1.25, rel=1e-15, abs=0)
+    assert lorentz_factor(0.8 * C) == pytest.approx(5.0 / 3.0, rel=1e-15, abs=0)
     assert lorentz_factor(-0.6 * C) == lorentz_factor(0.6 * C)
 
 
 def test_lorentz_factor_low_velocity_limit():
     beta = np.array([1e-4, 1e-3, 1e-2])
-    # gamma = 1 + beta^2/2 + 3 beta^4/8 + ...: the difference is the next term
-    assert lorentz_factor(beta * C) == pytest.approx(1.0 + beta**2 / 2.0 + 3.0 * beta**4 / 8.0, rel=1e-15)
+    # gamma = 1 + beta^2/2 + 3 beta^4/8 + 5 beta^6/16 + 35 beta^8/128 + ... The three-term sum differs from gamma by
+    # 3.1e-13 at beta = 1e-2 (the 5 beta^6/16 term; the rel=1e-15 only ever passed thanks to the hidden absolute
+    # tolerance 1e-12 of pytest.approx). With four terms the omitted term is 2.7e-17 and the measured relative
+    # difference is 2.2e-16 (tolerance 1e-15).
+    series = 1.0 + beta**2 / 2.0 + 3.0 * beta**4 / 8.0 + 5.0 * beta**6 / 16.0
+    assert lorentz_factor(beta * C) == pytest.approx(series, rel=1e-15, abs=0)
     assert np.allclose((lorentz_factor(beta * C) - 1.0) / (beta**2 / 2.0), 1.0, atol=1e-3)
 
 
 def test_lorentz_factor_equals_cosh_of_rapidity():
     beta = np.linspace(-0.99999, 0.99999, 41)
-    assert lorentz_factor(beta * C) == pytest.approx(np.cosh(rapidity(beta * C)), rel=1e-12)
+    assert lorentz_factor(beta * C) == pytest.approx(np.cosh(rapidity(beta * C)), rel=1e-12, abs=0)
 
 
 @pytest.mark.parametrize("bad", [C, -C, 1.1 * C])
@@ -89,7 +93,7 @@ def test_rapidity_round_trip_and_additivity():
     assert rapidity(velocity_from_rapidity_m_s(phi)) == pytest.approx(phi, rel=1e-12, abs=1e-15)
     a, b = 0.3, 1.7
     composed = add_velocities_collinear_m_s(velocity_from_rapidity_m_s(a), velocity_from_rapidity_m_s(b))
-    assert rapidity(composed) == pytest.approx(a + b, rel=1e-13)
+    assert rapidity(composed) == pytest.approx(a + b, rel=1e-13, abs=0)
     assert np.all(np.abs(velocity_from_rapidity_m_s(np.linspace(-30, 30, 61))) <= C)
 
 
@@ -189,7 +193,7 @@ def test_event_at_rest_in_new_frame_moves_with_the_frame_velocity():
     moved = boost_four_vector(event, v)
     assert moved[1:] == pytest.approx(np.zeros(3), abs=1e-3)  # lengths of order 1e6 m, rounding 1e-10
     gamma = lorentz_factor(np.linalg.norm(v))
-    assert moved[0] == pytest.approx(C * t / gamma, rel=1e-13)  # proper time of the moving origin
+    assert moved[0] == pytest.approx(C * t / gamma, rel=1e-13, abs=0)  # proper time of the moving origin
 
 
 # --------------------------------------------------------------------------------------
@@ -217,17 +221,17 @@ def test_collinear_addition_never_exceeds_c():
 
 
 def test_collinear_addition_low_velocity_and_light_invariance():
-    assert add_velocities_collinear_m_s(10.0, 20.0) == pytest.approx(30.0, rel=1e-14)
+    assert add_velocities_collinear_m_s(10.0, 20.0) == pytest.approx(30.0, rel=1e-14, abs=0)
     # photon-like limit: any u added to v -> c gives c
-    assert add_velocities_collinear_m_s(C * (1 - 1e-13), 0.7 * C) == pytest.approx(C, rel=1e-12)
+    assert add_velocities_collinear_m_s(C * (1 - 1e-13), 0.7 * C) == pytest.approx(C, rel=1e-12, abs=0)
     # 0.5c + 0.5c = 0.8c
-    assert add_velocities_collinear_m_s(0.5 * C, 0.5 * C) == pytest.approx(0.8 * C, rel=1e-15)
+    assert add_velocities_collinear_m_s(0.5 * C, 0.5 * C) == pytest.approx(0.8 * C, rel=1e-15, abs=0)
 
 
 def test_vector_addition_parallel_equals_collinear_formula():
     d = _random_direction(np.random.default_rng(8))
     w = add_velocities_m_s(0.6 * C * d, 0.5 * C * d)
-    assert w == pytest.approx(add_velocities_collinear_m_s(0.6 * C, 0.5 * C) * d, rel=1e-13)
+    assert w == pytest.approx(add_velocities_collinear_m_s(0.6 * C, 0.5 * C) * d, rel=1e-13, abs=0)
     antiparallel = add_velocities_m_s(0.6 * C * d, -0.6 * C * d)
     assert np.linalg.norm(antiparallel) < 1e-6  # rounding of order c * 1e-16 / ... in m/s
 
@@ -272,15 +276,15 @@ def test_time_dilation_matches_the_boosted_event_pair():
     # two ticks of a clock at rest in S': separation (c tau, 0, 0, 0). S coordinates are obtained with boost(-v).
     in_s = boost_four_vector(np.array([C * tau, 0.0, 0.0, 0.0]), -v)
     speed = np.linalg.norm(v)
-    assert in_s[0] / C == pytest.approx(dilated_time_s(tau, speed), rel=1e-13)
-    assert proper_time_s(dilated_time_s(tau, speed), speed) == pytest.approx(tau, rel=1e-14)
-    assert np.sqrt(-spacetime_interval_squared_m2(in_s)) / C == pytest.approx(tau, rel=1e-12)
+    assert in_s[0] / C == pytest.approx(dilated_time_s(tau, speed), rel=1e-13, abs=0)
+    assert proper_time_s(dilated_time_s(tau, speed), speed) == pytest.approx(tau, rel=1e-14, abs=0)
+    assert np.sqrt(-spacetime_interval_squared_m2(in_s)) / C == pytest.approx(tau, rel=1e-12, abs=0)
 
 
 def test_time_dilation_low_velocity_limit():
     beta = 1e-3
-    assert dilated_time_s(1.0, beta * C) == pytest.approx(1.0 + beta**2 / 2.0, rel=1e-11)
-    assert dilated_time_s(2.0, 0.6 * C) == pytest.approx(2.5, rel=1e-15)
+    assert dilated_time_s(1.0, beta * C) == pytest.approx(1.0 + beta**2 / 2.0, rel=1e-11, abs=0)
+    assert dilated_time_s(2.0, 0.6 * C) == pytest.approx(2.5, rel=1e-15, abs=0)
 
 
 def test_length_contraction_matches_the_boosted_rod():
@@ -293,9 +297,9 @@ def test_length_contraction_matches_the_boosted_rod():
     t_prime = -lam_inverse[0, 1] * length0 / lam_inverse[0, 0] / C
     end_in_s = lam_inverse @ np.array([C * t_prime, length0, 0.0, 0.0])
     assert end_in_s[0] == pytest.approx(0.0, abs=1e-12)
-    assert end_in_s[1] == pytest.approx(contracted_length_m(length0, speed), rel=1e-14)
-    assert contracted_length_m(length0, speed) == pytest.approx(0.6 * length0, rel=1e-15)
-    assert contracted_length_m(length0, 1e-3 * C) == pytest.approx(length0 * (1.0 - 0.5e-6), rel=1e-9)
+    assert end_in_s[1] == pytest.approx(contracted_length_m(length0, speed), rel=1e-14, abs=0)
+    assert contracted_length_m(length0, speed) == pytest.approx(0.6 * length0, rel=1e-15, abs=0)
+    assert contracted_length_m(length0, 1e-3 * C) == pytest.approx(length0 * (1.0 - 0.5e-6), rel=1e-9, abs=0)
 
 
 # --------------------------------------------------------------------------------------
@@ -329,11 +333,13 @@ def test_doppler_and_aberration_match_the_boosted_null_vector():
 
 def test_doppler_longitudinal_and_transverse_limits():
     beta = 0.6
-    assert doppler_factor(beta * C, 0.0) == pytest.approx(np.sqrt((1 + beta) / (1 - beta)), rel=1e-15)  # = 2
-    assert doppler_factor(beta * C, np.pi) == pytest.approx(np.sqrt((1 - beta) / (1 + beta)), rel=1e-15)  # = 1/2
+    assert doppler_factor(beta * C, 0.0) == pytest.approx(np.sqrt((1 + beta) / (1 - beta)), rel=1e-15, abs=0)  # = 2
+    assert doppler_factor(beta * C, np.pi) == pytest.approx(np.sqrt((1 - beta) / (1 + beta)), rel=1e-15, abs=0)  # = 1/2
     gamma = 1.25
-    assert doppler_factor(beta * C, np.pi / 2) == pytest.approx(1.0 / gamma, rel=1e-15)  # transverse redshift
-    assert doppler_factor_source_frame(beta * C, np.pi / 2) == pytest.approx(gamma, rel=1e-15)  # transverse blueshift
+    assert doppler_factor(beta * C, np.pi / 2) == pytest.approx(1.0 / gamma, rel=1e-15, abs=0)  # transverse redshift
+    assert doppler_factor_source_frame(beta * C, np.pi / 2) == pytest.approx(
+        gamma, rel=1e-15, abs=0
+    )  # transverse blueshift
     assert doppler_factor(0.0, 1.234) == 1.0
     small = 1e-6
     assert doppler_factor(small * C, 0.9) == pytest.approx(1.0 + small * np.cos(0.9), abs=2e-12)
@@ -342,11 +348,11 @@ def test_doppler_longitudinal_and_transverse_limits():
 def test_aberration_limits():
     beta = 0.6
     assert aberrated_angle_rad(beta * C, 0.7) == pytest.approx(
-        np.arctan2(np.sin(0.7), 1.25 * (np.cos(0.7) + beta)), rel=1e-15
+        np.arctan2(np.sin(0.7), 1.25 * (np.cos(0.7) + beta)), rel=1e-15, abs=0
     )
-    assert aberrated_angle_rad(0.0, 1.1) == pytest.approx(1.1, rel=1e-15)
+    assert aberrated_angle_rad(0.0, 1.1) == pytest.approx(1.1, rel=1e-15, abs=0)
     # emission at right angles in the source frame: cos(theta) = beta
-    assert np.cos(aberrated_angle_rad(beta * C, np.pi / 2)) == pytest.approx(beta, rel=1e-15)
+    assert np.cos(aberrated_angle_rad(beta * C, np.pi / 2)) == pytest.approx(beta, rel=1e-15, abs=0)
     # forward beaming: theta < theta' for 0 < theta' < pi
     angles = np.linspace(0.1, 3.0, 20)
     assert np.all(aberrated_angle_rad(beta * C, angles) < angles)
@@ -366,7 +372,7 @@ def test_four_momentum_norm_is_minus_mass_squared_times_c_squared():
     for _ in range(200):
         v = _random_velocity(rng, 0.99)
         p = four_momentum(m, v)
-        assert minkowski_inner_product(p, p) == pytest.approx(-((m * C) ** 2), rel=2e-13)
+        assert minkowski_inner_product(p, p) == pytest.approx(-((m * C) ** 2), rel=2e-13, abs=0)
 
 
 def test_four_momentum_of_a_particle_at_rest_boosts_to_four_momentum_of_the_boost_velocity():
@@ -375,7 +381,7 @@ def test_four_momentum_of_a_particle_at_rest_boosts_to_four_momentum_of_the_boos
     rest = four_momentum(m, np.zeros(3))
     assert rest == pytest.approx([m * C, 0.0, 0.0, 0.0], abs=0.0)
     # the particle moves with v in S, i.e. S' = rest frame moves with v: S coordinates from boost(-v)
-    assert boost_four_vector(rest, -v) == pytest.approx(four_momentum(m, v), rel=1e-13)
+    assert boost_four_vector(rest, -v) == pytest.approx(four_momentum(m, v), rel=1e-13, abs=0)
 
 
 def test_energy_momentum_relation_and_limits():
@@ -385,13 +391,13 @@ def test_energy_momentum_relation_and_limits():
         v = _random_velocity(rng, 0.999)
         speed = np.linalg.norm(v)
         p = relativistic_momentum(m, v)
-        assert np.linalg.norm(p) == pytest.approx(lorentz_factor(speed) * m * speed, rel=1e-13)
-        assert energy_from_momentum_j(m, np.linalg.norm(p)) == pytest.approx(total_energy_j(m, speed), rel=1e-13)
-        assert total_energy_j(m, speed) == pytest.approx(C * four_momentum(m, v)[0], rel=1e-14)
+        assert np.linalg.norm(p) == pytest.approx(lorentz_factor(speed) * m * speed, rel=1e-13, abs=0)
+        assert energy_from_momentum_j(m, np.linalg.norm(p)) == pytest.approx(total_energy_j(m, speed), rel=1e-13, abs=0)
+        assert total_energy_j(m, speed) == pytest.approx(C * four_momentum(m, v)[0], rel=1e-14, abs=0)
     assert total_energy_j(m, 0.0) == m * C**2
-    assert energy_from_momentum_j(0.0, 3.0e-20) == pytest.approx(3.0e-20 * C, rel=1e-15)  # photon
+    assert energy_from_momentum_j(0.0, 3.0e-20) == pytest.approx(3.0e-20 * C, rel=1e-15, abs=0)  # photon
     assert energy_from_momentum_j(m, 0.0) == m * C**2
-    assert relativistic_momentum(m, np.array([10.0, 0.0, 0.0])) == pytest.approx([m * 10.0, 0.0, 0.0], rel=1e-12)
+    assert relativistic_momentum(m, np.array([10.0, 0.0, 0.0])) == pytest.approx([m * 10.0, 0.0, 0.0], rel=1e-12, abs=0)
 
 
 def test_kinetic_energy_limits():
@@ -399,10 +405,10 @@ def test_kinetic_energy_limits():
     beta = np.array([1e-5, 1e-3, 1e-2])
     newtonian = 0.5 * m * (beta * C) ** 2
     # relative difference from the Newtonian value is 3 beta^2 / 4 to leading order
-    assert kinetic_energy_j(m, beta * C) / newtonian - 1.0 == pytest.approx(0.75 * beta**2, rel=1e-3)
+    assert kinetic_energy_j(m, beta * C) / newtonian - 1.0 == pytest.approx(0.75 * beta**2, rel=1e-3, abs=0)
     fast = 0.99
-    assert kinetic_energy_j(m, fast * C) == pytest.approx(total_energy_j(m, fast * C) - m * C**2, rel=1e-12)
-    assert kinetic_energy_j(m, 0.6 * C) == pytest.approx(0.25 * m * C**2, rel=1e-15)  # gamma = 1.25
+    assert kinetic_energy_j(m, fast * C) == pytest.approx(total_energy_j(m, fast * C) - m * C**2, rel=1e-12, abs=0)
+    assert kinetic_energy_j(m, 0.6 * C) == pytest.approx(0.25 * m * C**2, rel=1e-15, abs=0)  # gamma = 1.25
 
 
 # --------------------------------------------------------------------------------------
@@ -417,7 +423,7 @@ def test_invariant_mass_of_two_photons():
     n2 = np.array([np.cos(alpha), np.sin(alpha), 0.0])
     photons = np.array([e1 / C * np.concatenate([[1.0], n1]), e2 / C * np.concatenate([[1.0], n2])])
     expected = np.sqrt(2.0 * e1 * e2 * (1.0 - np.cos(alpha))) / C**2
-    assert invariant_mass_kg(photons) == pytest.approx(expected, rel=1e-13)
+    assert invariant_mass_kg(photons) == pytest.approx(expected, rel=1e-13, abs=0)
 
 
 def test_invariant_mass_symmetric_pion_decay_closed_form():
@@ -426,20 +432,20 @@ def test_invariant_mass_symmetric_pion_decay_closed_form():
     half = alpha / 2.0
     p1 = energy / C * np.array([1.0, np.sin(half), np.cos(half), 0.0])
     p2 = energy / C * np.array([1.0, -np.sin(half), np.cos(half), 0.0])
-    assert invariant_mass_kg(np.array([p1, p2])) == pytest.approx(2.0 * energy * np.sin(half) / C**2, rel=1e-13)
+    assert invariant_mass_kg(np.array([p1, p2])) == pytest.approx(2.0 * energy * np.sin(half) / C**2, rel=1e-13, abs=0)
 
 
 def test_invariant_mass_is_invariant_under_boosts_and_reduces_to_the_rest_mass():
     rng = np.random.default_rng(14)
     m = 1.0e-27
     single = four_momentum(m, np.array([0.3 * C, 0.1 * C, 0.0]))
-    assert invariant_mass_kg(single[None, :]) == pytest.approx(m, rel=1e-14)
+    assert invariant_mass_kg(single[None, :]) == pytest.approx(m, rel=1e-14, abs=0)
     particles = np.array([four_momentum(m, _random_velocity(rng, 0.9)) for _ in range(5)])
     reference = invariant_mass_kg(particles)
     for _ in range(20):
         boost = _random_velocity(rng, 0.99)
         boosted = np.array([boost_four_vector(p, boost) for p in particles])
-        assert invariant_mass_kg(boosted) == pytest.approx(reference, rel=1e-10)
+        assert invariant_mass_kg(boosted) == pytest.approx(reference, rel=1e-10, abs=0)
     # total energy in the centre-of-momentum frame is at least the sum of the rest masses
     assert reference >= 5.0 * m
 
@@ -479,4 +485,85 @@ def test_signed_speed_equals_a_rotated_angle_for_the_doppler_factor():
     # along +x seen at the angle pi - theta. Exact identity of the closed form (measured difference 0, tolerance 1e-15).
     beta, theta = 0.6, 0.4
     forward = doppler_factor(beta * C, np.pi - theta)
-    assert forward == pytest.approx(1.0 / (1.0 / np.sqrt(1 - beta**2) * (1.0 + beta * np.cos(theta))), rel=1e-15)
+    assert forward == pytest.approx(1.0 / (1.0 / np.sqrt(1 - beta**2) * (1.0 + beta * np.cos(theta))), rel=1e-15, abs=0)
+
+
+# --------------------------------------------------------------------------------------
+# mutation-testing survivors: units of the invariant mass, the rounding band, batches, v = c and NaN
+# --------------------------------------------------------------------------------------
+
+M_ELECTRON = 9.1093837015e-31  # kg, only a convenient SI scale of 1e-30
+
+
+def test_invariant_mass_of_particles_at_rest_is_in_kilograms():
+    """Two electrons at rest: P = (2 m c, 0, 0, 0), M = 2 m = 1.8e-30 kg. A missing division by c would return
+    5.5e-22; a pytest.approx with rel only would not notice it (default absolute tolerance 1e-12), so abs=0."""
+    p = four_momentum(M_ELECTRON, np.zeros(3))
+    assert invariant_mass_kg(np.stack([p, p])) == pytest.approx(2.0 * M_ELECTRON, rel=1e-14, abs=0)
+    assert invariant_mass_kg(np.stack([p, p])) < 1e-29
+    # moving back to back with equal speed: M = 2 gamma m
+    v = 0.6 * C
+    pa, pb = four_momentum(M_ELECTRON, [v, 0, 0]), four_momentum(M_ELECTRON, [-v, 0, 0])
+    assert invariant_mass_kg(np.stack([pa, pb])) == pytest.approx(2.0 * 1.25 * M_ELECTRON, rel=1e-14, abs=0)
+
+
+def _almost_null_pair(excess: float) -> np.ndarray:
+    """A single four-momentum (1, 1 + excess, 0, 0): -P.P = 1 - (1 + excess)^2 = -(2 excess + excess^2) < 0."""
+    return np.array([[[1.0, 1.0 + excess, 0.0, 0.0]]])
+
+
+def test_invariant_mass_clips_a_slightly_negative_square_to_zero():
+    """Documented: a -P.P negative by less than 1e-12 (P^0)^2 is set to zero. Here -P.P = -4e-13 (measured below):
+    the result is exactly 0, not NaN (no clipping) and not an error."""
+    p = _almost_null_pair(2e-13)
+    s = -minkowski_inner_product(p[0, 0], p[0, 0])
+    assert -1e-12 < s < -3e-13  # measured -4.0e-13
+    result = invariant_mass_kg(p)
+    assert result.shape == (1,)
+    assert result[0] == 0.0
+
+
+def test_invariant_mass_raises_for_a_spacelike_sum_beyond_the_1e_minus_12_band():
+    """-P.P = -4e-11 is 40 times the documented band 1e-12 (P^0)^2 and 2.5 times smaller than 1e-10, so a band
+    widened to 1e-10 would accept it; it must raise."""
+    p = _almost_null_pair(2e-11)
+    assert -minkowski_inner_product(p[0, 0], p[0, 0]) == pytest.approx(-4e-11, rel=1e-3, abs=0)
+    with pytest.raises(ValueError, match="spacelike"):
+        invariant_mass_kg(p)
+    with pytest.raises(ValueError, match="spacelike"):
+        invariant_mass_kg(_almost_null_pair(1e-11))  # -2e-11, still beyond the band
+    # and the band scales with (P^0)^2: the same relative excess at P^0 = 1e-20 still raises
+    with pytest.raises(ValueError, match="spacelike"):
+        invariant_mass_kg(1e-20 * _almost_null_pair(2e-11))
+
+
+def test_four_momentum_of_a_batch_of_velocities_equals_the_single_results():
+    """A (2, 3) batch with different speeds (0.6 c and 0.8 c) against the two single calls; gamma depends on the
+    LAST axis only (a sum over the first axis would mix the two particles)."""
+    v = np.array([[0.6 * C, 0.0, 0.0], [0.0, 0.0, 0.8 * C]])
+    batch = four_momentum(M_ELECTRON, v)
+    assert batch.shape == (2, 4)
+    for i in range(2):
+        assert np.array_equal(batch[i], four_momentum(M_ELECTRON, v[i]))
+    assert batch[0, 0] == pytest.approx(1.25 * M_ELECTRON * C, rel=1e-15, abs=0)
+    assert batch[1, 0] == pytest.approx(M_ELECTRON * C / 0.6, rel=1e-15, abs=0)
+    masses = np.array([M_ELECTRON, 3.0 * M_ELECTRON])
+    mixed = four_momentum(masses, v)
+    assert np.array_equal(mixed[1], four_momentum(3.0 * M_ELECTRON, v[1]))
+    deep = four_momentum(M_ELECTRON, np.stack([v, v[::-1]]))  # shape (2, 2, 3)
+    assert deep.shape == (2, 2, 4) and np.array_equal(deep[1, 0], batch[1])
+
+
+@pytest.mark.parametrize("bad", [[C, 0.0, 0.0], [0.0, -C, 0.0], [C / np.sqrt(3.0)] * 3, [np.nan, 0.0, 0.0]])
+def test_four_momentum_and_boost_matrix_refuse_the_speed_of_light_and_nan(bad):
+    """beta^2 = 1 exactly (or NaN) is outside the open interval beta^2 < 1: both functions must raise."""
+    with pytest.raises(ValueError, match="smaller than the speed of light"):
+        four_momentum(M_ELECTRON, bad)
+    with pytest.raises(ValueError, match="smaller than the speed of light"):
+        boost_matrix(bad)
+
+
+def test_four_momentum_and_boost_matrix_accept_a_speed_just_below_c():
+    v = [(1.0 - 1e-9) * C, 0.0, 0.0]
+    assert np.isfinite(four_momentum(M_ELECTRON, v)).all()
+    assert np.isfinite(boost_matrix(v)).all()

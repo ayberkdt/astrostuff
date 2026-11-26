@@ -423,7 +423,9 @@ def metric_inverse(metric_matrix: ArrayLike) -> NDArray:
 
     Validity
     --------
-    The metric must be non-degenerate (numpy raises LinAlgError otherwise). Complex input is allowed and the
+    The metric must be non-degenerate (numpy raises LinAlgError otherwise). The inversion is done on the matrix
+    scaled to unit diagonal, so that components of very different size (SI units, large radii) do not cost
+    accuracy. Complex input is allowed and the
     result is analytic in the entries, so complex-step derivatives pass through.
 
     Verification
@@ -433,4 +435,10 @@ def metric_inverse(metric_matrix: ArrayLike) -> NDArray:
     g = np.asarray(metric_matrix)
     if g.shape != (4, 4):
         raise ValueError("the metric must have shape (4, 4)")
-    return np.linalg.inv(g)
+    # The components can differ by forty orders of magnitude (g_tt of order one next to g_phiphi = r^2 with r in
+    # metres), which a plain inversion does not survive. The matrix is scaled to unit diagonal with real
+    # constants first; the result is the same function of the entries, so it stays analytic.
+    scale = np.sqrt(np.abs(np.real(np.diagonal(g))))
+    scale = np.where(scale > 0.0, scale, 1.0)
+    outer = np.outer(scale, scale)
+    return np.linalg.inv(g / outer) / outer

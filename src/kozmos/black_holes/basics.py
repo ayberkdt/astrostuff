@@ -361,7 +361,9 @@ def kerr_isco_radius_rg(spin: ArrayLike) -> Array:
 
     Validity
     --------
-    Kerr metric, equatorial plane, test particle.
+    Kerr metric, equatorial plane, test particle. Exact to rounding at |a*| = 1 and for moderate spins; just below
+    |a*| = 1 the terms 1 - a*^2 and 3 - Z1 cancel and the relative error grows to 5e-12 at 1 - |a*| = 1e-8 and
+    4e-9 at 1e-15 (measured against a 60-digit calculation).
 
     Verification
     ------------
@@ -428,7 +430,8 @@ def kerr_isco_specific_energy(spin: ArrayLike) -> Array:
 )
 @source(
     "Reynolds2021",
-    where="Section 5: η = 1 − e_isco/c² for a Novikov-Thorne disk",
+    where="subsection 'Radiative efficiency' (TeX labels efficiency and eqn:eta, Spin2020.tex lines 470-476): "
+    "η = 1 − e_isco/c² for a Novikov-Thorne disk",
     status="read",
     note="e_isco: total energy of a unit mass on the circular orbit at the ISCO; the closed form of e_isco "
     "is in kerr_isco_specific_energy [Bardeen1972, Eq. 2.20].",
@@ -450,7 +453,7 @@ def isco_radiative_efficiency(spin: ArrayLike) -> Array:
 
     References
     ----------
-    [Abramowicz2013] §1; [Reynolds2021] Section 5.
+    [Abramowicz2013] §1; [Reynolds2021] subsection 'Radiative efficiency', Eq. eta.
 
     Validity
     --------
@@ -732,6 +735,9 @@ def hawking_mass_loss_rate_kg_s(
     tests/unit/test_black_holes.py: 1.62 times the blackbody estimate for photons only; M⁻² scaling.
     """
     m = _positive(mass_kg, "mass")
+    counts = np.array([spin_half, spin_one, spin_two], dtype=float)
+    if np.any(~(counts >= 0.0)) or not np.any(counts > 0.0):
+        raise ValueError("the numbers of emitted species must not be negative, and at least one must be positive")
     alpha = 1e-5 * (8.1830 * spin_half + 3.3638 * spin_one + 0.3836 * spin_two)
     return alpha * _HBAR * _C**4 / (_G**2 * m**2)
 
@@ -777,6 +783,9 @@ def hawking_evaporation_time_s(
     tests/unit/test_black_holes.py: numerical integral of ``hawking_mass_loss_rate_kg_s``; M³ scaling.
     """
     m = _positive(mass_kg, "mass")
+    counts = np.array([spin_half, spin_one, spin_two], dtype=float)
+    if np.any(~(counts >= 0.0)) or not np.any(counts > 0.0):
+        raise ValueError("the numbers of emitted species must not be negative, and at least one must be positive")
     alpha = 1e-5 * (8.1830 * spin_half + 3.3638 * spin_one + 0.3836 * spin_two)
     return _G**2 * m**3 / (3.0 * alpha * _HBAR * _C**4)
 

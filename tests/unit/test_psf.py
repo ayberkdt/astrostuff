@@ -48,7 +48,7 @@ def _single(rng, snr, noise=NOISE):
 def test_gaussian_prf_conserves_flux_and_matches_star_field():
     yy, xx = np.mgrid[:41, :41].astype(float)
     value = psf.gaussian_prf(xx, yy, 20.3, 19.6, FWHM, flux=1234.0)
-    assert value.sum() == pytest.approx(1234.0, rel=1e-12)  # the Gaussian is 1e-30 of its peak at the edge
+    assert value.sum() == pytest.approx(1234.0, rel=1e-12, abs=0)  # the Gaussian is 1e-30 of its peak at the edge
     scene = detector.star_field((41, 41), [20.3], [19.6], [1234.0], FWHM)
     np.testing.assert_allclose(value, scene, rtol=0, atol=1e-12)  # same erf formula; equal to rounding
 
@@ -67,7 +67,7 @@ def test_gaussian_prf_equals_numerical_pixel_integral(offset):
             epsrel=1e-12,
         )
         got = psf.gaussian_prf(px, py, x0, y0, FWHM)
-        assert got == pytest.approx(expected, rel=1e-9)  # quadrature tolerance 1e-12 relative; erf is exact
+        assert got == pytest.approx(expected, rel=1e-9, abs=0)  # quadrature tolerance 1e-12 relative; erf is exact
 
 
 @pytest.mark.parametrize("model,beta", [("gaussian", 0.0), ("moffat", 2.5)])
@@ -102,7 +102,9 @@ def test_moffat_total_flux_matches_numerical_integral():
         epsabs=1e-12,
         epsrel=1e-10,
     )
-    assert pixel_sum == pytest.approx(expected, rel=1e-8)  # the sum is the quadrature rule; error 1e-9 at 5 nodes
+    assert pixel_sum == pytest.approx(
+        expected, rel=1e-8, abs=0
+    )  # the sum is the quadrature rule; error 1e-9 at 5 nodes
     assert 0.999 < expected < 1.0  # measured 0.9995; the wings carry the missing flux, (1 + r^2/R^2)^(1-beta) outside r
 
 
@@ -111,7 +113,7 @@ def test_moffat_fwhm_definition():
     beta, wide = 3.0, 60.0
     center = psf.moffat_prf(0.0, 0.0, 0.0, 0.0, wide, beta)
     half = psf.moffat_prf(wide / 2.0, 0.0, 0.0, 0.0, wide, beta)
-    assert half / center == pytest.approx(0.5, rel=1e-3)
+    assert half / center == pytest.approx(0.5, rel=1e-3, abs=0)
 
 
 @pytest.mark.parametrize("beta", [1.5, 2.5, 5.0])
@@ -131,7 +133,7 @@ def test_moffat_pixel_integral_against_adaptive_quadrature(beta):
             epsabs=1e-14,
             epsrel=1e-12,
         )
-        assert psf.moffat_prf(px, py, x0, y0, FWHM, beta) == pytest.approx(expected, rel=1e-6)
+        assert psf.moffat_prf(px, py, x0, y0, FWHM, beta) == pytest.approx(expected, rel=1e-6, abs=0)
 
 
 @pytest.mark.parametrize("beta", [1.5, 2.5, 5.0])
@@ -217,7 +219,9 @@ def test_isolated_flux_unbiased_and_scatter_equals_formal_error(snr):
     # The scatter of the fitted flux equals the formal uncertainty; the standard error of a standard deviation is
     # 1/sqrt(2 n) = 4%, the window is +-3 standard errors. Measured ratio 0.97 to 1.0.
     assert std / o[:, 1].mean() == pytest.approx(1.0, abs=0.12)
-    assert o[:, 1].mean() == pytest.approx(_exact_flux_error(), rel=0.005)  # NOISE / sqrt(sum P^2), derived below
+    assert o[:, 1].mean() == pytest.approx(
+        _exact_flux_error(), rel=0.005, abs=0
+    )  # NOISE / sqrt(sum P^2), derived below
 
 
 @pytest.mark.parametrize("snr", [3, 5])
@@ -252,14 +256,14 @@ def test_position_error_scales_with_snr_and_matches_formal_error(snr):
     assert position_std / o[:, 4].mean() == pytest.approx(1.0, abs=0.12)
     # Closed form for a Gaussian PRF: sigma_x = sqrt(2) sigma_psf / (S/N) for S/N defined by flux / (noise sqrt(4 pi s^2));
     # the pixel integration adds a few percent; measured 0.0946 at S/N 20 (formula 0.0899 -> ratio 1.05).
-    assert position_std == pytest.approx(np.sqrt(2) * SIGMA / snr, rel=0.12)
+    assert position_std == pytest.approx(np.sqrt(2) * SIGMA / snr, rel=0.12, abs=0)
 
 
 def test_flux_error_without_noise_map_is_scaled_by_the_residual_scatter():
     o = _monte_carlo_isolated(20, fit_positions=True, seed=44, noise_given=False)
     # With no noise map the weights are equal and the error comes from the residual scatter (this project's choice).
     assert o[:, 0].std() / o[:, 1].mean() == pytest.approx(1.0, abs=0.15)
-    assert o[:, 1].mean() == pytest.approx(_exact_flux_error(), rel=0.05)
+    assert o[:, 1].mean() == pytest.approx(_exact_flux_error(), rel=0.05, abs=0)
 
 
 def test_chi2_is_unity_for_the_true_model_and_large_for_the_wrong_one():
@@ -378,7 +382,9 @@ def test_moffat_model_recovers_moffat_stars_and_gaussian_model_does_not():
     yy, xx = np.mgrid[:61, :61].astype(float)
     image = SKY + psf.moffat_prf(xx, yy, 30.3, 29.8, FWHM, beta, flux, n_nodes=9)
     r = psf.psf_photometry(image, [30.0], [30.0], FWHM, model="moffat", beta=beta, background=SKY, noise=1.0)
-    assert r.flux[0] == pytest.approx(flux, rel=1e-6)  # noiseless and the right model: exact to the quadrature (1e-9)
+    assert r.flux[0] == pytest.approx(
+        flux, rel=1e-6, abs=0
+    )  # noiseless and the right model: exact to the quadrature (1e-9)
     assert r.x[0] == pytest.approx(30.3, abs=1e-4)
     assert r.y[0] == pytest.approx(29.8, abs=1e-4)
     assert r.converged[0]
@@ -471,7 +477,9 @@ def test_edge_star_outside_star_and_masked_pixels():
     flux = 3000.0
     near_edge = SKY + detector.star_field(SHAPE, [1.3], [20.2], [flux], FWHM)
     r = psf.psf_photometry(near_edge, [1.0], [20.0], FWHM, background=SKY, noise=1.0)
-    assert r.flux[0] == pytest.approx(flux, rel=1e-6)  # only the pixels inside the image are fitted; truth is exact
+    assert r.flux[0] == pytest.approx(
+        flux, rel=1e-6, abs=0
+    )  # only the pixels inside the image are fitted; truth is exact
     assert r.x[0] == pytest.approx(1.3, abs=1e-4)
     assert 0 < r.n_pixels[0] < np.pi * (1.5 * FWHM) ** 2
     outside = psf.psf_photometry(near_edge, [-30.0], [20.0], FWHM, background=SKY, noise=1.0)
@@ -479,7 +487,7 @@ def test_edge_star_outside_star_and_masked_pixels():
     masked = SKY + detector.star_field(SHAPE, [20.3], [19.8], [flux], FWHM)
     masked[19:22, 19:22] = np.nan  # the core is missing; the wings still define the flux exactly
     r = psf.psf_photometry(masked, [20.0], [20.0], FWHM, background=SKY, noise=1.0)
-    assert r.flux[0] == pytest.approx(flux, rel=1e-6)
+    assert r.flux[0] == pytest.approx(flux, rel=1e-6, abs=0)
     assert r.n_pixels[0] < np.pi * (1.5 * FWHM) ** 2 - 8  # the 3 x 3 block is excluded
 
 
@@ -496,7 +504,9 @@ def test_background_map_equals_constant_and_wrong_background_shifts_flux_as_deri
     mask = (xx - 20.0) ** 2 + (yy - 20.0) ** 2 <= (1.5 * FWHM) ** 2
     p = psf.gaussian_prf(xx, yy, 20.0, 20.0, FWHM)[mask]
     biased = psf.psf_photometry(image, [20.0], [20.0], FWHM, background=SKY - 1.0, noise=1.0, fit_positions=False)
-    assert biased.flux[0] - flux == pytest.approx(p.sum() / (p**2).sum(), rel=1e-9)  # exact algebra, rounding only
+    assert biased.flux[0] - flux == pytest.approx(
+        p.sum() / (p**2).sum(), rel=1e-9, abs=0
+    )  # exact algebra, rounding only
 
 
 def test_input_validation():

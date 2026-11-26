@@ -22,7 +22,7 @@ def test_weighted_floating_mean_against_astropy():
     oracle = LombScargle(t, y, sigma, fit_mean=True, center_data=True, normalization="standard").power(f, method="slow")
     assert np.max(np.abs(ours - oracle)) < 1e-10
     assert ours.min() >= -1e-12 and ours.max() <= 1.0
-    assert 1 / f[np.argmax(ours)] == pytest.approx(3.7, rel=5e-3)  # injected period
+    assert 1 / f[np.argmax(ours)] == pytest.approx(3.7, rel=5e-3, abs=0)  # injected period
 
 
 def test_equal_weights_against_astropy():

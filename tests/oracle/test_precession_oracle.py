@@ -54,7 +54,7 @@ def test_refraction_constants_vs_erfa():
         (1005.0, 7.0, 0.8, 0.574),
         (600.0, 0.0, 0.0, 10.0),
     ]:
-        assert refraction.refraction_constants(*conditions) == pytest.approx(erfa.refco(*conditions), rel=1e-13)
+        assert refraction.refraction_constants(*conditions) == pytest.approx(erfa.refco(*conditions), rel=1e-13, abs=0)
     assert refraction.refraction_constants(0.0, 10.0, 0.5) == (0.0, 0.0)
     with pytest.raises(ValueError):
         refraction.refraction_constants(1013.25, 10.0, 0.5, 1e4)

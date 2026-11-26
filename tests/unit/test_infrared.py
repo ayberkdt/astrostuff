@@ -31,5 +31,5 @@ def test_wien():
     assert float(infrared.peak_wavelength_um(5772.0)) == pytest.approx(0.50204, abs=1e-4)
     assert float(infrared.peak_wavelength_um(30.0)) == pytest.approx(96.6, abs=0.1)
     um = np.array([0.5, 2.159, 22.0])
-    assert infrared.peak_wavelength_um(infrared.peak_temperature_k(um)) == pytest.approx(um, rel=1e-14)
+    assert infrared.peak_wavelength_um(infrared.peak_temperature_k(um)) == pytest.approx(um, rel=1e-14, abs=0)
     assert float(infrared.peak_temperature_k(2.159)) == pytest.approx(1342.0, abs=1.0)

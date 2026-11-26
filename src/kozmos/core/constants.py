@@ -81,13 +81,25 @@ STEFAN_BOLTZMANN = Constant(
     derivation="2 pi^5 k^4 / (15 h^3 c^2)",
     status="read",
 )
+
+
+def _wien_root() -> float:
+    """Root of x = 5 (1 - exp(-x)), the maximum of the Planck function per unit wavelength (Newton iteration)."""
+    x = 5.0
+    for _ in range(20):
+        x -= (x - 5.0 * (1.0 - math.exp(-x))) / (1.0 - 5.0 * math.exp(-x))
+    return x
+
+
 WIEN_WAVELENGTH = Constant(
     "Wien wavelength displacement law constant",
-    2.897_771_955e-3,
+    PLANCK.value * SPEED_OF_LIGHT.value / (BOLTZMANN.value * _wien_root()),
     "m K",
     0.0,
     "CODATA2022",
     "Wien wavelength displacement law constant (2.897 771 955... e-3)",
+    derivation="h c / (k x), x the root of x = 5 (1 - exp(-x))",
+    status="read",
 )
 SECOND_RADIATION_CONSTANT = Constant(
     "second radiation constant",

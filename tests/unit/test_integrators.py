@@ -240,7 +240,7 @@ def test_kepler_energy_error_is_bounded_over_1000_periods(scheme, steps_per_peri
     tenth = len(drift) // 10
     first, last = np.abs(drift[:tenth]).max(), np.abs(drift[-tenth:]).max()
     assert last / first == pytest.approx(1.0, abs=1e-4)
-    assert drift[:tenth].mean() == pytest.approx(drift[-tenth:].mean(), rel=0.05)
+    assert drift[:tenth].mean() == pytest.approx(drift[-tenth:].mean(), rel=0.05, abs=0)
     # the error itself is small for the step used and of the expected size
     assert last < 5e-2
 
@@ -382,7 +382,68 @@ def test_harmonic_oscillator_leapfrog_conserves_the_modified_energy_exactly():
     invariant = v[:, 0] ** 2 + (1.0 - dt**2 / 4.0) * q[:, 0] ** 2
     assert np.max(np.abs(invariant / invariant[0] - 1.0)) < 1e-12
     drift = relative_drift(0.5 * (q[:, 0] ** 2 + v[:, 0] ** 2))
-    assert np.abs(drift).max() == pytest.approx(dt**2 / 4.0, rel=1e-6)
+    assert np.abs(drift).max() == pytest.approx(dt**2 / 4.0, rel=1e-6, abs=0)
     _, q, v = integrate(oscillator, [1.0], [0.0], dt, 10000, scheme="dkd")
     invariant = (1.0 - dt**2 / 4.0) * v[:, 0] ** 2 + q[:, 0] ** 2
     assert np.max(np.abs(invariant / invariant[0] - 1.0)) < 1e-12
+
+
+# --------------------------------------------------------------------------------------
+# mutation-testing survivors: recording schedule, order check, zero reference, shape checks
+# --------------------------------------------------------------------------------------
+
+
+def test_record_every_that_does_not_divide_n_steps_stops_at_the_last_multiple():
+    """Docstring: the initial state is always stored and the last state only if n_steps is a multiple of
+    record_every. For n_steps = 7 and record_every = 3 the stored steps are 0, 3 and 6 (three entries, the last at
+    t0 + 6 dt). A fourth entry would be uninitialised memory."""
+    dt, t0 = 0.25, 1.0
+    t, q, v = integrate(oscillator, [1.0], [0.0], dt, 7, t0=t0, record_every=3)
+    assert t.shape == (3,) and q.shape == (3, 1) and v.shape == (3, 1)
+    assert np.array_equal(t, [1.0, 1.75, 2.5])  # t0 + k dt for k = 0, 3, 6 (dyadic numbers, exact)
+    t_all, q_all, v_all = integrate(oscillator, [1.0], [0.0], dt, 7, t0=t0)
+    assert np.array_equal(q, q_all[[0, 3, 6]]) and np.array_equal(v, v_all[[0, 3, 6]])
+    assert np.all(np.isfinite(q)) and np.all(np.isfinite(v))
+
+
+@pytest.mark.parametrize(("n_steps", "record_every", "length"), [(6, 3, 3), (7, 3, 3), (8, 3, 3), (9, 3, 4), (2, 5, 1)])
+def test_number_of_recorded_states_is_floor_of_n_steps_over_record_every_plus_one(n_steps, record_every, length):
+    t, q, v = integrate(oscillator, [1.0], [0.0], 0.5, n_steps, record_every=record_every)
+    assert len(t) == len(q) == len(v) == length
+    assert t[-1] == 0.5 * record_every * (length - 1)
+
+
+def test_order_six_of_the_separable_step_is_rejected():
+    for order in (0, 1, 3, 5, 6, 8):
+        with pytest.raises(ValueError, match="order must be 2 or 4"):
+            symplectic_step_separable([1.0], [0.0], 0.1, lambda p: p, lambda q: q, order=order)
+    symplectic_step_separable([1.0], [0.0], 0.1, lambda p: p, lambda q: q, order=2)
+    symplectic_step_separable([1.0], [0.0], 0.1, lambda p: p, lambda q: q, order=4)
+
+
+def test_relative_drift_rejects_a_zero_reference_in_any_component():
+    """The reference (first entry) must be nonzero; a single zero component among several is enough to raise."""
+    with pytest.raises(ValueError, match="reference value"):
+        relative_drift([[0.0, 1.0], [0.1, 1.1]])
+    with pytest.raises(ValueError, match="reference value"):
+        relative_drift([[1.0, 0.0], [1.1, 0.1]])
+    with pytest.raises(ValueError, match="reference value"):
+        relative_drift([0.0, 1.0])
+    assert np.allclose(relative_drift([[2.0, -4.0], [3.0, -2.0]]), [[0.0, 0.0], [0.5, 0.5]], rtol=1e-15, atol=0.0)
+
+
+def test_shape_mismatches_raise_with_the_library_message():
+    with pytest.raises(ValueError, match=r"positions and velocities must have the same shape, got \(2,\) and \(3,\)"):
+        integrate(oscillator, [1.0, 0.0], [0.0, 0.0, 0.0], 0.1, 1)
+    # same size, different shape: a size comparison would let this through
+    with pytest.raises(ValueError, match=r"got \(2,\) and \(2, 1\)"):
+        integrate(oscillator, [1.0, 0.0], [[0.0], [0.0]], 0.1, 1)
+    with pytest.raises(ValueError, match="same shape"):
+        leapfrog_kdk_step([1.0, 0.0], [0.0], 0.0, 0.1, oscillator)
+    with pytest.raises(ValueError, match=r"acceleration returned shape \(3,\), expected \(2,\)"):
+        integrate(lambda q, t: np.zeros(3), [1.0, 0.0], [0.0, 0.0], 0.1, 1)
+    # a shape that broadcasts against q must still be refused
+    with pytest.raises(ValueError, match=r"acceleration returned shape \(1,\), expected \(2,\)"):
+        integrate(lambda q, t: np.zeros(1), [1.0, 0.0], [0.0, 0.0], 0.1, 1, scheme="dkd")
+    with pytest.raises(ValueError, match=r"acceleration returned shape \(2, 1\), expected \(2,\)"):
+        integrate(lambda q, t: np.zeros((2, 1)), [1.0, 0.0], [0.0, 0.0], 0.1, 1, scheme="forest_ruth")

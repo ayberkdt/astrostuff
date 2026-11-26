@@ -386,7 +386,7 @@ def test_negative_total_energy_density_raises_as_documented():
         sf.integrate_quintessence(lambda p: -0.5 + 0.0 * p, 0.0, 0.0, (0.0, 1.0), omega_matter_today=0.3)
     # a negative potential is allowed while matter keeps the total positive (v = -0.2, Omega_m = 1.0 at N = 0)
     sol = sf.integrate_quintessence(lambda p: -0.2 + 0.0 * p, 0.0, 0.0, (0.0, 0.5), omega_matter_today=1.0)
-    assert np.all(np.isfinite(sol.e)) and sol.e[0] == pytest.approx(np.sqrt(0.8), rel=1e-14)
+    assert np.all(np.isfinite(sol.e)) and sol.e[0] == pytest.approx(np.sqrt(0.8), rel=1e-14, abs=0)
     # ... but the total turns negative later when going forward (matter dilutes): the error names that moment
     with pytest.raises(ValueError, match="not positive"):
         sf.integrate_quintessence(lambda p: -0.5 + 0.0 * p, 0.0, 0.0, (0.0, 3.0), omega_matter_today=1.0)

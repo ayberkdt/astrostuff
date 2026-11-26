@@ -50,7 +50,7 @@ def test_autocorrelation_time_ar1():
     noise = u.normal(size=(n_steps, k))
     for t in range(1, n_steps):
         x[t, :, 0] = rho * x[t - 1, :, 0] + noise[t]
-    assert mcmc.autocorrelation_time(x)[0] == pytest.approx((1 + rho) / (1 - rho), rel=0.15)
+    assert mcmc.autocorrelation_time(x)[0] == pytest.approx((1 + rho) / (1 - rho), rel=0.15, abs=0)
 
 
 def test_rhat_detects_separated_chains():

@@ -123,8 +123,8 @@ def test_kerr_components_agree_with_the_line_elements_of_carroll_and_visser():
         carroll += 2 * m * r / rho2 * np.outer(w, w)
         # measured maximum relative difference 7e-17 (rounding); tolerance 1e-15
         assert kerr_metric(np.array([0.0, r, th, 0.0]), m, a) == pytest.approx(carroll, rel=1e-15, abs=1e-15)
-        assert carroll[0, 3] == pytest.approx(-2 * m * r * a * sin2 / rho2, rel=1e-15)
-        assert carroll[3, 3] == pytest.approx((r**2 + a**2 + 2 * m * r * a**2 * sin2 / rho2) * sin2, rel=1e-15)
+        assert carroll[0, 3] == pytest.approx(-2 * m * r * a * sin2 / rho2, rel=1e-15, abs=0)
+        assert carroll[3, 3] == pytest.approx((r**2 + a**2 + 2 * m * r * a**2 * sin2 / rho2) * sin2, rel=1e-15, abs=0)
 
 
 def test_kerr_with_zero_spin_is_schwarzschild_and_zero_mass_is_flat_oblate_spheroidal():
@@ -134,9 +134,9 @@ def test_kerr_with_zero_spin_is_schwarzschild_and_zero_mass_is_flat_oblate_spher
     # g_phiphi = (r^2 + a^2) sin^2 (Visser's form; Carroll's printed 7.117 squares rho^2, see the report)
     r, th, a = 4.0, 0.9, 0.7
     g = kerr_metric(np.array([0.0, r, th, 0.0]), 0.0, a)
-    assert g[1, 1] == pytest.approx((r**2 + a**2 * np.cos(th) ** 2) / (r**2 + a**2), rel=1e-14)
-    assert g[2, 2] == pytest.approx(r**2 + a**2 * np.cos(th) ** 2, rel=1e-14)
-    assert g[3, 3] == pytest.approx((r**2 + a**2) * np.sin(th) ** 2, rel=1e-14)
+    assert g[1, 1] == pytest.approx((r**2 + a**2 * np.cos(th) ** 2) / (r**2 + a**2), rel=1e-14, abs=0)
+    assert g[2, 2] == pytest.approx(r**2 + a**2 * np.cos(th) ** 2, rel=1e-14, abs=0)
+    assert g[3, 3] == pytest.approx((r**2 + a**2) * np.sin(th) ** 2, rel=1e-14, abs=0)
     assert g[0, 3] == 0.0
 
 
@@ -164,7 +164,7 @@ def test_frame_dragging_frequency_abramowicz_closed_form_equals_minus_gtphi_over
         rho2 = r**2 + a**2 * np.cos(th) ** 2
         omega_printed = 2 * a * m * r / ((a**2 + r**2) * rho2 + 2 * a**2 * m * r * np.sin(th) ** 2)
         g = kerr_metric(np.array([0.0, r, th, 0.0]), m, a)
-        assert -g[0, 3] / g[3, 3] == pytest.approx(omega_printed, rel=2e-15)  # measured 2.2e-16
+        assert -g[0, 3] / g[3, 3] == pytest.approx(omega_printed, rel=2e-15, abs=0)  # measured 2.2e-16
 
 
 # --------------------------------------------------------------------------------------
@@ -209,11 +209,11 @@ def test_christoffel_symbols_are_symmetric_in_the_lower_indices_and_flat_values(
     # flat space in spherical coordinates: Gamma^r_thth = -r, Gamma^r_phph = -r sin^2, Gamma^th_rth = 1/r, ...
     r, th = 3.0, 0.8
     flat = christoffel_symbols(flat_spherical, np.array([0.0, r, th, 0.0]))
-    assert flat[1, 2, 2] == pytest.approx(-r, rel=1e-14)
-    assert flat[1, 3, 3] == pytest.approx(-r * np.sin(th) ** 2, rel=1e-14)
-    assert flat[2, 1, 2] == pytest.approx(1 / r, rel=1e-14)
-    assert flat[2, 3, 3] == pytest.approx(-np.sin(th) * np.cos(th), rel=1e-14)
-    assert flat[3, 2, 3] == pytest.approx(np.cos(th) / np.sin(th), rel=1e-14)
+    assert flat[1, 2, 2] == pytest.approx(-r, rel=1e-14, abs=0)
+    assert flat[1, 3, 3] == pytest.approx(-r * np.sin(th) ** 2, rel=1e-14, abs=0)
+    assert flat[2, 1, 2] == pytest.approx(1 / r, rel=1e-14, abs=0)
+    assert flat[2, 3, 3] == pytest.approx(-np.sin(th) * np.cos(th), rel=1e-14, abs=0)
+    assert flat[3, 2, 3] == pytest.approx(np.cos(th) / np.sin(th), rel=1e-14, abs=0)
     assert np.count_nonzero(np.abs(flat) > 1e-14) == 9
     assert np.abs(christoffel_symbols(minkowski_metric, np.array([1.0, 2.0, 3.0, 4.0]))).max() == 0.0
 
@@ -231,7 +231,7 @@ def test_non_analytic_metric_is_detected_by_the_complex_method_and_works_with_th
     x = np.array([0.0, 3.0, 0.0, 0.0])
     gamma = christoffel_symbols(bad, x, method="finite")
     # Gamma^r_rr = (1/2) g^rr d_r g_rr = 0.5 * 0.1 / 1.3; measured relative error 4.9e-14, tolerance 1e-12
-    assert gamma[1, 1, 1] == pytest.approx(0.5 * 0.1 / (1.0 + 0.3), rel=1e-12)
+    assert gamma[1, 1, 1] == pytest.approx(0.5 * 0.1 / (1.0 + 0.3), rel=1e-12, abs=0)
     with pytest.raises(ValueError):
         christoffel_symbols(bad, x, method="complex")
 
@@ -250,7 +250,9 @@ def test_geodesic_acceleration_of_flat_space_and_of_a_schwarzschild_circular_orb
     assert np.abs(acc).max() < 1e-16  # measured 3.5e-18
     # a static observer (u^phi = 0) accelerates inwards: d2r = -Gamma^r_tt (u^t)^2 = -M f / r^2 / f = -M/r^2
     static_u = np.array([1.0 / np.sqrt(1.0 - 2.0 / r), 0.0, 0.0, 0.0])
-    assert geodesic_acceleration(sch(), x, static_u)[1] == pytest.approx(-1.0 / r**2, rel=1e-14)  # measured 4e-16
+    assert geodesic_acceleration(sch(), x, static_u)[1] == pytest.approx(
+        -1.0 / r**2, rel=1e-14, abs=0
+    )  # measured 4e-16
 
 
 # --------------------------------------------------------------------------------------
@@ -271,12 +273,12 @@ def test_normalize_tangent_timelike_and_null_in_schwarzschild_and_kerr():
         assert abs(tangent_norm_squared(metric, x, k)) < 1e-15
     # static observer: u^t = 1/sqrt(f)
     f = 1.0 - 2.0 / 8.0
-    assert normalize_tangent(sch(), x, np.zeros(3))[0] == pytest.approx(1.0 / np.sqrt(f), rel=1e-15)
+    assert normalize_tangent(sch(), x, np.zeros(3))[0] == pytest.approx(1.0 / np.sqrt(f), rel=1e-15, abs=0)
     # circular orbit at r = 10: u^phi = Omega u^t gives u^t = 1/sqrt(1 - 3M/r) (Eq. 7.45 with u^r = 0)
     r = 10.0
     uphi = np.sqrt(1.0 / r**3) / np.sqrt(1.0 - 3.0 / r)
     circ = normalize_tangent(sch(), np.array([0.0, r, np.pi / 2, 0.0]), np.array([0.0, 0.0, uphi]))
-    assert circ[0] == pytest.approx(1.0 / np.sqrt(1.0 - 3.0 / r), rel=1e-14)
+    assert circ[0] == pytest.approx(1.0 / np.sqrt(1.0 - 3.0 / r), rel=1e-14, abs=0)
 
 
 def test_normalize_tangent_null_with_zero_spatial_part_raises():
@@ -314,10 +316,10 @@ def test_killing_conserved_quantity_reproduces_carroll_eq_7_43_and_7_44():
     u = np.array([1.3, -0.2, 0.0, 0.05])
     f = 1.0 - 2.0 / 7.0
     e, l_z = stationary_axisymmetric_constants(sch(), x, u)
-    assert e == pytest.approx(f * u[0], rel=1e-15)  # Eq. 7.43
-    assert l_z == pytest.approx(7.0**2 * u[3], rel=1e-15)  # Eq. 7.44
-    assert killing_conserved_quantity(sch(), x, u, np.array([1.0, 0, 0, 0])) == pytest.approx(-e, rel=1e-15)
-    assert killing_conserved_quantity(sch(), x, u, np.array([0, 0, 0, 1.0])) == pytest.approx(l_z, rel=1e-15)
+    assert e == pytest.approx(f * u[0], rel=1e-15, abs=0)  # Eq. 7.43
+    assert l_z == pytest.approx(7.0**2 * u[3], rel=1e-15, abs=0)  # Eq. 7.44
+    assert killing_conserved_quantity(sch(), x, u, np.array([1.0, 0, 0, 0])) == pytest.approx(-e, rel=1e-15, abs=0)
+    assert killing_conserved_quantity(sch(), x, u, np.array([0, 0, 0, 1.0])) == pytest.approx(l_z, rel=1e-15, abs=0)
 
 
 # --------------------------------------------------------------------------------------
@@ -453,7 +455,8 @@ def _periapsis_start(r_peri: float, r_apo: float):
 
 def _sign_change_roots(metric, lam, xs, us, component, direction):
     """Cubic Hermite roots of u^component along the solution; returns (lambda, cubic interpolants of x^mu)."""
-    acc = np.array([geodesic_acceleration(metric, x, u) for x, u in zip(xs, us, strict=True)])
+    # the metric was checked for analyticity by the integration that produced xs; the check is skipped here
+    acc = np.array([geodesic_acceleration(metric, x, u, check=False) for x, u in zip(xs, us, strict=True)])
     u_spline = CubicHermiteSpline(lam, us[:, component], acc[:, component])
     x_splines = [CubicHermiteSpline(lam, xs[:, i], us[:, i]) for i in range(4)]
     roots = []
@@ -523,7 +526,9 @@ def test_schwarzschild_circular_orbit_stays_circular_with_keplerian_phi_rate():
     # drift of E, L, norm 5.6e-16, 3.1e-15, 1.6e-15 (tolerance 5e-14).
     assert np.abs(xs[:, 1] - r).max() < 5e-10
     assert np.abs(xs[:, 2] - np.pi / 2).max() < 1e-8
-    assert xs[-1, 3] / xs[-1, 0] == pytest.approx(omega, rel=3e-14)  # d phi / d t = sqrt(M / r^3), t and phi integrated
+    assert xs[-1, 3] / xs[-1, 0] == pytest.approx(
+        omega, rel=3e-14, abs=0
+    )  # d phi / d t = sqrt(M / r^3), t and phi integrated
     assert np.abs(us[:, 0] - ut).max() < 1e-11
     e_dev, l_dev, n_dev = _drift(sch(), xs, us)
     assert max(e_dev, l_dev, n_dev) < 5e-14
@@ -573,8 +578,8 @@ def test_periapsis_advance_deviation_scales_as_one_over_p():
         deviations[p] = advance.mean() / (6 * np.pi / p) - 1.0
     # The deviation is proportional to 1 / p: measured ratios 2.0101 and 2.0050 (exactly 2 for a pure 1/p law; the
     # remainder is the order 1 / p^2). Tolerance 2%.
-    assert deviations[500.0] / deviations[1000.0] == pytest.approx(2.0, rel=0.02)
-    assert deviations[1000.0] / deviations[2000.0] == pytest.approx(2.0, rel=0.02)
+    assert deviations[500.0] / deviations[1000.0] == pytest.approx(2.0, rel=0.02, abs=0)
+    assert deviations[1000.0] / deviations[2000.0] == pytest.approx(2.0, rel=0.02, abs=0)
 
 
 @pytest.mark.parametrize("b", [500.0, 1000.0, 2000.0])
@@ -595,8 +600,8 @@ def test_light_deflection_next_order_coefficient_regression_pin(b):
 def test_light_deflection_deviation_scales_as_one_over_b():
     deviations = {b: _deflection(b, samples=4001)[0] / (4.0 / b) - 1.0 for b in (500.0, 1000.0, 2000.0)}
     # measured ratios 2.0073 and 2.0036 (a pure 1/b law gives 2); tolerance 2%
-    assert deviations[500.0] / deviations[1000.0] == pytest.approx(2.0, rel=0.02)
-    assert deviations[1000.0] / deviations[2000.0] == pytest.approx(2.0, rel=0.02)
+    assert deviations[500.0] / deviations[1000.0] == pytest.approx(2.0, rel=0.02, abs=0)
+    assert deviations[1000.0] / deviations[2000.0] == pytest.approx(2.0, rel=0.02, abs=0)
 
 
 def _richardson_pair(k_coarse, k_fine):
@@ -617,7 +622,7 @@ def test_periapsis_advance_coefficient_is_stable_under_richardson_extrapolation_
     assert abs(first - second) < 1.6e-3
     assert abs(first - second) < 0.05 * abs(k[1000.0] - k[2000.0])
     assert abs(k[500.0] - k[1000.0]) == pytest.approx(
-        2.0 * abs(k[1000.0] - k[2000.0]), rel=0.05
+        2.0 * abs(k[1000.0] - k[2000.0]), rel=0.05, abs=0
     )  # linear: measured 2.01
 
 
@@ -632,7 +637,7 @@ def test_light_deflection_coefficient_is_stable_under_richardson_extrapolation_i
     assert abs(first - second) < 6.5e-4
     assert abs(first - second) < 0.05 * abs(k[1000.0] - k[2000.0])
     assert abs(k[500.0] - k[1000.0]) == pytest.approx(
-        2.0 * abs(k[1000.0] - k[2000.0]), rel=0.05
+        2.0 * abs(k[1000.0] - k[2000.0]), rel=0.05, abs=0
     )  # linear: measured 2.01
 
 
@@ -667,7 +672,7 @@ def test_photon_circular_orbit_at_3m_is_unstable_with_the_closed_form_growth_rat
     # (tolerance 3e-4), dev / (delta cosh(kappa l)) - 1 within 2e-4 (tolerance 2e-3).
     mask = (np.abs(dev) > 20 * delta) & (np.abs(dev) < 1e-3)
     slope = np.polyfit(lam[mask], np.log(np.abs(dev[mask])), 1)[0]
-    assert slope == pytest.approx(kappa, rel=3e-4)
+    assert slope == pytest.approx(kappa, rel=3e-4, abs=0)
     assert dev[mask] / (delta * np.cosh(kappa * lam[mask])) == pytest.approx(1.0, abs=2e-3)
 
 
@@ -700,7 +705,9 @@ def test_radial_infall_proper_time_to_the_horizon_matches_the_cycloid_in_ingoing
         return r0**1.5 * (eta + np.sin(eta)) / (2.0 * np.sqrt(2.0))
 
     for r_end in (2.0, 1.0, 0.5):
-        assert tau_cycloid(r_end) == pytest.approx(tau_of_r(r_end), rel=2e-11)  # measured 1.0e-12, 1.6e-12, 3.6e-13
+        assert tau_cycloid(r_end) == pytest.approx(
+            tau_of_r(r_end), rel=2e-11, abs=0
+        )  # measured 1.0e-12, 1.6e-12, 3.6e-13
     metric = partial(schwarzschild_eddington_finkelstein_metric, mass_geometric_m=1.0)
     x0 = np.array([0.0, r0, 0.5, 0.0])
     u0 = np.array([1.0 / np.sqrt(1.0 - 2.0 / r0), 0.0, 0.0, 0.0])  # u~ = t + r*: at rest du~ = dt
@@ -718,7 +725,7 @@ def test_radial_infall_proper_time_to_the_horizon_matches_the_cycloid_in_ingoing
     # the horizon is crossed at the closed-form proper time, with finite tangent vector
     r_spline = CubicHermiteSpline(lam, xs[:, 1] - 2.0, us[:, 1])
     tau_cross = brentq(r_spline, lam[0], lam[-1], xtol=1e-12)
-    assert tau_cross == pytest.approx(tau_horizon, rel=1.5e-9)  # measured 1.3e-10; tau_horizon = 97.970
+    assert tau_cross == pytest.approx(tau_horizon, rel=1.5e-9, abs=0)  # measured 1.3e-10; tau_horizon = 97.970
     assert np.all(np.isfinite(us))
     assert np.abs(us).max() < 2.0  # measured 1.97: smooth through the horizon
 
@@ -800,7 +807,7 @@ def test_kerr_equatorial_circular_orbits_stay_circular_with_the_keplerian_angula
     # norm at most 4.4e-15 (tolerance 5e-14). r = 6 retrograde is inside the retrograde marginally stable orbit and is
     # not used: there the rounding of the start grows (measured |r - 6| = 8.9e-6 after five orbits).
     assert np.abs(xs[:, 1] - r).max() < 1e-9
-    assert xs[-1, 3] / xs[-1, 0] == pytest.approx(omega, rel=3e-13)
+    assert xs[-1, 3] / xs[-1, 0] == pytest.approx(omega, rel=3e-13, abs=0)
     e_dev, l_dev, n_dev = _drift(metric, xs, us)
     assert max(e_dev, l_dev, n_dev) < 5e-14
 
@@ -811,7 +818,7 @@ def test_kerr_prograde_orbit_has_a_smaller_angular_velocity_magnitude_than_retro
     assert omega_pro > 0.0 > omega_retro
     assert abs(omega_pro) < abs(omega_retro)  # |Omega| = 1/(r^1.5 + a) for prograde against 1/(r^1.5 - a)
     _, _, omega_zero = _kerr_circular_start(8.0, 0.0, True)
-    assert omega_zero == pytest.approx(8.0**-1.5, rel=1e-15)
+    assert omega_zero == pytest.approx(8.0**-1.5, rel=1e-15, abs=0)
 
 
 def test_kerr_inclined_orbit_conserves_e_lz_the_norm_and_carrolls_killing_tensor():
@@ -869,3 +876,74 @@ def test_zero_angular_momentum_particle_in_kerr_has_the_frame_dragging_angular_v
         worst = max(worst, abs(u[3] / u[0] + gx[0, 3] / gx[3, 3]))
         assert abs(stationary_axisymmetric_constants(metric, x, u)[1]) < 2e-10  # measured 2.1e-11
     assert worst < 1e-11  # measured 8.0e-13; r falls from 6 to 3.68 in the 12 units of proper time
+
+
+# --------------------------------------------------------------------------------------
+# mutation-testing survivors: backward integration, a vanishing time component, the default atol
+# --------------------------------------------------------------------------------------
+
+
+def test_integrate_geodesic_backwards_retraces_the_forward_orbit():
+    """The geodesic equation is autonomous in the affine parameter: starting from the END state of a forward run and
+    integrating with a strictly DEcreasing affine parameter must return to the start. Eccentric Schwarzschild orbit
+    (periapsis 7 M, apoapsis 15 M), 3 radial periods."""
+    x0, u0, _, _ = _periapsis_start(7.0, 15.0)
+    lam = np.linspace(0.0, 400.0, 161)
+    xs, us = integrate_geodesic(sch(), x0, u0, lam)
+    xb, ub = integrate_geodesic(sch(), xs[-1], us[-1], lam[::-1])
+    assert xb.shape == xs.shape and np.array_equal(xb[0], xs[-1])
+    # measured: 3.7e-10 (coordinates), 9.2e-12 (tangent), 2.9e-10 (return to the start); tolerances 2e-9, 5e-11, 2e-9
+    assert np.abs(xb[::-1] - xs).max() < 2e-9
+    assert np.abs(ub[::-1] - us).max() < 5e-11
+    assert np.abs(xb[-1] - x0).max() < 2e-9
+    assert xs[:, 1].min() == pytest.approx(7.0, rel=1e-12, abs=0) and xs[:, 1].max() > 14.99  # r spans 7 to 15
+
+
+def test_normalize_tangent_refuses_a_zero_time_component_when_g_tt_vanishes():
+    """Null coordinates: g = [[0, 1], [1, 0]] in the (t, x) block, so g_tt = 0, g_tx = 1, g_xx = 0. For the spatial
+    part (1, 0, 0) the null condition 2 g_tx u^t u^x = 0 gives u^t = 0: no future-directed (u^t > 0) vector exists."""
+
+    def null_coordinates(x):
+        g = np.eye(4, dtype=np.result_type(x, float))
+        g[0, 0], g[1, 1] = 0.0, 0.0
+        g[0, 1] = g[1, 0] = 1.0
+        return g
+
+    with pytest.raises(ValueError, match="future-directed time component does not exist"):
+        normalize_tangent(null_coordinates, np.zeros(4), [1.0, 0.0, 0.0], kind="null")
+    # spatial (1, 1, 0): b = 1 and c = 1 give u^t = (0 - 1) / 2 = -1/2 < 0: also refused
+    with pytest.raises(ValueError, match="future-directed time component does not exist"):
+        normalize_tangent(null_coordinates, np.zeros(4), [1.0, 1.0, 0.0], kind="null")
+    # a timelike vector with spatial part (-1, 0, 0): b = -1, c = 0, kappa = -1 give u^t = (-1 - 0) / (2 * -1) = 1/2 > 0
+    u = normalize_tangent(null_coordinates, np.zeros(4), [-1.0, 0.0, 0.0], kind="timelike")
+    assert np.array_equal(u, [0.5, -1.0, 0.0, 0.0])
+
+
+def _y_dependent_metric(x):
+    """g = diag(-1, 1 + 2y + y^2, 1, 1): independent of t and x, so p_x = g_xx u^x is conserved. Complex safe."""
+    g = np.zeros((4, 4), dtype=np.result_type(x, float))
+    g[0, 0] = -1.0
+    g[1, 1] = 1.0 + 2.0 * x[2] + x[2] ** 2
+    g[2, 2] = 1.0
+    g[3, 3] = 1.0
+    return g
+
+
+def test_integrate_geodesic_default_atol_keeps_the_small_components_accurate():
+    """All components of this orbit are small (positions and spatial velocities of order 0.1 to 3), so the absolute
+    tolerance of the integrator controls the step: with the default atol = 1e-13 the drift of the normalisation is
+    1.0e-14 and that of p_x is 4.1e-12 over 30 affine units; with atol = 1e-11 they are 2.8e-13 and 2.4e-11 (measured
+    in this environment). The bounds 1e-13 and 1e-11 lie between the two sets."""
+    x0 = np.zeros(4)
+    u0 = normalize_tangent(_y_dependent_metric, x0, [0.1, 0.2, 0.0])
+    lam = np.linspace(0.0, 30.0, 121)
+    xs, us = integrate_geodesic(_y_dependent_metric, x0, u0, lam)  # default tolerances
+    norm_drift = max(abs(tangent_norm_squared(_y_dependent_metric, x, u) + 1.0) for x, u in zip(xs, us, strict=True))
+    px = np.array([_y_dependent_metric(x)[1, 1] * u[1] for x, u in zip(xs, us, strict=True)])
+    print(f"MEASURED default atol: norm drift {norm_drift:.3e}, p_x drift {np.abs(px - px[0]).max():.3e}")
+    assert norm_drift < 1e-13
+    assert np.abs(px - px[0]).max() < 1e-11
+    # the same call with a looser atol is visibly worse, which is what the bounds above separate
+    xl, ul = integrate_geodesic(_y_dependent_metric, x0, u0, lam, atol=1e-11)
+    loose = max(abs(tangent_norm_squared(_y_dependent_metric, x, u) + 1.0) for x, u in zip(xl, ul, strict=True))
+    assert loose > 1e-13

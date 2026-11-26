@@ -66,7 +66,7 @@ def q(value, unit):
 def test_parsec_and_megaparsec_come_from_the_constants_module_exactly():
     assert q(1, "pc").to_value("m") == PARSEC.value
     assert q(1, "Mpc").to_value("m") == MEGAPARSEC.value
-    assert q(1, "kpc").to_value("pc") == pytest.approx(1000.0, rel=1e-15)
+    assert q(1, "kpc").to_value("pc") == pytest.approx(1000.0, rel=1e-15, abs=0)
 
 
 def test_parsec_is_648000_over_pi_au():
@@ -83,14 +83,14 @@ def test_jansky_is_1e_minus_26_si():
     """Rots et al. 2021, Section 3.3 and Table 5: 1 Jy = 1e-26 W m^-2 Hz^-1."""
     assert q(1, "Jy").to_value("W m^-2 Hz^-1") == 1e-26
     assert Unit.parse("Jy").dimension == Unit.parse("W m^-2 Hz^-1").dimension
-    assert q(3631, "Jy").to_value("W m^-2 Hz^-1") == pytest.approx(3.631e-23, rel=1e-15)
+    assert q(3631, "Jy").to_value("W m^-2 Hz^-1") == pytest.approx(3.631e-23, rel=1e-15, abs=0)
 
 
 def test_julian_year_is_31557600_s():
     """Rots et al. 2021, Table 5 and the unit list: Julian year = 365.25 d = 31 557 600 s."""
     assert q(1, "yr").to_value("s") == 31_557_600.0
     assert q(1, "yr").to_value("d") == 365.25
-    assert q(1, "Gyr").to_value("yr") == pytest.approx(1e9, rel=1e-15)
+    assert q(1, "Gyr").to_value("yr") == pytest.approx(1e9, rel=1e-15, abs=0)
 
 
 @pytest.mark.parametrize(
@@ -110,24 +110,24 @@ def test_julian_year_is_31557600_s():
 )
 def test_non_si_units_of_table_8(expression, in_si, rel):
     """SI Brochure 9th ed., Table 8 (pp. 140-141) and the Rots et al. 2021 erg."""
-    assert Unit.parse(expression).scale == pytest.approx(in_si, rel=rel)
+    assert Unit.parse(expression).scale == pytest.approx(in_si, rel=rel, abs=0)
 
 
 def test_angle_units_of_table_8():
     """Table 8: 1 deg = pi/180 rad, 1' = pi/10 800 rad, 1'' = pi/648 000 rad (ERFA digits: 1e-15)."""
-    assert q(1, "deg").to_value("rad") == pytest.approx(math.pi / 180.0, rel=1e-15)
-    assert q(1, "arcmin").to_value("rad") == pytest.approx(math.pi / 10_800.0, rel=1e-15)
-    assert q(1, "arcsec").to_value("rad") == pytest.approx(math.pi / 648_000.0, rel=1e-15)
+    assert q(1, "deg").to_value("rad") == pytest.approx(math.pi / 180.0, rel=1e-15, abs=0)
+    assert q(1, "arcmin").to_value("rad") == pytest.approx(math.pi / 10_800.0, rel=1e-15, abs=0)
+    assert q(1, "arcsec").to_value("rad") == pytest.approx(math.pi / 648_000.0, rel=1e-15, abs=0)
     assert q(1, "deg").to_value("rad") == DEG_RAD
     assert q(1, "arcsec").to_value("rad") == ARCSEC_RAD
-    assert q(1, "deg").to_value("arcmin") == pytest.approx(60.0, rel=1e-15)
-    assert q(1, "deg").to_value("arcsec") == pytest.approx(3600.0, rel=1e-15)
+    assert q(1, "deg").to_value("arcmin") == pytest.approx(60.0, rel=1e-15, abs=0)
+    assert q(1, "deg").to_value("arcsec") == pytest.approx(3600.0, rel=1e-15, abs=0)
 
 
 def test_milliarcsecond_is_one_3600000th_of_a_degree():
     """Rots et al. 2021 unit list: mas = 1/3 600 000 deg; text: 1 nrad = 0.2 mas (approximately)."""
-    assert q(1, "mas").to_value("deg") == pytest.approx(1.0 / 3_600_000.0, rel=1e-15)
-    assert q(1, "uas").to_value("mas") == pytest.approx(1e-3, rel=1e-15)
+    assert q(1, "mas").to_value("deg") == pytest.approx(1.0 / 3_600_000.0, rel=1e-15, abs=0)
+    assert q(1, "uas").to_value("mas") == pytest.approx(1e-3, rel=1e-15, abs=0)
     assert 0.20 < q(1, "nrad").to_value("mas") < 0.21
     assert q(1, "as").to_value("arcsec") == 1.0  # SI Brochure Table 8 footnote (a)
 
@@ -155,12 +155,12 @@ def test_atomic_mass_and_electron_volt_share_the_codata_values():
 )  # fmt: skip
 def test_si_prefixes_of_table_7(prefix, exponent):
     """SI Brochure 9th ed., Table 7 (all 24 prefixes)."""
-    assert q(1, prefix + "m").to_value("m") == pytest.approx(10.0**exponent, rel=1e-15)
+    assert q(1, prefix + "m").to_value("m") == pytest.approx(10.0**exponent, rel=1e-15, abs=0)
 
 
 def test_prefix_on_gram_and_on_non_prefixable_units():
-    assert q(1, "mg").to_value("kg") == pytest.approx(1e-6, rel=1e-15)  # Brochure Section 3: 1e-6 kg is a mg
-    assert q(1, "Mg").to_value("kg") == pytest.approx(1e3, rel=1e-15)  # Table 8: 1 t = 1 Mg = 1e3 kg
+    assert q(1, "mg").to_value("kg") == pytest.approx(1e-6, rel=1e-15, abs=0)  # Brochure Section 3: 1e-6 kg is a mg
+    assert q(1, "Mg").to_value("kg") == pytest.approx(1e3, rel=1e-15, abs=0)  # Table 8: 1 t = 1 Mg = 1e3 kg
     with pytest.raises(UnitError):
         Unit.parse("kMsun")
     with pytest.raises(UnitError):
@@ -229,13 +229,13 @@ def test_white_dwarf_coefficient_unit_has_the_dimension_in_its_docstring():
 
 def test_quantity_powers_and_roots():
     volume = q(8.0, "m^3")
-    assert (volume ** Fraction(1, 3)).to_value("m") == pytest.approx(2.0, rel=1e-15)
+    assert (volume ** Fraction(1, 3)).to_value("m") == pytest.approx(2.0, rel=1e-15, abs=0)
     assert q(4.0, "m^2").sqrt().unit == Unit.parse("m")
-    assert (q(2.0, "km") ** 2).to_value("m^2") == pytest.approx(4e6, rel=1e-15)
-    assert (q(3.0, "s") ** -1).to_value("Hz") == pytest.approx(1.0 / 3.0, rel=1e-15)
+    assert (q(2.0, "km") ** 2).to_value("m^2") == pytest.approx(4e6, rel=1e-15, abs=0)
+    assert (q(3.0, "s") ** -1).to_value("Hz") == pytest.approx(1.0 / 3.0, rel=1e-15, abs=0)
     cube_root = q(27.0, "Msun^3") ** (1 / 3)  # a float that is 1/3 within 1e-12
     assert cube_root.unit == Unit.parse("Msun")
-    assert cube_root.value == pytest.approx(3.0, rel=1e-14)
+    assert cube_root.value == pytest.approx(3.0, rel=1e-14, abs=0)
 
 
 def test_irrational_exponent_is_refused():
@@ -260,9 +260,9 @@ def test_dimension_exponents_are_exact_rationals():
 def test_addition_converts_to_the_left_unit():
     total = q(3.0, "km") + q(500.0, "m")
     assert total.unit == Unit.parse("km")
-    assert total.value == pytest.approx(3.5, rel=1e-15)
+    assert total.value == pytest.approx(3.5, rel=1e-15, abs=0)
     diff = q(1.0, "pc") - q(1.0, "au")
-    assert diff.to_value("m") == pytest.approx(PC - AU, rel=1e-15)
+    assert diff.to_value("m") == pytest.approx(PC - AU, rel=1e-15, abs=0)
 
 
 def test_addition_of_different_dimensions_raises_and_names_both():
@@ -278,7 +278,7 @@ def test_addition_of_different_dimensions_raises_and_names_both():
 
 def test_plain_numbers_combine_only_with_dimensionless_quantities():
     assert (q(0.5, "1") + 1.0).value == 1.5
-    assert (q(50.0, "%") + 1.0).to_value("%") == pytest.approx(150.0, rel=1e-15)
+    assert (q(50.0, "%") + 1.0).to_value("%") == pytest.approx(150.0, rel=1e-15, abs=0)
     with pytest.raises(UnitError):
         q(1.0, "rad") + 1.0  # an angle is not dimensionless in this system
 
@@ -292,9 +292,9 @@ def test_conversion_between_dimensions_raises_with_both_dimensions_in_the_messag
 
 def test_multiplication_and_division_combine_units():
     speed = q(10.0, "km") / q(2.0, "s")
-    assert speed.to_value("m s^-1") == pytest.approx(5000.0, rel=1e-15)
+    assert speed.to_value("m s^-1") == pytest.approx(5000.0, rel=1e-15, abs=0)
     force = q(2.0, "kg") * q(3.0, "m s^-2")
-    assert force.to_value("N") == pytest.approx(6.0, rel=1e-15)
+    assert force.to_value("N") == pytest.approx(6.0, rel=1e-15, abs=0)
     assert (2.0 * q(1.0, "m")).value == 2.0
     assert (q(6.0, "m") / 2.0).value == 3.0
     assert (1.0 / q(4.0, "s")).to_value("Hz") == 0.25
@@ -303,7 +303,7 @@ def test_multiplication_and_division_combine_units():
 def test_dimensionless_ratio_is_returned_as_a_plain_number():
     ratio = q(3.0, "km") / q(1.0, "m")
     assert ratio.unit == Unit.parse("1")
-    assert ratio.value == pytest.approx(3000.0, rel=1e-15)
+    assert ratio.value == pytest.approx(3000.0, rel=1e-15, abs=0)
 
 
 def test_comparison_and_equality_after_conversion():
@@ -322,7 +322,7 @@ def test_array_quantities_keep_shape_and_index():
     x = q(np.arange(6.0).reshape(2, 3), "pc")
     assert x.shape == (2, 3)
     assert x[1].unit == Unit.parse("pc")
-    assert x.to("kpc").value[1, 2] == pytest.approx(5e-3, rel=1e-15)
+    assert x.to("kpc").value[1, 2] == pytest.approx(5e-3, rel=1e-15, abs=0)
     assert len(x) == 2
 
 
@@ -343,12 +343,12 @@ def test_round_trip_through_the_coherent_si_unit(symbol):
 def test_round_trip_through_a_chain_of_astronomical_units():
     v = q(0.7, "Mpc")
     chain = v.to("kpc").to("pc").to("au").to("m").to("km").to("Mpc")
-    assert chain.value == pytest.approx(0.7, rel=1e-14)
+    assert chain.value == pytest.approx(0.7, rel=1e-14, abs=0)
 
 
 def test_unit_algebra_is_consistent_with_quantity_algebra():
     a, b = q(3.0, "Msun"), q(2.0, "pc^-2")
-    assert (a * b).to_value("kg m^-2") == pytest.approx(3.0 * MSUN * 2.0 / PC**2, rel=1e-14)
+    assert (a * b).to_value("kg m^-2") == pytest.approx(3.0 * MSUN * 2.0 / PC**2, rel=1e-14, abs=0)
 
 
 # --------------------------------------------------------------------------------------
@@ -365,7 +365,7 @@ def test_radian_per_second_is_not_a_hertz():
 
 def test_angle_is_not_dimensionless_but_drop_angle_gives_the_si_view():
     assert not q(1.0, "deg").dimension.is_dimensionless()
-    assert q(180.0, "deg").drop_angle().to_value("1") == pytest.approx(math.pi, rel=1e-15)
+    assert q(180.0, "deg").drop_angle().to_value("1") == pytest.approx(math.pi, rel=1e-15, abs=0)
     assert (q(2.0, "m") * q(0.5, "rad")).unit == Unit.parse("m rad")
     assert (q(2.0, "m") * q(0.5, "rad")).drop_angle().to_value("m") == 1.0
     assert Unit.parse("sr") == Unit.parse("rad^2")
@@ -562,8 +562,8 @@ def test_wrapper_converts_arguments_and_wraps_the_result():
     out = f(q(2000.0, "g"), q(0.003, "km s^-1"))
     assert isinstance(out, Quantity)
     assert out.unit == Unit.parse("J")
-    assert out.value == pytest.approx(plain, rel=1e-15)
-    assert out.to_value("erg") == pytest.approx(plain * 1e7, rel=1e-15)
+    assert out.value == pytest.approx(plain, rel=1e-15, abs=0)
+    assert out.to_value("erg") == pytest.approx(plain * 1e7, rel=1e-15, abs=0)
 
 
 def test_plain_numbers_and_arrays_pass_through_unchanged():
@@ -610,7 +610,7 @@ def test_function_without_a_suffix_returns_the_plain_result():
 
     out = with_units(ratio)(q(1.0, "Msun"), q(1.0, "kg"))
     assert not isinstance(out, Quantity)
-    assert out == pytest.approx(MSUN, rel=1e-15)
+    assert out == pytest.approx(MSUN, rel=1e-15, abs=0)
 
 
 def test_units_and_returns_overrides():
@@ -620,7 +620,7 @@ def test_units_and_returns_overrides():
     f = with_units(mean_mass, units={"m_low": "Msun", "m_high": "Msun"}, returns="Msun")
     out = f(q(2.0 * MSUN, "kg"), q(4.0, "Msun"))
     assert out.unit == Unit.parse("Msun")
-    assert out.value == pytest.approx(3.0, rel=1e-15)
+    assert out.value == pytest.approx(3.0, rel=1e-15, abs=0)
     with pytest.raises(UnitError):
         f(q(1.0, "m"), 1.0)
     with pytest.raises(UnitError, match="does not have"):
@@ -968,17 +968,17 @@ def test_a_mass_where_a_length_is_expected_is_the_documented_example():
 def test_results_are_quantities_in_the_unit_of_the_function_suffix():
     r = with_units(basics.schwarzschild_radius_m)(q(1.0, "Msun"))
     assert r.unit == Unit.parse("m")
-    assert r.to_value("km") == pytest.approx(2.953, rel=1e-3)  # 2 G Msun / c^2 = 2.953 km
+    assert r.to_value("km") == pytest.approx(2.953, rel=1e-3, abs=0)  # 2 G Msun / c^2 = 2.953 km
     shadow = with_units(basics.shadow_angular_diameter_uas)(q(6.5e9, "Msun"), q(16.8, "Mpc"))
     assert shadow.unit == Unit.parse("uas")
-    assert shadow.to_value("arcsec") == pytest.approx(shadow.value * 1e-6, rel=1e-14)
+    assert shadow.to_value("arcsec") == pytest.approx(shadow.value * 1e-6, rel=1e-14, abs=0)
     assert 30.0 < shadow.value < 60.0  # M87*: a few tens of microarcseconds
 
 
 def test_astronomical_unit_period_matches_a_gaussian_year():
     """kozmos.ephemeris.kepler test idea: P(1 au, GM_sun) is about one year (within 1e-4)."""
     period = with_units(kepler.orbital_period_s)(q(1.0, "au"), q(GM_SUN.value, "m^3 s^-2"))
-    assert period.to_value("yr") == pytest.approx(1.0, rel=1e-4)
+    assert period.to_value("yr") == pytest.approx(1.0, rel=1e-4, abs=0)
 
 
 def test_distance_modulus_from_pc_is_not_wrapped_as_a_length():

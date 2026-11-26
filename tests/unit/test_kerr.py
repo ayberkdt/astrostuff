@@ -35,31 +35,31 @@ def test_schwarzschild_limits_of_the_orbit():
     x = np.array([4.0, 6.0, 10.0, 50.0])
     # measured: energy exact, angular momentum and Omega 2.4e-16 and 1.7e-16 relative
     energy = kerr.kerr_circular_orbit_specific_energy(x, 0.0)
-    assert energy == pytest.approx((1 - 2 / x) / np.sqrt(1 - 3 / x), rel=1e-14)
+    assert energy == pytest.approx((1 - 2 / x) / np.sqrt(1 - 3 / x), rel=1e-14, abs=0)
     ang_mom = kerr.kerr_circular_orbit_specific_angular_momentum_rg(x, 0.0)
-    assert ang_mom == pytest.approx(np.sqrt(x) / np.sqrt(1 - 3 / x), rel=1e-14)
+    assert ang_mom == pytest.approx(np.sqrt(x) / np.sqrt(1 - 3 / x), rel=1e-14, abs=0)
     # Kepler's law, Omega^2 = G M / r^3 (Abramowicz2013, Schwarzschild summary), with r = x G M / c^2
     omega = kerr.kerr_circular_orbit_angular_velocity_rad_s(M10, x, 0.0)
     r = x * G * M10 / C**2
-    assert omega == pytest.approx(np.sqrt(G * M10 / r**3), rel=1e-14)
+    assert omega == pytest.approx(np.sqrt(G * M10 / r**3), rel=1e-14, abs=0)
     # the vertical epicyclic frequency equals the orbital one, Omega^2 = (omega_theta*)^2
     assert kerr.kerr_vertical_epicyclic_frequency_hz(M10, x, 0.0) == pytest.approx(
-        kerr.kerr_circular_orbit_frequency_hz(M10, x, 0.0), rel=1e-14
+        kerr.kerr_circular_orbit_frequency_hz(M10, x, 0.0), rel=1e-14, abs=0
     )
     # the radial one is Omega sqrt(1 - 6/x)
     assert kerr.kerr_radial_epicyclic_frequency_hz(M10, 10.0, 0.0) == pytest.approx(
-        kerr.kerr_circular_orbit_frequency_hz(M10, 10.0, 0.0) * np.sqrt(1 - 6 / 10.0), rel=1e-14
+        kerr.kerr_circular_orbit_frequency_hz(M10, 10.0, 0.0) * np.sqrt(1 - 6 / 10.0), rel=1e-14, abs=0
     )
 
 
 def test_frequency_equals_the_isco_frequency_of_basics():
     # basics.isco_orbital_frequency_hz uses Omega^2 = G M / r^3 at r = 6 G M / c^2; measured relative difference 2.6e-16
     assert kerr.kerr_circular_orbit_frequency_hz(M10, 6.0, 0.0) == pytest.approx(
-        float(basics.isco_orbital_frequency_hz(M10)), rel=1e-12
+        float(basics.isco_orbital_frequency_hz(M10)), rel=1e-12, abs=0
     )
     # the frequency scales as 1/M
     assert kerr.kerr_circular_orbit_frequency_hz(2 * M10, 8.0, 0.5) == pytest.approx(
-        0.5 * kerr.kerr_circular_orbit_frequency_hz(M10, 8.0, 0.5), rel=1e-14
+        0.5 * kerr.kerr_circular_orbit_frequency_hz(M10, 8.0, 0.5), rel=1e-14, abs=0
     )
 
 
@@ -68,7 +68,7 @@ def test_energy_at_the_isco_equals_basics(spin):
     r_isco = float(basics.kerr_isco_radius_rg(spin))
     # measured: the largest relative difference over SPINS is 9.3e-15; the bound leaves a factor 1e3
     assert kerr.kerr_circular_orbit_specific_energy(r_isco, spin) == pytest.approx(
-        float(basics.kerr_isco_specific_energy(spin)), rel=1e-11
+        float(basics.kerr_isco_specific_energy(spin)), rel=1e-11, abs=0
     )
 
 
@@ -98,7 +98,7 @@ def test_angular_momentum_over_energy_is_the_keplerian_l_of_the_source(spin):
         x, spin
     )
     # measured largest relative difference: 3.0e-16
-    assert ratio == pytest.approx(l_k, rel=1e-12)
+    assert ratio == pytest.approx(l_k, rel=1e-12, abs=0)
 
 
 @pytest.mark.parametrize("spin", SPINS)
@@ -110,7 +110,7 @@ def test_dE_equals_omega_dL_along_circular_orbits(spin):
     de = _derivative(lambda x: float(kerr.kerr_circular_orbit_specific_energy(x, spin)), x0, h)
     dl = _derivative(lambda x: float(kerr.kerr_circular_orbit_specific_angular_momentum_rg(x, spin)), x0, h)
     omega = float(kerr.kerr_circular_orbit_angular_velocity_rad_s(1.0 / (G / C**3), x0, spin))  # c^3/(G M) = 1
-    assert de == pytest.approx(omega * dl, rel=1e-6)
+    assert de == pytest.approx(omega * dl, rel=1e-6, abs=0)
 
 
 @pytest.mark.parametrize("spin", SPINS)
@@ -119,8 +119,8 @@ def test_energy_diverges_at_the_photon_orbit(spin):
     values = [float(kerr.kerr_circular_orbit_specific_energy(r_ph * (1 + eps), spin)) for eps in (1e-3, 1e-6, 1e-9)]
     # E grows as the square root of the distance to the photon orbit: each step of 1e-3 in the distance raises E by
     # about sqrt(1e3) = 31.6 (measured factors 31.2 to 31.6 for all spins in SPINS)
-    assert values[1] / values[0] == pytest.approx(31.6, rel=0.1)
-    assert values[2] / values[1] == pytest.approx(31.6, rel=0.1)
+    assert values[1] / values[0] == pytest.approx(31.6, rel=0.1, abs=0)
+    assert values[2] / values[1] == pytest.approx(31.6, rel=0.1, abs=0)
     assert values[2] > 1e3
 
 
@@ -145,7 +145,7 @@ def test_orbital_frequency_of_prograde_and_retrograde_orbits():
     )
     # Omega = c^3 / (G M) / (x^{3/2} + a_*): closed form for a_* = 1, x = 4 is 1/9 in units of c^3/(G M)
     omega = kerr.kerr_circular_orbit_angular_velocity_rad_s(M10, 4.0, 1.0)
-    assert omega == pytest.approx(C**3 / (G * M10) / 9.0, rel=1e-14)
+    assert omega == pytest.approx(C**3 / (G * M10) / 9.0, rel=1e-14, abs=0)
 
 
 # --------------------------------------------------------------------------------------
@@ -154,9 +154,11 @@ def test_orbital_frequency_of_prograde_and_retrograde_orbits():
 
 
 def test_marginally_bound_radius_limits():
-    assert float(kerr.kerr_marginally_bound_radius_rg(0.0)) == pytest.approx(4.0, rel=1e-14)
-    assert float(kerr.kerr_marginally_bound_radius_rg(1.0)) == pytest.approx(1.0, rel=1e-14)
-    assert float(kerr.kerr_marginally_bound_radius_rg(-1.0)) == pytest.approx(3.0 + 2.0 * np.sqrt(2.0), rel=1e-14)
+    assert float(kerr.kerr_marginally_bound_radius_rg(0.0)) == pytest.approx(4.0, rel=1e-14, abs=0)
+    assert float(kerr.kerr_marginally_bound_radius_rg(1.0)) == pytest.approx(1.0, rel=1e-14, abs=0)
+    assert float(kerr.kerr_marginally_bound_radius_rg(-1.0)) == pytest.approx(
+        3.0 + 2.0 * np.sqrt(2.0), rel=1e-14, abs=0
+    )
 
 
 @pytest.mark.parametrize("spin", [-1.0, *SPINS, 0.9999])
@@ -237,12 +239,13 @@ def test_periastron_precession_weak_field_and_consistency():
     unit = C**3 / (G * M10) / (2.0 * np.pi)
     value = float(kerr.kerr_periastron_precession_frequency_hz(M10, x, 0.0)) / unit
     # measured relative deviation from 3 x^{-5/2}: 1.5e-4 = 1.5 / x (the next term of the expansion)
-    assert value == pytest.approx(3.0 * x**-2.5, rel=5e-4)
+    assert value == pytest.approx(3.0 * x**-2.5, rel=5e-4, abs=0)
     # difference of the two source frequencies
     x2, a = 12.0, 0.6
     assert float(kerr.kerr_periastron_precession_frequency_hz(M10, x2, a)) == pytest.approx(
         float(kerr.kerr_circular_orbit_frequency_hz(M10, x2, a) - kerr.kerr_radial_epicyclic_frequency_hz(M10, x2, a)),
         rel=1e-13,
+        abs=0,
     )
 
 
@@ -255,7 +258,7 @@ def test_nodal_precession_is_the_lense_thirring_frequency():
         # Omega - omega_theta -> 2 a x^{-3/2} Omega = 2 a x^{-3} (1 - (3/4) a x^{-1/2}) for large x, where the second
         # term is the expansion of Omega = 1/(x^{3/2} + a); measured relative deviation of the leading term alone:
         # 3.8e-3 (a = 0.5) and 6.8e-3 (a = 0.9); with the correction included: 2e-6 and 6e-6
-        assert value == pytest.approx(2.0 * spin * x**-3 * (1.0 - 0.75 * spin * x**-0.5), rel=1e-4)
+        assert value == pytest.approx(2.0 * spin * x**-3 * (1.0 - 0.75 * spin * x**-0.5), rel=1e-4, abs=0)
     # sign reverses with the sign of the spin (counted along the direction of the orbit)
     assert float(kerr.kerr_nodal_precession_frequency_hz(M10, 8.0, 0.7)) > 0.0
     assert float(kerr.kerr_nodal_precession_frequency_hz(M10, 8.0, -0.7)) < 0.0
@@ -285,14 +288,16 @@ def test_frame_dragging_equals_minus_g_tphi_over_g_phiphi():
     g_pp = (x**2 + a**2 + 2.0 * a**2 * x * np.sin(theta) ** 2 / rho2) * np.sin(theta) ** 2
     omega = float(kerr.frame_dragging_angular_velocity_rad_s(M10, x, a, polar_angle_rad=theta))
     # measured relative difference: 2e-16
-    assert omega == pytest.approx(C**3 / (G * M10) * (-g_tp / g_pp), rel=1e-12)
+    assert omega == pytest.approx(C**3 / (G * M10) * (-g_tp / g_pp), rel=1e-12, abs=0)
 
 
 def test_frame_dragging_far_away_and_sign():
     x = 1.0e3
     unit = C**3 / (G * M10)
     # measured relative deviation from 2 a / x^3: 3.6e-7 (next term is of order 1/x)
-    assert float(kerr.frame_dragging_angular_velocity_rad_s(M10, x, 0.6)) / unit == pytest.approx(1.2 / x**3, rel=1e-5)
+    assert float(kerr.frame_dragging_angular_velocity_rad_s(M10, x, 0.6)) / unit == pytest.approx(
+        1.2 / x**3, rel=1e-5, abs=0
+    )
     assert float(kerr.frame_dragging_angular_velocity_rad_s(M10, 5.0, -0.6)) < 0.0
     assert float(kerr.frame_dragging_angular_velocity_rad_s(M10, 5.0, 0.0)) == 0.0
 
@@ -308,46 +313,48 @@ def test_horizon_area_matches_the_horizon_radius_of_basics(spin):
     r_plus = float(basics.kerr_horizon_radius_rg(spin))
     expected = 4.0 * np.pi * (r_plus**2 + spin**2) * r_g**2
     # measured relative difference: 0 (exact to rounding); tolerance 1e-12
-    assert float(kerr.kerr_horizon_area_m2(M10, spin)) == pytest.approx(expected, rel=1e-12)
+    assert float(kerr.kerr_horizon_area_m2(M10, spin)) == pytest.approx(expected, rel=1e-12, abs=0)
 
 
 def test_horizon_area_limits():
     r_g = G * M10 / C**2
-    assert float(kerr.kerr_horizon_area_m2(M10, 0.0)) == pytest.approx(16.0 * np.pi * r_g**2, rel=1e-14)
-    assert float(kerr.kerr_horizon_area_m2(M10, 1.0)) == pytest.approx(8.0 * np.pi * r_g**2, rel=1e-14)
+    assert float(kerr.kerr_horizon_area_m2(M10, 0.0)) == pytest.approx(16.0 * np.pi * r_g**2, rel=1e-14, abs=0)
+    assert float(kerr.kerr_horizon_area_m2(M10, 1.0)) == pytest.approx(8.0 * np.pi * r_g**2, rel=1e-14, abs=0)
     # a_* = 0 agrees with the Schwarzschild radius of basics: 4 pi R_S^2
     assert float(kerr.kerr_horizon_area_m2(M10, 0.0)) == pytest.approx(
-        4.0 * np.pi * float(basics.schwarzschild_radius_m(M10)) ** 2, rel=1e-14
+        4.0 * np.pi * float(basics.schwarzschild_radius_m(M10)) ** 2, rel=1e-14, abs=0
     )
 
 
 def test_irreducible_mass_limits_and_the_carroll_form():
-    assert float(kerr.kerr_irreducible_mass_kg(M10, 0.0)) == pytest.approx(M10, rel=1e-14)
-    assert float(kerr.kerr_irreducible_mass_kg(M10, 1.0)) == pytest.approx(M10 / np.sqrt(2.0), rel=1e-14)
-    assert float(kerr.kerr_irreducible_mass_kg(M10, -1.0)) == pytest.approx(M10 / np.sqrt(2.0), rel=1e-14)
+    assert float(kerr.kerr_irreducible_mass_kg(M10, 0.0)) == pytest.approx(M10, rel=1e-14, abs=0)
+    assert float(kerr.kerr_irreducible_mass_kg(M10, 1.0)) == pytest.approx(M10 / np.sqrt(2.0), rel=1e-14, abs=0)
+    assert float(kerr.kerr_irreducible_mass_kg(M10, -1.0)) == pytest.approx(M10 / np.sqrt(2.0), rel=1e-14, abs=0)
     # M_irr^2 = A c^4 / (16 pi G^2)
     for spin in (0.3, 0.8):
         area = float(kerr.kerr_horizon_area_m2(M10, spin))
         # measured relative difference: 0 (exact to rounding); tolerance 1e-12
         assert float(kerr.kerr_irreducible_mass_kg(M10, spin)) == pytest.approx(
-            np.sqrt(area * C**4 / (16.0 * np.pi * G**2)), rel=1e-12
+            np.sqrt(area * C**4 / (16.0 * np.pi * G**2)), rel=1e-12, abs=0
         )
     # Carroll Eq. 7.149 last line, in G = c = 1 with J = M^2 a_* (retyped): M_irr = sqrt{[M^2 + sqrt(M^4 - J^2)] / 2}
     spin = 0.6
     assert float(kerr.kerr_irreducible_mass_kg(1.0, spin)) == pytest.approx(
-        np.sqrt((1.0 + np.sqrt(1.0 - spin**2)) / 2.0), rel=1e-14
+        np.sqrt((1.0 + np.sqrt(1.0 - spin**2)) / 2.0), rel=1e-14, abs=0
     )
 
 
 def test_extractable_fraction():
     assert float(kerr.kerr_penrose_extractable_fraction(0.0)) == 0.0
     # Carroll: "approximately 29%" for the extreme Kerr black hole; exact value 1 - 1/sqrt(2) = 0.29289
-    assert float(kerr.kerr_penrose_extractable_fraction(1.0)) == pytest.approx(1.0 - 1.0 / np.sqrt(2.0), rel=1e-14)
+    assert float(kerr.kerr_penrose_extractable_fraction(1.0)) == pytest.approx(
+        1.0 - 1.0 / np.sqrt(2.0), rel=1e-14, abs=0
+    )
     assert round(float(kerr.kerr_penrose_extractable_fraction(1.0)), 2) == 0.29
     a = np.linspace(0.0, 1.0, 21)
     assert np.all(np.diff(kerr.kerr_penrose_extractable_fraction(a)) > 0.0)
     assert float(kerr.kerr_penrose_extractable_fraction(0.5)) == pytest.approx(
-        1.0 - float(kerr.kerr_irreducible_mass_kg(1.0, 0.5)), rel=1e-14
+        1.0 - float(kerr.kerr_irreducible_mass_kg(1.0, 0.5)), rel=1e-14, abs=0
     )
 
 
@@ -359,16 +366,18 @@ def test_surface_gravity_forms_agree(spin):
     # Page2005 eq:3: kappa = 4 pi (r_+ - M) / A in geometrized units, converted with c^2 / r_G ... (retyped);
     # measured relative difference: 3.3e-16 at most
     kappa_page = 4.0 * np.pi * (r_plus - 1.0) * r_g / area * C**2
-    assert float(kerr.kerr_surface_gravity_m_s2(M10, spin)) == pytest.approx(kappa_page, rel=1e-11)
+    assert float(kerr.kerr_surface_gravity_m_s2(M10, spin)) == pytest.approx(kappa_page, rel=1e-11, abs=0)
     # Carroll Eq. 7.155 with G = c = 1, M = 1, a = a_*: sqrt(1 - a^2) / [2 (1 + sqrt(1 - a^2))]
     kappa_carroll = np.sqrt(1.0 - spin**2) / (2.0 * (1.0 + np.sqrt(1.0 - spin**2)))
-    assert float(kerr.kerr_surface_gravity_m_s2(M10, spin)) == pytest.approx(kappa_carroll * C**2 / r_g, rel=1e-12)
+    assert float(kerr.kerr_surface_gravity_m_s2(M10, spin)) == pytest.approx(
+        kappa_carroll * C**2 / r_g, rel=1e-12, abs=0
+    )
 
 
 def test_temperature_limits_and_schwarzschild_value():
     # measured: relative difference to basics at a_* = 0 is 0
     assert float(kerr.kerr_hawking_temperature_k(M10, 0.0)) == pytest.approx(
-        float(basics.hawking_temperature_k(M10)), rel=1e-12
+        float(basics.hawking_temperature_k(M10)), rel=1e-12, abs=0
     )
     assert float(kerr.kerr_hawking_temperature_k(M10, 1.0)) == 0.0
     a = np.array([0.0, 0.5, 0.9, 0.99, 0.9999])
@@ -376,16 +385,16 @@ def test_temperature_limits_and_schwarzschild_value():
     assert np.all(np.diff(t) < 0.0)
     # kappa ratio = 2 s / (1 + s), s = sqrt(1 - a^2); measured agreement 1e-15
     s_root = np.sqrt(1.0 - a**2)
-    assert t / t[0] == pytest.approx(2.0 * s_root / (1.0 + s_root), rel=1e-12)
-    assert float(kerr.kerr_hawking_temperature_k(M10, -0.5)) == pytest.approx(float(t[1]), rel=1e-14)
+    assert t / t[0] == pytest.approx(2.0 * s_root / (1.0 + s_root), rel=1e-12, abs=0)
+    assert float(kerr.kerr_hawking_temperature_k(M10, -0.5)) == pytest.approx(float(t[1]), rel=1e-14, abs=0)
 
 
 def test_entropy_limits():
     assert float(kerr.kerr_bekenstein_hawking_entropy(M10, 0.0)) == pytest.approx(
-        float(basics.bekenstein_hawking_entropy(M10)), rel=1e-12
+        float(basics.bekenstein_hawking_entropy(M10)), rel=1e-12, abs=0
     )
     assert float(kerr.kerr_bekenstein_hawking_entropy(M10, 1.0)) == pytest.approx(
-        0.5 * float(basics.bekenstein_hawking_entropy(M10)), rel=1e-12
+        0.5 * float(basics.bekenstein_hawking_entropy(M10)), rel=1e-12, abs=0
     )
 
 
@@ -447,10 +456,10 @@ def test_radiated_fraction_bound():
     m = 15.0 * MSUN
     # 1 - 1/sqrt(2) for two equal non-spinning holes
     assert float(kerr.merger_radiated_fraction_bound(m, 0.0, m, 0.0)) == pytest.approx(
-        1.0 - 1.0 / np.sqrt(2.0), rel=1e-13
+        1.0 - 1.0 / np.sqrt(2.0), rel=1e-13, abs=0
     )
     assert float(kerr.merger_radiated_fraction_bound(m, 0.0, 3 * m, 0.0)) == pytest.approx(
-        1.0 - np.sqrt(10.0) / 4.0, rel=1e-13
+        1.0 - np.sqrt(10.0) / 4.0, rel=1e-13, abs=0
     )
     # spin raises the bound: the irreducible masses are smaller
     assert float(kerr.merger_radiated_fraction_bound(m, 0.9, m, 0.9)) > float(
@@ -475,10 +484,10 @@ def test_radiated_fraction_bound():
 def test_kerr_newman_horizon_radius():
     for spin in (-0.8, 0.0, 0.5, 1.0):
         assert float(kerr.kerr_newman_horizon_radius_rg(spin, 0.0)) == pytest.approx(
-            float(basics.kerr_horizon_radius_rg(spin)), rel=1e-14
+            float(basics.kerr_horizon_radius_rg(spin)), rel=1e-14, abs=0
         )
     # Reissner-Nordstrom: r_+ = 1 + sqrt(1 - Q_*^2); extremal at Q_* = 1
-    assert float(kerr.kerr_newman_horizon_radius_rg(0.0, 0.6)) == pytest.approx(1.8, rel=1e-14)
+    assert float(kerr.kerr_newman_horizon_radius_rg(0.0, 0.6)) == pytest.approx(1.8, rel=1e-14, abs=0)
     assert float(kerr.kerr_newman_horizon_radius_rg(0.0, 1.0)) == 1.0
     # the root of Delta = r^2 - 2 r + a^2 + Q^2
     a, q = 0.5, 0.6
@@ -533,9 +542,9 @@ def test_energy_and_angular_momentum_equal_the_printed_closed_forms(spin):
     for radius in radii:
         energy, momentum = _pugliese_energy_and_momentum(radius, abs(spin), spin >= 0)
         # measured: at most 6e-13 (spin 1 at 0.05 above the photon orbit), below 2e-14 elsewhere
-        assert float(kerr.kerr_circular_orbit_specific_energy(radius, spin)) == pytest.approx(energy, rel=1e-11)
+        assert float(kerr.kerr_circular_orbit_specific_energy(radius, spin)) == pytest.approx(energy, rel=1e-11, abs=0)
         assert float(kerr.kerr_circular_orbit_specific_angular_momentum_rg(radius, spin)) == pytest.approx(
-            momentum, rel=1e-11
+            momentum, rel=1e-11, abs=0
         )
 
 
@@ -548,10 +557,10 @@ def test_angular_momentum_equals_the_covariant_velocity_component(spin):
         g_pp = radius**2 + spin**2 + 2.0 * spin**2 / radius
         redshift = (-(g_tt + 2.0 * omega * g_tp + omega**2 * g_pp)) ** -0.5
         assert float(kerr.kerr_circular_orbit_specific_angular_momentum_rg(radius, spin)) == pytest.approx(
-            redshift * (g_tp + omega * g_pp), rel=1e-11
+            redshift * (g_tp + omega * g_pp), rel=1e-11, abs=0
         )
         assert float(kerr.kerr_circular_orbit_specific_energy(radius, spin)) == pytest.approx(
-            -redshift * (g_tt + omega * g_tp), rel=1e-11
+            -redshift * (g_tt + omega * g_tp), rel=1e-11, abs=0
         )
 
 
@@ -566,7 +575,49 @@ def test_energy_stays_finite_and_accurate_just_above_the_photon_orbit():
             energy = float(kerr.kerr_circular_orbit_specific_energy(radius, spin))
             assert np.isfinite(energy)
             reference, _ = _pugliese_energy_and_momentum(radius, spin, True)
-            assert energy == pytest.approx(reference, rel=1e-6)
+            assert energy == pytest.approx(reference, rel=1e-6, abs=0)
             products.append(energy * np.sqrt(eps))
         if spin < 1.0:  # at spin 1 the photon orbit coincides with the horizon radius and E stays finite (0.577)
-            assert products[1] == pytest.approx(products[0], rel=1e-3)
+            assert products[1] == pytest.approx(products[0], rel=1e-3, abs=0)
+
+
+# --------------------------------------------------------------------------------------
+# mutation-testing survivors: width of the rounding band of the radial epicyclic frequency
+# --------------------------------------------------------------------------------------
+
+
+def _radial_bracket(r, a):
+    """Independent restatement of the bracket (omega_r / omega_phi)^2 = 1 - 6/r + 8 a r^(-3/2) - 3 a^2 / r^2."""
+    return 1.0 - 6.0 / r + 8.0 * a * r**-1.5 - 3.0 * a**2 / r**2
+
+
+def _radius_with_bracket(target, a):
+    """Radius near the ISCO at which the bracket equals `target` (brentq on the restated bracket)."""
+    from scipy.optimize import brentq
+
+    r_isco = float(basics.kerr_isco_radius_rg(a))
+    r = brentq(lambda x: _radial_bracket(x, a) - target, 0.97 * r_isco, 1.03 * r_isco, xtol=1e-15, rtol=1e-15)
+    assert _radial_bracket(r, a) == pytest.approx(
+        target, rel=1e-3, abs=0
+    )  # the bracket rounds at 1e-16, so a 1e-3 match is loose
+    return r
+
+
+@pytest.mark.parametrize("spin", [-0.5, 0.0, 0.9])
+@pytest.mark.parametrize("target", [-3e-10, -1e-11, -3e-12])
+def test_radial_epicyclic_frequency_is_nan_just_inside_the_isco_beyond_the_rounding_band(spin, target):
+    """The rounding band is 1e-12 of the orbital frequency squared. A radius with the bracket at -3e-10, -1e-11 or
+    -3e-12 lies outside it (a band widened to 1e-10 would swallow the last two, one widened to 1e-6 all three), is
+    radially unstable and must give NaN, not 0; so must the precession frequency that is built from it."""
+    r = _radius_with_bracket(target, spin)
+    assert np.isnan(kerr.kerr_radial_epicyclic_frequency_hz(M10, r, spin))
+    assert np.isnan(kerr.kerr_periastron_precession_frequency_hz(M10, r, spin))
+
+
+@pytest.mark.parametrize("spin", [-0.5, 0.0, 0.9])
+def test_radial_epicyclic_frequency_is_zero_inside_the_rounding_band(spin):
+    """A bracket of -5e-13 (inside the documented 1e-12 band) is rounding noise: the frequency is exactly 0."""
+    r = _radius_with_bracket(-5e-13, spin)
+    assert kerr.kerr_radial_epicyclic_frequency_hz(M10, r, spin) == 0.0
+    f_orbit = kerr.kerr_circular_orbit_frequency_hz(M10, r, spin)
+    assert kerr.kerr_periastron_precession_frequency_hz(M10, r, spin) == pytest.approx(f_orbit, rel=1e-15, abs=0)

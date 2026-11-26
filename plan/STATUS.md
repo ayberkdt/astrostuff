@@ -6,7 +6,7 @@ This file is generated from the source registry by `python bibliography/registry
 - Functions whose records were all read from the source text: 414
 - Source records: 476 (read: 476, pending: 0)
 - Constants with a source: 35 (awaiting verification: 0)
-- Test functions: 887 (parametrized and property tests count as one)
+- Test functions: 947 (parametrized and property tests count as one)
 - Infrastructure functions exempt from the source rule: 4
 
 `read`: the equation was read from the text of the source while the code was written. `pending`: the equation
@@ -98,7 +98,7 @@ was written as remembered and tested, but the text of the source has not been op
 - `hawking_temperature_k`: [Page2005] §1; T = κ/(2π) and TeX label eq:3 (Schwarzschild: κ = 1/(4M), in Planck units) (read); [Abramowicz2013] §1 (Introduction), Hawking temperature footnote: T_H = ħc³/(8π G M k_B) (read)
 - `horizon_angular_velocity_rad_s`: [Page2005] TeX label eq:3, Ω = 4π a / A (Q = 0) (read)
 - `isco_orbital_frequency_hz`: [Abramowicz2013] 'Summary: characteristic radii and frequencies', Ω_K² = GM/r³ (TeX label schwarzschild-frequencies), x_ms = 6 (read)
-- `isco_radiative_efficiency`: [Reynolds2021] Section 5: η = 1 − e_isco/c² for a Novikov-Thorne disk (read); [Abramowicz2013] §1 (Introduction), efficiency definition η ≡ L/(Ṁ c²) (read)
+- `isco_radiative_efficiency`: [Reynolds2021] subsection 'Radiative efficiency' (TeX labels efficiency and eqn:eta, Spin2020.tex lines 470-476): η = 1 − e_isco/c² for a Novikov-Thorne disk (read); [Abramowicz2013] §1 (Introduction), efficiency definition η ≡ L/(Ṁ c²) (read)
 - `kerr_ergosphere_radius_rg`: [Abramowicz2013] 'Summary: characteristic radii and frequencies', r_0 (ergosphere; same eqnarray, line without a label) (read)
 - `kerr_horizon_radius_rg`: [Page2005] TeX label eq:3, r_+ (Q = 0) (read); [Abramowicz2013] 'Summary: characteristic radii and frequencies', r_H (same eqnarray, line without a label) (read)
 - `kerr_isco_radius_rg`: [Reynolds2021] Section 2: r_isco equation and the definitions of Z1, Z2 (read); [Abramowicz2013] 'Summary: characteristic radii and frequencies', TeX label stable-radius-kerr (formula of Bardeen et al.) (read)
@@ -627,7 +627,7 @@ was written as remembered and tested, but the text of the source has not been op
 - `AVOGADRO` = 6.02214076e+23 mol^-1 (exact) [CODATA2022] Avogadro constant (read)
 - `THOMSON_CROSS_SECTION` = 6.6524587051e-29 m^2 (± 6.2e-38) [CODATA2022] Thomson cross section (read)
 - `STEFAN_BOLTZMANN` = 5.67037441918e-08 W m^-2 K^-4 (exact) [CODATA2022] Stefan-Boltzmann constant (5.670 374 419... e-8) (read; derivation: 2 pi^5 k^4 / (15 h^3 c^2))
-- `WIEN_WAVELENGTH` = 0.002897771955 m K (exact) [CODATA2022] Wien wavelength displacement law constant (2.897 771 955... e-3) (read)
+- `WIEN_WAVELENGTH` = 0.00289777195519 m K (exact) [CODATA2022] Wien wavelength displacement law constant (2.897 771 955... e-3) (read; derivation: h c / (k x), x the root of x = 5 (1 - exp(-x)))
 - `SECOND_RADIATION_CONSTANT` = 0.014387768775 m K (exact) [CODATA2022] second radiation constant (1.438 776 877... e-2) (read; derivation: h c / k)
 - `SOLAR_RADIUS` = 695700000 m (exact) [Prsa2016] Table 1 (read)
 - `SOLAR_LUMINOSITY` = 3.828e+26 W (exact) [Prsa2016] Table 1 (read)

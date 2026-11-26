@@ -146,8 +146,8 @@ def test_riemann_components_of_a_two_sphere_times_a_flat_plane(theta):
     zero_mask = expected == 0.0
     assert np.abs(riemann[zero_mask]).max() < 1e-9
     assert np.abs(ricci_tensor(sphere_times_plane, x) - np.diag([0.0, 1.0, s2, 0.0])).max() < 1e-9
-    assert ricci_scalar(sphere_times_plane, x) == pytest.approx(2.0 / SPHERE_RADIUS**2, rel=1e-9)
-    assert kretschmann_scalar(sphere_times_plane, x) == pytest.approx(4.0 / SPHERE_RADIUS**4, rel=1e-9)
+    assert ricci_scalar(sphere_times_plane, x) == pytest.approx(2.0 / SPHERE_RADIUS**2, rel=1e-9, abs=0)
+    assert kretschmann_scalar(sphere_times_plane, x) == pytest.approx(4.0 / SPHERE_RADIUS**4, rel=1e-9, abs=0)
 
 
 # --------------------------------------------------------------------------------------
@@ -199,8 +199,8 @@ def test_kerr_eddington_finkelstein_azimuth_runs_opposite_to_boyer_lindquist():
         rho2 = r**2 + spin**2 * np.cos(theta) ** 2
         closed = 2.0 * mass * spin * r * np.sin(theta) ** 2 / rho2
         assert ef[0, 3] > 0.0
-        assert ef[0, 3] == pytest.approx(closed, rel=1e-14)  # measured ~1e-16
-        assert ef[0, 3] == pytest.approx(-bl[0, 3], rel=1e-14)  # measured 1.2e-16 (absolute 5.6e-17)
+        assert ef[0, 3] == pytest.approx(closed, rel=1e-14, abs=0)  # measured ~1e-16
+        assert ef[0, 3] == pytest.approx(-bl[0, 3], rel=1e-14, abs=0)  # measured 1.2e-16 (absolute 5.6e-17)
         assert ef[3, 0] == ef[0, 3]
 
 
@@ -227,9 +227,9 @@ def test_schwarzschild_is_ricci_flat_relative_to_the_curvature_scale(r, theta, m
 )
 def test_schwarzschild_kretschmann_scalar_is_48_m_squared_over_r_to_the_sixth(r, theta, measured):
     x = np.array([0.0, r, theta, 0.3])
-    assert kretschmann_scalar(SCH, x) == pytest.approx(48.0 / r**6, rel=10 * measured)
+    assert kretschmann_scalar(SCH, x) == pytest.approx(48.0 / r**6, rel=10 * measured, abs=0)
     # not the 12 M^2 / r^6 printed in Eq. 7.30 of the TeX source
-    assert kretschmann_scalar(SCH, x) / (12.0 / r**6) == pytest.approx(4.0, rel=1e-8)
+    assert kretschmann_scalar(SCH, x) / (12.0 / r**6) == pytest.approx(4.0, rel=1e-8, abs=0)
 
 
 def test_schwarzschild_curvature_scales_with_the_mass():
@@ -237,7 +237,7 @@ def test_schwarzschild_curvature_scales_with_the_mass():
     x = np.array([0.0, 12.0, 1.0, 0.0])
     k1 = kretschmann_scalar(partial(schwarzschild_metric, mass_geometric_m=1.0), x)
     k2 = kretschmann_scalar(partial(schwarzschild_metric, mass_geometric_m=2.0), x)
-    assert k2 / k1 == pytest.approx(4.0, rel=1e-8)
+    assert k2 / k1 == pytest.approx(4.0, rel=1e-8, abs=0)
 
 
 def test_schwarzschild_eddington_finkelstein_curvature_is_regular_at_and_inside_the_horizon():
@@ -245,9 +245,9 @@ def test_schwarzschild_eddington_finkelstein_curvature_is_regular_at_and_inside_
     # Ricci residual / sqrt(K) at most 1.3e-10 (r = 0.7, where sqrt(K) = 20); tolerances 5e-10 and 2e-9.
     for r in (4.0, 2.0, 1.0, 0.7):
         x = np.array([0.0, r, 1.0, 0.3])
-        assert kretschmann_scalar(SCH_EF, x) == pytest.approx(48.0 / r**6, rel=5e-10)
+        assert kretschmann_scalar(SCH_EF, x) == pytest.approx(48.0 / r**6, rel=5e-10, abs=0)
         assert np.abs(ricci_tensor(SCH_EF, x)).max() < 2e-9 * np.sqrt(48.0 / r**6)
-    assert kretschmann_scalar(SCH_EF, np.array([0.0, 2.0, 1.0, 0.3])) == pytest.approx(0.75, rel=5e-10)
+    assert kretschmann_scalar(SCH_EF, np.array([0.0, 2.0, 1.0, 0.3])) == pytest.approx(0.75, rel=5e-10, abs=0)
 
 
 # --------------------------------------------------------------------------------------
@@ -269,14 +269,14 @@ def test_kerr_boyer_lindquist_is_ricci_flat_and_matches_vissers_quadratic_invari
 ):
     x = np.array([0.0, r, theta, 0.3])
     expected = kretschmann_visser(r, theta, spin)
-    assert kretschmann_scalar(kerr(spin), x) == pytest.approx(expected, rel=10 * k_error)
+    assert kretschmann_scalar(kerr(spin), x) == pytest.approx(expected, rel=10 * k_error, abs=0)
     assert np.abs(ricci_tensor(kerr(spin), x)).max() < 10 * ricci_ratio * np.sqrt(abs(expected))
 
 
 def test_kerr_with_zero_spin_has_the_schwarzschild_invariant_and_visser_formula_reduces_to_it():
-    assert kretschmann_visser(7.0, 1.0, 0.0) == pytest.approx(48.0 / 7.0**6, rel=1e-15)
+    assert kretschmann_visser(7.0, 1.0, 0.0) == pytest.approx(48.0 / 7.0**6, rel=1e-15, abs=0)
     x = np.array([0.0, 7.0, 1.0, 0.0])
-    assert kretschmann_scalar(kerr(0.0), x) == pytest.approx(48.0 / 7.0**6, rel=1e-9)
+    assert kretschmann_scalar(kerr(0.0), x) == pytest.approx(48.0 / 7.0**6, rel=1e-9, abs=0)
 
 
 def test_kerr_kretschmann_scalar_takes_negative_values_where_vissers_formula_does():
@@ -286,7 +286,7 @@ def test_kerr_kretschmann_scalar_takes_negative_values_where_vissers_formula_doe
     r, theta, spin = 1.0, 0.2, 0.9
     expected = kretschmann_visser(r, theta, spin)
     assert expected < -3.0
-    assert kretschmann_scalar(kerr_ef(spin), np.array([0.0, r, theta, 0.1])) == pytest.approx(expected, rel=3e-7)
+    assert kretschmann_scalar(kerr_ef(spin), np.array([0.0, r, theta, 0.1])) == pytest.approx(expected, rel=3e-7, abs=0)
 
 
 @pytest.mark.parametrize(
@@ -298,7 +298,7 @@ def test_kerr_in_original_coordinates_is_ricci_flat_and_has_the_same_scalar_inva
     # coordinates; the original coordinates also reach inside the outer horizon r_+ = 1.436 for a = 0.9
     x = np.array([0.0, r, theta, 0.3])
     expected = kretschmann_visser(r, theta, 0.9)
-    assert kretschmann_scalar(kerr_ef(0.9), x) == pytest.approx(expected, rel=10 * k_error)
+    assert kretschmann_scalar(kerr_ef(0.9), x) == pytest.approx(expected, rel=10 * k_error, abs=0)
     assert np.abs(ricci_tensor(kerr_ef(0.9), x)).max() < 10 * ricci_ratio * np.sqrt(abs(expected))
 
 
@@ -334,18 +334,22 @@ def _contracted_bianchi_defect(metric, x):
     return np.abs(np.einsum("lm,mnl->n", ginv, nabla)).max(), np.abs(dG).max()
 
 
+# measured defect relative to the largest derivative of G: Reissner-Nordstrom at r = 5, FLRW a = t^(2/3) at t = 2, r = 2
+BIANCHI_MEASURED = (1.1e-10, 3.4e-11)
+
+
 def test_contracted_bianchi_identity_in_reissner_nordstrom_and_flrw():
-    # nabla^mu G_mu_nu = 0 (Eq. 3.96) for spacetimes with a non-zero Einstein tensor. Measured defect relative to the
-    # largest derivative of G: 1.1e-10 (Reissner-Nordstrom, r = 5) and 6.1e-11 (FLRW a = t^(2/3), t = 2, r = 2);
-    # tolerances 1.2e-9 and 6.5e-10.
+    # nabla^mu G_mu_nu = 0 (Eq. 3.96) for spacetimes with a non-zero Einstein tensor. The derivative of G is a
+    # third derivative of the metric, taken as a finite difference of a tensor that already contains finite
+    # differences; the tolerances are ten times the measured defects (see BIANCHI_MEASURED below).
     rn = partial(reissner_nordstrom_metric, mass_geometric_m=1.0, charge_m=0.6)
     defect, scale = _contracted_bianchi_defect(rn, np.array([0.0, 5.0, 1.0, 0.3]))
     assert scale > 1e-3  # the check is not empty
-    assert defect < 1.2e-9 * scale
+    assert defect < 10.0 * BIANCHI_MEASURED[0] * scale
     flrw = partial(flrw_metric, scale_factor=lambda t: t ** (2.0 / 3.0), spatial_curvature=0.0)
     defect, scale = _contracted_bianchi_defect(flrw, np.array([2.0, 2.0, 1.0, 0.3]))
     assert scale > 1e-2
-    assert defect < 6.5e-10 * scale
+    assert defect < 10.0 * BIANCHI_MEASURED[1] * scale
 
 
 # --------------------------------------------------------------------------------------
@@ -455,7 +459,7 @@ def test_flrw_dust_universe_obeys_the_friedmann_equations_with_zero_pressure():
     g = metric(x)
     mixed = np.linalg.inv(g) @ einstein_tensor(metric, x)
     # measured: G^t_t relative error 5.0e-12, largest spatial component 3.5e-12 of |G^t_t|; tolerances 5e-11 and 4e-11
-    assert mixed[0, 0] == pytest.approx(-4.0 / (3.0 * t**2), rel=5e-11)
+    assert mixed[0, 0] == pytest.approx(-4.0 / (3.0 * t**2), rel=5e-11, abs=0)
     spatial = mixed[1:, 1:]
     assert np.abs(spatial).max() < 4e-11 * abs(mixed[0, 0])
 
@@ -488,5 +492,5 @@ def test_flrw_einstein_tensor_gives_the_critical_density_of_the_cosmology_packag
     rho = g_tt * c**2 / (8.0 * np.pi * GRAVITATIONAL_CONSTANT.value)
     # Measured: G_tt = 4 / (3 t^2) to 7.9e-12 relative, rho against critical_density_kg_m3 to 7.9e-12 (z = 1);
     # tolerance 1e-10.
-    assert g_tt == pytest.approx(4.0 / (3.0 * t_geo**2), rel=1e-10)
-    assert rho == pytest.approx(critical_density_kg_m3(z, cosmology), rel=1e-10)
+    assert g_tt == pytest.approx(4.0 / (3.0 * t_geo**2), rel=1e-10, abs=0)
+    assert rho == pytest.approx(critical_density_kg_m3(z, cosmology), rel=1e-10, abs=0)

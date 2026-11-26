@@ -2,6 +2,8 @@
 
 from kozmos.relativity import curvature, geodesics, metrics, special, weak_field
 from kozmos.relativity.curvature import (
+    CurvaturePrecisionError,
+    CurvaturePrecisionWarning,
     einstein_tensor,
     kretschmann_scalar,
     ricci_scalar,
@@ -72,6 +74,8 @@ __all__ = [
     "christoffel_symbols",
     "contracted_length_m",
     "curvature",
+    "CurvaturePrecisionError",
+    "CurvaturePrecisionWarning",
     "dilated_time_s",
     "doppler_factor",
     "doppler_factor_source_frame",

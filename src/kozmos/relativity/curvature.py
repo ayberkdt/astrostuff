@@ -8,29 +8,46 @@ one in which a sphere has positive curvature; Visser [Visser2007] warns that som
 opposite sign for the Ricci tensor and scalar.
 
 Numerical method: the Christoffel symbols are computed with the complex-step derivative of the metric (exact to
-rounding), and their derivatives with the four-point central difference of kozmos.core._differentiation
-(``method="finite"``). Hence the metric function must be complex safe, the second derivatives of the metric
-carry the error of the four-point formula, about h^4 / 30 times a fifth derivative (the step starts at
-h = 1e-3 max(1, |x_i|) and is reduced until it resolves the scale on which the Christoffel symbols vary),
-and the accuracy is limited by the cancellation of terms that are large in the coordinates (of order 1/r or r)
-to leave a curvature of order M/r^3. Measured (tests/unit/test_curvature.py): the Ricci tensor of Schwarzschild
+rounding), and their derivatives with the finite differences of kozmos.core._differentiation
+(``method="finite"``: six points, an error estimate for every element, a step searched over many decades).
+Hence the metric function must be complex safe, and the accuracy is limited by the cancellation of terms that
+are large in the coordinates (of order 1/r or r) to leave a curvature of order M/r^3. The error estimates are
+carried to the Riemann tensor and compared with it in an orthonormal frame: a tensor that is not known to
+``rtol`` (1e-6 by default) raises ``CurvaturePrecisionError``, and one that vanishes within its uncertainty
+is returned with a ``CurvaturePrecisionWarning`` (flat space gives rounding noise; so does a curvature that
+is more than about twelve orders of magnitude below the connection terms, as for a comoving radius whose
+physical size is tiny against the curvature radius). Measured for Schwarzschild in units of the mass or in
+metres for 1e9 solar masses alike: relative error of the Kretschmann scalar 2e-13 at 4 M, 1e-11 at 100 M,
+3e-10 at 1e4 M; refused at 1e6 M (estimate 7e-6). Measured (tests/unit/test_curvature.py): the Ricci tensor of Schwarzschild
 and Kerr vanishes to an absolute 4e-12 ... 1e-9, which is 8e-11 ... 4e-9 of sqrt(K) for 3 M <= r <= 10 M and
 1.2e-7 of sqrt(K) at r = 30 M; the Kretschmann scalar has a relative error of 1e-11 ... 7e-10. Coordinates
-smaller than 1 in magnitude with 1/x structure (a comoving r = 0.2) need a smaller step, which the helper chooses,
-and the rounding error grows in proportion.
+smaller than 1 in magnitude with 1/x structure (a comoving r = 0.2) need a smaller step, which the helper
+chooses, and the rounding error grows in proportion.
 """
 
 from __future__ import annotations
+
+import warnings
 
 import numpy as np
 from numpy.typing import ArrayLike, NDArray
 
 from kozmos._sources import source
-from kozmos.core._differentiation import jacobian
-from kozmos.relativity.geodesics import Metric, christoffel_symbols
+from kozmos.core._differentiation import jacobian_with_error
+from kozmos.relativity.geodesics import Metric, _christoffel
 from kozmos.relativity.metrics import metric_inverse
 
 Array = NDArray[np.float64]
+
+_ZERO_WITHIN = 10.0  # a Riemann tensor below this many uncertainties counts as zero
+
+
+class CurvaturePrecisionError(ValueError):
+    """The curvature at the point is not determined to the requested accuracy."""
+
+
+class CurvaturePrecisionWarning(RuntimeWarning):
+    """The curvature vanishes within its numerical uncertainty; the returned values are noise around zero."""
 
 
 def _point(x: ArrayLike) -> Array:
@@ -46,9 +63,10 @@ def _point(x: ArrayLike) -> Array:
     status="read",
     note="R^rho_{sigma mu nu} = d_mu Gamma^rho_{nu sigma} - d_nu Gamma^rho_{mu sigma} + Gamma^rho_{mu lambda} "
     "Gamma^lambda_{nu sigma} - Gamma^rho_{nu lambda} Gamma^lambda_{mu sigma}; the derivative of the "
-    "Christoffel symbols is a four-point central difference of complex-step Christoffel symbols",
+    "Christoffel symbols is a finite difference (six points, with an error estimate) of complex-step "
+    "Christoffel symbols",
 )
-def riemann_tensor(metric: Metric, x: ArrayLike) -> Array:
+def riemann_tensor(metric: Metric, x: ArrayLike, rtol: float = 1e-6) -> Array:
     """Compute the Riemann tensor R^rho_{sigma mu nu} at a point.
 
     Parameters
@@ -57,6 +75,10 @@ def riemann_tensor(metric: Metric, x: ArrayLike) -> Array:
         metric(x) -> ndarray of shape (4, 4), covariant components; must be complex safe.
     x : ndarray, shape (4,)
         Coordinates of the point.
+    rtol : float, optional
+        Relative accuracy required of the Riemann tensor (estimated from the finite differences of the
+        Christoffel symbols); ``CurvaturePrecisionError`` is raised if it is not reached, unless the tensor
+        vanishes within its uncertainty.
 
     Returns
     -------
@@ -69,12 +91,12 @@ def riemann_tensor(metric: Metric, x: ArrayLike) -> Array:
 
     Validity
     --------
-    Accuracy: second derivatives of the metric by a four-point difference of exact first derivatives, with step
-    h = 1e-3 max(1, |x_i|) or smaller (chosen by the helper); the truncation error is about (h / L)^4 / 30 times the fifth derivative scale for a
-    variation length L, and rounding errors of the large Christoffel terms add. Measured: Ricci tensor of
+    Accuracy: second derivatives of the metric by a six-point difference of exact first derivatives, with a
+    step chosen element by element from its error estimate; rounding errors of the large Christoffel terms add.
+    ``CurvaturePrecisionError`` if the tensor is not known to ``rtol`` (see the module docstring). Measured: Ricci tensor of
     Schwarzschild at r = 10 M has an absolute residual of 4.0e-12 (5.8e-10 of sqrt(K) = 6.9e-3), of Kerr (a = 0.9 M)
     at (r, theta) = (6 M, 1) 4.4e-12 (1.5e-10 of sqrt(K)); see tests/unit/test_curvature.py for more numbers.
-    Needs a metric that is smooth in a neighbourhood of x of size 2 h.
+    Needs a metric that is smooth in a neighbourhood of x.
 
     Verification
     ------------
@@ -82,18 +104,55 @@ def riemann_tensor(metric: Metric, x: ArrayLike) -> Array:
     of Eq. 3.78-3.81; Kretschmann scalar against closed forms; FLRW Ricci tensor against Eq. 8.13.
     """
     point = _point(x)
-    gamma = christoffel_symbols(metric, point)
+    gamma = _christoffel(metric, point, "complex", True)
 
     def christoffel_at(y: Array) -> Array:
-        return christoffel_symbols(metric, y)
+        return _christoffel(metric, y, "complex", False)
 
-    dgamma = jacobian(christoffel_at, point, method="finite")  # dgamma[a, b, c, l] = d_l Gamma^a_bc
-    return (
+    # dgamma[a, b, c, l] = d_l Gamma^a_bc, with an estimate of its absolute error
+    dgamma, dgamma_error = jacobian_with_error(christoffel_at, point, method="finite")
+    riemann = (
         np.einsum("rnsm->rsmn", dgamma)
         - np.einsum("rmsn->rsmn", dgamma)
         + np.einsum("rml,lns->rsmn", gamma, gamma)
         - np.einsum("rnl,lms->rsmn", gamma, gamma)
     )
+    error = np.einsum("rnsm->rsmn", dgamma_error) + np.einsum("rmsn->rsmn", dgamma_error)
+    # Components are compared in an orthonormal frame, where they all have the unit of curvature: with
+    # e_mu = sqrt|g_mu_mu|, R^rho_sigma_mu_nu is multiplied by e_rho / (e_sigma e_mu e_nu). In coordinates whose
+    # metric components differ by many orders of magnitude a component that is tiny in the coordinate basis can
+    # be the whole curvature, and an absolute comparison would not see its error.
+    frame = np.sqrt(np.abs(np.diagonal(np.asarray(metric(point), dtype=float))))
+    frame = np.where(frame > 0.0, frame, 1.0)
+    weight = np.einsum("r,s,m,n->rsmn", frame, 1.0 / frame, 1.0 / frame, 1.0 / frame)
+    size, uncertainty = float(np.max(np.abs(riemann) * weight)), float(np.max(error * weight))
+    terms = float(
+        max(
+            np.max(np.abs(np.einsum("rnsm->rsmn", dgamma)) * weight),
+            np.max(np.abs(np.einsum("rml,lns->rsmn", gamma, gamma)) * weight),
+        )
+    )
+    # The tensor must be known to rtol. The one exception is a tensor that vanishes within its uncertainty while
+    # that uncertainty is itself below rtol of the connection terms that cancel: flat space in curvilinear
+    # coordinates, which is returned as it is (zero with rounding noise).
+    known = uncertainty <= rtol * size
+    vanishing = size <= _ZERO_WITHIN * uncertainty and uncertainty <= rtol * terms
+    if not (known or vanishing):
+        raise CurvaturePrecisionError(
+            f"the Riemann tensor is known to a relative accuracy of {uncertainty / max(size, 1e-300):.1e} only (limit {rtol:.1e}): "
+            "the curvature is a small difference of large connection terms at this point in these coordinates "
+            "(far from the source, or with coordinates of very different sizes)"
+        )
+    if not known and size > 0.0:
+        warnings.warn(
+            f"the Riemann tensor vanishes within its numerical uncertainty ({uncertainty:.1e} in orthonormal "
+            f"components, {uncertainty / terms:.1e} of the connection terms that cancel): the values returned are "
+            "rounding noise around zero. If the spacetime is not flat there, its curvature is too small against the "
+            "connection terms to be seen in these coordinates",
+            CurvaturePrecisionWarning,
+            stacklevel=2,
+        )
+    return riemann
 
 
 @source(
@@ -102,7 +161,7 @@ def riemann_tensor(metric: Metric, x: ArrayLike) -> Array:
     status="read",
     note="R_mu_nu = R^lambda_{mu lambda nu}",
 )
-def ricci_tensor(metric: Metric, x: ArrayLike) -> Array:
+def ricci_tensor(metric: Metric, x: ArrayLike, rtol: float = 1e-6) -> Array:
     """Compute the Ricci tensor R_mu_nu = R^lambda_{mu lambda nu} at a point.
 
     Parameters
@@ -111,6 +170,10 @@ def ricci_tensor(metric: Metric, x: ArrayLike) -> Array:
         metric(x) -> (4, 4) covariant components; must be complex safe.
     x : ndarray, shape (4,)
         Coordinates of the point.
+    rtol : float, optional
+        Relative accuracy required of the Riemann tensor (estimated from the finite differences of the
+        Christoffel symbols); ``CurvaturePrecisionError`` is raised if it is not reached, unless the tensor
+        vanishes within its uncertainty.
 
     Returns
     -------
@@ -130,7 +193,7 @@ def ricci_tensor(metric: Metric, x: ArrayLike) -> Array:
     tests/unit/test_curvature.py: vanishes for Schwarzschild, Kerr and Kerr in Eddington-Finkelstein
     coordinates to the measured residual; FLRW components against Eq. 8.13.
     """
-    return np.einsum("lmln->mn", riemann_tensor(metric, x))
+    return np.einsum("lmln->mn", riemann_tensor(metric, x, rtol))
 
 
 @source(
@@ -139,7 +202,7 @@ def ricci_tensor(metric: Metric, x: ArrayLike) -> Array:
     status="read",
     note="R = g^{mu nu} R_{mu nu}",
 )
-def ricci_scalar(metric: Metric, x: ArrayLike) -> float:
+def ricci_scalar(metric: Metric, x: ArrayLike, rtol: float = 1e-6) -> float:
     """Compute the Ricci scalar R = g^{mu nu} R_{mu nu} at a point.
 
     Parameters
@@ -148,6 +211,10 @@ def ricci_scalar(metric: Metric, x: ArrayLike) -> float:
         metric(x) -> (4, 4) covariant components; must be complex safe.
     x : ndarray, shape (4,)
         Coordinates of the point.
+    rtol : float, optional
+        Relative accuracy required of the Riemann tensor (estimated from the finite differences of the
+        Christoffel symbols); ``CurvaturePrecisionError`` is raised if it is not reached, unless the tensor
+        vanishes within its uncertainty.
 
     Returns
     -------
@@ -169,7 +236,7 @@ def ricci_scalar(metric: Metric, x: ArrayLike) -> float:
     """
     point = _point(x)
     ginv = metric_inverse(np.asarray(metric(point), dtype=float))
-    return float(np.einsum("mn,mn->", ginv, ricci_tensor(metric, point)))
+    return float(np.einsum("mn,mn->", ginv, ricci_tensor(metric, point, rtol)))
 
 
 @source(
@@ -178,7 +245,7 @@ def ricci_scalar(metric: Metric, x: ArrayLike) -> float:
     status="read",
     note="G_mu_nu = R_mu_nu - (1/2) R g_mu_nu",
 )
-def einstein_tensor(metric: Metric, x: ArrayLike) -> Array:
+def einstein_tensor(metric: Metric, x: ArrayLike, rtol: float = 1e-6) -> Array:
     """Compute the Einstein tensor G_mu_nu = R_mu_nu - R g_mu_nu / 2 at a point.
 
     Parameters
@@ -187,6 +254,10 @@ def einstein_tensor(metric: Metric, x: ArrayLike) -> Array:
         metric(x) -> (4, 4) covariant components; must be complex safe.
     x : ndarray, shape (4,)
         Coordinates of the point.
+    rtol : float, optional
+        Relative accuracy required of the Riemann tensor (estimated from the finite differences of the
+        Christoffel symbols); ``CurvaturePrecisionError`` is raised if it is not reached, unless the tensor
+        vanishes within its uncertainty.
 
     Returns
     -------
@@ -209,7 +280,7 @@ def einstein_tensor(metric: Metric, x: ArrayLike) -> Array:
     """
     point = _point(x)
     g = np.asarray(metric(point), dtype=float)
-    ricci = ricci_tensor(metric, point)
+    ricci = ricci_tensor(metric, point, rtol)
     scalar = float(np.einsum("mn,mn->", metric_inverse(g), ricci))
     return ricci - 0.5 * scalar * g
 
@@ -223,7 +294,7 @@ def einstein_tensor(metric: Metric, x: ArrayLike) -> Array:
     "value computed here for the same metric and with Visser's printed 48 m^2 / r^6 (a -> 0 of his Kerr "
     "invariant)",
 )
-def kretschmann_scalar(metric: Metric, x: ArrayLike) -> float:
+def kretschmann_scalar(metric: Metric, x: ArrayLike, rtol: float = 1e-6) -> float:
     """Compute the Kretschmann scalar K = R_{mu nu rho sigma} R^{mu nu rho sigma} at a point.
 
     Parameters
@@ -232,6 +303,10 @@ def kretschmann_scalar(metric: Metric, x: ArrayLike) -> float:
         metric(x) -> (4, 4) covariant components; must be complex safe.
     x : ndarray, shape (4,)
         Coordinates of the point.
+    rtol : float, optional
+        Relative accuracy required of the Riemann tensor (estimated from the finite differences of the
+        Christoffel symbols); ``CurvaturePrecisionError`` is raised if it is not reached, unless the tensor
+        vanishes within its uncertainty.
 
     Returns
     -------
@@ -258,7 +333,7 @@ def kretschmann_scalar(metric: Metric, x: ArrayLike) -> float:
     point = _point(x)
     g = np.asarray(metric(point), dtype=float)
     ginv = metric_inverse(g)
-    riemann = riemann_tensor(metric, point)
+    riemann = riemann_tensor(metric, point, rtol)
     lowered = np.einsum("rl,lsmn->rsmn", g, riemann)
     raised = np.einsum("sb,mc,nd,rbcd->rsmn", ginv, ginv, ginv, riemann)
     return float(np.einsum("rsmn,rsmn->", lowered, raised))

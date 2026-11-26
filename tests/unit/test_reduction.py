@@ -29,9 +29,11 @@ def _scene(rng, n_stars=25):
 
 def test_star_field_conserves_flux():
     scene = detector.star_field((61, 61), [30.3], [29.6], [1000.0], fwhm_pix=2.5)
-    assert scene.sum() == pytest.approx(1000.0, rel=1e-9)
+    assert scene.sum() == pytest.approx(1000.0, rel=1e-9, abs=0)
     # Also for a narrow PSF: sampling at the pixel center would not conserve flux, the pixel integral does.
-    assert detector.star_field((41, 41), [20.4], [20.1], [500.0], fwhm_pix=0.8).sum() == pytest.approx(500.0, rel=1e-9)
+    assert detector.star_field((41, 41), [20.4], [20.1], [500.0], fwhm_pix=0.8).sum() == pytest.approx(
+        500.0, rel=1e-9, abs=0
+    )
 
 
 def test_gain_and_read_noise_recovery():
@@ -42,8 +44,8 @@ def test_gain_and_read_noise_recovery():
     f1, f2 = (detector.simulate_raw_frame(illumination, 1.0, DETECTOR, rng, flat_field=flat) for _ in range(2))
     b1, b2 = (detector.simulate_raw_frame(zeros, 0.0, DETECTOR, rng) for _ in range(2))
     gain, read_noise = calibration.gain_and_read_noise(f1, f2, b1, b2)
-    assert gain == pytest.approx(DETECTOR.gain_e_adu, rel=0.03)
-    assert read_noise == pytest.approx(DETECTOR.read_noise_e, rel=0.03)
+    assert gain == pytest.approx(DETECTOR.gain_e_adu, rel=0.03, abs=0)
+    assert read_noise == pytest.approx(DETECTOR.read_noise_e, rel=0.03, abs=0)
 
 
 def test_reduction_returns_the_scene():
@@ -109,7 +111,9 @@ def test_ccd_equation_limits():
     # Source dominated: S/N → sqrt(N*).
     assert float(detector.signal_to_noise(1e6, 0.0, 0.0, 0.0, 10)) == pytest.approx(1e3)
     # Sky dominated: S/N → N* / sqrt(n_pix · N_S).
-    assert float(detector.signal_to_noise(100.0, 1e5, 0.0, 5.0, 50)) == pytest.approx(100 / np.sqrt(50 * 1e5), rel=1e-3)
+    assert float(detector.signal_to_noise(100.0, 1e5, 0.0, 5.0, 50)) == pytest.approx(
+        100 / np.sqrt(50 * 1e5), rel=1e-3, abs=0
+    )
     # If the background is estimated from few pixels, the noise increases.
     assert detector.signal_to_noise(1e3, 200.0, 1.0, 5.0, 50, 100) < detector.signal_to_noise(1e3, 200.0, 1.0, 5.0, 50)
 
@@ -129,8 +133,8 @@ def test_ccd_equation_with_synthetic_photometry():
     measured = np.array(measured)
     source_e = (scene - sky)[aperture].sum() * exposure
     expected = float(detector.signal_to_noise(source_e, sky * exposure, 0.0, 8.0, aperture.sum()))
-    assert measured.mean() == pytest.approx(source_e, rel=0.01)
-    assert measured.mean() / measured.std(ddof=1) == pytest.approx(expected, rel=0.08)
+    assert measured.mean() == pytest.approx(source_e, rel=0.01, abs=0)
+    assert measured.mean() / measured.std(ddof=1) == pytest.approx(expected, rel=0.08, abs=0)
 
 
 def test_background_estimate_term_monte_carlo():
@@ -145,5 +149,8 @@ def test_background_estimate_term_monte_carlo():
     # Since S/N = N*/noise, with N* = 1e-9 the value 1/(S/N) is the noise itself (source Poisson term neglected).
     expected = 1e-9 / float(detector.signal_to_noise(1e-9, sky, 0.0, read_noise, n_pix, n_b))
     without_term = 1e-9 / float(detector.signal_to_noise(1e-9, sky, 0.0, read_noise, n_pix))
-    assert measured == pytest.approx(expected, rel=0.015)
-    assert expected / without_term == pytest.approx(np.sqrt(1.5), rel=1e-9) and abs(measured / without_term - 1) > 0.15
+    assert measured == pytest.approx(expected, rel=0.015, abs=0)
+    assert (
+        expected / without_term == pytest.approx(np.sqrt(1.5), rel=1e-9, abs=0)
+        and abs(measured / without_term - 1) > 0.15
+    )

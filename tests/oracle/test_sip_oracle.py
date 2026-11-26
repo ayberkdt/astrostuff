@@ -193,7 +193,7 @@ def test_numerical_inverse_accuracy(corner_pixel):
     big_u = rel_u + kw._poly2d(w.sip_a, rel_u, rel_v)
     big_v = rel_v + kw._poly2d(w.sip_b, rel_u, rel_v)
     assert max(np.abs(kw._poly2d(w.sip_a, rel_u, rel_v)).max(), np.abs(kw._poly2d(w.sip_b, rel_u, rel_v)).max()) == (
-        pytest.approx(corner_pixel, rel=0.05)
+        pytest.approx(corner_pixel, rel=0.05, abs=0)
     )
     uu, vv, iterations, converged = kw._invert_sip(w.sip_a, w.sip_b, big_u, big_v)
     assert converged.all() and iterations <= 5
