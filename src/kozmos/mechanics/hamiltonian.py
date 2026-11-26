@@ -46,8 +46,9 @@ class LegendreHamiltonian:
     The inversion is a damped Newton iteration v <- v - W^{-1} (dL/dv - p), W = d2L/dv dv. For a Lagrangian
     quadratic in v the map p(v) is affine and one step is exact. The step is halved (at most 30 times) while
     the trial point is outside the domain of L (non-finite value) or does not reduce the largest residual
-    component. Convergence is declared when max |dL/dv - p| <= ``tolerance`` * max(max |p|, max |dL/dv(v_start)|) or when the
-    residual has reached the resolution of the map, 16 eps (||W||_inf max|v| + max(1, max|p|)) (half an ulp of v
+    component. Convergence is declared when every component satisfies |dL/dv_i - p_i| <= ``tolerance`` * s_i with
+    s_i = max(|p_i|, |dL/dv_i(v_start)|), or when every component of the residual has reached the resolution of the
+    map, 16 eps (sum_j |W_ij| |v_j| + s_i) (half an ulp of v
     times |W|, plus the rounding of the evaluation: no iterate can do better, and H is stationary in v, so the
     resulting error of H is of second order); otherwise ``LegendreTransformError`` is raised.
     Envelope relations (derivation in this project): with p = dL/dv the dependence of H on v drops out of its
@@ -120,16 +121,20 @@ class LegendreHamiltonian:
         start = _dl_dv(self.lagrangian, q_arr, v, t, self.method)
         # the size of the momenta in the problem, not 1: an electron has p of order 1e-24 in SI units, and a
         # tolerance against max(1, |p|) would accept the starting velocity as the solution
-        scale = max(float(np.max(np.abs(p_arr))), float(np.max(np.abs(start))))
+        # Each component is judged against its own momentum: with one tolerance for all, a momentum of 1e12 beside
+        # one of order 1 left the small one unconverged (a velocity wrong by 1 %). A component whose momentum
+        # vanishes at both ends takes the largest scale.
+        scales = np.maximum(np.abs(p_arr), np.abs(start))
+        scale = float(np.max(scales))
+        scales = np.where(scales > 0.0, scales, scale)
         residual = start - p_arr
         for _ in range(self.max_iterations):
             norm = float(np.max(np.abs(residual)))
-            if norm <= self.tolerance * scale:
+            if np.all(np.abs(residual) <= self.tolerance * scales):
                 return v
             w = self._newton_matrix(q_arr, v, t)
-            if norm <= _RESOLUTION_FACTOR * _EPS * (
-                float(np.max(np.sum(np.abs(w), axis=1))) * float(np.max(np.abs(v))) + scale
-            ):
+            resolution = _RESOLUTION_FACTOR * _EPS * (np.abs(w) @ np.abs(v) + scales)
+            if np.all(np.abs(residual) <= resolution):
                 return v  # the residual is at the resolution of the map v -> p (see the class docstring)
             try:
                 step = np.linalg.solve(w, -residual)

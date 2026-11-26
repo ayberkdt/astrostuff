@@ -15,7 +15,7 @@ At run time the library uses only NumPy and SciPy. Astropy and ERFA are used to 
 | | |
 |---|---|
 | **414** functions, **35** constants | every one with a source record; in all 476 records the equation was read from the text of the source |
-| **3601** tests | run on every push ([CI](.github/workflows/ci.yml): Linux, Windows and macOS, Python 3.12 and 3.13) |
+| **3610** tests | run on every push ([CI](.github/workflows/ci.yml): Linux, Windows and macOS, Python 3.12 and 3.13) |
 | **21** packages | from FITS files and photometry to Lagrangians, geodesics and dark energy |
 
 Current numbers, generated from the code: [plan/STATUS.md](plan/STATUS.md).

@@ -4,11 +4,16 @@ Two methods, both derived here from the Taylor series of ``f`` and tied to no pu
 
 ``"complex"``
     f(x + i h) = f(x) + i h f'(x) − h² f''(x)/2 − ..., so Im f(x + i h) / h = f'(x) + O(h²). There
-    is no subtraction, hence no cancellation, and h can be 1e-30: the result is exact to rounding
+    is no subtraction, hence no cancellation, and h is 1e-30 of the coordinate (of the smallest
+    non-zero coordinate below 1, or 1, for a coordinate that is zero): the result is exact to rounding
     whatever the scale of the function. It needs a function that is analytic and accepts complex
     arguments. ``abs``, ``norm``, comparisons and ``.real`` break this silently (the imaginary part
     is lost), so every complex-step derivative is compared with the finite-difference derivative
-    and refused when the two differ by more than the error estimate of the latter.
+    and refused when the two differ by more than the error estimate of the latter, or when no
+    finite-difference step determines the derivative at all (the test cannot be made). For this
+    test the finite difference is judged against the size of f (see below), because a derivative
+    that is small against |f| / h cannot contradict the complex step, which does not suffer from
+    the size of f.
 ``"finite"``
     Seven function values on a symmetric stencil, f(x) and f(x ± h), f(x ± 2h), f(x ± 3h), give
 
@@ -29,21 +34,30 @@ Two methods, both derived here from the Taylor series of ``f`` and tied to no pu
     (a pole or a narrow feature between the nodes: Δ⁴ is then as large as Δ²) and for little when
     it does (Δ⁴ ≈ (h/L)² Δ²). A step is acceptable for an element if
 
-        err ≤ 1e-6 |D6| + 1e-7 max|f| / h,
+        err ≤ 1e-6 |D6| + 1e-7 S / h,
 
-    the second term being the size of a difference quotient at that step (below the first step: the
-    largest such size between that step and the first one), so that the rule does not depend on the
-    units of f or of x. The first step is 1e-3 · max(1, |x_i|). If the estimate there
+    where S is the variation of f over the stencil (largest minus smallest of the seven values,
+    less eight times σ, and not below zero): S / h is the size of a difference quotient at that
+    step (below the first step: the largest such size between that step and the first one; above
+    it: not more than at the first step). The size of f itself is no scale for its derivatives
+    (L + 1e12 has those of L), and with it in the place of S a derivative of 2 was returned as 2.02.
+    The rule does not depend on the units of f or of x. The first step is 1e-3 · max(1, |x_i|). If the estimate there
     is not already a hundred times below the limit, or if a step a hundred times smaller does not
     give the same derivative within the estimates, the steps from 1e-12 to 1e9 times the first one
     are all tried. For each element the smallest acceptable step is taken first (truncation is least
     there), and a larger step replaces the current choice only if it gives the same derivative within
     the two estimates and has the smaller estimate; this is how rounding noise is reduced for a function
     whose scale of variation is much larger than max(1, |x_i|), without trusting a large step that
-    merely averages over structure. If no step is acceptable for some element, ValueError is raised.
+    merely averages over structure. An element for which no step is acceptable gets the step with the
+    smallest estimate up to the first one, improved by larger steps under the same rule, and keeps
+    that estimate. The functions that return estimates (``*_with_error``) return it, and their
+    callers decide (the accelerations and the Riemann tensor refuse what their propagated estimate
+    does not support). The functions that return the derivative alone accept such an element only
+    if its estimate is below 1e-7 of the largest element that is determined (a vanishing element of
+    a Jacobian whose other elements are known) and raise ValueError otherwise.
     A kink at x itself is refused (the estimate never falls below the limit there). A function that
     does not depend on the coordinate (equal values on the first stencil and a million first steps
-    away on both sides) gives exactly zero with a zero estimate.
+    away on both sides, within eight rounding errors) gives exactly zero with a zero estimate.
 
     What is not seen: structure finer than a hundredth of the first step whose amplitude is below
     about 1e-10 of the function value there (the first step and its confirmation then both look
@@ -147,7 +161,9 @@ def _six(values: list[Array], h: float) -> Array:
     return ((fp3 - fm3) - 9.0 * (fp2 - fm2) + 45.0 * (fp1 - fm1)) / (60.0 * h)
 
 
-def _stencil(f: Callable[[Array], ArrayLike], x: Array, i: int, h: float, center: Array, trace: _Trace):
+def _stencil(
+    f: Callable[[Array], ArrayLike], x: Array, i: int, h: float, center: Array, trace: _Trace, loose: bool = False
+):
     """Six-point derivative, its error estimate, the difference-quotient scale, the constancy flag and the data
     that classify an element as a rounding residue, for one step."""
     trace.inner_error = trace.center_error
@@ -159,6 +175,9 @@ def _stencil(f: Callable[[Array], ArrayLike], x: Array, i: int, h: float, center
         second = fm1 - 2.0 * center + fp1
         fourth = fm2 - 4.0 * fm1 + 6.0 * center - 4.0 * fp1 + fp2
         values = np.maximum.reduce([np.abs(v) for v in (*points, center)])
+        # how much the function changes over the stencil: the scale of its difference quotients. The size of
+        # the function itself is no such scale (L + 1e12 has the derivatives of L).
+        spread = np.maximum.reduce([*points, center]) - np.minimum.reduce([*points, center])
         # roughness: for a resolved function the fourth difference is (h / L)^2 times the second one and counts
         # for little; for a feature between the nodes, or for noise, the two are comparable and it counts in full
         rough = 0.5 * np.abs(fourth) / h * np.minimum(1.0, np.abs(fourth) / (np.abs(second) + 1e-300))
@@ -166,6 +185,8 @@ def _stencil(f: Callable[[Array], ArrayLike], x: Array, i: int, h: float, center
         # noise of one function value: at least a few rounding errors, and what the sixth difference shows (its
         # coefficients have a root sum of squares of 30.4); D6 amplifies it by 1.1 / h
         noise = np.maximum(4.0 * _EPS * values, np.abs(sixth) / 30.0)
+        # seven noisy samples of a constant differ by a few times the noise: that is no variation
+        spread = np.maximum(spread - 8.0 * noise, 0.0)
         error = (
             1.1 * noise / h  # rounding and noise of the function values
             + 4.0 * _EPS * abs(float(x[i])) / h * np.abs(six)  # rounding of x + h
@@ -184,7 +205,13 @@ def _stencil(f: Callable[[Array], ArrayLike], x: Array, i: int, h: float, center
         inner = trace.inner_error * np.abs(six)
         # the part of the estimate that is noise of the function values and of the step
         noise_part = 1.1 * noise / h + 4.0 * _EPS * abs(float(x[i])) / h * np.abs(six)
-    return six, error, values / h, constant, (tiny, noisy, bound, largest / h, inner, np.abs(sixth) / 30.0, noise_part)
+    return (
+        six,
+        error,
+        (values if loose else spread) / h,
+        constant,
+        (tiny, noisy, bound, largest / h, inner, np.abs(sixth) / 30.0, noise_part, values),
+    )
 
 
 def _ratio(six: Array, error: Array, quotient: Array, constant: Array, decade: int) -> Array:
@@ -220,8 +247,8 @@ def _residues(results: dict, extras: dict, constant: Array) -> dict:
 
 
 def _finite_column(
-    f: Callable[[Array], ArrayLike], x: Array, i: int, record: list | None = None
-) -> tuple[Array, Array]:
+    f: Callable[[Array], ArrayLike], x: Array, i: int, record: list | None = None, loose: bool = False
+) -> tuple[Array, Array, Array]:
     """Derivative along coordinate ``i`` and its error estimate (see the module docstring)."""
     stack = _stack()
     parent = stack[-1] if stack else None
@@ -246,7 +273,7 @@ def _finite_column(
                 relative = relative[np.isfinite(relative)]
                 if relative.size:
                     parent.inner_error = max(parent.inner_error, min(1.0, float(np.max(relative))))
-            return result, np.zeros_like(result)
+            return result, np.zeros_like(result), np.ones(np.shape(result), dtype=bool)
         parent = None  # the call sequence differs from the recorded one: choose the steps afresh
 
     child = _Trace()
@@ -256,7 +283,7 @@ def _finite_column(
     base = _FIRST_STEP * max(1.0, abs(float(x[i])))
     good = _GOOD_REL / _ACCEPT_REL  # in units of the allowed error
 
-    first = _stencil(f, x, i, base, center, child)
+    first = _stencil(f, x, i, base, center, child, loose)
     six, error, quotient, constant, extra0 = first
     extras = {0: extra0}
     raw = constant.copy()
@@ -284,7 +311,7 @@ def _finite_column(
     error = np.where(constant, 0.0, np.where(raw & ~constant, np.inf, error))
     first = (six, error, quotient, constant)
     results = {0: first}
-    fine = _stencil(f, x, i, base * 10.0**_CONFIRM, center, child)
+    fine = _stencil(f, x, i, base * 10.0**_CONFIRM, center, child, loose)
     extras[_CONFIRM] = fine[4]
     results[_CONFIRM] = (fine[0], np.where(fine[3] & ~constant, np.inf, fine[1]), fine[2], constant)
     six, error, quotient = _residues(results, extras, constant)[0][:3]
@@ -303,11 +330,12 @@ def _finite_column(
         settled = bool(np.all(same | constant))
     if settled:
         best_six, best_error, best_step = six, error, np.full(np.shape(six), base)
+        determined = np.ones(np.shape(six), dtype=bool)
     else:
         for decade in [*range(-_DOWN, 0), *range(1, _UP + 1)]:
             if decade in results:
                 continue
-            other = _stencil(f, x, i, base * 10.0**decade, center, child)
+            other = _stencil(f, x, i, base * 10.0**decade, center, child, loose)
             extras[decade] = other[4]
             # Equal values at this step say nothing unless the function is confirmed independent of the
             # coordinate: the step may simply be below the spacing of the function values. Such a step is dead.
@@ -339,12 +367,19 @@ def _finite_column(
             six, error, quotient, constant = results[decade]
             widest = np.maximum(widest, np.where(np.isfinite(quotient), quotient, 0.0))
             ratios[decade] = _ratio(six, error, widest, constant, decade)
+        # Above the first step the difference quotient of a curved function grows with the step and says nothing
+        # about the derivative at the point: the allowance stays that of the first step.
+        first_quotient = results[0][2]
         for decade in range(1, _UP + 1):
             six, error, quotient, constant = results[decade]
-            ratios[decade] = _ratio(six, error, quotient, constant, decade)
+            with np.errstate(invalid="ignore"):
+                capped = np.where(np.isfinite(first_quotient), np.minimum(quotient, first_quotient), quotient)
+            if loose:
+                capped = quotient
+            ratios[decade] = _ratio(six, error, capped, constant, decade)
         # An element that is exactly zero at every point of every step inside the domain is identically zero in
         # the neighbourhood (a vanishing component of a tensor): its derivative is zero. It is anchored at once.
-        quotients = np.stack([results[d][2] for d in results])
+        quotients = np.stack([extras[d][7] for d in results])  # the largest |f| on each stencil
         inside = np.isfinite(quotients)
         anchored = np.all((quotients == 0.0) | ~inside, axis=0) & np.any(inside, axis=0)
         best_six = np.zeros(shape)
@@ -374,14 +409,35 @@ def _finite_column(
             best_error = np.where(take, error, best_error)
             best_step = np.where(take, base * 10.0**decade, best_step)
             best_noise = np.where(take, noise, best_noise)
-        best_error = np.where(np.isfinite(best_error), best_error, 0.0)  # the identically zero elements
+        best_error = np.where(anchored & ~np.isfinite(best_error), 0.0, best_error)  # the identically zero elements
+        determined = anchored.copy()
         if not np.all(anchored):
-            worst = min(float(np.max(r)) for r in ratios.values())
-            raise ValueError(
-                f"finite-difference derivative along coordinate {i} could not be determined: at the best step the "
-                f"error estimate is {worst:.1e} times the allowed one. The function is not smooth there, is too "
-                "noisy, or varies on a scale that no step between 1e-15 and 1e6 times max(1, |x_i|) resolves"
-            )
+            # No step determines these elements by itself. They get the step with the smallest estimate among those
+            # up to the first one, and then a larger step wherever it gives the same value within the estimates and
+            # a smaller estimate (the rule of the chain above): a larger step that averages over the structure of
+            # the function disagrees and is not taken. Whether the estimate that remains is good enough is decided
+            # for the Jacobian as a whole (an element that vanishes is known well enough if its error is small
+            # against the other elements). An element without any finite estimate keeps an infinite one.
+            for decade in range(-_DOWN, _UP + 1):
+                six, error, quotient, constant = results[decade]
+                noise = np.where(np.isfinite(noises[decade]), noises[decade], 0.0)
+                with np.errstate(invalid="ignore"):
+                    usable = ~anchored & np.isfinite(six) & np.isfinite(error) & (error < best_error)
+                    if decade > 0:
+                        usable &= np.abs(six - best_six) <= 3.0 * (error + best_error) + _NOISE_SLACK * (
+                            noise + best_noise
+                        )
+                best_six = np.where(usable, six, best_six)
+                best_error = np.where(usable, error, best_error)
+                best_step = np.where(usable, base * 10.0**decade, best_step)
+                best_noise = np.where(usable, noise, best_noise)
+    # An element confirmed as independent of the coordinate (equal, within a few rounding errors, at the stencil and
+    # far away) has the derivative zero. The quotient of its rounding residues by the step is not returned: at the
+    # smallest steps it is large.
+    independent = results[0][3]
+    best_six = np.where(independent, 0.0, best_six)
+    best_error = np.where(independent, 0.0, best_error)
+    best_step = np.where(independent, base, best_step)
     if child.steps:  # finite differences were taken inside f
         best_error = best_error * _NESTED_SAFETY
     if parent is not None:
@@ -393,27 +449,31 @@ def _finite_column(
             parent.inner_error = max(parent.inner_error, min(1.0, float(np.max(relative))))
     if record is not None:
         record.append(best_step / max(1.0, abs(float(x[i]))))  # the steps in units of max(1, |x_i|)
-    return best_six, best_error
+    return best_six, best_error, determined
 
 
 def _planned(f: Callable[[Array], ArrayLike], x: Array, plan: dict) -> tuple[Array, Array] | None:
     """Derivative with the steps of an earlier call at a nearby point; None if they no longer serve.
 
     Each step is verified where it is used: the six-point and four-point formulas must agree within the limit of the
-    module docstring. Every element is evaluated again: one that did not depend on a coordinate at the earlier
-    point (a momentum that vanished with the velocity) may depend on it now.
+    module docstring, or, for an element that vanishes, within that limit of the largest element of the Jacobian.
+    Every element is evaluated again: one that did not depend on a coordinate at the earlier point (a momentum that
+    vanished with the velocity) may depend on it now.
     """
-    columns, errors = [], []
+    columns, errors, slack, factors = [], [], [], []
     for i, ratios in enumerate(plan["steps"]):
         scale = max(1.0, abs(float(x[i])))
         six_all = np.zeros(ratios.shape)
         error_all = np.zeros(ratios.shape)
+        slack_all = np.zeros(ratios.shape)
+        nested = 1.0
         for ratio in np.unique(ratios):
             h = float(ratio) * scale
             trace = _Trace()
             points = _differences(f, x, i, h, trace, ratios.shape)
             fm3, fm2, fm1, fp1, fp2, fp3 = points
-            nested = _NESTED_SAFETY if trace.steps else 1.0
+            if trace.steps:
+                nested = _NESTED_SAFETY
             with np.errstate(all="ignore"):
                 six = _six(points, h)
                 four = ((fm2 - fp2) + 8.0 * (fp1 - fm1)) / (12.0 * h)
@@ -421,19 +481,32 @@ def _planned(f: Callable[[Array], ArrayLike], x: Array, plan: dict) -> tuple[Arr
                 error = (
                     1.1 * 4.0 * _EPS * values / h + 4.0 * _EPS * abs(float(x[i])) / h * np.abs(six) + np.abs(six - four)
                 )
-                good = error <= _ACCEPT_REL * np.abs(six) + _ACCEPT_ABS * values / h
-                error = nested * error  # the step is judged as it was when it was chosen; the estimate is not
+                spread = np.maximum.reduce(points) - np.minimum.reduce(points)
+                own = _ACCEPT_REL * np.abs(six) + _ACCEPT_ABS * spread / h
             use = ratios == ratio
-            if not np.all(good[use]):
-                return None
             six_all = np.where(use, six, six_all)
             error_all = np.where(use, error, error_all)
+            slack_all = np.where(use, own, slack_all)
         columns.append(six_all)
         errors.append(error_all)
-    return np.stack(columns, axis=-1), np.stack(errors, axis=-1)
+        slack.append(slack_all)
+        factors.append(nested)
+    result = np.stack(columns, axis=-1)
+    error = np.stack(errors, axis=-1)
+    allowed = np.stack(slack, axis=-1)
+    finite = np.abs(result[np.isfinite(result)])
+    largest = float(np.max(finite)) if finite.size else 0.0
+    with np.errstate(invalid="ignore"):
+        good = error <= np.maximum(allowed, _ACCEPT_ABS * largest)
+    if not np.all(good):
+        return None
+    # the steps are judged as they were when they were chosen; the estimate of a nested difference is not
+    return result, error * np.array(factors)
 
 
-def _finite_jacobian(f: Callable[[Array], ArrayLike], x: Array, plan: dict | None = None) -> tuple[Array, Array]:
+def _finite_jacobian(
+    f: Callable[[Array], ArrayLike], x: Array, plan: dict | None = None, strict: bool = False, loose: bool = False
+) -> tuple[Array, Array]:
     """Finite-difference Jacobian with error estimates.
 
     ``plan`` is a dictionary that the caller keeps between calls at successive nearby points (the right-hand sides of
@@ -445,18 +518,52 @@ def _finite_jacobian(f: Callable[[Array], ArrayLike], x: Array, plan: dict | Non
         if planned is not None:
             return planned
     record: list | None = [] if plan is not None else None
-    columns = [_finite_column(f, x, i, record) for i in range(x.size)]
+    columns = [_finite_column(f, x, i, record, loose) for i in range(x.size)]
+    result = np.stack([c[0] for c in columns], axis=-1)
+    error = np.stack([c[1] for c in columns], axis=-1)
+    determined = np.stack([c[2] for c in columns], axis=-1)
+    if loose and not np.all(determined):
+        index = np.argwhere(~determined)[0]
+        raise ValueError(
+            f"finite-difference derivative along coordinate {int(index[-1])} could not be determined: no step "
+            "between 1e-15 and 1e6 times max(1, |x_i|) gives an error estimate below the limit"
+        )
+    if strict and not np.all(determined):
+        # ``strict`` is for the callers that return the derivative without its estimate. An element that no step
+        # determines by itself (its error is not small against its own value, nor against the variation of the
+        # function over the stencil) is accepted if the error is small against the largest determined element: the
+        # vanishing element of a Jacobian whose other elements are known. Where nothing is determined there is no
+        # scale to accept it against (the size of f is none: L + 1e20 has the derivatives of L), and it is refused.
+        size = float(np.max(np.abs(result[determined]))) if np.any(determined) else 0.0
+        with np.errstate(all="ignore"):
+            bad = ~determined & ~(error <= _ACCEPT_ABS * size)
+        if np.any(bad):
+            index = np.argwhere(bad)[0]
+            raise ValueError(
+                f"finite-difference derivative along coordinate {int(index[-1])} could not be determined: the best "
+                f"step leaves an error estimate of {float(error[tuple(index)]):.1e} for a value of "
+                f"{float(result[tuple(index)]):.1e}. The function is not smooth there, is too noisy (a large constant "
+                "part), or varies on a scale that no step between 1e-15 and 1e6 times max(1, |x_i|) resolves"
+            )
     if plan is not None:
         plan["steps"] = record
-    return np.stack([c[0] for c in columns], axis=-1), np.stack([c[1] for c in columns], axis=-1)
+    return result, error
 
 
 def _complex_jacobian(f: Callable[[Array], ArrayLike], x: Array) -> Array:
+    # The step is 1e-30 of the coordinate: the error of the complex step is of relative order (h / L)^2 for a
+    # function that varies on the scale L, and L can be as small as the coordinate itself (q^4 at q = 1e-30, where
+    # an absolute step of 1e-30 returned zero). A coordinate that is exactly zero takes the scale of the smallest
+    # non-zero one below 1, or 1. Below 1e-280 the imaginary part would underflow.
+    size = np.abs(x)
+    nonzero = size[size > 0.0]
+    fallback = min(1.0, float(np.min(nonzero))) if nonzero.size else 1.0
     columns = []
     for i in range(x.size):
+        h = max(_COMPLEX_STEP * (float(size[i]) if size[i] > 0.0 else fallback), 1e-280)
         z = x.astype(complex)
-        z[i] += 1j * _COMPLEX_STEP
-        columns.append(np.imag(np.asarray(f(z), dtype=complex)) / _COMPLEX_STEP)
+        z[i] += 1j * h
+        columns.append(np.imag(np.asarray(f(z), dtype=complex)) / h)
     return np.stack(columns, axis=-1)
 
 
@@ -469,7 +576,11 @@ def _check_analytic(f: Callable[[Array], ArrayLike], x: Array, result: Array) ->
     the edge of its domain, where only a very small step stays inside.
     """
     try:
-        reference, error = _finite_jacobian(f, x)
+        # ``loose``: the reference is judged against the size of f, as a test of the complex step needs (a
+        # derivative that is small against |f| / h cannot be contradicted, and need not be: the complex step does
+        # not suffer from the size of f). A reference that no step determines even so means that the test cannot
+        # be made, and that is an error.
+        reference, error = _finite_jacobian(f, x, loose=True)
     except ValueError as exc:
         raise ValueError(
             "complex-step derivative could not be checked against finite differences "
@@ -489,9 +600,11 @@ def _check_analytic(f: Callable[[Array], ArrayLike], x: Array, result: Array) ->
         )
 
 
-def _first(f: Callable[[Array], ArrayLike], x: Array, method: Method, check: bool) -> tuple[Array, Array]:
+def _first(
+    f: Callable[[Array], ArrayLike], x: Array, method: Method, check: bool, strict: bool = False
+) -> tuple[Array, Array]:
     if method == "finite":
-        return _finite_jacobian(f, x)
+        return _finite_jacobian(f, x, strict=strict)
     if method != "complex":
         raise ValueError("method must be 'complex' or 'finite'")
     result = _complex_jacobian(f, x)
@@ -501,7 +614,7 @@ def _first(f: Callable[[Array], ArrayLike], x: Array, method: Method, check: boo
 
 
 def jacobian_with_error(
-    f: Callable[[Array], ArrayLike], x: ArrayLike, method: Method = "complex", check: bool = True
+    f: Callable[[Array], ArrayLike], x: ArrayLike, method: Method = "complex", check: bool = True, strict: bool = False
 ) -> tuple[Array, Array]:
     """Derivative of ``f`` with respect to the 1-D vector ``x`` and an estimate of its absolute error.
 
@@ -512,7 +625,7 @@ def jacobian_with_error(
     x = np.asarray(x, dtype=float)
     if x.ndim != 1:
         raise ValueError("x must be a 1-D vector")
-    return _first(f, x, method, check=check)
+    return _first(f, x, method, check=check, strict=strict)
 
 
 def jacobian(f: Callable[[Array], ArrayLike], x: ArrayLike, method: Method = "complex", check: bool = True) -> Array:
@@ -529,7 +642,7 @@ def jacobian(f: Callable[[Array], ArrayLike], x: ArrayLike, method: Method = "co
         imaginary part); use ``method="finite"`` for such a function. With ``method="finite"``
         when no step gives an error estimate below the limit of the module docstring.
     """
-    return jacobian_with_error(f, x, method, check)[0]
+    return jacobian_with_error(f, x, method, check, strict=True)[0]
 
 
 def gradient(f: Callable[[Array], ArrayLike], x: ArrayLike, method: Method = "complex") -> Array:
@@ -546,7 +659,7 @@ def _checked_at(f: Callable[[Array], ArrayLike], x: Array, method: Method) -> No
 
 
 def hessian_with_error(
-    f: Callable[[Array], ArrayLike], x: ArrayLike, method: Method = "complex"
+    f: Callable[[Array], ArrayLike], x: ArrayLike, method: Method = "complex", strict: bool = False
 ) -> tuple[Array, Array]:
     """Symmetrized matrix of second derivatives of a scalar function and an estimate of its absolute error.
 
@@ -554,27 +667,31 @@ def hessian_with_error(
     """
     x = np.asarray(x, dtype=float)
     _checked_at(f, x, method)
-    result, error = _finite_jacobian(lambda y: _first(f, y, method, check=False)[0], x)
+    result, error = _finite_jacobian(lambda y: _first(f, y, method, check=False)[0], x, strict=strict)
     return 0.5 * (result + result.T), 0.5 * (error + error.T)
 
 
 def hessian(f: Callable[[Array], ArrayLike], x: ArrayLike, method: Method = "complex") -> Array:
     """Matrix of second derivatives of a scalar function, symmetrized; shape ``(x.size, x.size)``."""
-    return hessian_with_error(f, x, method)[0]
+    return hessian_with_error(f, x, method, strict=True)[0]
 
 
 def mixed_second_with_error(
-    f: Callable[[Array, Array], ArrayLike], x: ArrayLike, y: ArrayLike, method: Method = "complex"
+    f: Callable[[Array, Array], ArrayLike],
+    x: ArrayLike,
+    y: ArrayLike,
+    method: Method = "complex",
+    strict: bool = False,
 ) -> tuple[Array, Array]:
     """Mixed derivatives ∂²f/∂x_i∂y_j of a scalar ``f(x, y)`` and an estimate of their absolute error."""
     x = np.asarray(x, dtype=float)
     y = np.asarray(y, dtype=float)
     _checked_at(lambda u: f(u, y), x, method)
-    return _finite_jacobian(lambda v: _first(lambda u: f(u, v), x, method, check=False)[0], y)
+    return _finite_jacobian(lambda v: _first(lambda u: f(u, v), x, method, check=False)[0], y, strict=strict)
 
 
 def mixed_second(
     f: Callable[[Array, Array], ArrayLike], x: ArrayLike, y: ArrayLike, method: Method = "complex"
 ) -> Array:
     """Mixed derivatives ∂²f/∂x_i∂y_j of a scalar ``f(x, y)``; shape ``(x.size, y.size)``."""
-    return mixed_second_with_error(f, x, y, method)[0]
+    return mixed_second_with_error(f, x, y, method, strict=True)[0]

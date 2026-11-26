@@ -491,3 +491,41 @@ def test_escape_speed_rejects_a_zero_distance_but_accepts_a_tiny_one():
     with pytest.raises(ValueError, match="distance_m must be positive"):
         escape_speed_m_s(1.0, -1.0)
     assert escape_speed_m_s(0.5, 1.0) == pytest.approx(1.0, rel=1e-15, abs=0)  # sqrt(2 * 0.5 / 1)
+
+
+def test_masses_must_be_positive_in_every_function_that_takes_them():
+    """kinetic_energy_j, total_momentum and barycenter_velocity_m_s accepted zero and negative masses (a negative
+    kinetic energy; inf and nan for masses that sum to zero) while the other functions refused them."""
+    v = np.array([[1.0, 0.0, 0.0], [0.0, 2.0, 0.0], [0.0, 0.0, 3.0]])
+    for masses in ([1.0, -2.0, 3.0], [1.0, 0.0, 3.0], [1.0, np.nan, 3.0]):
+        for function in (kinetic_energy_j, total_momentum, barycenter_velocity_m_s):
+            with pytest.raises(ValueError, match="masses must be positive"):
+                function(masses, v)
+
+
+def test_separations_whose_square_overflows_are_refused():
+    """Two bodies 1e160 m apart: r^2 overflowed and the potential energy came out as -0.0 (exact -6.7e-111 J)."""
+    x = np.array([[0.0, 0.0, 0.0], [1e160, 0.0, 0.0]])
+    for function in (potential_energy_j, accelerations_m_s2):
+        with pytest.raises(ValueError, match="squared separation is not finite"):
+            function([1e30, 1e30], x)
+    assert potential_energy_j([1e30, 1e30], x * 1e-10) == pytest.approx(-G * 1e60 / 1e150, rel=1e-14, abs=0)
+    with pytest.raises(ValueError, match="overflows"):
+        escape_speed_m_s(1.0, 1e-320)
+    with pytest.raises(ValueError, match="must not be zero"):
+        vis_viva_constant_m2_s2([0.0, 0.0, 0.0], [1.0, 0.0, 0.0], 1.0)
+
+
+def test_virial_ratio_far_from_the_origin_is_limited_by_the_positions_only():
+    """A circular binary (2e30 kg each, 1.5e11 m apart) displaced by D: the ratio is 1 for every D.
+
+    Positions at D carry the separation d to eps D / d only, so the ratio cannot be better than that; the test asks
+    for ten times that bound (measured 7e-7 at D = 1e21 m, where eps D / d = 1.5e-6).
+    """
+    mass, d = 2e30, 1.5e11
+    speed = np.sqrt(G * mass / (2.0 * d))
+    for offset in (0.0, 1e15, 1e18, 1e20, 1e21, 1e22):
+        x = np.array([[offset - 0.5 * d, 0.0, 0.0], [offset + 0.5 * d, 0.0, 0.0]])
+        v = np.array([[0.0, -speed, 0.0], [0.0, speed, 0.0]])
+        bound = 1e-14 + 10.0 * np.finfo(float).eps * offset / d
+        assert abs(virial_ratio([mass, mass], x, v) - 1.0) <= bound

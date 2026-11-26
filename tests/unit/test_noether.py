@@ -537,7 +537,7 @@ def test_symmetry_defect_includes_the_explicit_time_derivative_of_the_boundary_t
     assert defect == pytest.approx(-57.0, rel=1e-9, abs=0)
 
 
-def test_velocity_dependence_threshold_is_1e_minus_12():
+def test_any_velocity_dependence_needs_the_acceleration():
     """A generator or boundary term whose velocity derivative is 1e-11 (above the documented 1e-12, below 1e-10)
     must demand the acceleration; one with 1e-13 (below the threshold) must not. The complex-step derivative of a
     linear function is exact, so the derivatives are the stated numbers."""
@@ -559,8 +559,12 @@ def test_velocity_dependence_threshold_is_1e_minus_12():
         nt.symmetry_variation(_free_with_spring, q, v, 0.0, weak_generator)
     with pytest.raises(ValueError, match="depends on the velocity"):
         nt.symmetry_defect(_free_with_spring, q, v, 0.0, _quadratic_generator, boundary_term=weak_boundary)
-    nt.symmetry_variation(_free_with_spring, q, v, 0.0, tiny_generator)  # no error
-    nt.symmetry_defect(_free_with_spring, q, v, 0.0, _quadratic_generator, boundary_term=tiny_boundary)  # no error
+    # a coefficient of 1e-13 is small only in its units: below an absolute threshold of 1e-12 the term with the
+    # acceleration was dropped without a word, and the variation came out wrong by a factor of two
+    with pytest.raises(ValueError, match="depends on the velocity"):
+        nt.symmetry_variation(_free_with_spring, q, v, 0.0, tiny_generator)
+    with pytest.raises(ValueError, match="depends on the velocity"):
+        nt.symmetry_defect(_free_with_spring, q, v, 0.0, _quadratic_generator, boundary_term=tiny_boundary)
 
 
 def test_rotation_generator_needs_exactly_three_axis_components():

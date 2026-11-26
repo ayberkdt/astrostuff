@@ -485,3 +485,23 @@ def test_momenta_far_from_one_are_not_taken_for_converged():
 def test_integration_times_must_increase_strictly():
     with pytest.raises(ValueError, match="strictly increasing"):
         hm.integrate_hamiltonian(lambda q, p, t: 0.5 * p[0] ** 2 + 0.5 * q[0] ** 2, [0.3], [0.1], [0.0, 0.0, 1.0])
+
+
+def test_legendre_inversion_converges_every_component_against_its_own_momentum():
+    """L = M v0^2 / 2 - sqrt(1 - v1^2) with M = 1e12 and p = (M, 4/3): the exact velocity is (1, 0.8).
+
+    With one tolerance relative to the largest momentum the iteration stopped while the residual of the second
+    component was a tenth of its momentum: v1 = 0.8084 (1 % off), and dH/dp and the equations of motion with it. H
+    itself was right to rounding (it is stationary in v), so a test of H alone did not see it.
+    """
+    for big in (1.0, 1e9, 1e12, 1e20):
+
+        def lagrangian(q, v, t, big=big):
+            return 0.5 * big * v[0] ** 2 - np.sqrt(1.0 - v[1] ** 2)
+
+        h = hm.hamiltonian_from_lagrangian(lagrangian)
+        q, p = np.zeros(2), np.array([big, 0.8 / 0.6])
+        velocity = h.velocity(q, p)
+        _check(f"v0 (M = {big:g})", abs(velocity[0] - 1.0), 1e-13)
+        _check(f"v1 (M = {big:g})", abs(velocity[1] - 0.8), 1e-13)
+        assert h(q, p) == pytest.approx(0.5 * big + 1.0 / 0.6, rel=1e-14, abs=0)

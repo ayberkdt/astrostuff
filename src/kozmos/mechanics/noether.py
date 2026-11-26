@@ -39,7 +39,10 @@ Array = NDArray[np.float64]
 Generator = Callable[[Array, Array, float], ArrayLike]
 BoundaryTerm = Callable[[Array, Array, float], ArrayLike]
 
-_VELOCITY_DEPENDENCE_TOLERANCE = 1e-12  # |d(delta_s q)/dv| above this needs the acceleration
+# A generator or boundary term that does not depend on the velocity has a derivative with respect to it that is
+# exactly zero with either method (the complex step leaves the imaginary part untouched; finite differences of
+# equal values vanish). Any non-zero derivative therefore needs the acceleration. An absolute tolerance (it was
+# 1e-12) drops the term of a generator such as -1e-13 s * v, whose coefficient is small only in its units.
 
 
 def _variation_rate(generator: Generator, q: Array, v: Array, a: Array | None, t: float, method: Method) -> Array:
@@ -48,7 +51,7 @@ def _variation_rate(generator: Generator, q: Array, v: Array, a: Array | None, t
     dg_dv = jacobian(lambda x: generator(q, x, t), v, method)
     dg_dt = jacobian(lambda y: generator(q, v, y[0]), np.array([float(t)]), method)[:, 0]
     if a is None:
-        if np.max(np.abs(dg_dv)) > _VELOCITY_DEPENDENCE_TOLERANCE:
+        if np.any(dg_dv != 0.0):
             raise ValueError(
                 "the generator depends on the velocity: delta_s qdot needs the acceleration, pass it as a="
             )
@@ -66,7 +69,7 @@ def _boundary_rate(
     dk_dv = gradient(lambda x: boundary_term(q, x, t), v, method)
     dk_dt = float(jacobian(lambda y: boundary_term(q, v, y[0]), np.array([float(t)]), method)[0])
     if a is None:
-        if np.max(np.abs(dk_dv)) > _VELOCITY_DEPENDENCE_TOLERANCE:
+        if np.any(dk_dv != 0.0):
             raise ValueError("the boundary term depends on the velocity: dK/dt needs the acceleration, pass it as a=")
         return float(dk_dq @ v + dk_dt)
     return float(dk_dq @ v + dk_dv @ a + dk_dt)

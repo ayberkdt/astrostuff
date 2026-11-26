@@ -323,9 +323,18 @@ def test_large_step_that_only_averages_over_structure_is_not_trusted():
     x = 0.3
     result = d.gradient(lambda y: np.sin(y[0] / 1e-7), [x], "finite")[0]
     assert result * 1e-7 == pytest.approx(np.cos(x / 1e-7), rel=1e-6, abs=0)
+
     # the same with a small amplitude on an offset, where the smallest steps are pure rounding noise
-    result = d.gradient(lambda y: 1.0 + 1e-9 * np.sin(y[0]), [3e4], "finite")[0]
-    assert result == pytest.approx(1e-9 * np.cos(3e4), rel=1e-3, abs=0)
+    # (the derivative 6e-10 of a function of size 1 is known to 5e-5 only: its estimate says so, and the call
+    # that returns no estimate refuses)
+    def small(y):
+        return 1.0 + 1e-9 * np.sin(y[0])
+
+    result, error = d.jacobian_with_error(small, [3e4], "finite")
+    assert result[0] == pytest.approx(1e-9 * np.cos(3e4), rel=1e-3, abs=0)
+    assert abs(result[0] - 1e-9 * np.cos(3e4)) <= error[0] < 1e-3 * abs(result[0])
+    with pytest.raises(ValueError, match="could not be determined"):
+        d.gradient(small, [3e4], "finite")
 
 
 def test_steps_of_inner_differences_do_not_collide():

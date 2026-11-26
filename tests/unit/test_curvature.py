@@ -22,7 +22,7 @@ from functools import partial
 import numpy as np
 import pytest
 
-from kozmos.core._differentiation import jacobian
+from kozmos.core._differentiation import jacobian_with_error
 from kozmos.core.constants import GRAVITATIONAL_CONSTANT, MEGAPARSEC, SPEED_OF_LIGHT
 from kozmos.cosmology import Cosmology
 from kozmos.cosmology.dark_energy import critical_density_kg_m3, hubble_parameter_km_s_mpc
@@ -331,7 +331,9 @@ def _contracted_bianchi_defect(metric, x):
     ginv = np.linalg.inv(g)
     gam = christoffel_symbols(metric, x)
     G = einstein_tensor(metric, x)
-    dG = jacobian(lambda y: einstein_tensor(metric, y), x, method="finite")  # dG[m, n, l] = d_l G_mn
+    # dG[m, n, l] = d_l G_mn, with its error estimate left aside: the estimate of a difference of a tensor that
+    # already contains finite differences carries a safety factor, and the test measures the true defect
+    dG = jacobian_with_error(lambda y: einstein_tensor(metric, y), x, method="finite")[0]
     nabla = dG - np.einsum("slm,sn->mnl", gam, G) - np.einsum("sln,ms->mnl", gam, G)
     return np.abs(np.einsum("lm,mnl->n", ginv, nabla)).max(), np.abs(dG).max()
 

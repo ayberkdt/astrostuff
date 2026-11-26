@@ -152,47 +152,49 @@ def test_coordinates_of_different_units_do_not_look_singular():
 def test_planet_in_si_units_with_a_coordinate_at_zero():
     """Cartesian Kepler problem at (7.8e11 m, 0): the first versions returned a_y = 3.4e-5 m/s^2 instead of 0.
 
-    The complex step gives the acceleration to rounding. The finite method differentiates a finite difference; its
-    result here was right to 8e-9, but the estimate of a nested difference carries a safety factor of 30 (the true
-    error was measured at up to 13 estimates), which puts it at 2e-6, above the limit of 1e-6: it is refused.
+    Measured: 2e-16 with the complex step, 8e-14 with the finite method; a_y is exactly zero with both (the momentum
+    along y is found independent of x and y at this state, and its derivative is returned as zero).
     """
     mass, gm = 1e27, 6.674e-11 * 1.989e30
 
     def planet(q, v, t):
         return 0.5 * mass * (v[0] ** 2 + v[1] ** 2) + gm * mass / np.sqrt(q[0] ** 2 + q[1] ** 2)
 
-    a = lg.euler_lagrange_accelerations(planet, [7.8e11, 0.0], [0.0, 3e4])
     expected = -gm / 7.8e11**2
-    _check("a_x of the planet (complex)", abs(a[0] / expected - 1.0), 1e-12)  # measured 1e-16
-    _check("a_y of the planet (complex)", abs(a[1] / expected), 1e-12)
-    with pytest.raises(lg.DerivativePrecisionError, match="known to"):
-        lg.euler_lagrange_accelerations(planet, [7.8e11, 0.0], [0.0, 3e4], 0.0, "finite")
-    # In units of the orbit (lengths in 7.8e11 m, masses in 1e27 kg, times in 1e7 s) the finite method is accepted,
-    # away from the axis: a component that vanishes is held to 1e-9 of the largest term, which a nested difference
-    # with its safety factor does not reach (at (1, 0) the finite method is refused in these units as well).
-    gm_scaled = gm * 1e14 / 7.8e11**3
-
-    def scaled(q, v, t):
-        return 0.5 * (v[0] ** 2 + v[1] ** 2) + gm_scaled / np.sqrt(q[0] ** 2 + q[1] ** 2)
-
-    a = lg.euler_lagrange_accelerations(scaled, [0.8, 0.6], [-0.2, 0.3], 0.0, "finite")
-    exact = -gm_scaled * np.array([0.8, 0.6])
-    _check("planet in scaled units (finite)", float(np.max(np.abs(a / exact - 1.0))), 1e-8)
-    with pytest.raises(lg.DerivativePrecisionError):
-        lg.euler_lagrange_accelerations(scaled, [1.0, 0.0], [0.0, 0.4], 0.0, "finite")
+    for method, tolerance in (("complex", 1e-12), ("finite", 1e-10)):
+        a = lg.euler_lagrange_accelerations(planet, [7.8e11, 0.0], [0.0, 3e4], 0.0, method)
+        _check(f"a_x of the planet ({method})", abs(a[0] / expected - 1.0), tolerance)
+        _check(f"a_y of the planet ({method})", abs(a[1] / expected), tolerance)
+        x, y = 4.7e11, 6.2e11
+        a = lg.euler_lagrange_accelerations(planet, [x, y], [-2.4e4, 1.8e4], 0.0, method)
+        exact = -gm * np.array([x, y]) / (x * x + y * y) ** 1.5
+        _check(f"planet off the axis ({method})", float(np.max(np.abs(a / exact - 1.0))), tolerance)
 
 
 def test_accelerations_that_cannot_be_determined_are_refused():
-    """v = 5e5 with unit mass and a unit spring, finite method: the force is 1e-12 of the Lagrangian per unit of q.
+    """A Lagrangian with a constant of 1e20: its rounding (1.6e4) hides the dynamics from real differences.
 
-    The first versions returned -0.413 for the true -0.3.
+    The finite method refuses; the complex step does not see the constant. With a constant of 1e12, or a kinetic
+    term of 1.25e11 (v = 5e5), larger steps still resolve the quadratic terms and both methods give -0.3 (the
+    first versions of the helper returned -0.413 there, and later ones refused).
     """
-    with pytest.raises(lg.DerivativePrecisionError, match="Rescale"):
-        lg.euler_lagrange_accelerations(lambda q, v, t: 0.5 * v[0] ** 2 - 0.5 * q[0] ** 2, [0.3], [5e5], 0.0, "finite")
-    a = lg.euler_lagrange_accelerations(lambda q, v, t: 0.5 * v[0] ** 2 - 0.5 * q[0] ** 2, [0.3], [5e5])
-    assert a[0] == pytest.approx(
-        -0.3, rel=1e-9, abs=0
-    )  # the complex step is exact whatever the size of the kinetic term
+
+    def offset(constant):
+        return lambda q, v, t: constant + 0.5 * v[0] ** 2 - 0.5 * q[0] ** 2
+
+    with pytest.raises(lg.DerivativePrecisionError, match="known to"):
+        lg.euler_lagrange_accelerations(offset(1e20), [0.3], [2.0], 0.0, "finite")
+    assert lg.euler_lagrange_accelerations(offset(1e20), [0.3], [2.0])[0] == pytest.approx(-0.3, rel=1e-9, abs=0)
+    for method in ("complex", "finite"):
+        a = lg.euler_lagrange_accelerations(offset(1e12), [0.3], [2.0], 0.0, method)
+        assert a[0] == pytest.approx(-0.3, rel=1e-8, abs=0)
+        a = lg.euler_lagrange_accelerations(offset(0.0), [0.3], [5e5], 0.0, method)
+        assert a[0] == pytest.approx(-0.3, rel=1e-8, abs=0)
+    # first derivatives that are returned without an estimate are refused rather than returned to a per cent
+    for function, exact in ((lg.generalized_momenta, 2.0), (lg.generalized_forces, -0.3)):
+        with pytest.raises(ValueError, match="could not be determined"):
+            function(offset(1e20), [0.3], [2.0], 0.0, "finite")
+        assert function(offset(1e12), [0.3], [2.0], 0.0, "finite")[0] == pytest.approx(exact, rel=1e-6, abs=0)
 
 
 def test_input_validation():
@@ -744,3 +746,101 @@ def test_action_uses_exactly_the_requested_number_of_gauss_legendre_nodes():
     assert lg.action(quartic, times, path) == pytest.approx(exact, rel=1e-14, abs=0)  # the default is five
     assert abs(lg.action(quartic, times, path, nodes=4) / exact - 1.0) > 2e-11
     assert abs(lg.action(quartic, times, path, nodes=6) / exact - 1.0) < 1e-14
+
+
+# --------------------------------------------------------------------------------------
+# found by the adversarial probe (plan/AUDIT_2026-11-26.md, eighth round)
+# --------------------------------------------------------------------------------------
+
+
+def test_coordinates_of_order_1e_minus_30_are_differentiated_with_a_relative_complex_step():
+    """L = v^2/2 - q^4/4 at q = 1e-30: dL/dq = -q^3.
+
+    With an absolute complex step of 1e-30 the result was 0 at q = 1e-30 and 11 % off at 3e-30
+    (Im (q + ih)^4 / h = 4 q^3 - 4 q h^2). The step is now 1e-30 of the coordinate.
+    """
+
+    def quartic(q, v, t):
+        return 0.5 * v[0] ** 2 - 0.25 * q[0] ** 4
+
+    for q0 in (1e-24, 1e-27, 3e-30, 1e-30, -2e-30, 1e-200):
+        force = lg.generalized_forces(quartic, [q0], [0.0])[0]
+        assert force == pytest.approx(-(q0**3), rel=1e-12, abs=0)
+        assert lg.euler_lagrange_accelerations(quartic, [q0], [0.0])[0] == pytest.approx(-(q0**3), rel=1e-12, abs=0)
+
+
+def test_spherical_kepler_with_the_finite_method_at_a_state_that_returned_a_wrong_acceleration():
+    """r'' came out as -1307 instead of 4.52 at this state, without an error.
+
+    The momenta p_r and p_theta do not depend on theta there; that was recognised, and then the quotient of their
+    rounding residues by the smallest step (1e-15) was returned as the derivative instead of zero.
+    """
+
+    def kepler(q, v, t):
+        r, theta = q[0], q[1]
+        return 0.5 * (v[0] ** 2 + r**2 * v[1] ** 2 + r**2 * np.sin(theta) ** 2 * v[2] ** 2) + 1.0 / r
+
+    q = np.array([8.832333693570243, 0.620818854272178, -0.23566144343201634])
+    v = np.array([0.43760529159978523, -0.6565740126113913, -0.4938047007288189])
+    r, theta = q[0], q[1]
+    exact = np.array(
+        [
+            r * v[1] ** 2 + r * np.sin(theta) ** 2 * v[2] ** 2 - 1.0 / r**2,
+            -2.0 * v[0] * v[1] / r + np.sin(theta) * np.cos(theta) * v[2] ** 2,
+            -2.0 * v[0] * v[2] / r - 2.0 * np.cos(theta) / np.sin(theta) * v[1] * v[2],
+        ]
+    )
+    for method, tolerance in (("complex", 1e-11), ("finite", 1e-7)):
+        a = lg.euler_lagrange_accelerations(kepler, q, v, 0.0, method)
+        _check(f"spherical Kepler accelerations ({method})", float(np.max(np.abs(a - exact))), tolerance)
+
+
+def test_inertia_matrix_of_the_cartesian_kepler_problem_in_si_units_with_the_finite_method():
+    """W = m 1 exactly. The finite method returned W[1, 2] / m = 0.023 at this state (and -313 in galactic units)."""
+    for mass, length, time in ((5.97e24, 1.496e11, 5e6), (2e41, 3e20, 7e15)):
+        energy = mass * length**2 / time**2
+
+        def kepler(q, v, t, energy=energy, length=length, time=time):
+            return energy * (0.5 * np.sum((v * time / length) ** 2) + 1.0 / np.sqrt(np.sum((q / length) ** 2)))
+
+        q = length * np.array([0.61, -0.83, 0.27])
+        v = length / time * np.array([0.44, 0.31, -0.52])
+        for method in ("complex", "finite"):
+            w = lg.inertia_matrix(kepler, q, v, 0.0, method)
+            _check(f"W / m - 1 ({method}, m = {mass:g})", float(np.max(np.abs(w / mass - np.eye(3)))), 1e-9)
+
+
+def test_first_derivatives_by_the_finite_method_are_not_returned_to_a_per_cent():
+    """A pendulum with a large potential, L = v^2/2 + 1e10 cos q, at small velocities.
+
+    The finite method returned p = -6.4e-5 for v = 1e-4 and 0 for v = 1e-8: the error was accepted against the size
+    of L instead of the size of the derivative. It is refused now; the complex step is exact.
+    """
+
+    def pendulum(q, v, t):
+        return 0.5 * v[0] ** 2 + 1e10 * np.cos(q[0])
+
+    for velocity in (1e-2, 1e-4, 1e-8):
+        assert lg.generalized_momenta(pendulum, [1.18], [velocity])[0] == pytest.approx(velocity, rel=1e-12, abs=0)
+        try:
+            p = lg.generalized_momenta(pendulum, [1.18], [velocity], 0.0, "finite")[0]
+        except ValueError:
+            continue
+        assert p == pytest.approx(velocity, rel=1e-5, abs=0)
+
+
+def test_a_lagrangian_that_is_not_analytic_on_a_part_of_the_path_is_caught_at_an_output_time():
+    """An oscillator with a triangular bump of the potential on 1 < q < 1.5, written with np.abs.
+
+    The complex step gives no force from the bump. The path starts and ends outside it; with the test of analyticity
+    at the first and the last state only, the trajectory was returned wrong by 1.0. The test is now made at every
+    output time, and one of them (t = 1, q = 1.0098) lies in the bump. The finite method integrates it.
+    """
+    strength = 4.0
+
+    def bumpy(q, v, t):
+        inside = np.abs(np.real(q[0]) - 1.25) < 0.25
+        return 0.5 * v[0] ** 2 - 0.5 * q[0] ** 2 - strength * np.where(inside, 0.25 - np.abs(q[0] - 1.25), 0.0)
+
+    with pytest.raises(ValueError, match="not analytic"):
+        lg.integrate_lagrangian(bumpy, [0.0], [1.2], np.linspace(0.0, 6.0, 7))

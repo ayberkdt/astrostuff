@@ -539,6 +539,10 @@ def integrate_lagrangian(
 
     Validity
     --------
+    With the complex step the Lagrangian is tested for analyticity at the states of the output times only, not at
+    the steps of the integrator between them: a Lagrangian that is non-analytic (abs, norm, a comparison) on a
+    part of the path that no output time falls into is integrated with a wrong force there, without an error.
+    Ask for output times along the whole path, or use ``method="finite"`` for such a Lagrangian.
     The local error is controlled by rtol and atol only; conserved quantities drift at the level the tests
     measure (see tests/unit/test_lagrangian.py), not exactly. Measured for two coordinates: a right-hand side
     costs about 66 evaluations of the Lagrangian with the complex step and about 860 with ``method="finite"``,
@@ -556,8 +560,8 @@ def integrate_lagrangian(
     if t_arr.ndim != 1 or t_arr.size < 2 or np.any(np.diff(t_arr) <= 0.0):
         raise ValueError("times must be a strictly increasing 1-D array with at least two values")
 
-    # the Lagrangian is checked for analyticity at the first state and at the last one; in between the complex-step
-    # derivatives are used without that check (the error estimate of every acceleration is still enforced)
+    # the Lagrangian is checked for analyticity at the first state and at every output time; between them the
+    # complex-step derivatives are used without that check (the error estimate of every acceleration is still enforced)
     # the steps of the finite differences are chosen at the first state and reused while each still passes its
     # check at the state where it is used; they are chosen afresh whenever one does not
     plan: dict = {}
@@ -578,7 +582,9 @@ def integrate_lagrangian(
     )
     if not solution.success:
         raise RuntimeError(f"integration failed: {solution.message}")
-    _accelerations(lagrangian, solution.y[:n, -1], solution.y[n:, -1], float(t_arr[-1]), method, max_condition, True)
+    # the test of analyticity is repeated at every output time (the first one was tested above)
+    for k in range(1, t_arr.size):
+        _accelerations(lagrangian, solution.y[:n, k], solution.y[n:, k], float(t_arr[k]), method, max_condition, True)
     return solution.y[:n].T, solution.y[n:].T
 
 

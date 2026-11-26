@@ -80,14 +80,22 @@ def kinetic_energy_j(masses_kg: ArrayLike, velocities_m_s: ArrayLike) -> float:
     v = np.asarray(velocities_m_s, dtype=float)
     if m.ndim != 1 or v.ndim != 2 or v.shape[0] != m.shape[0] or v.shape[1] != 3:
         raise ValueError("masses_kg must have shape (N,) and velocities_m_s shape (N, 3)")
+    if np.any(~(m > 0.0)):
+        raise ValueError("masses must be positive")
     return float(0.5 * np.sum(m * np.einsum("ij,ij->i", v, v)))
 
 
 def _pair_geometry(x: Array, eps: float):
     """Return dx[i, j] = x_j - x_i and r2[i, j] + eps^2 with the diagonal set to 1 (it is never used)."""
     dx = x[None, :, :] - x[:, None, :]
-    r2 = np.einsum("ijk,ijk->ij", dx, dx) + eps * eps
+    with np.errstate(over="ignore"):
+        r2 = np.einsum("ijk,ijk->ij", dx, dx) + eps * eps
     np.fill_diagonal(r2, 1.0)
+    if not np.all(np.isfinite(r2)):
+        raise ValueError(
+            "a squared separation is not finite (positions not finite, or separations above about 1e154 m): "
+            "rescale the positions"
+        )
     if np.any(r2 <= 0.0):
         raise ValueError("two particles coincide and softening_m is zero")
     return dx, r2
@@ -312,6 +320,8 @@ def barycenter_velocity_m_s(masses_kg: ArrayLike, velocities_m_s: ArrayLike) -> 
     v = np.asarray(velocities_m_s, dtype=float)
     if m.ndim != 1 or v.ndim != 2 or v.shape[0] != m.shape[0] or v.shape[1] != 3:
         raise ValueError("masses_kg must have shape (N,) and velocities_m_s shape (N, 3)")
+    if np.any(~(m > 0.0)):
+        raise ValueError("masses must be positive")
     return np.einsum("i,ij->j", m, v) / np.sum(m)
 
 
@@ -352,6 +362,8 @@ def total_momentum(masses_kg: ArrayLike, velocities_m_s: ArrayLike) -> Array:
     v = np.asarray(velocities_m_s, dtype=float)
     if m.ndim != 1 or v.ndim != 2 or v.shape[0] != m.shape[0] or v.shape[1] != 3:
         raise ValueError("masses_kg must have shape (N,) and velocities_m_s shape (N, 3)")
+    if np.any(~(m > 0.0)):
+        raise ValueError("masses must be positive")
     return np.einsum("i,ij->j", m, v)
 
 
@@ -430,6 +442,9 @@ def virial_ratio(
 
     Validity
     --------
+    W is formed with positions relative to the barycentre. Positions far from the origin carry the separations
+    to eps D / d only (D the distance from the origin, d a separation), and the ratio is no better than that:
+    6e-6 for a binary of 1.5e11 m at 1e22 m.
     The virial theorem holds for the time average of an equilibrium system; the instantaneous ratio of a
     snapshot is 1 only on a circular two-body orbit and in a few other special cases. W is the source's
     definition (virial of the accelerations), computed with ``accelerations_m_s2``. One particle has no potential
@@ -445,7 +460,10 @@ def virial_ratio(
     if m.size < 2:
         raise ValueError("the virial ratio needs at least two particles (one particle has no potential energy)")
     a = accelerations_m_s2(m, x, softening_m)
-    w = np.sum(m * np.einsum("ij,ij->i", x, a))
+    # W does not depend on the origin (sum_i m_i a_i = 0), but its rounding error does: with positions far
+    # from the origin the sum of m x . a cancels to a small remainder. The barycentre is the origin used.
+    centred = x - np.einsum("i,ij->j", m, x) / np.sum(m)
+    w = np.sum(m * np.einsum("ij,ij->i", centred, a))
     if w == 0.0:
         raise ValueError("W = 0 (all particles at one point): the virial ratio 2T / |W| is undefined")
     return float(2.0 * kinetic_energy_j(m, v) / abs(w))
@@ -488,7 +506,10 @@ def vis_viva_constant_m2_s2(relative_position_m: ArrayLike, relative_velocity_m_
     """
     r = np.asarray(relative_position_m, dtype=float)
     v = np.asarray(relative_velocity_m_s, dtype=float)
-    return 0.5 * np.einsum("...i,...i->...", v, v) - gm_m3_s2 / np.linalg.norm(r, axis=-1)
+    distance = np.linalg.norm(r, axis=-1)
+    if np.any(~(distance > 0.0)):
+        raise ValueError("the relative position must not be zero (and must be finite)")
+    return 0.5 * np.einsum("...i,...i->...", v, v) - gm_m3_s2 / distance
 
 
 @source(
@@ -669,7 +690,11 @@ def escape_speed_m_s(gm_m3_s2: ArrayLike, distance_m: ArrayLike) -> Array:
         raise ValueError("distance_m must be positive")
     if np.any(gm < 0.0):
         raise ValueError("gm_m3_s2 must be >= 0 (a negative G M has no escape speed)")
-    return np.sqrt(2.0 * gm / r)
+    with np.errstate(over="ignore"):
+        speed = np.sqrt(2.0 * gm / r)
+    if np.any(np.isinf(speed) & np.isfinite(gm) & np.isfinite(r)):
+        raise ValueError("2 G M / r overflows: the distance is too small for double precision")
+    return speed
 
 
 @source(
