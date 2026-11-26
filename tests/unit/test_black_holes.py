@@ -535,3 +535,16 @@ def test_hawking_species_counts_are_validated():
             basics.hawking_mass_loss_rate_kg_s(1e12, **counts)
         with pytest.raises(ValueError, match="species"):
             basics.hawking_evaporation_time_s(1e12, **counts)
+
+
+def test_isco_is_finite_for_spins_below_the_rounding_level():
+    """For |a| below about 1e-8 the factor 3 - Z1 of the ISCO formula is a rounding residue of the cube roots.
+
+    With the cube root of this machine it never came out negative (2.2 million spins between 1e-16 and 1e-4); with
+    one that is a unit in the last place off it did at a = 1e-10, and the radius was NaN. The radicand is clamped.
+    """
+    spins = np.concatenate([10.0 ** np.linspace(-16.0, -4.0, 400), -(10.0 ** np.linspace(-16.0, -4.0, 400)), [0.0]])
+    radius = basics.kerr_isco_radius_rg(spins)
+    assert np.all(np.isfinite(radius))
+    assert np.all(np.abs(radius - 6.0) <= 4.0 * np.sqrt(2.0 / 3.0) * np.abs(spins) + 1e-7)  # 6 -+ 4 sqrt(2/3) a
+    assert np.all(np.isfinite(basics.isco_radiative_efficiency(spins)))

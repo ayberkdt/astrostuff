@@ -374,7 +374,9 @@ def kerr_isco_radius_rg(spin: ArrayLike) -> Array:
     a = np.abs(a_signed)
     z1 = 1.0 + np.cbrt(1.0 - a**2) * (np.cbrt(1.0 + a) + np.cbrt(1.0 - a))
     z2 = np.sqrt(3.0 * a**2 + z1**2)
-    root = np.sqrt((3.0 - z1) * (3.0 + z1 + 2.0 * z2))
+    # 3 - Z1 >= 0 exactly; for |a| below about 1e-8 it is a rounding residue, which a cube root that is one unit in
+    # the last place off (as some libm give) makes negative: without the clamp the radius would be NaN there
+    root = np.sqrt(np.maximum(3.0 - z1, 0.0) * (3.0 + z1 + 2.0 * z2))
     sign = np.where(a_signed >= 0.0, 1.0, -1.0)
     return 3.0 + z2 - sign * root
 

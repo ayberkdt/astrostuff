@@ -280,8 +280,10 @@ def test_conical_pendulum_is_a_steady_solution():
     _check("conical pendulum accelerations", float(np.max(np.abs(a))), 2e-14)
     times = np.linspace(0.0, 4.0, 9)
     q, v = lg.integrate_lagrangian(spherical_pendulum, [theta0, 0.0], [0.0, phi_dot], times)
-    _check("conical pendulum theta(t)", float(np.max(np.abs(q[:, 0] - theta0))), 5e-11)  # measured 3.8e-12
-    _check("conical pendulum phi(t)", float(np.max(np.abs(q[:, 1] - phi_dot * times))), 5e-12)
+    # measured 3.8e-12; 5.7e-11 with sin and cos moved by one unit in the last place (the steady solution is only
+    # neutrally stable, so a rounding error of the start grows along the orbit)
+    _check("conical pendulum theta(t)", float(np.max(np.abs(q[:, 0] - theta0))), 1e-9)
+    _check("conical pendulum phi(t)", float(np.max(np.abs(q[:, 1] - phi_dot * times))), 1e-9)  # 6.9e-11 likewise
 
 
 def test_spherical_pendulum_general_orbit_conserves_h_and_pphi():

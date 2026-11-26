@@ -236,7 +236,9 @@ def test_lagrangian_and_hamiltonian_integrations_agree_on_the_pendulum():
     p_l = bob * length**2 * v_l  # p = dL/dv written out
     h = hm.hamiltonian_from_lagrangian(pendulum)
     q_h, p_h = hm.integrate_hamiltonian(h, [2.0], [0.0], times)
-    _check("pendulum q: Lagrange vs Hamilton", float(np.max(np.abs(q_l - q_h))), 1e-10)
+    # two integrations at rtol = 1e-10 each; with sin and cos moved by one unit in the last place the difference
+    # was 1.09e-10, above the former limit of 1e-10
+    _check("pendulum q: Lagrange vs Hamilton", float(np.max(np.abs(q_l - q_h))), 1e-9)
     _check("pendulum p: Lagrange vs Hamilton", float(np.max(np.abs(p_l - p_h))), 5e-10)
     # closed form of the Hamiltonian from the Legendre transform
     point_q, point_p = np.array([0.7]), np.array([1.3])
