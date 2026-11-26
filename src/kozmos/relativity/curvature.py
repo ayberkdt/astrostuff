@@ -17,9 +17,11 @@ carried to the Riemann tensor and compared with it in an orthonormal frame: a te
 is returned as exactly zero with a ``CurvaturePrecisionWarning`` that states the bound (flat space in
 curvilinear coordinates; also a curvature that is more than about twelve orders of magnitude below the
 connection terms, as for a comoving radius whose physical size is tiny against the curvature radius: there the
-zero means "not resolved", and every scalar formed from the tensor is zero as well). Measured for Schwarzschild in units of the mass or in
-metres for 1e9 solar masses alike: relative error of the Kretschmann scalar 2e-13 at 4 M, 1e-11 at 100 M,
-3e-10 at 1e4 M; refused at 1e6 M (estimate 7e-6). Measured (tests/unit/test_curvature.py): the Ricci tensor of Schwarzschild
+zero means "not resolved", and every scalar formed from the tensor is zero as well). Measured for Schwarzschild in units of the mass: relative
+error of the Kretschmann scalar 7e-13 at 4 M, 4e-12 at 100 M, 6e-10 at 1e4 M, 1e-9 at 1e5 M; refused at 1e6 M
+(estimate 7e-6). In metres the refusal comes earlier, because the angular coordinates are of order one beside
+radii of 1e12 and more: for 1e9 solar masses 4e-13 at 4 M and 7e-12 at 100 M, refused from 1e3 M; for 1e10
+solar masses refused from 100 M. Work in units of the mass far from the hole. Measured (tests/unit/test_curvature.py): the Ricci tensor of Schwarzschild
 and Kerr vanishes to an absolute 4e-12 ... 1e-9, which is 8e-11 ... 4e-9 of sqrt(K) for 3 M <= r <= 10 M and
 1.2e-7 of sqrt(K) at r = 30 M; the Kretschmann scalar has a relative error of 1e-11 ... 7e-10. Coordinates
 smaller than 1 in magnitude with 1/x structure (a comoving r = 0.2) need a smaller step, which the helper
@@ -105,7 +107,7 @@ def riemann_tensor(metric: Metric, x: ArrayLike, rtol: float = 1e-6) -> Array:
     of Eq. 3.78-3.81; Kretschmann scalar against closed forms; FLRW Ricci tensor against Eq. 8.13.
     """
     point = _point(x)
-    gamma = _christoffel(metric, point, "complex", True)
+    gamma = _christoffel(metric, point, "complex", True, neighbours=True)
 
     def christoffel_at(y: Array) -> Array:
         return _christoffel(metric, y, "complex", False)

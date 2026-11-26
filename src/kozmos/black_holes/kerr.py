@@ -224,7 +224,10 @@ def kerr_circular_orbit_specific_energy(radius_rg: ArrayLike, spin: ArrayLike) -
     --------
     Kerr metric, equatorial plane, test particle; stable only for r above the ISCO, bound (E < 1) only for r
     above the marginally bound orbit. A ValueError is raised for r at or below the photon orbit. Within a
-    relative distance eps of the photon orbit the rounding error is about 1e-16 / eps.
+    relative distance eps of the photon orbit the rounding error grows as the radicand of L cancels. Measured
+    against a 60-digit evaluation: about 1e-16 / eps for spins up to 0.9; for a prograde orbit of a nearly
+    extremal hole it is far larger (3.8e-6 at a = 0.9999 and eps = 1e-9; 5 % at a = 1 - 1e-12 and
+    eps = 1e-9), because the photon orbit, the horizon and the ISCO crowd together there.
 
     Verification
     ------------
@@ -556,7 +559,11 @@ def kerr_nodal_precession_frequency_hz(mass_kg: ArrayLike, radius_rg: ArrayLike,
     a = _spin(spin)
     r = _orbit_radius(radius_rg, a)
     q = _epicyclic_squared(r, a, vertical=True)
-    return kerr_circular_orbit_frequency_hz(mass_kg, r, a) * (1.0 - np.sqrt(np.where(q >= 0.0, q, np.nan)))
+    # 1 - sqrt(q) = (1 - q) / (1 + sqrt(q)) with 1 - q = 4 a r^-3/2 - 3 a^2 r^-2 written out: for a small spin
+    # 1 - sqrt(q) formed directly is a rounding residue (76 % off at a = 1e-12, r = 1000)
+    root = np.sqrt(np.where(q >= 0.0, q, np.nan))
+    difference = 4.0 * a * r**-1.5 - 3.0 * a**2 / r**2
+    return kerr_circular_orbit_frequency_hz(mass_kg, r, a) * difference / (1.0 + root)
 
 
 # --------------------------------------------------------------------------------------
@@ -753,7 +760,11 @@ def kerr_penrose_extractable_fraction(spin: ArrayLike) -> Array:
     monotonic in |a_*|.
     """
     a = _spin(spin)
-    return 1.0 - np.sqrt((1.0 + np.sqrt(1.0 - a**2)) / 2.0)
+    # 1 - sqrt(u), u = (1 + s) / 2, s = sqrt(1 - a^2): 1 - u = a^2 / (2 (1 + s)), so that a small spin does not
+    # cancel (a^2 / 8 for a -> 0; formed directly it was noise below a = 1e-6)
+    s = np.sqrt(1.0 - a**2)
+    u = 0.5 * (1.0 + s)
+    return 0.5 * a**2 / (1.0 + s) / (1.0 + np.sqrt(u))
 
 
 @source(

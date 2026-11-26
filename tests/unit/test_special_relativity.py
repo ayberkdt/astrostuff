@@ -569,3 +569,36 @@ def test_four_momentum_and_boost_matrix_accept_a_speed_just_below_c():
     v = [(1.0 - 1e-9) * C, 0.0, 0.0]
     assert np.isfinite(four_momentum(M_ELECTRON, v)).all()
     assert np.isfinite(boost_matrix(v)).all()
+
+
+# --------------------------------------------------------------------------------------
+# accuracy near the speed of light (plan/AUDIT_2026-11-26.md, twelfth round)
+# --------------------------------------------------------------------------------------
+
+
+def test_scalar_velocity_functions_are_accurate_from_1e_minus_12_m_s_to_c():
+    """gamma, rapidity and the head-on Doppler factor against 60-digit arithmetic on the float inputs.
+
+    Formed from beta = v / c they lost 1e-16 / (1 - beta): gamma was 1.3e-5 off at 1 - beta = 1e-12 and 2.6e-3 off
+    at 1e-14. The rapidity is also tested at small and at negative velocities (log of the ratio (c + v) / (c - v)
+    loses the small ones, log1p of 2 v / (c - v) the ones near -c).
+    """
+    from decimal import Decimal, getcontext
+
+    from kozmos.relativity import special
+
+    getcontext().prec = 60
+    c = Decimal(C)
+    velocities = [1e-12, -1e-6, 1e-3, 1.0, 3e4, 1e7, -2e8]
+    velocities += [sign * C * (1.0 - d) for d in (1e-3, 1e-6, 1e-9, 1e-12, 1e-14, 1e-15) for sign in (1.0, -1.0)]
+    for v in velocities:
+        exact = Decimal(v)
+        gamma = c / ((c - exact) * (c + exact)).sqrt()
+        rapidity = ((c + exact) / (c - exact)).ln() / 2
+        assert abs(Decimal(float(lorentz_factor(v))) / gamma - 1) < Decimal("1e-15")  # measured 2e-16
+        assert abs(Decimal(float(special.rapidity(v))) / rapidity - 1) < Decimal("1e-15")
+        if v > 0.0:
+            doppler = ((c + exact) / (c - exact)).sqrt()
+            assert abs(Decimal(float(special.doppler_factor(v, 0.0))) / doppler - 1) < Decimal("1e-15")
+            assert abs(Decimal(float(special.doppler_factor(v, np.pi))) * doppler - 1) < Decimal("1e-15")
+    assert special.rapidity(0.0) == 0.0

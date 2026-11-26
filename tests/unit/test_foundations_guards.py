@@ -581,13 +581,13 @@ def test_argument_checks_name_what_is_wrong():
 def test_an_undetermined_element_needs_1e_minus_7_of_the_largest_determined_one():
     """[x, C + sin x] at 0.3: the first element is determined (derivative 1); the second is known to 5.6e-6 for
     C = 1e8 and to 1.4e-5 for C = 1e9, which is not 1e-7 of 1, and the call without an estimate refuses. (For
-    C = 1e7 it is known to 1e-6 of its own value and is returned.)"""
+    C = 1e6 it is known to better than 1e-6 of its own value and is returned.)"""
     for constant in (1e8, 1e9):
         with pytest.raises(ValueError, match="could not be determined"):
             d.jacobian(lambda x, c=constant: np.array([x[0], c + np.sin(x[0])]), [0.3], "finite")
         value, error = d.jacobian_with_error(lambda x, c=constant: np.array([x[0], c + np.sin(x[0])]), [0.3], "finite")
         assert abs(value[1, 0] - np.cos(0.3)) <= error[1, 0] < 1e-4
-    value = d.jacobian(lambda x: np.array([x[0], 1e7 + np.sin(x[0])]), [0.3], "finite")
+    value = d.jacobian(lambda x: np.array([x[0], 1e6 + np.sin(x[0])]), [0.3], "finite")
     assert value[1, 0] == pytest.approx(np.cos(0.3), rel=1e-6, abs=0)
 
 
@@ -611,3 +611,101 @@ def test_precision_guard_of_the_residual_at_its_threshold(monkeypatch):
     monkeypatch.setattr(lg, "_terms", terms(2.1e-6))
     with pytest.raises(lg.DerivativePrecisionError, match="residual"):
         residual()
+
+
+# --------------------------------------------------------------------------------------
+# found by the third adversarial probe (plan/AUDIT_2026-11-26.md, twelfth round)
+# --------------------------------------------------------------------------------------
+
+
+def test_a_derivative_that_is_not_zero_must_be_known_to_1e_minus_6_of_itself():
+    """f = (1 + x / L)^3 at x = L / 4, f' = 4.6875 / L, with L far below the first step of 1e-3.
+
+    The variation of f over that stencil is 1e21 times f' and more; with an absolute allowance of 1e-7 of it
+    granted to every element the finite method returned 1.172221e10 for L = 4e-10 (3e-4 off) and -9.6e18 for
+    L = 4e-14 (the true 1.17e14). The allowance is for derivatives that vanish against the difference quotient.
+    """
+    for scale in (4e-6, 4e-10, 4e-14):
+        value = d.jacobian(lambda x, s=scale: np.array([(1.0 + x[0] / s) ** 3]), [scale / 4.0], "finite")
+        assert value[0, 0] == pytest.approx(4.6875 / scale, rel=1e-6, abs=0)
+    # the second derivative of arcsin at 1 - 1e-12, which was returned 6e-4 off: right to 1e-6, or refused
+    for distance in (1e-6, 1e-9, 1e-12):
+        x = 1.0 - distance
+        try:
+            value = d.hessian(lambda y: np.arcsin(y[0]), [x])[0, 0]
+        except ValueError:
+            continue
+        assert value == pytest.approx(x / (1.0 - x * x) ** 1.5, rel=1e-6, abs=0)
+
+
+def test_a_first_step_that_aliases_a_sine_is_not_confirmed_by_a_step_that_knows_nothing():
+    """sin(2 pi 66003.2 t): 66.0032 periods per first step, so that its samples lie on a slow sine.
+
+    The step a hundredth as large has an estimate as large as the derivative; it "agreed", and 19.2 was returned
+    for 396484 at t = 0.5477 (with an estimate of 1e-7).
+    """
+    frequency = 2.0 * np.pi * 66003.2
+    for t in (0.5477, 0.6, 0.7, 0.8123, 0.9):
+        value, error = d.jacobian_with_error(lambda x: np.array([np.sin(frequency * x[0])]), [t], "finite")
+        exact = frequency * np.cos(frequency * t)
+        assert value[0, 0] == pytest.approx(exact, rel=1e-6, abs=0)  # measured 1e-8
+        assert abs(value[0, 0] - exact) <= error[0, 0]
+
+
+def test_an_inner_derivative_that_vanishes_does_not_spoil_the_estimates_of_the_others():
+    """f = sin(y) + x^7 at x = 0 with the finite method: d2f/dy2 = -sin(y) came out as 7e-8 with an estimate of
+    7e-5. The relative error of the inner derivative along x (0 of 0) was taken for the whole inner gradient."""
+    y = 0.19598
+    for power in (3, 5, 7, 9):
+        for x in (0.0, 1e-3):
+            value, error = d.hessian_with_error(lambda z, n=power: np.sin(z[1]) + z[0] ** n, [x, y], "finite")
+            assert value[1, 1] == pytest.approx(-np.sin(y), rel=1e-6, abs=0)
+            assert abs(value[1, 1] + np.sin(y)) <= error[1, 1] < 1e-6
+
+
+def test_second_derivatives_test_analyticity_around_the_point_and_not_at_it_only():
+    """V = 2.5 |x - 1|^2 + cos y written with np.abs: at x = 1 the complex step gives dV/dx = 0, which is right
+    there and nowhere else, and the Hessian came out as 0 for 5. The same for a metric written with np.abs(x)**2
+    at x = 0: Ricci scalar 0 for -1, without a warning."""
+
+    def potential(z):
+        return 2.5 * np.abs(z[0] - 1.0) ** 2 + np.cos(z[1])
+
+    with pytest.raises(ValueError, match="not analytic"):
+        d.hessian(potential, [1.0, 0.3])
+    with pytest.raises(ValueError, match="not analytic"):
+        d.hessian(lambda z: np.sin(z[0]) + np.abs(z[0]) ** 2, [0.0])
+    assert d.hessian(lambda z: 2.5 * (z[0] - 1.0) ** 2 + np.cos(z[1]), [1.0, 0.3])[0, 0] == pytest.approx(
+        5.0, rel=1e-9, abs=0
+    )
+
+    def metric(written_with_abs):
+        def g(x):
+            square = np.abs(x[1]) ** 2 if written_with_abs else x[1] ** 2
+            return np.diag([-1.0, 1.0, 1.0 + 0.5 * square, 1.0])
+
+        return g
+
+    for x1 in (0.0, 1e-12):
+        with pytest.raises(ValueError, match="not analytic"):
+            curvature.ricci_scalar(metric(True), [0.0, x1, 0.3, 0.2])
+        assert curvature.ricci_scalar(metric(False), [0.0, x1, 0.3, 0.2]) == pytest.approx(-1.0, rel=1e-8, abs=0)
+
+    def lagrangian(q, v, t):  # the same hole for the inertia matrix: m |v|^2 / 2 at rest
+        return 0.5 * 3.0 * np.abs(v[0]) ** 2 - 0.5 * q[0] ** 2
+
+    with pytest.raises(ValueError, match="not analytic"):
+        lg.euler_lagrange_accelerations(lagrangian, [0.4], [0.0])
+
+
+def test_geodesic_integration_tests_the_metric_at_its_output_points():
+    """Flat space with g_tt changed by a term written with np.real, in a window of x that the path crosses."""
+    from kozmos.relativity.geodesics import integrate_geodesic
+
+    def metric(x):
+        bump = 1e-2 * np.real(np.exp(-(((x[1] - 5.0) / 0.5) ** 2)))
+        return np.diag([-1.0 - bump, 1.0, 1.0, 1.0])
+
+    parameters = np.linspace(0.0, 10.0, 11)  # x goes from 0 to 10 through the window at 5
+    with pytest.raises(ValueError, match="not analytic"):
+        integrate_geodesic(metric, [0.0, 0.0, 0.0, 0.0], [1.2, 1.0, 0.0, 0.0], parameters, rtol=1e-8, atol=1e-10)

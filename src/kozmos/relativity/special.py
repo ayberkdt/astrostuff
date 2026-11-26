@@ -39,8 +39,15 @@ def _speed_beta(speed_m_s: ArrayLike) -> Array:
     return _beta(speed_m_s)
 
 
-def _gamma_from_beta(beta: Array) -> Array:
-    return 1.0 / np.sqrt((1.0 - beta) * (1.0 + beta))
+def _gamma(velocity_m_s: ArrayLike) -> Array:
+    """Lorentz factor c / sqrt((c - v)(c + v)) from the velocity itself.
+
+    c - v is exact in floating point for c/2 <= v <= 2c, so the result is good to rounding however close v is
+    to c. Formed from beta = v / c it is not: the rounding of beta is 1e-16, and 1 - beta inherits it as a
+    relative error of 1e-16 / (1 - beta) (1.3e-5 at 1 - beta = 1e-12).
+    """
+    v = np.asarray(velocity_m_s, dtype=float)
+    return _C / np.sqrt((_C - v) * (_C + v))
 
 
 def _vector3(value: ArrayLike, name: str) -> Array:
@@ -82,15 +89,20 @@ def lorentz_factor(velocity_m_s: ArrayLike) -> Array:
 
     Validity
     --------
-    |v| < c is enforced (ValueError otherwise). The product (1 - beta)(1 + beta) is used under the square
-    root, so that gamma stays accurate for beta close to 1.
+    |v| < c is enforced (ValueError otherwise). gamma is formed as c / sqrt((c - v)(c + v)) from the velocity
+    itself, c - v being exact in floating point near c: measured against 60-digit arithmetic, 2e-16 from
+    v = 1e-12 m/s to c (1 - 1e-15). (From beta = v / c it lost 1e-16 / (1 - beta): 1.3e-5 at
+    1 - beta = 1e-12.) The functions that take a velocity vector (boost_matrix, four_momentum,
+    add_velocities_m_s) form 1 - |v|^2 / c^2 from the components and keep that loss: 4e-9 at
+    1 - beta = 1e-9.
 
     Verification
     ------------
     tests/unit/test_special_relativity.py: gamma = 1 + beta^2 / 2 + 3 beta^4 / 8 at low velocity; gamma(0.6 c) =
     1.25 and gamma(0.8 c) = 5/3; gamma = cosh(rapidity); speeds at or above c are rejected.
     """
-    return _gamma_from_beta(_beta(velocity_m_s))
+    _beta(velocity_m_s)  # validation
+    return _gamma(velocity_m_s)
 
 
 @source(
@@ -125,7 +137,13 @@ def rapidity(velocity_m_s: ArrayLike) -> Array:
     tests/unit/test_special_relativity.py: rapidities add for collinear boosts; tanh(rapidity) returns v / c;
     boost matrix of Eq. 1.18 reproduced from the rapidity.
     """
-    return np.arctanh(_beta(velocity_m_s))
+    _beta(velocity_m_s)  # validation
+    v = np.asarray(velocity_m_s, dtype=float)
+    # artanh(v / c) = log1p(2 v / (c - v)) / 2: c - v is exact near c (from beta the result loses 1e-16 / (1 - beta)),
+    # and log1p keeps the small velocities (log of the ratio (c + v) / (c - v) loses 1e-16 c / v there)
+    # (an odd function, evaluated for |v|: for v near -c the argument of log1p would be near -1)
+    speed = np.abs(v)
+    return np.sign(v) * 0.5 * np.log1p(2.0 * speed / (_C - speed))
 
 
 @source(
@@ -585,8 +603,11 @@ def doppler_factor(velocity_m_s: ArrayLike, angle_rad: ArrayLike) -> Array:
     boosted with boost_matrix for random 3D velocities; longitudinal limits sqrt((1 + beta)/(1 - beta)) and
     its inverse; transverse limit 1 / gamma; beta -> 0 limit 1 + beta cos(theta).
     """
-    beta = np.asarray(_speed_beta(velocity_m_s))
-    return 1.0 / (_gamma_from_beta(beta) * (1.0 - beta * np.cos(np.asarray(angle_rad, dtype=float))))
+    _speed_beta(velocity_m_s)  # validation
+    # 1 - beta cos(theta) = [(c - v) + 2 v sin^2(theta / 2)] / c, without the rounding of beta
+    v = np.asarray(velocity_m_s, dtype=float)
+    half = 0.5 * np.asarray(angle_rad, dtype=float)
+    return _C / (_gamma(v) * ((_C - v) + 2.0 * v * np.sin(half) ** 2))
 
 
 @source(
@@ -627,8 +648,11 @@ def doppler_factor_source_frame(velocity_m_s: ArrayLike, angle_source_rad: Array
     tests/unit/test_special_relativity.py: compared with the frequency (time component) of a null four-vector
     boosted with boost_matrix for random 3D velocities; transverse limit gamma for theta' = pi/2.
     """
-    beta = np.asarray(_speed_beta(velocity_m_s))
-    return _gamma_from_beta(beta) * (1.0 + beta * np.cos(np.asarray(angle_source_rad, dtype=float)))
+    _speed_beta(velocity_m_s)  # validation
+    # 1 + beta cos(theta') = [(c - v) + 2 v cos^2(theta' / 2)] / c
+    v = np.asarray(velocity_m_s, dtype=float)
+    half = 0.5 * np.asarray(angle_source_rad, dtype=float)
+    return _gamma(v) * ((_C - v) + 2.0 * v * np.cos(half) ** 2) / _C
 
 
 @source(
@@ -672,7 +696,7 @@ def aberrated_angle_rad(velocity_m_s: ArrayLike, angle_source_rad: ArrayLike) ->
     cos(theta) = beta.
     """
     beta = np.asarray(_speed_beta(velocity_m_s))
-    gamma = _gamma_from_beta(beta)
+    gamma = _gamma(velocity_m_s)
     theta_source = np.asarray(angle_source_rad, dtype=float)
     return np.arctan2(np.sin(theta_source), gamma * (np.cos(theta_source) + beta))
 
@@ -798,7 +822,7 @@ def kinetic_energy_j(mass_kg: ArrayLike, velocity_m_s: ArrayLike) -> Array:
     equals total_energy_j minus m c^2 at high velocity.
     """
     beta = np.asarray(_beta(velocity_m_s))
-    gamma = _gamma_from_beta(beta)
+    gamma = _gamma(velocity_m_s)
     return np.asarray(mass_kg, dtype=float) * _C**2 * gamma**2 * beta**2 / (gamma + 1.0)
 
 

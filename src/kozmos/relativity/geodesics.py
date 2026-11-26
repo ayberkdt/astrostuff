@@ -27,7 +27,7 @@ from numpy.typing import ArrayLike, NDArray
 from scipy.integrate import solve_ivp
 
 from kozmos._sources import source
-from kozmos.core._differentiation import Method, jacobian
+from kozmos.core._differentiation import Method, _check_neighbours, jacobian
 from kozmos.relativity.metrics import metric_inverse
 
 Array = NDArray[np.float64]
@@ -47,10 +47,27 @@ def _christoffel_from(ginv: Array, dg: Array) -> Array:
     return 0.5 * np.einsum("ad,dbc->abc", ginv, term)
 
 
-def _christoffel(metric: Metric, point: Array, method: Method, check: bool) -> Array:
-    """Christoffel symbols; ``check=False`` skips the analyticity check of the complex-step derivative."""
+_CHECKED_OUTPUTS = 16  # output points, after the first, at which an integration tests the metric
+
+
+def _check_indices(count: int) -> list[int]:
+    """Indices of the output points, after the first, at which analyticity is tested: all of them up to 16,
+    otherwise 16 spread evenly and ending with the last."""
+    if count - 1 <= _CHECKED_OUTPUTS:
+        return list(range(1, count))
+    return sorted({int(round(k)) for k in np.linspace(1, count - 1, _CHECKED_OUTPUTS)})
+
+
+def _christoffel(metric: Metric, point: Array, method: Method, check: bool, neighbours: bool = False) -> Array:
+    """Christoffel symbols; ``check=False`` skips the analyticity check of the complex-step derivative.
+
+    ``neighbours`` extends the check to one first step away along every coordinate (for the callers that
+    difference the symbols: a metric written with np.abs(x)**2 has the right first derivatives at x = 0 only).
+    """
     g = np.asarray(metric(point), dtype=float)
     dg = jacobian(metric, point, method=method, check=check)
+    if neighbours and check and method == "complex":
+        _check_neighbours(metric, point)
     return _christoffel_from(metric_inverse(g), dg)
 
 
@@ -438,7 +455,9 @@ def integrate_geodesic(
         Tolerances of the DOP853 integrator.
     method : {"complex", "finite"}, optional
         Derivative method for the Christoffel symbols at every step. With "complex" the check that the metric
-        is analytic is made at the first and at the last point of the integration, not at every step.
+        is analytic is made at the first point and at up to 16 further points of ``affine_parameters`` (all of
+        them if there are no more, otherwise 16 spread evenly, the last included), not at the steps of the
+        integrator between them.
 
     Returns
     -------
@@ -453,8 +472,10 @@ def integrate_geodesic(
     --------
     Stops with RuntimeError if the integrator fails (for example at a coordinate singularity). The state is not
     renormalised: the drift of the norm and of the Killing constants is the measure of the integration error
-    (tests/unit/test_geodesics.py reports it). With "complex" the derivative check of the helper runs at every
-    step, so a non-analytic metric raises ValueError.
+    (tests/unit/test_geodesics.py reports it). With "complex" the metric is tested for analyticity at up to 17
+    of the points of ``affine_parameters`` only: a metric that is non-analytic (np.real, abs, a comparison) on a
+    part of the path that none of them falls into is integrated with wrong Christoffel symbols there, without an
+    error. Use ``method="finite"`` for such a metric.
 
     Verification
     ------------
@@ -469,8 +490,8 @@ def integrate_geodesic(
         raise ValueError("affine_parameters must be strictly monotonic")
     start = np.concatenate([_point(x0, "x0"), _point(u0, "u0")])
 
-    # the metric is checked for analyticity at the first point and at the last one; in between the complex-step
-    # derivative is used without the check, which costs seven extra evaluations per coordinate
+    # the metric is checked for analyticity at the first point and at every output point; in between the
+    # complex-step derivative is used without the check
     _christoffel(metric, start[:4], method, True)
 
     def rhs(_lam: float, y: Array) -> Array:
@@ -481,5 +502,6 @@ def integrate_geodesic(
     result = solve_ivp(rhs, (params[0], params[-1]), start, method="DOP853", t_eval=params, rtol=rtol, atol=atol)
     if not result.success:
         raise RuntimeError(f"geodesic integration failed: {result.message}")
-    _christoffel(metric, result.y[:4, -1], method, True)
+    for k in _check_indices(params.size):
+        _christoffel(metric, result.y[:4, k], method, True)
     return result.y[:4].T.copy(), result.y[4:].T.copy()

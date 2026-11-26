@@ -483,3 +483,31 @@ def test_shapiro_delay_rejects_a_line_through_the_mass_whatever_the_last_bits_of
     # an impact parameter of one solar radius is far from the limit
     grazing = shapiro_round_trip_delay_s(M_SUN, np.array([AU, 6.957e8, 0.0]), np.array([-AU, 6.957e8, 0.0]))
     assert 2.0e-4 < grazing < 3.0e-4  # about 240 microseconds for a round trip at superior conjunction
+
+
+def test_shapiro_delay_behind_the_mass_against_50_digit_arithmetic():
+    """Earth at 1.496e11 m, reflector at 2.28e11 m on the far side, impact parameters from the solar radius down.
+
+    With r_E + r_e - R formed by subtraction the delay was 1.4e-4 off for a ray 3e4 m from the centre.
+    """
+    from decimal import Decimal, getcontext
+
+    getcontext().prec = 50
+    r_earth, r_source = 1.496e11, 2.28e11
+    for impact in (7e8, 1e7, 1e6, 3e5, 3e4):
+        earth = np.array([-np.sqrt(r_earth**2 - impact**2), impact, 0.0])
+        source = np.array([np.sqrt(r_source**2 - impact**2), impact, 0.0])
+        e = [Decimal(float(c)) for c in earth]
+        s = [Decimal(float(c)) for c in source]
+        norm_e = sum(c * c for c in e).sqrt()
+        norm_s = sum(c * c for c in s).sqrt()
+        chord = sum((a - b) ** 2 for a, b in zip(e, s, strict=True)).sqrt()
+        exact = (
+            4
+            * Decimal(G)
+            * Decimal(M_SUN)
+            / Decimal(C) ** 3
+            * ((norm_e + norm_s + chord) / (norm_e + norm_s - chord)).ln()
+        )
+        value = shapiro_round_trip_delay_s(M_SUN, earth, source)
+        assert abs(Decimal(float(value)) / exact - 1) < Decimal("1e-13")  # measured 2e-16

@@ -233,7 +233,11 @@ def shapiro_round_trip_delay_s(
     the reflector (source) to the Earth, d the distance of the straight line between them from the mass. The code
     evaluates the algebraically identical form ln[(r_E + r_e + R) / (r_E + r_e - R)] with R = |x_E - x_e| (see
     the note of the source record for the two-line derivation), which has no 0/0 for collinear same-side
-    geometries and does not cancel near them.
+    geometries. The difference r_E + r_e - R is not formed by subtraction (behind the mass it would lose
+    1e-16 (r_E + r_e) / (r_E + r_e - R), 1.4e-4 of the delay for a ray 3e4 m from the centre of the Sun): it is
+    2 (r_E r_e + x_E . x_e) / (r_E + r_e + R), with the bracket taken as |x_E x x_e|^2 / (r_E r_e - x_E . x_e)
+    when the two points lie on opposite sides. Measured against 50-digit arithmetic: 2e-16 for impact
+    parameters from 7e8 m down to 3e4 m.
 
     Parameters
     ----------
@@ -284,7 +288,18 @@ def shapiro_round_trip_delay_s(
     # rounding errors of r_E + r_e counts as through the mass (b below about 4e-8 of the distances).
     if np.any(~(path_sum - chord > 8.0 * np.finfo(float).eps * path_sum)):
         raise ValueError("the straight line between the end points passes through the mass")
-    argument = 1.0 + 2.0 * chord / (path_sum - chord)  # (s + R) / (s - R)
+    # s - R = (s^2 - R^2) / (s + R) = 2 (r_E r_e + x_E . x_e) / (s + R). Behind the mass the bracket cancels in
+    # its turn; there r_E r_e + x_E . x_e = |x_E x x_e|^2 / (r_E r_e - x_E . x_e), whose denominator does not.
+    # Formed as s - R the difference lost 1e-16 s / (s - R): 1.4e-4 of the delay for a ray 3e4 m from the centre.
+    r_earth = np.linalg.norm(x_earth, axis=-1)
+    r_source = np.linalg.norm(x_source, axis=-1)
+    dot = np.sum(x_earth * x_source, axis=-1)
+    cross = np.cross(x_earth, x_source)
+    with np.errstate(divide="ignore", invalid="ignore"):
+        behind = np.sum(cross * cross, axis=-1) / (r_earth * r_source - dot)
+    bracket = np.where(dot < 0.0, behind, r_earth * r_source + dot)
+    difference = 2.0 * bracket / (path_sum + chord)
+    argument = 1.0 + 2.0 * chord / difference  # (s + R) / (s - R)
     return 2.0 * (1.0 + gamma_ppn) * _G * mass / _C**3 * np.log(argument)
 
 

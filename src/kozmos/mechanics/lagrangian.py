@@ -115,6 +115,17 @@ def _terms(lagrangian: Lagrangian, q: Array, v: Array, t: float, method: Method,
     )
 
 
+_CHECKED_OUTPUTS = 16  # output times, after the first, at which an integration tests the Lagrangian
+
+
+def _check_indices(count: int) -> list[int]:
+    """Indices of the output times, after the first, at which analyticity is tested: all of them up to 16,
+    otherwise 16 spread evenly and ending with the last."""
+    if count - 1 <= _CHECKED_OUTPUTS:
+        return list(range(1, count))
+    return sorted({int(round(k)) for k in np.linspace(1, count - 1, _CHECKED_OUTPUTS)})
+
+
 def _inertia_scale(w: Array) -> Array:
     """Scale factors s_i with the unit of sqrt(W_ii), for comparing coordinates of different units.
 
@@ -578,10 +589,11 @@ def integrate_lagrangian(
 
     Validity
     --------
-    With the complex step the Lagrangian is tested for analyticity at the states of the output times only, not at
-    the steps of the integrator between them: a Lagrangian that is non-analytic (abs, norm, a comparison) on a
-    part of the path that no output time falls into is integrated with a wrong force there, without an error.
-    Ask for output times along the whole path, or use ``method="finite"`` for such a Lagrangian.
+    With the complex step the Lagrangian is tested for analyticity at the first state and at up to 16 further
+    output times (all of them if there are no more, otherwise 16 spread evenly, the last included), not at the
+    steps of the integrator between them: a Lagrangian that is non-analytic (abs, norm, a comparison) on a part
+    of the path that none of those times falls into is integrated with a wrong force there, without an error.
+    Use ``method="finite"`` for such a Lagrangian.
     The local error is controlled by rtol and atol only; conserved quantities drift at the level the tests
     measure (see tests/unit/test_lagrangian.py), not exactly. Measured for two coordinates: a right-hand side
     costs about 66 evaluations of the Lagrangian with the complex step and about 860 with ``method="finite"``,
@@ -621,8 +633,8 @@ def integrate_lagrangian(
     )
     if not solution.success:
         raise RuntimeError(f"integration failed: {solution.message}")
-    # the test of analyticity is repeated at every output time (the first one was tested above)
-    for k in range(1, t_arr.size):
+    # the test of analyticity is repeated at the output times, at up to 16 of them (the first was tested above)
+    for k in _check_indices(t_arr.size):
         _accelerations(lagrangian, solution.y[:n, k], solution.y[n:, k], float(t_arr[k]), method, max_condition, True)
     return solution.y[:n].T, solution.y[n:].T
 

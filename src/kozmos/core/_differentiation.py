@@ -66,7 +66,13 @@ Two methods, both derived here from the Taylor series of ``f`` and tied to no pu
 
     What is not seen: structure finer than a hundredth of the first step whose amplitude is below
     about 1e-10 of the function value there (the first step and its confirmation then both look
-    perfect), a feature in an element that is itself below 2e-13 of the largest element of f, and,
+    perfect); structure finer than the smallest step, 1e-15 max(1, |x_i|) (for (1 + x / L)^3 with
+    L = 4e-30 the point is a triple zero on every scale that is sampled, and 0 is returned with an
+    estimate that is small only against the difference quotient); a dependence that floating point
+    has erased from the values (in -1e16 + sin y the sine is below the rounding everywhere: the
+    function is constant in y to the last bit, its derivative is returned as 0, and the estimate of
+    that, which assumes a monotonic dependence over the distance of the confirmation, is wrong);
+    a feature in an element that is itself below 2e-13 of the largest element of f; and,
     as with every sampling method, features that fall between the nodes of all the steps tried. The
     functions that return the error estimate (``*_with_error``) let a caller test what it needs.
 
@@ -115,7 +121,7 @@ _LOCAL = threading.local()
 class _Trace:
     """Steps chosen by the finite differences made during one evaluation of a function, in call order."""
 
-    __slots__ = ("center_error", "index", "inner_error", "recording", "steps")
+    __slots__ = ("center_error", "index", "inner_abs", "inner_error", "inner_size", "recording", "steps")
 
     def __init__(self) -> None:
         self.steps: list[tuple[tuple[int, int], Array, _Trace]] = []
@@ -123,6 +129,26 @@ class _Trace:
         self.recording = True
         self.inner_error = 0.0  # largest relative error estimate of those differences, at the points used so far
         self.center_error = 0.0  # the same at the central point alone
+        self.inner_abs = 0.0  # largest absolute estimate of those differences, over all their columns
+        self.inner_size = 0.0  # largest element of those differences, over all their columns
+
+
+def _note_inner(trace: _Trace, values: Array, errors: Array) -> None:
+    """Record the estimate of an inner difference, relative to the largest element of all inner differences.
+
+    Relative to the largest element met so far, over the columns: a column whose derivative vanishes (x^7 at 0)
+    has no relative error of its own, and with its 100 % taken for the whole result the estimate of every outer
+    element became as large as the element (d2/dy2 of sin y + x^7 at x = 0 came out as 7e-8 for -0.19).
+    """
+    with np.errstate(all="ignore"):
+        finite_values = np.abs(values[np.isfinite(values)])
+        finite_errors = np.abs(errors[np.isfinite(errors)])
+    if finite_values.size:
+        trace.inner_size = max(trace.inner_size, float(np.max(finite_values)))
+    if finite_errors.size:
+        trace.inner_abs = max(trace.inner_abs, float(np.max(finite_errors)))
+    if trace.inner_size > 0.0:
+        trace.inner_error = min(1.0, trace.inner_abs / trace.inner_size)
 
 
 def _stack() -> list[_Trace]:
@@ -221,10 +247,21 @@ def _stencil(
     )
 
 
-def _ratio(six: Array, error: Array, quotient: Array, constant: Array, decade: int) -> Array:
-    """Error estimate in units of the allowed error; inf where the step says nothing."""
+def _ratio(six: Array, error: Array, quotient: Array, constant: Array, decade: int, loose: bool = False) -> Array:
+    """Error estimate in units of the allowed error; inf where the step says nothing.
+
+    The absolute allowance, 1e-7 of the difference quotient, is for a derivative that vanishes within its estimate
+    (|D6| <= 3 err): there is nothing else to compare its error with. A derivative that is clearly not zero must
+    be known to 1e-6 of itself. With the allowance granted to every element, (1 + x / L)^3 with L = 4e-14 was
+    returned as -9.6e18 for 1.2e14: the variation of f over a stencil that is far larger than L says nothing
+    about f'. (``loose``, the reference of the test of a complex-step derivative, keeps the allowance for all.)
+    """
     with np.errstate(all="ignore"):
-        ratio = error / (_ACCEPT_REL * np.abs(six) + _ACCEPT_ABS * quotient)
+        # (vanishing: far below the difference quotient. A derivative as large as the quotient and merely badly
+        # known is not one. Nor is the size of the estimate a criterion: with |D6| <= 3 err required, a step that
+        # knew the derivative to 1e-4 was refused and one that knew it to 90 % was taken.)
+        vanishing = loose | (np.abs(six) <= 1e-3 * quotient)
+        ratio = error / (_ACCEPT_REL * np.abs(six) + np.where(vanishing, _ACCEPT_ABS * quotient, 0.0))
         ratio = np.where(np.isfinite(six) & np.isfinite(ratio), ratio, np.inf)
     # ``constant`` is the confirmed flag of the first step (see _finite_column): the derivative is exactly zero
     return np.where(constant, 0.0, ratio)
@@ -281,10 +318,7 @@ def _finite_column(
                     four = ((fm2 - fp2) + 8.0 * (fp1 - fm1)) / (12.0 * float(h))
                     values = np.maximum.reduce([np.abs(v) for v in points])
                     error = 1.1 * 4.0 * _EPS * values / float(h) + np.abs(six - four)
-                    relative = np.where((steps == h) & (np.abs(six) > 0.0), error / np.abs(six), 0.0)
-                relative = relative[np.isfinite(relative)]
-                if relative.size:
-                    parent.inner_error = max(parent.inner_error, min(1.0, float(np.max(relative))))
+                _note_inner(parent, np.where(steps == h, six, 0.0), np.where(steps == h, error, 0.0))
             if noise_out is not None:
                 noise_out.append((np.zeros_like(result), np.zeros_like(result)))
             return result, np.zeros_like(result), np.ones(np.shape(result), dtype=bool)
@@ -342,8 +376,17 @@ def _finite_column(
     # reduce it, so it does not count in the decision to search (it stays in the estimate that is returned).
     with np.errstate(invalid="ignore"):
         own = np.where(np.isfinite(error), np.maximum(error - extras[0][4], 0.0), error)
-    settled = not np.any(_ratio(six, own, quotient, constant, 0) > good)
+    settled = not np.any(_ratio(six, own, quotient, constant, 0, loose) > good)
     first_noise = np.where(np.isfinite(extras[0][6]), extras[0][6], 0.0)
+    if settled and not loose:
+        # An element that the first step knows only through the absolute allowance is taken at once if its
+        # estimate is the rounding of f at the point (a stationary point). If it is larger, the stencil reaches
+        # values of f far above f(x) (a scale of variation below the step) and smaller steps may know the
+        # derivative to 1e-6: they are searched.
+        with np.errstate(invalid="ignore"):
+            relative = own <= _GOOD_REL * np.abs(six)
+            rounding_level = own <= 100.0 * 1.1 * 4.0 * _EPS * np.abs(center) / base
+            settled = bool(np.all(relative | rounding_level | constant | ~np.isfinite(own)))
     if settled and loose:
         # For the test of a complex-step derivative the first step is taken only if its estimate is noise, not
         # truncation or roughness: the comparison is made within the noise (see _check_analytic).
@@ -356,7 +399,13 @@ def _finite_column(
         fine = _residues(results, extras, constant)[_CONFIRM]
         with np.errstate(invalid="ignore"):
             same = np.abs(six - fine[0]) <= 2.0 * (error + fine[1]) + 1e-300
-        settled = bool(np.all(same | constant))
+            # ... and the smaller step must itself determine the derivative to a per cent, or it confirms
+            # nothing: with 66.003 periods of a sine in the first step the samples alias to a smooth curve, the
+            # step a hundred times smaller has an estimate as large as the derivative, and the two "agreed"
+            # (19.2 was returned for 396484).
+            scale = np.maximum(np.abs(six), np.abs(fine[0]))
+            telling = fine[1] <= 1e-2 * scale + 100.0 * _ACCEPT_ABS * quotient
+        settled = bool(np.all((same & telling) | constant))
     if settled:
         best_six, best_error, best_step = six, error, np.full(np.shape(six), base)
         best_noise = first_noise
@@ -391,12 +440,20 @@ def _finite_column(
         # Below the first step a result is also acceptable against the largest difference quotient met between
         # that step and the first one: near a stationary point of high order (x^4 at 0) the derivative and its
         # error estimate shrink together, and only the size of f in the wider neighbourhood says that both are small.
+        # (The quotient of the largest step, from the first one down, whose stencil lies inside the domain; not
+        # the largest quotient on the way: towards a pole or a branch point the quotients grow without bound.)
         widest = np.zeros(shape)
+        found = np.zeros(shape, dtype=bool)
         ratios = {}
         for decade in range(0, -_DOWN - 1, -1):
             six, error, quotient, constant = results[decade]
-            widest = np.maximum(widest, np.where(np.isfinite(quotient), quotient, 0.0))
-            ratios[decade] = _ratio(six, error, widest, constant, decade)
+            inside = np.isfinite(quotient) & np.isfinite(six)
+            if loose:
+                widest = np.maximum(widest, np.where(np.isfinite(quotient), quotient, 0.0))
+            else:
+                widest = np.where(inside & ~found, quotient, widest)
+                found |= inside
+            ratios[decade] = _ratio(six, error, widest, constant, decade, loose)
         # Above the first step the difference quotient of a curved function grows with the step and says nothing
         # about the derivative at the point: the allowance stays that of the first step.
         first_quotient = results[0][2]
@@ -406,7 +463,7 @@ def _finite_column(
                 capped = np.where(np.isfinite(first_quotient), np.minimum(quotient, first_quotient), quotient)
             if loose:
                 capped = quotient
-            ratios[decade] = _ratio(six, error, capped, constant, decade)
+            ratios[decade] = _ratio(six, error, capped, constant, decade, loose)
         # An element that is exactly zero at every point of every step inside the domain is identically zero in
         # the neighbourhood (a vanishing component of a tensor): its derivative is zero. It is anchored at once.
         quotients = np.stack([extras[d][7] for d in results])  # the largest |f| on each stencil
@@ -499,11 +556,7 @@ def _finite_column(
         best_error = best_error * _NESTED_SAFETY
     if parent is not None:
         parent.steps.append((key, best_step, child))
-        with np.errstate(all="ignore"):
-            relative = np.where(np.abs(best_six) > 0.0, best_error / np.abs(best_six), 0.0)
-        relative = relative[np.isfinite(relative)]
-        if relative.size:
-            parent.inner_error = max(parent.inner_error, min(1.0, float(np.max(relative))))
+        _note_inner(parent, np.asarray(best_six, dtype=float), np.asarray(best_error, dtype=float))
     if record is not None:
         unit = max(1.0, abs(float(x[i])))  # steps and distances are stored in units of max(1, |x_i|)
         record.append((best_step / unit, np.broadcast_to(independent, np.shape(best_six)).copy(), reach / unit))
@@ -540,7 +593,8 @@ def _planned(f: Callable[[Array], ArrayLike], x: Array, plan: dict) -> tuple[Arr
                     1.1 * 4.0 * _EPS * values / h + 4.0 * _EPS * abs(float(x[i])) / h * np.abs(six) + np.abs(six - four)
                 )
                 spread = np.maximum.reduce(points) - np.minimum.reduce(points)
-                own = _ACCEPT_REL * np.abs(six) + _ACCEPT_ABS * spread / h
+                vanishing = np.abs(six) <= 1e-3 * spread / h
+                own = _ACCEPT_REL * np.abs(six) + np.where(vanishing, _ACCEPT_ABS * spread / h, 0.0)
                 # an element that was independent of the coordinate at the earlier point and whose six values
                 # are equal here is independent still, with the estimate of that confirmation
                 still = independent & (spread == 0.0)
@@ -634,6 +688,10 @@ def _complex_jacobian(f: Callable[[Array], ArrayLike], x: Array) -> Array:
     return np.stack(columns, axis=-1)
 
 
+class NotAnalyticError(ValueError):
+    """The complex-step derivative is contradicted: the function is not analytic in its argument there."""
+
+
 def _kink_at(f: Callable[[Array], ArrayLike], x: Array, result: Array) -> bool:
     """Whether f has a kink at x or so near that no step separates the two.
 
@@ -676,13 +734,16 @@ def _kink_at(f: Callable[[Array], ArrayLike], x: Array, result: Array) -> bool:
     return False
 
 
-def _check_analytic(f: Callable[[Array], ArrayLike], x: Array, result: Array) -> None:
+def _check_analytic(f: Callable[[Array], ArrayLike], x: Array, result: Array, kink: bool = True) -> None:
     """Raise when the finite-difference derivative contradicts the complex-step derivative ``result``.
 
-    The two may differ by twenty error estimates of the finite difference (plus 1e-9 of the value). What
-    this cannot detect is therefore a non-analytic part whose derivative is below that estimate: about
-    2e-11 |f| / max(1, |x_i|) for a function evaluated to rounding, more for a noisy one or close to
-    the edge of its domain, where only a very small step stays inside.
+    The two may differ by twenty times the rounding of the finite difference at the step it used, plus its
+    truncation there and 1e-9 of the value. What this cannot detect is a non-analytic part whose derivative
+    is below that: 20 (4.4 eps |f| + 4 eps |x_i| |f'|) / h with h the step of the reference. For a function
+    evaluated to rounding at |x| of order one and a step of 1e-3 this is 2e-11 |f|. It is more when the
+    reference has to use a small step: near a kink (a step that straddles it is too rough to be chosen), at
+    large |x| (a slope jump of 2e-4 at x = 1e4, 1e-5 away from the point, is not found) and close to the
+    edge of the domain. A term that is singular within 1e-14 of the point (A sqrt|x - x0|) is not found.
     """
     try:
         # ``loose``: the reference is judged against the size of f, as a test of the complex step needs (a
@@ -711,13 +772,13 @@ def _check_analytic(f: Callable[[Array], ArrayLike], x: Array, result: Array) ->
     truncation = np.stack([part[1] for part in noise_parts], axis=-1)
     allowed = _CHECK_FACTOR * np.maximum(noise, floor) + truncation + 1e-9 * np.abs(result) + 1e-300
     disagree = ~(np.abs(result - reference) <= allowed)
-    if not np.any(disagree) and _kink_at(f, x, result):
-        raise ValueError(
+    if kink and not np.any(disagree) and _kink_at(f, x, result):
+        raise NotAnalyticError(
             "the function has a kink at the point or very near it: it is not analytic in its argument (abs, norm, "
             "comparisons), and its derivative depends on the side; use method='finite' away from the kink"
         )
     if np.any(disagree):
-        raise ValueError(
+        raise NotAnalyticError(
             "complex-step derivative disagrees with the finite-difference derivative: the function is not analytic "
             "in its argument (abs, norm, np.real, comparisons or a cast to float); use method='finite'"
         )
@@ -776,9 +837,36 @@ def gradient(f: Callable[[Array], ArrayLike], x: ArrayLike, method: Method = "co
     return result
 
 
+def _check_neighbours(f: Callable[[Array], ArrayLike], x: Array) -> None:
+    """Test the complex-step derivative of ``f`` one first step away from ``x`` along every coordinate, both ways.
+
+    For second derivatives, which are differences of complex-step first derivatives over a neighbourhood: a function
+    can be non-analytic and still have the right first derivative at one point (|x - 1|^2 at x = 1, |x|^2 at the
+    origin: the complex step gives 0, which is right there and nowhere else), and its second derivative then came
+    out as 0 without an error. Only a contradiction counts here; a neighbour at which the test cannot be made (the
+    edge of the domain) is passed over.
+    """
+    for i in range(x.size):
+        step = _FIRST_STEP * max(1.0, abs(float(x[i])))
+        for sign in (1.0, -1.0):
+            y = x.copy()
+            y[i] += sign * step
+            try:
+                result = _complex_jacobian(f, y)
+                if not np.all(np.isfinite(result)):
+                    continue
+                _check_analytic(f, y, result, kink=False)
+            except NotAnalyticError:
+                raise
+            except (ValueError, ArithmeticError, TypeError):
+                continue
+
+
 def _checked_at(f: Callable[[Array], ArrayLike], x: Array, method: Method) -> None:
     if _first(f, x, method, check=True)[0].ndim != 1:
         raise ValueError("a scalar function is needed")
+    if method == "complex":
+        _check_neighbours(f, x)
 
 
 def hessian_with_error(

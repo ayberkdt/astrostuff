@@ -621,3 +621,25 @@ def test_radial_epicyclic_frequency_is_zero_inside_the_rounding_band(spin):
     assert kerr.kerr_radial_epicyclic_frequency_hz(M10, r, spin) == 0.0
     f_orbit = kerr.kerr_circular_orbit_frequency_hz(M10, r, spin)
     assert kerr.kerr_periastron_precession_frequency_hz(M10, r, spin) == pytest.approx(f_orbit, rel=1e-15, abs=0)
+
+
+def test_nodal_precession_and_penrose_fraction_for_small_spins():
+    """1 - sqrt(q) with q = 1 - 4 a r^-3/2 + 3 a^2 r^-2 and 1 - M_irr / M, formed without their cancellations.
+
+    Formed directly, the nodal precession was 76 % off at a = 1e-12, r = 1000, and the Penrose fraction was noise
+    below a = 1e-6 (true a^2 / 8). Reference: 50-digit arithmetic.
+    """
+    from decimal import Decimal, getcontext
+
+    getcontext().prec = 50
+    mass = 10.0 * 1.989e30
+    for a, r in ((1e-12, 1000.0), (1e-9, 10.0), (1e-6, 1e6), (1e-3, 50.0), (0.3, 8.0), (-1e-9, 10.0)):
+        da, dr = Decimal(a), Decimal(r)
+        q = 1 - 4 * da / (dr * dr.sqrt()) + 3 * da * da / (dr * dr)
+        exact = 1 - q.sqrt()
+        ratio = kerr.kerr_nodal_precession_frequency_hz(mass, r, a) / kerr.kerr_circular_orbit_frequency_hz(mass, r, a)
+        assert abs(Decimal(float(ratio)) / exact - 1) < Decimal("1e-13")  # measured 1e-16
+    for a in (1e-12, 1e-8, 1e-6, 1e-4, 1e-2, 0.5, 1.0):
+        da = Decimal(a)
+        exact = 1 - ((1 + (1 - da * da).sqrt()) / 2).sqrt()
+        assert abs(Decimal(float(kerr.kerr_penrose_extractable_fraction(a))) / exact - 1) < Decimal("1e-14")
