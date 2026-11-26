@@ -115,6 +115,30 @@ def _terms(lagrangian: Lagrangian, q: Array, v: Array, t: float, method: Method,
     )
 
 
+def _inertia_scale(w: Array) -> Array:
+    """Scale factors s_i with the unit of sqrt(W_ii), for comparing coordinates of different units.
+
+    s_i = sqrt|W_ii| where the diagonal element is not zero. A zero on the diagonal does not make W singular
+    (L = v_0 v_1 has W = [[0, 1], [1, 0]]): there s_i = max_j |W_ij| / s_j over the coordinates that have a scale,
+    or sqrt(max_j |W_ij|) if none has. A row of zeros does: the Lagrangian is linear in that velocity or does not
+    contain it.
+    """
+    absolute = np.abs(w)
+    if np.any(np.max(absolute, axis=1) == 0.0):
+        raise SingularInertiaError(
+            "a row of the matrix d2L/dv dv is zero: the Lagrangian is linear in a velocity or does not contain it "
+            "(constraints, gauge freedom, a first-order Lagrangian), and the Euler-Lagrange equations cannot be "
+            "solved for the accelerations"
+        )
+    scale = np.sqrt(np.diagonal(absolute)).copy()
+    known = scale > 0.0
+    for i in np.flatnonzero(~known):
+        with np.errstate(divide="ignore", invalid="ignore"):
+            through = np.where(known, absolute[i] / np.where(known, scale, 1.0), 0.0)
+        scale[i] = float(np.max(through)) if np.max(through) > 0.0 else float(np.sqrt(np.max(absolute[i])))
+    return scale
+
+
 def _accelerations(
     lagrangian: Lagrangian,
     q: Array,
@@ -130,14 +154,7 @@ def _accelerations(
     )
     # the condition number is taken on the matrix scaled to unit diagonal: generalized coordinates have different
     # units (a length and an angle), and the plain condition number would only measure that
-    diagonal = np.abs(np.diagonal(w))
-    if np.any(diagonal == 0.0):
-        raise SingularInertiaError(
-            "the matrix d2L/dv dv has a zero on its diagonal: the Lagrangian is linear in a velocity or does not "
-            "contain it (constraints, gauge freedom, a first-order Lagrangian), and the Euler-Lagrange equations "
-            "cannot be solved for the accelerations"
-        )
-    scale = np.sqrt(diagonal)
+    scale = _inertia_scale(w)
     outer = np.outer(scale, scale)
     cond = float(np.linalg.cond(w / outer))
     if not np.isfinite(cond) or cond > max_condition:
@@ -403,7 +420,7 @@ def euler_lagrange_accelerations(
     Raises
     ------
     SingularInertiaError
-        If W has a zero on its diagonal, or if its condition number after scaling to unit diagonal exceeds
+        If a row of W is zero, or if its condition number after scaling to unit diagonal exceeds
         ``max_condition`` (default 1e12). Typical causes: constraints, gauge freedom, a first-order Lagrangian.
     DerivativePrecisionError
         If the error estimates of the numerical derivatives, propagated to the accelerations, exceed 1e-6 of
@@ -483,7 +500,27 @@ def euler_lagrange_residual(
     a_arr = _vector(a, "a")
     if a_arr.size != q_arr.size:
         raise ValueError("a must have the same length as q")
-    (force, _), (w, _), (cross, _), (explicit, _) = _terms(lagrangian, q_arr, v_arr, t, method, True)
+    (force, force_error), (w, w_error), (cross, cross_error), (explicit, explicit_error) = _terms(
+        lagrangian, q_arr, v_arr, t, method, True
+    )
+    # the same test as for the accelerations: a residual whose terms are not known to 1e-6 is not returned
+    size = np.abs(w) @ np.abs(a_arr) + np.abs(cross) @ np.abs(v_arr) + np.abs(explicit) + np.abs(force)
+    error = w_error @ np.abs(a_arr) + cross_error @ np.abs(v_arr) + explicit_error + force_error
+    scale = _inertia_scale(w)  # residual_i / s_i has the same unit for every coordinate
+    allowed = _PRECISION * (size + 1e-3 * float(np.max(size / scale)) * scale)
+    # with the complex step the same rounding allowance as for the accelerations (see _accelerations)
+    if method == "complex":
+        with np.errstate(all="ignore"):
+            level = abs(float(np.real(lagrangian(q_arr, v_arr, t))))
+        allowed = allowed + 1e-10 * level / np.maximum(1.0, np.abs(q_arr))
+    if np.any(error > allowed):
+        worst = int(np.argmax(error / np.where(allowed > 0.0, allowed, 1e-300)))
+        raise DerivativePrecisionError(
+            f"the residual of coordinate {worst} is known to {error[worst]:.2e} only, against terms of size "
+            f"{size[worst]:.2e} (allowed fraction {_PRECISION:.0e}). The numerical derivatives of the Lagrangian are "
+            "too noisy at this state. Rescale the coordinates (for example to units in which the state is of order "
+            "one), or use the complex step"
+        )
     return w @ a_arr + cross @ v_arr + explicit - force
 
 
@@ -515,7 +552,9 @@ def integrate_lagrangian(
     times : array_like
         Strictly increasing output values of t (at least two); ``times[0]`` is the initial value.
     rtol, atol : float, optional
-        Tolerances passed to ``scipy.integrate.solve_ivp`` (DOP853).
+        Tolerances passed to ``scipy.integrate.solve_ivp`` (DOP853). ``atol`` is absolute, in the units of the
+        coordinates and velocities: a system whose coordinates are of order 1e-10 is integrated to about 1 % with
+        the default 1e-12; give an ``atol`` that suits the size of the state.
     method : {"complex", "finite"}, optional
         Differentiation method; see the module docstring.
     max_condition : float, optional

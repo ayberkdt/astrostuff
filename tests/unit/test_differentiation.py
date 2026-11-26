@@ -104,7 +104,9 @@ def test_error_orders_of_the_formulas():
 
 def test_function_independent_of_a_coordinate_gives_exactly_zero():
     result, error = d.jacobian_with_error(lambda x: np.sin(x[0]) + 7.0, [0.3, 5.0], "finite")
-    assert result[1] == 0.0 and error[1] == 0.0
+    # the derivative is zero; the estimate is what the confirmation leaves open: one rounding error of f over
+    # the distance at which the independence was confirmed (3e6 max(1, |x_i|)); measured 1.1e-22
+    assert result[1] == 0.0 and 0.0 < error[1] < 1e-20
     assert result[0] == pytest.approx(np.cos(0.3), rel=1e-12, abs=0)
 
 
@@ -119,8 +121,9 @@ def test_unchecked_complex_step_costs_one_evaluation_per_coordinate():
     assert len(calls) == 2
     calls.clear()
     d.jacobian(counted, X)
-    # the check: seven real values per coordinate, six more for the confirming step, and f(x) once
-    assert len(calls) == 2 + 2 * (7 + 6) + 1
+    # the check: seven real values per coordinate and six more for the confirming step, f(x), and the probe for a
+    # kink (two values per decade of the step until two decades stand above the rounding); measured 74 in all
+    assert 2 + 2 * (7 + 6) + 1 < len(calls) <= 150
 
 
 # --------------------------------------------------------------------------------------
@@ -436,7 +439,8 @@ def test_steps_of_one_point_are_reused_at_the_next_and_searched_again_when_they_
     assert np.allclose(second, expected, rtol=1e-8, atol=0)
     assert np.all(np.abs(second - expected) <= 5.0 * error + 1e-300)
     # far away the stored step no longer resolves the first element: the plan is refused and rebuilt
-    plan["steps"][0] = plan["steps"][0] * 1e6
+    ratios, independent, reach = plan["steps"][0]
+    plan["steps"][0] = (ratios * 1e6, independent, reach)
     calls.clear()
     third, _ = d._finite_jacobian(f, np.array([0.3e-4, 2.0]), plan)
     assert np.allclose(third, first, rtol=1e-9, atol=0)

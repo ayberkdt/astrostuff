@@ -32,6 +32,7 @@ _EPS = float(np.finfo(float).eps)
 # eps (||W||_inf max|v| + max(1, max|p|)), was at most 8.3 over p / m = 40, 50, 60, 100, 300, 1000, 3000, 5000, 6000,
 # 6600, 6683; _RESOLUTION_FACTOR = 16 is about twice that (600 log-uniform p / m in [1, 6600] all converged).
 _RESOLUTION_FACTOR = 16.0
+_FINITE_TOLERANCE = 1e-8  # smallest convergence tolerance with method="finite"
 Hamiltonian = Callable[[Array, Array, float], ArrayLike]
 Observable = Callable[[Array, Array, float], ArrayLike]
 
@@ -64,7 +65,9 @@ class LegendreHamiltonian:
     ) -> None:
         self.lagrangian = lagrangian
         self.method: Method = method
-        self.tolerance = tolerance
+        # dL/dv by finite differences carries noise of about 1e-10 of its value: a residual cannot be brought
+        # below that, and the iteration would find no descent step (it refused 37 of 60 states of a 3-D oscillator)
+        self.tolerance = tolerance if method == "complex" else max(tolerance, _FINITE_TOLERANCE)
         self.max_iterations = max_iterations
 
     def _finite_lagrangian(self, q: Array, v: Array, t: float) -> bool:
@@ -218,8 +221,8 @@ def hamiltonian_from_lagrangian(
     method : {"complex", "finite"}, optional
         Differentiation method used in the Newton iteration and in ``derivatives``.
     tolerance : float, optional
-        Convergence: max |dL/dv - p| <= tolerance * max(max |p|, max |dL/dv| at the starting velocity).
-        Default 1e-13.
+        Convergence: |dL/dv_i - p_i| <= tolerance * max(|p_i|, |dL/dv_i| at the starting velocity) for every
+        component. Default 1e-13; with ``method="finite"`` not below 1e-8, the noise of the differences.
     max_iterations : int, optional
         Newton iterations before ``LegendreTransformError`` (default 100).
 
@@ -431,7 +434,9 @@ def integrate_hamiltonian(
     times : array_like
         Strictly increasing output values of t (at least two).
     rtol, atol : float, optional
-        Tolerances passed to ``scipy.integrate.solve_ivp`` (DOP853).
+        Tolerances passed to ``scipy.integrate.solve_ivp`` (DOP853). ``atol`` is absolute, in the units of the
+        coordinates and velocities: a system whose coordinates are of order 1e-10 is integrated to about 1 % with
+        the default 1e-12; give an ``atol`` that suits the size of the state.
     method : {"complex", "finite"}, optional
         Differentiation method.
 

@@ -104,7 +104,7 @@ def test_singular_inertia_matrix_raises_a_clear_error():
     def degenerate(q, v, t):
         return 0.5 * (v[0] + v[1]) ** 2 - 0.5 * (q[0] ** 2 + q[1] ** 2)
 
-    with pytest.raises(SingularInertiaError, match="zero on its diagonal"):
+    with pytest.raises(SingularInertiaError, match="a row of the matrix d2L/dv dv is zero"):
         lg.euler_lagrange_accelerations(linear_in_velocity, [0.3], [0.1])
     with pytest.raises(SingularInertiaError, match="condition number"):
         lg.euler_lagrange_accelerations(degenerate, [0.3, 0.2], [0.1, 0.0])
@@ -152,8 +152,10 @@ def test_coordinates_of_different_units_do_not_look_singular():
 def test_planet_in_si_units_with_a_coordinate_at_zero():
     """Cartesian Kepler problem at (7.8e11 m, 0): the first versions returned a_y = 3.4e-5 m/s^2 instead of 0.
 
-    Measured: 2e-16 with the complex step, 8e-14 with the finite method; a_y is exactly zero with both (the momentum
-    along y is found independent of x and y at this state, and its derivative is returned as zero).
+    The complex step gives both components to rounding. The finite method is refused at this state: a coordinate
+    that is exactly zero has no scale, the independence of the momenta of y can be confirmed over 3e6 m only, and
+    one rounding error of p over that distance, carried to the acceleration, is 9e-6 of a_x. Away from the axis the
+    coordinate sets the scale and the finite method is right to 1e-10.
     """
     mass, gm = 1e27, 6.674e-11 * 1.989e30
 
@@ -161,13 +163,15 @@ def test_planet_in_si_units_with_a_coordinate_at_zero():
         return 0.5 * mass * (v[0] ** 2 + v[1] ** 2) + gm * mass / np.sqrt(q[0] ** 2 + q[1] ** 2)
 
     expected = -gm / 7.8e11**2
+    a = lg.euler_lagrange_accelerations(planet, [7.8e11, 0.0], [0.0, 3e4])
+    _check("a_x of the planet (complex)", abs(a[0] / expected - 1.0), 1e-12)  # measured 2e-16
+    _check("a_y of the planet (complex)", abs(a[1] / expected), 1e-12)
+    with pytest.raises(lg.DerivativePrecisionError, match="known to"):
+        lg.euler_lagrange_accelerations(planet, [7.8e11, 0.0], [0.0, 3e4], 0.0, "finite")
+    x, y = 4.7e11, 6.2e11
+    exact = -gm * np.array([x, y]) / (x * x + y * y) ** 1.5
     for method, tolerance in (("complex", 1e-12), ("finite", 1e-10)):
-        a = lg.euler_lagrange_accelerations(planet, [7.8e11, 0.0], [0.0, 3e4], 0.0, method)
-        _check(f"a_x of the planet ({method})", abs(a[0] / expected - 1.0), tolerance)
-        _check(f"a_y of the planet ({method})", abs(a[1] / expected), tolerance)
-        x, y = 4.7e11, 6.2e11
         a = lg.euler_lagrange_accelerations(planet, [x, y], [-2.4e4, 1.8e4], 0.0, method)
-        exact = -gm * np.array([x, y]) / (x * x + y * y) ** 1.5
         _check(f"planet off the axis ({method})", float(np.max(np.abs(a / exact - 1.0))), tolerance)
 
 

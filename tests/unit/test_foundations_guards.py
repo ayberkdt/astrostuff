@@ -218,3 +218,178 @@ def test_kretschmann_scalar_does_not_depend_on_the_unit_of_a_coordinate():
     exact = 48.0 * mass**2 / 6.0**6
     assert plain == pytest.approx(exact, rel=1e-9, abs=0)
     assert stretched == pytest.approx(exact, rel=1e-9, abs=0)
+
+
+# --------------------------------------------------------------------------------------
+# found by the second adversarial probe (plan/AUDIT_2026-11-26.md, tenth round)
+# --------------------------------------------------------------------------------------
+
+
+def test_a_dependence_on_a_galactic_scale_is_not_taken_for_independence():
+    """G(t) = 40 + 0.3 t / T with T = 7e15 s: dG/dt = 4.3e-17, and G does not change within a rounding error over
+    a thousand seconds.
+
+    The finite method returned exactly 0 with a zero estimate (a function "independent of the coordinate"). The
+    independence is now looked for 3e6 max(1, |x|) away as well, and where it is found the estimate is one
+    rounding error of f over that distance, not zero.
+    """
+    period = 7e15
+
+    def slow(t):
+        return np.array([40.0 + 0.3 * t[0] / period])
+
+    exact = 0.3 / period
+    assert d.jacobian(slow, [0.0])[0, 0] == pytest.approx(exact, rel=1e-12, abs=0)
+    value, error = d.jacobian_with_error(slow, [0.0], "finite")
+    assert abs(value[0, 0] - exact) <= error[0, 0] and error[0, 0] < 1e-2 * exact  # measured 4.3e-20
+    with pytest.raises(ValueError, match="could not be determined"):
+        d.jacobian(slow, [0.0], "finite")
+    # a function that really does not depend on the coordinate: zero, with an estimate at the rounding level
+    value, error = d.jacobian_with_error(lambda x: np.array([40.0 + x[1]]), [0.0, 0.3], "finite")
+    assert value[0, 0] == 0.0 and 0.0 < error[0, 0] < 1e-20
+    assert d.jacobian(lambda x: np.array([40.0 + x[1]]), [0.0, 0.3], "finite")[0, 0] == 0.0
+
+
+def test_forces_at_a_coordinate_that_is_zero_in_a_problem_of_galactic_size():
+    """Kepler potential centred 3e20 m away, particle at x = 0: dL/dx = 1.27e-10. The finite method returned 0."""
+    gm, centre = 6.6743e-11 * 2e41, 3e20
+
+    def lagrangian(q, v, t):
+        return 0.5 * (v[0] ** 2 + v[1] ** 2) + gm / np.sqrt((q[0] - centre) ** 2 + q[1] ** 2)
+
+    for x in (0.0, 0.5, 1e9):
+        q = [x, 1e20]
+        radius = np.hypot(centre - x, 1e20)
+        exact = gm * (centre - x) / radius**3
+        assert lg.generalized_forces(lagrangian, q, [0.0, 0.0])[0] == pytest.approx(exact, rel=1e-12, abs=0)
+        try:
+            force = lg.generalized_forces(lagrangian, q, [0.0, 0.0], 0.0, "finite")[0]
+        except ValueError:
+            continue  # refused: the scale of the problem cannot be seen from x = 0
+        assert force == pytest.approx(exact, rel=1e-6, abs=0)
+
+
+def test_coriolis_term_at_the_origin_of_a_slowly_rotating_frame():
+    """m = 1e30 kg, Omega = 1e-15 1/s, v = (1e5, 0) m/s at the origin: a = (0, -2 Omega v_x) = (0, -2e-10).
+
+    The finite method returned (0, 0): the only acceleration there is was lost without an error. It is refused
+    now (the term changes L by less than its rounding over any distance the search reaches).
+    """
+    mass, omega = 1e30, 1e-15
+
+    def rotating(q, v, t):
+        kinetic = 0.5 * mass * (v[0] ** 2 + v[1] ** 2)
+        return kinetic + mass * omega * (q[0] * v[1] - q[1] * v[0]) + 0.5 * mass * omega**2 * (q[0] ** 2 + q[1] ** 2)
+
+    for q in ([0.0, 0.0], [0.0, 0.5], [3000.0, 0.0]):
+        a = lg.euler_lagrange_accelerations(rotating, q, [1e5, 0.0])
+        exact = np.array([omega**2 * q[0], omega**2 * q[1] - 2.0 * omega * 1e5])
+        assert a[1] == pytest.approx(exact[1], rel=1e-10, abs=0)
+        assert a[0] == pytest.approx(exact[0], rel=1e-6, abs=1e-25)
+        with pytest.raises((lg.DerivativePrecisionError, ValueError)):
+            lg.euler_lagrange_accelerations(rotating, q, [1e5, 0.0], 0.0, "finite")
+        with pytest.raises(ValueError):
+            lg.generalized_forces(rotating, q, [1e5, 0.0], 0.0, "finite")
+
+
+def test_residual_is_refused_where_the_accelerations_are():
+    """euler_lagrange_residual combined the derivatives without looking at their estimates and returned a residual
+    of 19 % of the force at a state (a double pendulum in galactic units) where the accelerations were refused."""
+    mass, omega = 1e30, 1e-15
+
+    def rotating(q, v, t):
+        kinetic = 0.5 * mass * (v[0] ** 2 + v[1] ** 2)
+        return kinetic + mass * omega * (q[0] * v[1] - q[1] * v[0]) + 0.5 * mass * omega**2 * (q[0] ** 2 + q[1] ** 2)
+
+    q, v = [0.0, 0.0], [1e5, 0.0]
+    a = lg.euler_lagrange_accelerations(rotating, q, v)
+    residual = lg.euler_lagrange_residual(rotating, q, v, a)
+    assert np.max(np.abs(residual)) <= 1e-10 * mass * 2.0 * omega * 1e5
+    with pytest.raises((lg.DerivativePrecisionError, ValueError)):
+        lg.euler_lagrange_residual(rotating, q, v, a, 0.0, "finite")
+
+    def oscillator(q, v, t):
+        return 0.5 * v[0] ** 2 - 0.5 * q[0] ** 2
+
+    for method in ("complex", "finite"):
+        assert lg.euler_lagrange_residual(oscillator, [0.3], [0.1], [-0.3], 0.0, method)[0] == pytest.approx(
+            0.0, abs=1e-8
+        )
+        assert lg.euler_lagrange_residual(oscillator, [0.3], [0.1], [0.2], 0.0, method)[0] == pytest.approx(
+            0.5, rel=1e-8, abs=0
+        )
+
+
+def test_a_kink_inside_or_at_the_stencil_is_found_by_the_test_of_analyticity():
+    """L = v^2/2 - eps |q - q0|: the complex step of abs gives no force, the true acceleration is -eps sign(q - q0).
+
+    With the kink within the first step of the reference (1e-3) the test passed for eps up to 1e-6 (and up to 1e-2
+    beside a kinetic energy of 5e5): the roughness that the kink puts into the estimate of the reference was part
+    of the tolerance. The comparison is made within the rounding of the reference now, and a second-difference
+    probe finds a kink that no step separates from the point.
+    """
+    q0 = 0.4
+
+    def kinked(eps):
+        return lambda q, v, t: 0.5 * v[0] ** 2 - eps * np.abs(q[0] - q0)
+
+    for eps in (1e-6, 1e-8, 1e-10):
+        for distance in (1e-3, 1e-6, 1e-10, 0.0):
+            with pytest.raises(ValueError, match="not analytic|could not be checked"):
+                lg.euler_lagrange_accelerations(kinked(eps), [q0 + distance], [1.0])
+    # away from the kink the finite method gives the force of the side the state is on
+    a = lg.euler_lagrange_accelerations(kinked(1e-6), [q0 + 0.3], [1.0], 0.0, "finite")
+    assert a[0] == pytest.approx(-1e-6, rel=1e-6, abs=0)
+    # an analytic Lagrangian with the same numbers is accepted
+    smooth = lg.euler_lagrange_accelerations(
+        lambda q, v, t: 0.5 * v[0] ** 2 - 1e-8 * (q[0] - q0) ** 2, [q0 + 1e-3], [1.0]
+    )
+    assert smooth[0] == pytest.approx(-2e-11, rel=1e-9, abs=0)
+
+
+def test_inertia_matrix_with_a_zero_on_its_diagonal_is_not_singular():
+    """L = v0 v1 - V(q): W = [[0, 1], [1, 0]], determinant -1. The complex step refused it as singular."""
+
+    def lagrangian(q, v, t):
+        return v[0] * v[1] - 0.3 * q[0] ** 2 - 0.4 * q[1] ** 2
+
+    for method in ("complex", "finite"):
+        a = lg.euler_lagrange_accelerations(lagrangian, [0.5, 1.0], [0.2, -0.1], 0.0, method)
+        assert np.allclose(a, [-0.8, -0.3], rtol=1e-8, atol=0)  # a0 = dL/dq1, a1 = dL/dq0
+    with pytest.raises(lg.SingularInertiaError, match="row of the matrix"):
+        lg.euler_lagrange_accelerations(lambda q, v, t: 0.5 * v[0] ** 2 + q[1] * v[1], [0.5, 1.0], [0.2, -0.1])
+
+
+def test_legendre_inversion_with_the_finite_method_converges_at_the_noise_of_the_differences():
+    """With the default tolerance of 1e-13 the finite method refused 37 of 60 states of a 3-D oscillator ("no
+    descent step"): dL/dv by finite differences is known to about 1e-10. Its tolerance is not taken below 1e-8."""
+
+    def coupled(q, v, t):
+        return 0.5 * (2.0 + np.cos(q[0])) * v[0] ** 2 + 0.3 * v[0] * v[1] + 0.5 * v[1] ** 2 + np.cos(q[1])
+
+    finite, exact = hm.hamiltonian_from_lagrangian(coupled, method="finite"), hm.hamiltonian_from_lagrangian(coupled)
+    rng = np.random.default_rng(0)
+    for _ in range(12):
+        q, p = rng.normal(size=2), rng.normal(size=2)
+        assert np.allclose(finite.velocity(q, p), exact.velocity(q, p), rtol=0, atol=1e-6)  # measured 1e-8
+        assert finite(q, p) == pytest.approx(exact(q, p), rel=1e-10, abs=1e-12)
+
+
+def test_two_bodies_in_si_units_are_integrated():
+    """Two bodies of 2e30 kg, 1.5e11 m apart on a circular orbit: integrate_lagrangian refused them at once, while
+    the accelerations at the first state were accepted. On the path where the steps of an earlier state are
+    reused, an element that does not depend on a coordinate (dp/dt) got the rounding estimate of a difference at
+    a step of 1e-3 s instead of the estimate of its independence."""
+    mass, separation = 2e30, 1.5e11
+    speed = np.sqrt(G * mass / (2.0 * separation))
+
+    def binary(q, v, t):
+        distance = np.sqrt((q[0] - q[2]) ** 2 + (q[1] - q[3]) ** 2)
+        return 0.5 * mass * np.sum(v * v) + G * mass * mass / distance
+
+    q0 = [-0.5 * separation, 0.0, 0.5 * separation, 0.0]
+    v0 = [0.0, -speed, 0.0, speed]
+    period = 2.0 * np.pi * 0.5 * separation / speed
+    q, v = lg.integrate_lagrangian(binary, q0, v0, [0.0, 0.25 * period])
+    expected = [0.0, -0.5 * separation, 0.0, 0.5 * separation]  # a quarter of a turn
+    assert np.allclose(q[-1], expected, rtol=0, atol=1e-7 * separation)
