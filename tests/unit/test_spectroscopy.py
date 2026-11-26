@@ -303,7 +303,10 @@ def test_gaussian_fit_without_sigma_scales_to_residuals():
     flux = 1.0 - 0.3 * np.exp(-0.5 * (x / 2.0) ** 2) + rng.normal(0, 0.02, x.size)
     with_sigma = lines.fit_gaussian_line(x, flux, 0.02)
     without = lines.fit_gaussian_line(x, flux)
-    assert without.centre == pytest.approx(with_sigma.centre, abs=1e-8)
+    # The two fits minimise the same function scaled differently, so they agree to the convergence of the solver,
+    # which works with a finite-difference Jacobian: measured difference 1.3e-8 pixel (the error of the centre is
+    # 0.1 pixel). The limit was 1e-8 with a measured 9.3e-9, which a change in the last bits of exp could cross.
+    assert without.centre == pytest.approx(with_sigma.centre, abs=1e-6)
     # the residual rms is within sampling error of 0.02, so the scaled errors are close to the absolute ones
     assert without.centre_sigma == pytest.approx(with_sigma.centre_sigma, rel=0.35, abs=0)
     assert without.reduced_chi2 == 1.0

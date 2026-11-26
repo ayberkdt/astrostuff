@@ -6,7 +6,7 @@ This file is generated from the source registry by `python bibliography/registry
 - Functions whose records were all read from the source text: 414
 - Source records: 476 (read: 476, pending: 0)
 - Constants with a source: 35 (awaiting verification: 0)
-- Test functions: 947 (parametrized and property tests count as one)
+- Test functions: 951 (parametrized and property tests count as one)
 - Infrastructure functions exempt from the source rule: 4
 
 `read`: the equation was read from the text of the source while the code was written. `pending`: the equation

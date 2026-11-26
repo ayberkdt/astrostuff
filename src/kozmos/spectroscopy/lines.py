@@ -365,6 +365,11 @@ def fit_gaussian_line(
         method="trf",
         x_scale="jac",
         max_nfev=20000,
+        # the defaults (1e-8) stop the iteration while the parameters still move at 1e-8: the result then depends
+        # on the scale of the weights and on the last bits of exp
+        ftol=1e-13,
+        xtol=1e-13,
+        gtol=1e-13,
     )
     if not np.all(np.isfinite(pcov)):
         raise RuntimeError("the covariance of the Gaussian fit is not finite (degenerate fit)")
