@@ -60,10 +60,9 @@ def test_hessian(method, rtol):
     result, error = d.hessian_with_error(_f, X, method)
     assert np.allclose(result, _hessian(X), rtol=rtol, atol=0)
     assert np.array_equal(result, result.T)
-    # An estimate, not a bound. For nested finite differences the true error was measured at 200 random points of a
-    # similar function: at most 6.6 estimates, above 5 at six points. A limit of 5 held here only by the last bits
-    # of sin and exp; with those moved by one unit in the last place the error was 5.07 estimates.
-    assert np.all(np.abs(result - _hessian(X)) <= 10.0 * error)
+    # The estimate of a nested finite difference carries a safety factor of 30, because the true error was measured
+    # at up to 13.4 raw estimates (2400 elements); with it the true error stayed below 0.33 estimates (960 elements).
+    assert np.all(np.abs(result - _hessian(X)) <= error)
 
 
 def test_jacobian_of_a_tensor_valued_function():

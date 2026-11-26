@@ -81,6 +81,11 @@ _GOOD_REL, _GOOD_ABS = 1e-8, 1e-10  # below this estimate at the first step no o
 _CONFIRM = -2  # decade of the step that must confirm a first step that looks perfect
 _FAR = (1e6, 1e3, 1e1)  # in first steps: where a function must still be unchanged to count as independent
 _NOISE_SLACK = 100.0  # how many times the noise part of an estimate counts when two steps are compared
+# The estimate of a difference of a function that is itself a finite difference was measured against exact
+# derivatives (2400 elements, two functions, x of order 1 and of order 1e6): the true error reached 13.4 estimates.
+# Differences of exact functions and of complex-step derivatives stayed below 2.5 estimates. The estimate of a
+# nested difference is therefore multiplied by this factor before it is returned.
+_NESTED_SAFETY = 30.0
 _CHECK_FACTOR = 20.0  # complex-step and finite results may differ by this many error estimates
 
 _LOCAL = threading.local()
@@ -377,6 +382,8 @@ def _finite_column(
                 f"error estimate is {worst:.1e} times the allowed one. The function is not smooth there, is too "
                 "noisy, or varies on a scale that no step between 1e-15 and 1e6 times max(1, |x_i|) resolves"
             )
+    if child.steps:  # finite differences were taken inside f
+        best_error = best_error * _NESTED_SAFETY
     if parent is not None:
         parent.steps.append((key, best_step, child))
         with np.errstate(all="ignore"):
@@ -403,8 +410,10 @@ def _planned(f: Callable[[Array], ArrayLike], x: Array, plan: dict) -> tuple[Arr
         error_all = np.zeros(ratios.shape)
         for ratio in np.unique(ratios):
             h = float(ratio) * scale
-            points = _differences(f, x, i, h, _Trace(), ratios.shape)
+            trace = _Trace()
+            points = _differences(f, x, i, h, trace, ratios.shape)
             fm3, fm2, fm1, fp1, fp2, fp3 = points
+            nested = _NESTED_SAFETY if trace.steps else 1.0
             with np.errstate(all="ignore"):
                 six = _six(points, h)
                 four = ((fm2 - fp2) + 8.0 * (fp1 - fm1)) / (12.0 * h)
@@ -413,6 +422,7 @@ def _planned(f: Callable[[Array], ArrayLike], x: Array, plan: dict) -> tuple[Arr
                     1.1 * 4.0 * _EPS * values / h + 4.0 * _EPS * abs(float(x[i])) / h * np.abs(six) + np.abs(six - four)
                 )
                 good = error <= _ACCEPT_REL * np.abs(six) + _ACCEPT_ABS * values / h
+                error = nested * error  # the step is judged as it was when it was chosen; the estimate is not
             use = ratios == ratio
             if not np.all(good[use]):
                 return None

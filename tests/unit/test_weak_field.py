@@ -225,8 +225,8 @@ def test_shapiro_delay_identity_for_the_logarithm_argument():
     argument = (np.linalg.norm(target) - target @ n) / (np.linalg.norm(earth) - earth @ n)
     assert shapiro_round_trip_delay_s(M_SUN, earth, target) == pytest.approx(
         4.0 * G * M_SUN / C**3 * np.log(argument),
-        rel=1e-13,
-        abs=0,  # measured 6e-15
+        rel=1e-11,
+        abs=0,  # measured 6e-15; 1.2e-13 with the norms moved by one unit in the last place (r - x.n cancels)
     )
 
 
@@ -462,3 +462,24 @@ def test_static_clock_ratio_boundary_phi_equal_minus_half_c_squared_raises():
             static_clock_ratio(phi)
     just_above = static_clock_ratio(-0.5 * C**2 * (1.0 - 1e-6))
     assert just_above == pytest.approx(1e-3, rel=1e-6, abs=0)  # sqrt(1e-6)
+
+
+def test_shapiro_delay_rejects_a_line_through_the_mass_whatever_the_last_bits_of_the_norms():
+    """Opposite sides of the mass with the end points moved by a few units in the last place.
+
+    The exact test r_E + r_e - R > 0 saw the line through the mass only when the three norms rounded alike, which
+    they do on one platform and not on another; then a delay of a path through the centre was returned.
+    """
+    earth, source = np.array([3.0 * AU, 0.0, 0.0]), np.array([-AU, 0.0, 0.0])
+    for k_earth in range(-3, 4):
+        for k_source in range(-3, 4):
+            e, s = earth.copy(), source.copy()
+            for _ in range(abs(k_earth)):
+                e[0] = np.nextafter(e[0], np.inf if k_earth > 0 else -np.inf)
+            for _ in range(abs(k_source)):
+                s[0] = np.nextafter(s[0], np.inf if k_source > 0 else -np.inf)
+            with pytest.raises(ValueError, match="through the mass"):
+                shapiro_round_trip_delay_s(M_SUN, e, s)
+    # an impact parameter of one solar radius is far from the limit
+    grazing = shapiro_round_trip_delay_s(M_SUN, np.array([AU, 6.957e8, 0.0]), np.array([-AU, 6.957e8, 0.0]))
+    assert 2.0e-4 < grazing < 3.0e-4  # about 240 microseconds for a round trip at superior conjunction

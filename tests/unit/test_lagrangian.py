@@ -150,17 +150,36 @@ def test_coordinates_of_different_units_do_not_look_singular():
 
 
 def test_planet_in_si_units_with_a_coordinate_at_zero():
-    """Cartesian Kepler problem at (7.8e11 m, 0): the first versions returned a_y = 3.4e-5 m/s^2 instead of 0."""
+    """Cartesian Kepler problem at (7.8e11 m, 0): the first versions returned a_y = 3.4e-5 m/s^2 instead of 0.
+
+    The complex step gives the acceleration to rounding. The finite method differentiates a finite difference; its
+    result here was right to 8e-9, but the estimate of a nested difference carries a safety factor of 30 (the true
+    error was measured at up to 13 estimates), which puts it at 2e-6, above the limit of 1e-6: it is refused.
+    """
     mass, gm = 1e27, 6.674e-11 * 1.989e30
 
     def planet(q, v, t):
         return 0.5 * mass * (v[0] ** 2 + v[1] ** 2) + gm * mass / np.sqrt(q[0] ** 2 + q[1] ** 2)
 
-    for method, tolerance in (("complex", 1e-12), ("finite", 1e-6)):  # measured 1e-16 and 8e-9
-        a = lg.euler_lagrange_accelerations(planet, [7.8e11, 0.0], [0.0, 3e4], 0.0, method)
-        expected = -gm / 7.8e11**2
-        _check(f"a_x of the planet ({method})", abs(a[0] / expected - 1.0), tolerance)
-        _check(f"a_y of the planet ({method})", abs(a[1] / expected), tolerance)
+    a = lg.euler_lagrange_accelerations(planet, [7.8e11, 0.0], [0.0, 3e4])
+    expected = -gm / 7.8e11**2
+    _check("a_x of the planet (complex)", abs(a[0] / expected - 1.0), 1e-12)  # measured 1e-16
+    _check("a_y of the planet (complex)", abs(a[1] / expected), 1e-12)
+    with pytest.raises(lg.DerivativePrecisionError, match="known to"):
+        lg.euler_lagrange_accelerations(planet, [7.8e11, 0.0], [0.0, 3e4], 0.0, "finite")
+    # In units of the orbit (lengths in 7.8e11 m, masses in 1e27 kg, times in 1e7 s) the finite method is accepted,
+    # away from the axis: a component that vanishes is held to 1e-9 of the largest term, which a nested difference
+    # with its safety factor does not reach (at (1, 0) the finite method is refused in these units as well).
+    gm_scaled = gm * 1e14 / 7.8e11**3
+
+    def scaled(q, v, t):
+        return 0.5 * (v[0] ** 2 + v[1] ** 2) + gm_scaled / np.sqrt(q[0] ** 2 + q[1] ** 2)
+
+    a = lg.euler_lagrange_accelerations(scaled, [0.8, 0.6], [-0.2, 0.3], 0.0, "finite")
+    exact = -gm_scaled * np.array([0.8, 0.6])
+    _check("planet in scaled units (finite)", float(np.max(np.abs(a / exact - 1.0))), 1e-8)
+    with pytest.raises(lg.DerivativePrecisionError):
+        lg.euler_lagrange_accelerations(scaled, [1.0, 0.0], [0.0, 0.4], 0.0, "finite")
 
 
 def test_accelerations_that_cannot_be_determined_are_refused():

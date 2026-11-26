@@ -279,7 +279,10 @@ def shapiro_round_trip_delay_s(
     path_sum = np.linalg.norm(x_earth, axis=-1) + np.linalg.norm(x_source, axis=-1)
     if np.any(~(chord > 0.0)):
         raise ValueError("the two positions coincide")
-    if np.any(~(path_sum - chord > 0.0)):
+    # r_E + r_e - R is b^2 R / (2 r_E r_e) for a small impact parameter b; on a line through the mass it is a rounding
+    # residue of three norms, zero on one platform and one unit in the last place on another. Anything within eight
+    # rounding errors of r_E + r_e counts as through the mass (b below about 4e-8 of the distances).
+    if np.any(~(path_sum - chord > 8.0 * np.finfo(float).eps * path_sum)):
         raise ValueError("the straight line between the end points passes through the mass")
     argument = 1.0 + 2.0 * chord / (path_sum - chord)  # (s + R) / (s - R)
     return 2.0 * (1.0 + gamma_ppn) * _G * mass / _C**3 * np.log(argument)
